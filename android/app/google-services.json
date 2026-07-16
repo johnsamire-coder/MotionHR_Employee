@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "781126435740",
+    "project_id": "motionhr-db97a",
+    "storage_bucket": "motionhr-db97a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781126435740:android:c0ea8501355bb8a7acfe59",
+        "android_client_info": {
+          "package_name": "com.example.motionhr_employee"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzRKZeeN7y0e1Hca5spmHpezy-7PverYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
