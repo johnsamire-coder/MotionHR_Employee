@@ -1,0 +1,57 @@
+﻿import '../core/api_service.dart';
+
+class ReportsService {
+  final ApiService _api = ApiService();
+
+  Future<Map<String, dynamic>> _getMap(String url) async {
+    final response = await _api.get(url);
+    if (response is Map<String, dynamic>) {
+      return response;
+    }
+    return Map<String, dynamic>.from(response as Map);
+  }
+
+  Future<Map<String, dynamic>> getAttendanceReport({int? year, int? month, int? employeeId}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    var url = '/attendance/api/mobile/manager/reports/attendance/?year=$y&month=$m';
+    if (employeeId != null) {
+      url += '&employee_id=$employeeId';
+    }
+    return _getMap(url);
+  }
+
+  Future<Map<String, dynamic>> getLateReport({int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getMap('/attendance/api/mobile/manager/reports/late/?year=$y&month=$m');
+  }
+
+  Future<Map<String, dynamic>> getAbsenceReport({int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getMap('/attendance/api/mobile/manager/reports/absence/?year=$y&month=$m');
+  }
+
+  Future<Map<String, dynamic>> getRequestsReport({int? year, int? month, String? status}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    var url = '/attendance/api/mobile/manager/reports/requests/?year=$y&month=$m';
+    if (status != null && status.isNotEmpty) {
+      url += '&status=$status';
+    }
+    return _getMap(url);
+  }
+
+  Future<Map<String, dynamic>> getLeavesReport({int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getMap('/attendance/api/mobile/manager/reports/leaves/?year=$y&month=$m');
+  }
+
+  Future<Map<String, dynamic>> getWorkHoursReport({int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getMap('/attendance/api/mobile/manager/reports/work-hours/?year=$y&month=$m');
+  }
+}

@@ -1,0 +1,493 @@
+lib\background_service.dart:86:          'Authorization': 'Token $token',
+lib\main.dart:47:      Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
+lib\main.dart:48:      headers: {'Authorization': 'Token $token'},
+lib\main.dart:158:  print('🔔 Background message: ${message.notification?.title}');
+lib\main.dart:167:      print('🔔 Foreground message: ${message.notification?.title}');
+lib\main.dart:178:      print('👆 User tapped notification: ${message.notification?.title}');
+lib\main.dart:184:    print('❌ Firebase Messaging error: $e');
+lib\main.dart:198:      Uri.parse('$kBaseUrl/attendance/api/mobile/fcm-token/'),
+lib\main.dart:201:        'Authorization': 'Token $token',
+lib\main.dart:246:                    count > 99 ? '99+' : '$count',
+lib\main.dart:320:            Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main.dart:321:            headers: {'Authorization': 'Token $token'},
+lib\main.dart:429:        Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
+lib\main.dart:474:              Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main.dart:475:              headers: {'Authorization': 'Token ${data['token']}'},
+lib\main.dart:734:        Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
+lib\main.dart:737:          'Authorization': 'Token $token',
+lib\main.dart:992:        Uri.parse('$kBaseUrl/attendance/api/mobile/status/'),
+lib\main.dart:993:        headers: {'Authorization': 'Token $token'},
+lib\main.dart:1010:        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+lib\main.dart:1011:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main.dart:1044:        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+lib\main.dart:1087:    return '$dayName، ${_now.day} $monthName ${_now.year}';
+lib\main.dart:1094:    return '$h:$m:$s';
+lib\main.dart:1115:    return '$h:$m:$s';
+lib\main.dart:1158:                    Text('أهلاً يا $displayName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+lib\main.dart:1184:                Expanded(child: Text('شيفت: $shiftName ($shiftStart - $shiftEnd)', style: const TextStyle(fontWeight: FontWeight.bold))),
+lib\main.dart:1213:                Text('${(_progressValue() * 100).toInt()}% من الشيفت', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+lib\main.dart:1279:                subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+lib\main.dart:1287:                subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+lib\main.dart:1320:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1335:                  title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}')));
+lib\main.dart:1367:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1387:        return Card(child: ListTile(leading: const Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+lib\main.dart:1418:    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main.dart:1430:        'reason': _isOther ? 'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}' : _reasonCtrl.text};
+lib\main.dart:1432:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
+lib\main.dart:1433:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main.dart:1436:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'))); }
+lib\main.dart:1509:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1525:    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main.dart:1530:    if (t != null) { _permissionTimeCtrl.text = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'; setState(() {}); }
+lib\main.dart:1543:        'description': _isOther ? 'نوع آخر: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}' : _descCtrl.text.trim()};
+lib\main.dart:1547:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
+lib\main.dart:1548:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main.dart:1552:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
+lib\main.dart:1625:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1682:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1695:    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main.dart:1696:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}); _load(); } catch (_) {}
+lib\main.dart:1702:    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main.dart:1703:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode({'id': id})); _load(); } catch (_) {}
+lib\main.dart:1754:      if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
+lib\main.dart:1755:      if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
+lib\main.dart:1756:      if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+lib\main.dart:1757:      return '${dt.day}/${dt.month}/${dt.year}';
+lib\main.dart:1765:        title: Text('الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
+lib\main.dart:1808:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:1830:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
+lib\main.dart:1831:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'});
+lib\main.dart:1862:                    Text('الإصدار ${_charter!['version'] ?? 1}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+lib\main.dart:1947:        Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main.dart:1948:        headers: {'Authorization': 'Token $token'},
+lib\main.dart:1964:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
+lib\main.dart:1965:        headers: {'Authorization': 'Token $token'},
+lib\main.dart:2011:          SnackBar(content: Text('خطأ في اختيار الملف: $e')),
+lib\main.dart:2052:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
+lib\main.dart:2055:      request.headers['Authorization'] = 'Token $token';
+lib\main.dart:2108:            content: Text('خطأ في الاتصال: $e'),
+lib\main.dart:2145:            '$count',
+lib\main.dart:2161:      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+lib\main.dart:2196:                    'الإصدار ${_charter!['version'] ?? 1}',
+lib\main.dart:2688:  String _formatDate(String iso) { try { final dt = DateTime.parse(iso).toLocal(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; } catch (_) { return ''; } }
+lib\main.dart:2689:  String _formatNow() { final dt = DateTime.now(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; }
+lib\main.dart:2700:            Text('الإصدار $charterVersion', style: const TextStyle(color: Colors.white70)),
+lib\main.dart:2701:            const SizedBox(height: 4), Text('تاريخ التقرير: ${_formatNow()}', style: const TextStyle(color: Colors.white60, fontSize: 12))])),
+lib\main.dart:2707:              Text('${accepted.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
+lib\main.dart:2713:              Text('${pending.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orange)),
+lib\main.dart:2720:              Text('وافقوا على اللائحة (${accepted.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+lib\main.dart:2730:                    child: Text('${i + 1}', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12))),
+lib\main.dart:2734:                    if ((emp['accepted_at'] ?? '').isNotEmpty) Text('وافق في: ${_formatDate(emp['accepted_at'])}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+lib\main.dart:2735:                    if ((emp['ip_address'] ?? '').isNotEmpty) Text('IP: ${emp['ip_address']}', style: TextStyle(color: Colors.grey[500], fontSize: 11))])),
+lib\main.dart:2743:              Text('لم يوافقوا بعد (${pending.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+lib\main.dart:2753:                    child: Text('${i + 1}', style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold, fontSize: 12))),
+lib\main.dart:2760:          child: Text('تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}', style: TextStyle(color: Colors.grey[600], fontSize: 12), textAlign: TextAlign.center)),
+lib\main.dart:2787:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:2803:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
+lib\main.dart:2815:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
+lib\main.dart:2816:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main.dart:2821:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
+lib\main.dart:2845:                  const SizedBox(height: 6), Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'), Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}')]))
+lib\main.dart:2932:      final r1 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:2936:      final r2 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:2939:      final r3 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:2963:      _card('الطلبات المعلقة', '$_pending', Icons.pending_actions, Colors.orange,
+lib\main.dart:2966:      _card('الحضور اليوم', '$_present', Icons.people, Colors.green,
+lib\main.dart:2969:      _card('الموظفين الميدانيين', '$_fieldWorkers', Icons.location_on, kManagerColor,
+lib\main.dart:3010:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:3074:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'),
+lib\main.dart:3075:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main.dart:3080:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
+lib\main.dart:3122:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:3136:          subtitle: Text('حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}')));
+lib\main.dart:3162:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main.dart:3169:    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+lib\main.dart:3208:          title: Text(item['employee_name'] ?? ''), subtitle: Text(item['address'] ?? '$lat, $lng'),
+lib\main_backup.dart:177:        Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
+lib\main_backup.dart:336:        Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
+lib\main_backup.dart:337:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main_backup.dart:481:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:497:        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+lib\main_backup.dart:498:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main_backup.dart:528:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+lib\main_backup.dart:581:    return '$dayName، ${_now.day} $monthName ${_now.year}';
+lib\main_backup.dart:588:    return '$h:$m:$s';
+lib\main_backup.dart:609:    return '$h:$m:$s';
+lib\main_backup.dart:651:                  Text('$greeting يا $displayName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+lib\main_backup.dart:679:                  Expanded(child: Text('شيفت: $shiftName ($shiftStart - $shiftEnd)', style: const TextStyle(fontWeight: FontWeight.bold))),
+lib\main_backup.dart:723:                Text('${(_progressValue() * 100).toInt()}% من الشيفت', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+lib\main_backup.dart:806:            Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), child: ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.login, color: Colors.green)), title: const Text('وقت الحضور'), subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)))),
+lib\main_backup.dart:808:            Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), child: ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.logout, color: Colors.orange)), title: const Text('وقت الانصراف'), subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)))),
+lib\main_backup.dart:833:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:847:        body: _loading ? const Center(child: CircularProgressIndicator()) : _items.isEmpty ? const Center(child: Text('لا يوجد سجل')) : ListView.builder(padding: const EdgeInsets.all(8), itemCount: _items.length, itemBuilder: (_, i) { final item = _items[i]; return Card(child: ListTile(leading: const Icon(Icons.calendar_today, color: kPrimaryColor), title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}'))); }),
+lib\main_backup.dart:878:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:902:        return Card(child: ListTile(leading: const Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+lib\main_backup.dart:928:    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main_backup.dart:940:      final body = <String, dynamic>{'start_date': _startCtrl.text, 'end_date': _endCtrl.text, 'reason': _isOther ? 'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}' : _reasonCtrl.text};
+lib\main_backup.dart:942:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'), headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main_backup.dart:949:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\main_backup.dart:1012:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1040:      final body = <String, dynamic>{'title': _titleCtrl.text, 'description': _isOther ? 'نوع آخر: ${_otherCtrl.text}\n${_descCtrl.text}' : _descCtrl.text};
+lib\main_backup.dart:1042:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'), headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main_backup.dart:1054:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\main_backup.dart:1120:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1173:        Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
+lib\main_backup.dart:1174:        headers: {'Authorization': 'Token $token'},
+lib\main_backup.dart:1212:          content: Text('خطأ: $e'),
+lib\main_backup.dart:1244:        Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
+lib\main_backup.dart:1247:          'Authorization': 'Token $token',
+lib\main_backup.dart:1267:          content: Text('خطأ: $e'),
+lib\main_backup.dart:1344:                              Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'),
+lib\main_backup.dart:1345:                              Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}'),
+lib\main_backup.dart:1512:      final r1 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1514:      final r2 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1516:      final r3 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1534:      _card('الطلبات المعلقة', '$_pending', Icons.pending_actions, Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerPendingScreen()))),
+lib\main_backup.dart:1536:      _card('حاضر اليوم', '$_present', Icons.people, Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerAttendanceScreen()))),
+lib\main_backup.dart:1538:            _card('موظفون ميدانيون', '$_fieldWorkers', Icons.location_on, kManagerColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
+lib\main_backup.dart:1561:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1570:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'), headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode({'id': item['id'], 'type': item['type'], 'action': action}));
+lib\main_backup.dart:1575:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\main_backup.dart:1612:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1621:    return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) { final item = _items[i]; return Card(child: ListTile(leading: const Icon(Icons.person, color: kManagerColor), title: Text(item['employee_name'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}'))); }));
+lib\main_backup.dart:1644:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup.dart:1650:    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+lib\main_backup.dart:1693:      return Card(child: ListTile(leading: const Icon(Icons.person_pin_circle, color: Colors.red), title: Text(item['employee_name'] ?? ''), subtitle: Text(item['address'] ?? '$lat, $lng'), trailing: IconButton(icon: const Icon(Icons.map, color: kPrimaryColor), onPressed: () => _openMap(lat, lng))));
+lib\main_backup_before_batches.dart:38:      Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
+lib\main_backup_before_batches.dart:39:      headers: {'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:149:  print('🔔 Background message: ${message.notification?.title}');
+lib\main_backup_before_batches.dart:158:      print('🔔 Foreground message: ${message.notification?.title}');
+lib\main_backup_before_batches.dart:169:      print('👆 User tapped notification: ${message.notification?.title}');
+lib\main_backup_before_batches.dart:175:    print('❌ Firebase Messaging error: $e');
+lib\main_backup_before_batches.dart:189:      Uri.parse('$kBaseUrl/attendance/api/mobile/fcm-token/'),
+lib\main_backup_before_batches.dart:192:        'Authorization': 'Token $token',
+lib\main_backup_before_batches.dart:237:                    count > 99 ? '99+' : '$count',
+lib\main_backup_before_batches.dart:311:            Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main_backup_before_batches.dart:312:            headers: {'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:420:        Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
+lib\main_backup_before_batches.dart:465:              Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main_backup_before_batches.dart:466:              headers: {'Authorization': 'Token ${data['token']}'},
+lib\main_backup_before_batches.dart:725:        Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
+lib\main_backup_before_batches.dart:728:          'Authorization': 'Token $token',
+lib\main_backup_before_batches.dart:973:        Uri.parse('$kBaseUrl/attendance/api/mobile/status/'),
+lib\main_backup_before_batches.dart:974:        headers: {'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:991:        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+lib\main_backup_before_batches.dart:992:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:1025:        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+lib\main_backup_before_batches.dart:1068:    return '$dayName، ${_now.day} $monthName ${_now.year}';
+lib\main_backup_before_batches.dart:1075:    return '$h:$m:$s';
+lib\main_backup_before_batches.dart:1096:    return '$h:$m:$s';
+lib\main_backup_before_batches.dart:1139:                    Text('أهلاً يا $displayName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+lib\main_backup_before_batches.dart:1165:                Expanded(child: Text('شيفت: $shiftName ($shiftStart - $shiftEnd)', style: const TextStyle(fontWeight: FontWeight.bold))),
+lib\main_backup_before_batches.dart:1194:                Text('${(_progressValue() * 100).toInt()}% من الشيفت', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+lib\main_backup_before_batches.dart:1260:                subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+lib\main_backup_before_batches.dart:1268:                subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+lib\main_backup_before_batches.dart:1301:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1316:                  title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}')));
+lib\main_backup_before_batches.dart:1348:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1368:        return Card(child: ListTile(leading: const Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+lib\main_backup_before_batches.dart:1399:    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main_backup_before_batches.dart:1411:        'reason': _isOther ? 'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}' : _reasonCtrl.text};
+lib\main_backup_before_batches.dart:1413:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
+lib\main_backup_before_batches.dart:1414:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main_backup_before_batches.dart:1417:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'))); }
+lib\main_backup_before_batches.dart:1490:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1506:    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main_backup_before_batches.dart:1511:    if (t != null) { _permissionTimeCtrl.text = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'; setState(() {}); }
+lib\main_backup_before_batches.dart:1524:        'description': _isOther ? 'نوع آخر: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}' : _descCtrl.text.trim()};
+lib\main_backup_before_batches.dart:1528:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
+lib\main_backup_before_batches.dart:1529:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+lib\main_backup_before_batches.dart:1533:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
+lib\main_backup_before_batches.dart:1606:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1653:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1666:    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main_backup_before_batches.dart:1667:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}); _load(); } catch (_) {}
+lib\main_backup_before_batches.dart:1673:    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main_backup_before_batches.dart:1674:        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode({'id': id})); _load(); } catch (_) {}
+lib\main_backup_before_batches.dart:1725:      if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
+lib\main_backup_before_batches.dart:1726:      if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
+lib\main_backup_before_batches.dart:1727:      if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+lib\main_backup_before_batches.dart:1728:      return '${dt.day}/${dt.month}/${dt.year}';
+lib\main_backup_before_batches.dart:1736:        title: Text('الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
+lib\main_backup_before_batches.dart:1779:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1801:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
+lib\main_backup_before_batches.dart:1802:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:1833:                    Text('الإصدار ${_charter!['version'] ?? 1}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+lib\main_backup_before_batches.dart:1918:        Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+lib\main_backup_before_batches.dart:1919:        headers: {'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:1935:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
+lib\main_backup_before_batches.dart:1936:        headers: {'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:1982:          SnackBar(content: Text('خطأ في اختيار الملف: $e')),
+lib\main_backup_before_batches.dart:2023:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
+lib\main_backup_before_batches.dart:2026:      request.headers['Authorization'] = 'Token $token';
+lib\main_backup_before_batches.dart:2079:            content: Text('خطأ في الاتصال: $e'),
+lib\main_backup_before_batches.dart:2116:            '$count',
+lib\main_backup_before_batches.dart:2132:      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+lib\main_backup_before_batches.dart:2167:                    'الإصدار ${_charter!['version'] ?? 1}',
+lib\main_backup_before_batches.dart:2659:  String _formatDate(String iso) { try { final dt = DateTime.parse(iso).toLocal(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; } catch (_) { return ''; } }
+lib\main_backup_before_batches.dart:2660:  String _formatNow() { final dt = DateTime.now(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; }
+lib\main_backup_before_batches.dart:2671:            Text('الإصدار $charterVersion', style: const TextStyle(color: Colors.white70)),
+lib\main_backup_before_batches.dart:2672:            const SizedBox(height: 4), Text('تاريخ التقرير: ${_formatNow()}', style: const TextStyle(color: Colors.white60, fontSize: 12))])),
+lib\main_backup_before_batches.dart:2678:              Text('${accepted.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
+lib\main_backup_before_batches.dart:2684:              Text('${pending.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orange)),
+lib\main_backup_before_batches.dart:2691:              Text('وافقوا على اللائحة (${accepted.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+lib\main_backup_before_batches.dart:2701:                    child: Text('${i + 1}', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12))),
+lib\main_backup_before_batches.dart:2705:                    if ((emp['accepted_at'] ?? '').isNotEmpty) Text('وافق في: ${_formatDate(emp['accepted_at'])}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+lib\main_backup_before_batches.dart:2706:                    if ((emp['ip_address'] ?? '').isNotEmpty) Text('IP: ${emp['ip_address']}', style: TextStyle(color: Colors.grey[500], fontSize: 11))])),
+lib\main_backup_before_batches.dart:2714:              Text('لم يوافقوا بعد (${pending.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+lib\main_backup_before_batches.dart:2724:                    child: Text('${i + 1}', style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold, fontSize: 12))),
+lib\main_backup_before_batches.dart:2731:          child: Text('تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}', style: TextStyle(color: Colors.grey[600], fontSize: 12), textAlign: TextAlign.center)),
+lib\main_backup_before_batches.dart:2758:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:2774:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
+lib\main_backup_before_batches.dart:2786:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
+lib\main_backup_before_batches.dart:2787:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:2792:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
+lib\main_backup_before_batches.dart:2816:                  const SizedBox(height: 6), Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'), Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}')]))
+lib\main_backup_before_batches.dart:2903:      final r1 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:2907:      final r2 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:2910:      final r3 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:2934:      _card('الطلبات المعلقة', '$_pending', Icons.pending_actions, Colors.orange,
+lib\main_backup_before_batches.dart:2937:      _card('الحضور اليوم', '$_present', Icons.people, Colors.green,
+lib\main_backup_before_batches.dart:2940:      _card('الموظفين الميدانيين', '$_fieldWorkers', Icons.location_on, kManagerColor,
+lib\main_backup_before_batches.dart:2966:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:2977:      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'),
+lib\main_backup_before_batches.dart:2978:          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+lib\main_backup_before_batches.dart:2983:    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
+lib\main_backup_before_batches.dart:3025:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:3039:          subtitle: Text('حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}')));
+lib\main_backup_before_batches.dart:3065:      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+lib\main_backup_before_batches.dart:3072:    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+lib\main_backup_before_batches.dart:3111:          title: Text(item['employee_name'] ?? ''), subtitle: Text(item['address'] ?? '$lat, $lng'),
+lib\main_before_permissions_patch.dart:131:  print('📩 Background message: ${message.notification?.title}');
+lib\main_before_permissions_patch.dart:141:      print('📩 Foreground message: ${message.notification?.title}');
+lib\main_before_permissions_patch.dart:142:      print('📩 Body: ${message.notification?.body}');
+lib\main_before_permissions_patch.dart:146:      print('👆 User tapped notification: ${message.notification?.title}');
+lib\main_before_permissions_patch.dart:151:    print('❌ Firebase Messaging error: $e');
+lib\main_before_permissions_patch.dart:171:    print('🔑 FCM Token: $fcmToken');
+lib\main_before_permissions_patch.dart:174:      Uri.parse('$kBaseUrl/attendance/api/mobile/fcm-token/'),
+lib\main_before_permissions_patch.dart:177:        'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:186:      print('⚠️ Failed to save FCM token: ${res.statusCode}');
+lib\main_before_permissions_patch.dart:189:    print('❌ Error saving FCM token: $e');
+lib\main_before_permissions_patch.dart:204:    print('❌ Firebase initialization error: $e');
+lib\main_before_permissions_patch.dart:336:        Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
+lib\main_before_permissions_patch.dart:669:        Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
+lib\main_before_permissions_patch.dart:672:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:995:        Uri.parse('$kBaseUrl/attendance/api/mobile/status/'),
+lib\main_before_permissions_patch.dart:996:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:1015:        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+lib\main_before_permissions_patch.dart:1018:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:1065:          SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red),
+lib\main_before_permissions_patch.dart:1132:    return '$dayName، ${_now.day} $monthName ${_now.year}';
+lib\main_before_permissions_patch.dart:1139:    return '$h:$m:$s';
+lib\main_before_permissions_patch.dart:1160:    return '$h:$m:$s';
+lib\main_before_permissions_patch.dart:1224:                            '$greeting يا $displayName',
+lib\main_before_permissions_patch.dart:1303:                        'شيفت: $shiftName ($shiftStart - $shiftEnd)',
+lib\main_before_permissions_patch.dart:1367:                    '${(_progressValue() * 100).toInt()}% من الشيفت',
+lib\main_before_permissions_patch.dart:1540:                  '${_status?['check_in_time']}',
+lib\main_before_permissions_patch.dart:1563:                  '${_status?['check_out_time']}',
+lib\main_before_permissions_patch.dart:1620:        Uri.parse('$kBaseUrl/attendance/api/mobile/history/'),
+lib\main_before_permissions_patch.dart:1621:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:1659:                          'حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}',
+lib\main_before_permissions_patch.dart:1708:        Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'),
+lib\main_before_permissions_patch.dart:1709:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:1747:              subtitle: Text('الرصيد المتبقي: $balance يوم'),
+lib\main_before_permissions_patch.dart:1807:          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+lib\main_before_permissions_patch.dart:1827:                ? 'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}'
+lib\main_before_permissions_patch.dart:1832:        Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
+lib\main_before_permissions_patch.dart:1835:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:1850:        ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\main_before_permissions_patch.dart:1993:        Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
+lib\main_before_permissions_patch.dart:1994:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:2036:                ? 'نوع آخر: ${_otherCtrl.text}\n${_descCtrl.text}'
+lib\main_before_permissions_patch.dart:2041:        Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
+lib\main_before_permissions_patch.dart:2044:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:2064:        ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\main_before_permissions_patch.dart:2213:        Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'),
+lib\main_before_permissions_patch.dart:2214:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:2299:        Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
+lib\main_before_permissions_patch.dart:2300:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:2318:        Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main_before_permissions_patch.dart:2321:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:2333:        Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+lib\main_before_permissions_patch.dart:2336:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:2430:      if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
+lib\main_before_permissions_patch.dart:2431:      if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
+lib\main_before_permissions_patch.dart:2432:      if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+lib\main_before_permissions_patch.dart:2433:      return '${dt.day}/${dt.month}/${dt.year}';
+lib\main_before_permissions_patch.dart:2445:          title: Text('الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
+lib\main_before_permissions_patch.dart:2566:        Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
+lib\main_before_permissions_patch.dart:2567:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:2608:        ).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+lib\main_before_permissions_patch.dart:2642:        Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
+lib\main_before_permissions_patch.dart:2645:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:2668:        ).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+lib\main_before_permissions_patch.dart:2766:                                'خط العرض: ${_currentLat!.toStringAsFixed(6)}',
+lib\main_before_permissions_patch.dart:2769:                                'خط الطول: ${_currentLng!.toStringAsFixed(6)}',
+lib\main_before_permissions_patch.dart:3034:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
+lib\main_before_permissions_patch.dart:3035:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3051:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+lib\main_before_permissions_patch.dart:3052:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3066:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+lib\main_before_permissions_patch.dart:3067:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3147:            '$_pending',
+lib\main_before_permissions_patch.dart:3158:            '$_present',
+lib\main_before_permissions_patch.dart:3169:            '$_fieldWorkers',
+lib\main_before_permissions_patch.dart:3219:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
+lib\main_before_permissions_patch.dart:3220:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3239:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'),
+lib\main_before_permissions_patch.dart:3242:          'Authorization': 'Token $token',
+lib\main_before_permissions_patch.dart:3261:        ).showSnackBar(SnackBar(content: Text('حدث: $e')));
+lib\main_before_permissions_patch.dart:3362:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+lib\main_before_permissions_patch.dart:3363:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3388:                'حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}',
+lib\main_before_permissions_patch.dart:3430:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+lib\main_before_permissions_patch.dart:3431:        headers: {'Authorization': 'Token $token'},
+lib\main_before_permissions_patch.dart:3442:    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+lib\main_before_permissions_patch.dart:3558:            subtitle: Text(item['address'] ?? '$lat, $lng'),
+lib\screens\employee\announcements_screen.dart:34:        Uri.parse('$kBaseUrl/attendance/api/mobile/announcements/list/'),
+lib\screens\employee\announcements_screen.dart:35:        headers: {'Authorization': 'Token $token'},
+lib\screens\employee\announcements_screen.dart:45:      debugPrint('Error loading announcements: $e');
+lib\screens\employee\announcement_detail_screen.dart:36:        Uri.parse('$kBaseUrl/attendance/api/mobile/announcements/mark-read/'),
+lib\screens\employee\announcement_detail_screen.dart:38:          'Authorization': 'Token $token',
+lib\screens\employee\announcement_detail_screen.dart:45:      debugPrint('Error marking as read: $e');
+lib\screens\employee\announcement_detail_screen.dart:257:          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 14)),
+lib\screens\employee\employee_documents_screen.dart:31:        headers: {'Authorization': 'Token $token'},
+lib\screens\employee\employee_documents_screen.dart:42:          _error = 'تعذر التحميل (${response.statusCode})';
+lib\screens\employee\employee_documents_screen.dart:56:    final fullUrl = url.startsWith('http') ? url : 'https://jssolutions-eg.com$url';
+lib\screens\employee\employee_documents_screen.dart:140:                                '$expiredCount منتهي • $soonCount ينتهي قريباً',
+lib\screens\employee\employee_documents_screen.dart:190:                                              Text('ينتهي: ${doc['expiry_date']}',
+lib\screens\employee\employee_movements_screen.dart:30:        headers: {'Authorization': 'Token $token'},
+lib\screens\employee\employee_movements_screen.dart:41:          _error = 'تعذر التحميل (${response.statusCode})';
+lib\screens\employee\employee_movements_screen.dart:99:      return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+lib\screens\employee\employee_profile_screen.dart:33:        headers: {'Authorization': 'Token $token'},
+lib\screens\employee\employee_profile_screen.dart:43:          _error = 'تعذر تحميل البيانات (${response.statusCode})';
+lib\screens\employee\employee_profile_screen.dart:138:              ? NetworkImage('https://jssolutions-eg.com$photo')
+lib\screens\employee\employee_summary_screen.dart:32:          ? 'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/summary/'
+lib\screens\employee\employee_summary_screen.dart:36:        headers: {'Authorization': 'Token $token'},
+lib\screens\employee\employee_summary_screen.dart:46:          _error = 'تعذر التحميل (${response.statusCode})';
+lib\screens\employee\employee_summary_screen.dart:77:          FittedBox(fit: BoxFit.scaleDown, child: Text('$value', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color))),
+lib\screens\employee\employee_summary_screen.dart:133:              Text('${remaining.toStringAsFixed(1)} / ${total.toStringAsFixed(1)}',
+lib\screens\employee\employee_summary_screen.dart:147:          Text('مستخدم: ${b['used']}  •  معلق: ${b['pending']}',
+lib\screens\employee\employee_summary_screen.dart:164:            widget.employeeName != null ? 'ملخص: ${widget.employeeName}' : 'الملخص',
+lib\screens\employee\employee_summary_screen.dart:196:                            Text('شهر: ${_summary!['month'] ?? ''}',
+lib\screens\employee\employee_summary_screen.dart:224:                                Text('${_summary!['attendance']['total_work_hours']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+lib\screens\employee\employee_summary_screen.dart:228:                                Text('${_summary!['attendance']['total_overtime_hours']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
+lib\screens\employee\employee_summary_screen.dart:232:                                Text('${_summary!['attendance']['total_late_minutes']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.orange)),
+lib\screens\employee\item_detail_screen.dart:108:                        '#$id',
+lib\screens\employee\item_detail_screen.dart:143:                        if (days.isNotEmpty) _infoRow('عدد الأيام', '$days يوم'),
+lib\screens\employee\item_detail_screen.dart:146:                        if (amount.isNotEmpty) _infoRow('المبلغ', '$amount جنيه'),
+lib\screens\manager\create_announcement_screen.dart:62:        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/announcements/create/'),
+lib\screens\manager\create_announcement_screen.dart:64:          'Authorization': 'Token $token',
+lib\screens\manager\create_announcement_screen.dart:84:            content: Text('تم نشر الإعلان ✅ (أُرسل لـ ${data['total_sent']} موظف)'),
+lib\screens\manager\manager_employees_list_screen.dart:49:        headers: {'Authorization': 'Token $token'},
+lib\screens\manager\manager_employees_list_screen.dart:60:          _error = 'تعذر التحميل (${response.statusCode})';
+lib\screens\manager\manager_employees_list_screen.dart:103:            'الموظفين${_employees.isNotEmpty ? " (${_employees.length})" : ""}',
+lib\screens\manager\manager_employees_list_screen.dart:175:                                          ? NetworkImage('https://jssolutions-eg.com${emp['photo']}')
+lib\screens\manager\manager_employees_list_screen.dart:189:                                        Text('${emp['job_title'] ?? '-'}  •  ${emp['department'] ?? '-'}',
+lib\screens\manager\manager_employee_detail_screen.dart:48:      final headers = {'Authorization': 'Token $token'};
+lib\screens\manager\manager_employee_detail_screen.dart:49:      final base = 'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}';
+lib\screens\manager\manager_employee_detail_screen.dart:52:        http.get(Uri.parse('$base/profile/'), headers: headers).timeout(const Duration(seconds: 15)),
+lib\screens\manager\manager_employee_detail_screen.dart:53:        http.get(Uri.parse('$base/documents/'), headers: headers).timeout(const Duration(seconds: 15)),
+lib\screens\manager\manager_employee_detail_screen.dart:54:        http.get(Uri.parse('$base/movements/'), headers: headers).timeout(const Duration(seconds: 15)),
+lib\screens\manager\manager_employee_detail_screen.dart:79:    final full = url.startsWith('http') ? url : 'https://jssolutions-eg.com$url';
+lib\screens\manager\manager_employee_detail_screen.dart:154:                  ? NetworkImage('https://jssolutions-eg.com${_profile!['photo']}')
+lib\screens\manager\manager_employee_detail_screen.dart:276:                if (doc['expiry_date'] != null) Text('ينتهي: ${doc['expiry_date']}', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:23:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:49:                            _row('الراتب الأساسي', '${_data?['basic_salary'] ?? 0} ج'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:50:                            _row('خصم التأخير', '${_data?['late_deduction'] ?? 0} ج', color: Colors.red),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:51:                            _row('خصم الغياب', '${_data?['absence_deduction'] ?? 0} ج', color: Colors.red),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:52:                            _row('إجمالي الخصومات', '${_data?['total_deductions'] ?? 0} ج', color: Colors.red),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:53:                            _row('بونص Overtime', '${_data?['overtime_bonus'] ?? 0} ج', color: Colors.blue),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:55:                            _row('صافي الراتب', '${_data?['net_salary'] ?? 0} ج', color: Colors.green, bold: true),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:69:                            _row('أيام الحضور', '${_data?['attended_days'] ?? 0}'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:70:                            _row('أيام الحاضر (present)', '${_data?['present_days'] ?? 0}'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:71:                            _row('أيام التأخير', '${_data?['late_days'] ?? 0}', color: Colors.orange),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:72:                            _row('أيام الغياب', '${_data?['absent_days'] ?? 0}', color: Colors.red),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:73:                            _row('أيام الإجازة', '${_data?['on_leave_days'] ?? 0}'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:74:                            _row('دقائق التأخير', '${_data?['total_late_minutes'] ?? 0} د'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:75:                            _row('إجمالي ساعات العمل', '${_data?['total_work_hours'] ?? 0} س'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:76:                            _row('ساعات Overtime', '${_data?['overtime_hours'] ?? 0} س'),
+lib\screens\manager\payroll\payroll_employee_detail_screen.dart:95:                            subtitle: Text('دخول: ${day['check_in'] ?? '-'} | خروج: ${day['check_out'] ?? '-'} | ساعات: ${day['work_hours'] ?? 0}'),
+lib\screens\manager\payroll\payroll_settings_screen.dart:42:                    _card(Icons.money_off, 'خصم التأخير / دقيقة', '${_data?['late_deduction_per_minute'] ?? '-'} ج'),
+lib\screens\manager\payroll\payroll_settings_screen.dart:43:                    _card(Icons.event_busy, 'خصم الغياب / يوم', '${_data?['absence_deduction_per_day'] ?? '-'} ج'),
+lib\screens\manager\payroll\payroll_settings_screen.dart:44:                    _card(Icons.more_time, 'معدل Overtime / ساعة', '${_data?['overtime_rate_per_hour'] ?? '-'} ج'),
+lib\screens\manager\payroll\payroll_summary_screen.dart:22:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\screens\manager\payroll\payroll_summary_screen.dart:49:                          Text('الشهر: ${_data?['month'] ?? '-'} / ${_data?['year'] ?? '-'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+lib\screens\manager\payroll\payroll_summary_screen.dart:51:                          _row('عدد الموظفين', '${_data?['total_employees'] ?? 0}'),
+lib\screens\manager\payroll\payroll_summary_screen.dart:52:                          _row('إجمالي الرواتب', '${_data?['grand_total_salary'] ?? 0} ج'),
+lib\screens\manager\payroll\payroll_summary_screen.dart:53:                          _row('إجمالي الخصومات', '${_data?['grand_total_deductions'] ?? 0} ج', color: Colors.red),
+lib\screens\manager\payroll\payroll_summary_screen.dart:54:                          _row('إجمالي Overtime', '${_data?['grand_total_overtime'] ?? 0} ج', color: Colors.blue),
+lib\screens\manager\payroll\payroll_summary_screen.dart:56:                          _row('صافي الرواتب', '${_data?['grand_total_net'] ?? 0} ج', color: Colors.green, bold: true),
+lib\screens\manager\payroll\payroll_summary_screen.dart:73:                            Text('حضور: ${item['attended_days'] ?? 0} | غياب: ${item['absent_days'] ?? 0} | تأخير: ${item['late_days'] ?? 0}'),
+lib\screens\manager\payroll\payroll_summary_screen.dart:74:                            Text('ساعات: ${item['total_work_hours'] ?? 0} | OT: ${item['overtime_hours'] ?? 0}'),
+lib\screens\manager\payroll\payroll_summary_screen.dart:75:                            Text('صافي: ${item['net_salary'] ?? 0} ج', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+lib\screens\manager\reminder_settings_screen.dart:82:        content: Text('ارسال ${_reminders[index]['title']} الان؟',
+lib\screens\manager\reminder_settings_screen.dart:105:        headers: {'Authorization': 'Token $token', 'Content-Type': 'application/json'},
+lib\screens\manager\reminder_settings_screen.dart:111:        _showSnack('تم ارسال: ${_reminders[index]['title']} بنجاح', true);
+lib\screens\manager\reminder_settings_screen.dart:151:        headers: {'Authorization': 'Token $token', 'Content-Type': 'application/json'},
+lib\screens\manager\reports\absence_report_screen.dart:44:                        subtitle: Text('غياب: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0}'),
+lib\screens\manager\reports\attendance_report_screen.dart:23:      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+lib\screens\manager\reports\attendance_report_screen.dart:48:                            title: Text('الشهر: ${_data?['month'] ?? '-'} / ${_data?['year'] ?? '-'}'),
+lib\screens\manager\reports\attendance_report_screen.dart:49:                            subtitle: Text('عدد الموظفين: ${_data?['total_employees'] ?? 0}'),
+lib\screens\manager\reports\attendance_report_screen.dart:59:                              subtitle: Text('أيام الحضور: ${item['working_days'] ?? 0}'),
+lib\screens\manager\reports\late_report_screen.dart:44:                        subtitle: Text('أيام التأخير: ${item['total_late_days'] ?? 0} - ${item['total_late_hours'] ?? 0} س'),
+lib\screens\manager\reports\late_report_screen.dart:49:                            title: Text('${detail['date']} - ${detail['time']}'),
+lib\screens\manager\reports\late_report_screen.dart:50:                            trailing: Text('${detail['minutes_late']} دقيقة'),
+lib\screens\manager\reports\leaves_report_screen.dart:41:                        Text('إجمالي الإجازات: ${_data?['total_leaves'] ?? 0}'),
+lib\screens\manager\reports\leaves_report_screen.dart:43:                        Text('موافق: ${_data?['approved'] ?? 0} | مرفوض: ${_data?['rejected'] ?? 0} | معلق: ${_data?['pending'] ?? 0}'),
+lib\screens\manager\reports\leaves_report_screen.dart:55:                      subtitle: Text('إجمالي: ${item['total_days'] ?? 0} - موافق: ${item['approved_days'] ?? 0}'),
+lib\screens\manager\reports\leaves_report_screen.dart:60:                          title: Text('${lv['type']} - ${lv['days']} يوم'),
+lib\screens\manager\reports\leaves_report_screen.dart:61:                          subtitle: Text('من ${lv['from']} إلى ${lv['to']}'),
+lib\screens\manager\reports\requests_report_screen.dart:41:                        Text('إجمالي الطلبات: ${_data?['total_requests'] ?? 0}'),
+lib\screens\manager\reports\requests_report_screen.dart:43:                        Text('موافق: ${_data?['approved'] ?? 0} | مرفوض: ${_data?['rejected'] ?? 0} | معلق: ${_data?['pending'] ?? 0}'),
+lib\screens\manager\reports\requests_report_screen.dart:54:                      subtitle: Text('${item['category']} - ${item['subject']}'),
+lib\screens\manager\reports\work_hours_report_screen.dart:43:                        subtitle: Text('إجمالي: ${item['total_hours'] ?? 0} س - أيام: ${item['total_days_worked'] ?? 0}'),
+lib\services\attachment_service.dart:55:          error: 'حجم الملف كبير: ${sizeInMB.toStringAsFixed(1)} MB (الحد الأقصى $maxFileSizeMB MB)',
+lib\services\attachment_service.dart:69:        error: 'خطأ في اختيار الملف: $e',
+lib\services\attachment_service.dart:103:        error: 'خطأ في التقاط الصورة: $e',
+lib\services\attachment_service.dart:137:        error: 'خطأ في اختيار الصورة: $e',
+lib\services\attachment_service.dart:164:      final uri = Uri.parse('$baseUrl/attendance/api/mobile/attachments/upload/');
+lib\services\attachment_service.dart:167:      request.headers['Authorization'] = 'Token $token';
+lib\services\attachment_service.dart:179:      print('[Upload] Status: ${response.statusCode}');
+lib\services\attachment_service.dart:180:      print('[Upload] Body: ${response.body}');
+lib\services\attachment_service.dart:189:        String errorMsg = 'خطأ في الرفع (${response.statusCode})';
+lib\services\attachment_service.dart:197:      return UploadResult(success: false, error: 'خطأ: $e');
+lib\services\attachment_service.dart:214:        '$baseUrl/attendance/api/mobile/attachments/list/?model=$model&object_id=$objectId',
+lib\services\attachment_service.dart:219:        headers: {'Authorization': 'Token $token'},
+lib\services\attachment_service.dart:222:      print('[List] Status: ${response.statusCode}');
+lib\services\attachment_service.dart:231:      print('[AttachmentService.list] Error: $e');
+lib\services\attachment_service.dart:246:        '$baseUrl/attendance/api/mobile/attachments/$attachmentId/delete/',
+lib\services\attachment_service.dart:251:        headers: {'Authorization': 'Token $token'},
+lib\services\attachment_service.dart:256:      print('[AttachmentService.delete] Error: $e');
+lib\services\attachment_service.dart:271:      final filePath = '${dir.path}/${attachment.originalName}';
+lib\services\attachment_service.dart:274:        Uri.parse('$baseUrl/attendance/api/mobile/attachments/${attachment.id}/download/'),
+lib\services\attachment_service.dart:275:        headers: {'Authorization': 'Token $token'},
+lib\services\attachment_service.dart:287:      print('[AttachmentService.downloadAndOpen] Error: $e');
+lib\services\attachment_service.dart:313:    if (size < 1024) return '$size B';
+lib\services\attachment_service.dart:314:    if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
+lib\services\attachment_service.dart:315:    return '${sizeInMB.toStringAsFixed(1)} MB';
+lib\services\attachment_service.dart:380:    if (fileSize < 1024) return '$fileSize B';
+lib\services\attachment_service.dart:381:    if (fileSize < 1024 * 1024) return '${(fileSize / 1024).toStringAsFixed(1)} KB';
+lib\services\attachment_service.dart:382:    return '${fileSizeMB.toStringAsFixed(1)} MB';
+lib\services\payroll_service.dart:13:      Uri.parse('$kBaseUrlPayroll$url'),
+lib\services\payroll_service.dart:14:      headers: {'Authorization': 'Token $token'},
+lib\services\payroll_service.dart:24:      throw Exception('Failed: ${response.statusCode}');
+lib\services\payroll_service.dart:31:    return _get('/attendance/api/mobile/manager/payroll/summary/?year=$y&month=$m');
+lib\services\payroll_service.dart:41:    return _get('/attendance/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m');
+lib\services\reports_service.dart:13:      Uri.parse('$kBaseUrl$url'),
+lib\services\reports_service.dart:14:      headers: {'Authorization': 'Token $token'},
+lib\services\reports_service.dart:24:      throw Exception('Failed to load: ${response.statusCode}');
+lib\services\reports_service.dart:31:    var url = '/attendance/api/mobile/manager/reports/attendance/?year=$y&month=$m';
+lib\services\reports_service.dart:33:      url += '&employee_id=$employeeId';
+lib\services\reports_service.dart:41:    return _get('/attendance/api/mobile/manager/reports/late/?year=$y&month=$m');
+lib\services\reports_service.dart:47:    return _get('/attendance/api/mobile/manager/reports/absence/?year=$y&month=$m');
+lib\services\reports_service.dart:53:    var url = '/attendance/api/mobile/manager/reports/requests/?year=$y&month=$m';
+lib\services\reports_service.dart:55:      url += '&status=$status';
+lib\services\reports_service.dart:63:    return _get('/attendance/api/mobile/manager/reports/leaves/?year=$y&month=$m');
+lib\services\reports_service.dart:69:    return _get('/attendance/api/mobile/manager/reports/work-hours/?year=$y&month=$m');
+lib\widgets\attachments_widget.dart:57:            content: Text('خطأ في تحميل المرفقات: $e'),
+lib\widgets\attachments_widget.dart:69:          content: Text('الحد الأقصى ${widget.maxFiles} ملفات'),
+lib\widgets\attachments_widget.dart:226:            content: Text('خطأ: $e'),
+lib\widgets\attachments_widget.dart:239:        content: Text('هل تريد حذف "${attachment.originalName}"؟'),
+lib\widgets\attachments_widget.dart:358:                      '${_attachments.length}/${widget.maxFiles}',

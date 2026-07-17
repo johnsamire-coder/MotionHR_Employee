@@ -1,0 +1,108 @@
+﻿import 'package:flutter/material.dart';
+import '../../../services/reports_service.dart';
+
+class LateReportScreen extends StatefulWidget {
+  const LateReportScreen({super.key});
+
+  @override
+  State<LateReportScreen> createState() => _LateReportScreenState();
+}
+
+class _LateReportScreenState extends State<LateReportScreen> {
+  final ReportsService _service = ReportsService();
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final result = await _service.getLateReport();
+      if (!mounted) return;
+      setState(() {
+        _data = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ط®ط·ط£ ظپظٹ طھط­ظ…ظٹظ„ طھظ‚ط±ظٹط± ط§ظ„طھط£ط®ظٹط±: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final employees = (_data?['employees'] as List?) ?? const [];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('طھظ‚ط±ظٹط± ط§ظ„طھط£ط®ظٹط±'),
+        actions: [
+          IconButton(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: employees.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 120),
+                        Center(child: Text('ظ„ط§ طھظˆط¬ط¯ ط­ط§ظ„ط§طھ طھط£ط®ظٹط±')),
+                      ],
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.all(12),
+                      children: [
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.alarm),
+                            title: Text('ط¹ط¯ط¯ ط§ظ„ظ…ظˆط¸ظپظٹظ† ط§ظ„ظ…طھط£ط®ط±ظٹظ†: ${_data?['total_employees_with_late'] ?? 0}'),
+                            subtitle: Text('ط¨ط¯ط§ظٹط© ط§ظ„ط¯ظˆط§ظ…: ${_data?['work_start_hour'] ?? 9}:00'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...employees.map<Widget>((e) {
+                          final item = Map<String, dynamic>.from(e as Map);
+                          final details = (item['details'] as List?) ?? const [];
+
+                          return Card(
+                            child: ExpansionTile(
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
+                              title: Text(item['employee_name']?.toString() ?? '-'),
+                              subtitle: Text(
+                                'ط£ظٹط§ظ… ط§ظ„طھط£ط®ظٹط±: ${item['total_late_days'] ?? 0} | '
+                                'ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط³ط§ط¹ط§طھ: ${item['total_late_hours'] ?? 0}',
+                              ),
+                              children: details.map<Widget>((d) {
+                                final detail = Map<String, dynamic>.from(d as Map);
+                                return ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.schedule, size: 18),
+                                  title: Text('${detail['date'] ?? '-'} - ${detail['time'] ?? '-'}'),
+                                  trailing: Text('${detail['minutes_late'] ?? 0} ط¯ظ‚ظٹظ‚ط©'),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+            ),
+    );
+  }
+}

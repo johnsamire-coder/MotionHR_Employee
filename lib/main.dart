@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
 import 'screens/manager/payroll/payroll_hub_screen.dart';
 import 'screens/manager/reminder_settings_screen.dart';
+import 'screens/employee/employee_profile_screen.dart';
+import 'screens/employee/announcements_screen.dart';
+import 'screens/manager/create_announcement_screen.dart';
+
+import 'screens/manager/manager_employees_list_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +26,7 @@ import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
 
 
+import 'screens/employee/item_detail_screen.dart';
 const String kBaseUrl = 'https://jssolutions-eg.com';
 const Color kPrimaryColor = Color(0xFF1976D2);
 const Color kPrimaryDark = Color(0xFF0D47A1);
@@ -895,6 +901,16 @@ class _EmployeeShellState extends State<EmployeeShell> {
           actions: [
             const NotificationBellButton(),
             IconButton(
+            icon: const Icon(Icons.campaign),
+            tooltip: 'الإعلانات',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementsScreen())),
+          ),
+          IconButton(
+              icon: const Icon(Icons.person),
+              tooltip: 'الملف الشخصي',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
+            ),
+            IconButton(
               icon: const Icon(Icons.lock),
               tooltip: 'تغيير كلمة المرور',
               onPressed: () => Navigator.push(
@@ -1625,12 +1641,22 @@ class _MyListState extends State<_MyList> {
     return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i];
       final status = (item['status_display'] ?? item['status'] ?? '').toString();
+      final isLeaveTab = widget.keyName == 'leaves';
       return Card(margin: const EdgeInsets.all(8), child: ListTile(
         title: Text(item['title'] ?? item['leave_type'] ?? item['type'] ?? '-'),
         subtitle: Text(item['date'] ?? item['created_at'] ?? ''),
         trailing: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
             child: Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold))),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => ItemDetailScreen(
+              item: Map<String, dynamic>.from(item),
+              itemType: isLeaveTab ? 'leave_request' : 'request',
+            ),
+          ));
+          _load();
+        },
       ));
     }));
   }
@@ -2949,11 +2975,17 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
       _card('التقارير', 'عرض', Icons.analytics, Colors.indigo,
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
       const SizedBox(height: 12),
+      _card('الموظفين', 'عرض', Icons.people, Color(0xFF6A1B9A),
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
+      const SizedBox(height: 12),
       _card('الرواتب', 'عرض', Icons.account_balance_wallet, Colors.green,
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
       const SizedBox(height: 12),
       _card('التذكيرات', 'إرسال', Icons.notifications_active, Colors.blueGrey, 
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen())))]));
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
+      const SizedBox(height: 12),
+      _card('الإعلانات', 'نشر', Icons.campaign, Colors.deepPurple,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen())))]));
   }
 }
 
@@ -2982,13 +3014,66 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
     setState(() => _loading = false);
   }
 
-  Future<void> _action(dynamic item, String action) async {
+
+  Future<void> _showRejectDialog(dynamic item) async {
+    final reasonCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Row(children: [
+            Icon(Icons.cancel, color: Colors.red),
+            SizedBox(width: 8),
+            Text('سبب الرفض'),
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('يرجى كتابة سبب الرفض (إجباري)'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'اكتب السبب هنا...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (reasonCtrl.text.trim().isEmpty) return;
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+              child: const Text('تأكيد الرفض'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == true && reasonCtrl.text.trim().isNotEmpty) {
+      await _action(item, 'reject', notes: reasonCtrl.text.trim());
+    }
+    reasonCtrl.dispose();
+  }
+
+  Future<void> _action(dynamic item, String action, {String notes = ''}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
+      final body = {'id': item['id'], 'type': item['type'], 'action': action};
+      if (notes.isNotEmpty) body['notes'] = notes;
       final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'),
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
-          body: jsonEncode({'id': item['id'], 'type': item['type'], 'action': action}));
+          body: jsonEncode(body));
       final data = jsonDecode(res.body);
       if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم'))); fetchUnreadCount(); }
       _load();
@@ -3011,7 +3096,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
           Expanded(child: ElevatedButton.icon(onPressed: () => _action(item, 'approve'), icon: const Icon(Icons.check), label: const Text('موافقة'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white))),
           const SizedBox(width: 8),
-          Expanded(child: ElevatedButton.icon(onPressed: () => _action(item, 'reject'), icon: const Icon(Icons.close), label: const Text('رفض'),
+          Expanded(child: ElevatedButton.icon(onPressed: () => _showRejectDialog(item), icon: const Icon(Icons.close), label: const Text('رفض'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white)))])])));
     }));
   }

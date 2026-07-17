@@ -1,0 +1,136 @@
+﻿import 'package:flutter/material.dart';
+import '../../../services/reports_service.dart';
+
+class LeavesReportScreen extends StatefulWidget {
+  const LeavesReportScreen({super.key});
+
+  @override
+  State<LeavesReportScreen> createState() => _LeavesReportScreenState();
+}
+
+class _LeavesReportScreenState extends State<LeavesReportScreen> {
+  final ReportsService _service = ReportsService();
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final result = await _service.getLeavesReport();
+      if (!mounted) return;
+      setState(() {
+        _data = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ط®ط·ط£ ظپظٹ طھط­ظ…ظٹظ„ طھظ‚ط±ظٹط± ط§ظ„ط¥ط¬ط§ط²ط§طھ: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final employees = (_data?['employees'] as List?) ?? const [];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('طھظ‚ط±ظٹط± ط§ظ„ط¥ط¬ط§ط²ط§طھ'),
+        actions: [
+          IconButton(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                padding: const EdgeInsets.all(12),
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط¥ط¬ط§ط²ط§طھ: ${_data?['total_leaves'] ?? 0}'),
+                          const SizedBox(height: 6),
+                          Text('ظ…ظˆط§ظپظ‚: ${_data?['approved'] ?? 0}'),
+                          Text('ظ…ط±ظپظˆط¶: ${_data?['rejected'] ?? 0}'),
+                          Text('ظ…ط¹ظ„ظ‚: ${_data?['pending'] ?? 0}'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (employees.isEmpty)
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: Text('ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ ط¥ط¬ط§ط²ط§طھ')),
+                      ),
+                    ),
+                  ...employees.map<Widget>((e) {
+                    final item = Map<String, dynamic>.from(e as Map);
+                    final leaves = (item['leaves'] as List?) ?? const [];
+
+                    return Card(
+                      child: ExpansionTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.beach_access),
+                        ),
+                        title: Text(item['name']?.toString() ?? '-'),
+                        subtitle: Text(
+                          'ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط£ظٹط§ظ…: ${item['total_days'] ?? 0} | '
+                          'ط§ظ„ظ…ظˆط§ظپظ‚ ط¹ظ„ظٹظ‡ط§: ${item['approved_days'] ?? 0}',
+                        ),
+                        children: leaves.map<Widget>((l) {
+                          final leave = Map<String, dynamic>.from(l as Map);
+                          final status = leave['status']?.toString() ?? '-';
+
+                          return ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.event_note, size: 18),
+                            title: Text('${leave['type'] ?? '-'} - ${leave['days'] ?? 0} ظٹظˆظ…'),
+                            subtitle: Text('ظ…ظ† ${leave['from'] ?? '-'} ط¥ظ„ظ‰ ${leave['to'] ?? '-'}'),
+                            trailing: Chip(
+                              label: Text(status),
+                              backgroundColor: _statusColor(status).withOpacity(0.15),
+                              side: BorderSide(color: _statusColor(status)),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+    );
+  }
+}

@@ -1,0 +1,111 @@
+﻿import 'package:flutter/material.dart';
+
+import 'attendance_report_screen.dart';
+import 'late_report_screen.dart';
+import 'absence_report_screen.dart';
+import 'requests_report_screen.dart';
+import 'leaves_report_screen.dart';
+import 'work_hours_report_screen.dart';
+
+class ReportsHubScreen extends StatelessWidget {
+  const ReportsHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ط§ظ„طھظ‚ط§ط±ظٹط±'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('طھظ‚ط§ط±ظٹط± ط§ظ„ظ…ط¯ظٹط±'),
+              subtitle: Text('ط§ظ„ط­ط¶ظˆط± - ط§ظ„طھط£ط®ظٹط± - ط§ظ„ط؛ظٹط§ط¨ - ط§ظ„ط·ظ„ط¨ط§طھ - ط§ظ„ط¥ط¬ط§ط²ط§طھ - ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _card(
+            context,
+            icon: Icons.calendar_month,
+            title: 'طھظ‚ط±ظٹط± ط§ظ„ط­ط¶ظˆط± ط§ظ„ط´ظ‡ط±ظٹ',
+            subtitle: 'ط¹ط¯ط¯ ط£ظٹط§ظ… ط§ظ„ط­ط¶ظˆط± ظˆط§ظ„ط­ط¶ظˆط±/ط§ظ„ط§ظ†طµط±ط§ظپ ظ„ظƒظ„ ظ…ظˆط¸ظپ',
+            screen: const AttendanceReportScreen(),
+          ),
+          _card(
+            context,
+            icon: Icons.alarm,
+            title: 'طھظ‚ط±ظٹط± ط§ظ„طھط£ط®ظٹط±',
+            subtitle: 'طھظپط§طµظٹظ„ ط£ظٹط§ظ… ط§ظ„طھط£ط®ظٹط± ظˆط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط¯ظ‚ط§ط¦ظ‚',
+            screen: const LateReportScreen(),
+          ),
+          _card(
+            context,
+            icon: Icons.person_off,
+            title: 'طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨',
+            subtitle: 'ط£ظٹط§ظ… ط§ظ„ط؛ظٹط§ط¨ ط®ظ„ط§ظ„ ط§ظ„ط´ظ‡ط± ط§ظ„ط­ط§ظ„ظٹ',
+            screen: const AbsenceReportScreen(),
+          ),
+          _card(
+            context,
+            icon: Icons.request_page,
+            title: 'طھظ‚ط±ظٹط± ط§ظ„ط·ظ„ط¨ط§طھ',
+            subtitle: 'ط§ظ„ط·ظ„ط¨ط§طھ ط§ظ„ظ…ط¹ظ„ظ‚ط© ظˆط§ظ„ظ…ظˆط§ظپظ‚ ط¹ظ„ظٹظ‡ط§ ظˆط§ظ„ظ…ط±ظپظˆط¶ط©',
+            screen: const RequestsReportScreen(),
+          ),
+          _card(
+            context,
+            icon: Icons.beach_access,
+            title: 'طھظ‚ط±ظٹط± ط§ظ„ط¥ط¬ط§ط²ط§طھ',
+            subtitle: 'ظ…ظ„ط®طµ ط§ظ„ط¥ط¬ط§ط²ط§طھ ظˆط£ظٹط§ظ…ظ‡ط§ ظ„ظƒظ„ ظ…ظˆط¸ظپ',
+            screen: const LeavesReportScreen(),
+          ),
+          _card(
+            context,
+            icon: Icons.access_time,
+            title: 'طھظ‚ط±ظٹط± ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„',
+            subtitle: 'ط¥ط¬ظ…ط§ظ„ظٹ ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„ ط§ظ„ظپط¹ظ„ظٹط© ظ„ظƒظ„ ظ…ظˆط¸ظپ',
+            screen: const WorkHoursReportScreen(),
+          ),
+          const SizedBox(height: 12),
+          const Card(
+            color: Color(0xFFF7F7F7),
+            child: ListTile(
+              leading: Icon(Icons.download),
+              title: Text('Export PDF / Excel'),
+              subtitle: Text('ط¬ط§ظ‡ط² ط¹ظ„ظ‰ ط§ظ„ط³ظٹط±ظپط±طŒ ظˆط±ط¨ط· ط§ظ„طھط­ظ…ظٹظ„ ظ…ظ† ط§ظ„طھط·ط¨ظٹظ‚ ظ‡ظٹظƒظˆظ† ظپظٹ ط¨ط§طھط´ ظ„ط§ط­ظ‚ ط¢ظ…ظ† ط¨ط§ظ„طھظˆظƒظ†'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _card(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Widget screen,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(icon),
+        ),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => screen),
+          );
+        },
+      ),
+    );
+  }
+}

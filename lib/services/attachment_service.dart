@@ -1,0 +1,384 @@
+// lib/services/attachment_service.dart
+// Attachment Service - Handles all file operations (Phase 4) - FIXED
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AttachmentService {
+  static const String baseUrl = 'https://jssolutions-eg.com';
+  static const int maxFileSizeMB = 25;
+  static const int maxFilesPerObject = 10;
+
+  static const List<String> allowedExtensions = [
+    'jpg', 'jpeg', 'png', 'webp', 'heic',
+    'pdf', 'doc', 'docx', 'xls', 'xlsx'
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // GET TOKEN
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PICK FILE (from device)
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<PickedFile?> pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+        withData: false,
+      );
+
+      if (result == null || result.files.isEmpty) return null;
+
+      final file = result.files.first;
+      if (file.path == null) return null;
+
+      final sizeInMB = file.size / (1024 * 1024);
+      if (sizeInMB > maxFileSizeMB) {
+        return PickedFile(
+          path: file.path!,
+          name: file.name,
+          size: file.size,
+          error: 'حجم الملف كبير: ${sizeInMB.toStringAsFixed(1)} MB (الحد الأقصى $maxFileSizeMB MB)',
+        );
+      }
+
+      return PickedFile(
+        path: file.path!,
+        name: file.name,
+        size: file.size,
+      );
+    } catch (e) {
+      return PickedFile(
+        path: '',
+        name: '',
+        size: 0,
+        error: 'خطأ في اختيار الملف: $e',
+      );
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PICK IMAGE (from camera)
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<PickedFile?> pickImageFromCamera() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 85,
+      );
+
+      if (image == null) return null;
+
+      final file = File(image.path);
+      final size = await file.length();
+
+      return PickedFile(
+        path: image.path,
+        name: image.name,
+        size: size,
+      );
+    } catch (e) {
+      return PickedFile(
+        path: '',
+        name: '',
+        size: 0,
+        error: 'خطأ في التقاط الصورة: $e',
+      );
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PICK IMAGE (from gallery)
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<PickedFile?> pickImageFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 85,
+      );
+
+      if (image == null) return null;
+
+      final file = File(image.path);
+      final size = await file.length();
+
+      return PickedFile(
+        path: image.path,
+        name: image.name,
+        size: size,
+      );
+    } catch (e) {
+      return PickedFile(
+        path: '',
+        name: '',
+        size: 0,
+        error: 'خطأ في اختيار الصورة: $e',
+      );
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // UPLOAD FILE
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<UploadResult> upload({
+    required String filePath,
+    required String model,
+    required int objectId,
+    String description = '',
+    Function(double progress)? onProgress,
+  }) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return UploadResult(success: false, error: 'غير مسجل الدخول');
+      }
+
+      final file = File(filePath);
+      if (!await file.exists()) {
+        return UploadResult(success: false, error: 'الملف غير موجود');
+      }
+
+      final uri = Uri.parse('$baseUrl/attendance/api/mobile/attachments/upload/');
+      final request = http.MultipartRequest('POST', uri);
+
+      request.headers['Authorization'] = 'Token $token';
+      request.fields['model'] = model;
+      request.fields['object_id'] = objectId.toString();
+      request.fields['description'] = description;
+
+      request.files.add(
+        await http.MultipartFile.fromPath('file', filePath),
+      );
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+
+      print('[Upload] Status: ${response.statusCode}');
+      print('[Upload] Body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        return UploadResult(
+          success: true,
+          attachment: AttachmentModel.fromJson(data['attachment'] ?? data),
+        );
+      } else {
+        String errorMsg = 'خطأ في الرفع (${response.statusCode})';
+        try {
+          final data = jsonDecode(utf8.decode(response.bodyBytes));
+          errorMsg = data['error'] ?? data['detail'] ?? errorMsg;
+        } catch (_) {}
+        return UploadResult(success: false, error: errorMsg);
+      }
+    } catch (e) {
+      return UploadResult(success: false, error: 'خطأ: $e');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // LIST ATTACHMENTS
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<List<AttachmentModel>> list({
+    required String model,
+    required int objectId,
+  }) async {
+    try {
+      final token = await _getToken();
+      if (token == null) return [];
+
+      final uri = Uri.parse(
+        '$baseUrl/attendance/api/mobile/attachments/list/?model=$model&object_id=$objectId',
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {'Authorization': 'Token $token'},
+      );
+
+      print('[List] Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        final List attachments = data['attachments'] ?? [];
+        return attachments.map((a) => AttachmentModel.fromJson(a)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('[AttachmentService.list] Error: $e');
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // DELETE ATTACHMENT
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<bool> delete(int attachmentId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) return false;
+
+      final uri = Uri.parse(
+        '$baseUrl/attendance/api/mobile/attachments/$attachmentId/delete/',
+      );
+
+      final response = await http.delete(
+        uri,
+        headers: {'Authorization': 'Token $token'},
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('[AttachmentService.delete] Error: $e');
+      return false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // DOWNLOAD & OPEN
+  // ═══════════════════════════════════════════════════════════
+
+  static Future<bool> downloadAndOpen(AttachmentModel attachment) async {
+    try {
+      final token = await _getToken();
+      if (token == null) return false;
+
+      final dir = await getTemporaryDirectory();
+      final filePath = '${dir.path}/${attachment.originalName}';
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/attendance/api/mobile/attachments/${attachment.id}/download/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        final result = await OpenFile.open(filePath);
+        return result.type == ResultType.done;
+      }
+      return false;
+    } catch (e) {
+      print('[AttachmentService.downloadAndOpen] Error: $e');
+      return false;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODELS
+// ═══════════════════════════════════════════════════════════
+
+class PickedFile {
+  final String path;
+  final String name;
+  final int size;
+  final String? error;
+
+  PickedFile({
+    required this.path,
+    required this.name,
+    required this.size,
+    this.error,
+  });
+
+  double get sizeInMB => size / (1024 * 1024);
+
+  String get sizeFormatted {
+    if (size < 1024) return '$size B';
+    if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
+    return '${sizeInMB.toStringAsFixed(1)} MB';
+  }
+}
+
+class UploadResult {
+  final bool success;
+  final AttachmentModel? attachment;
+  final String? error;
+
+  UploadResult({
+    required this.success,
+    this.attachment,
+    this.error,
+  });
+}
+
+class AttachmentModel {
+  final int id;
+  final String originalName;
+  final String fileType;
+  final int fileSize;
+  final double fileSizeMB;
+  final String mimeType;
+  final String? fileUrl;
+  final String? thumbnailUrl;
+  final String description;
+  final String? uploadedBy;
+  final String createdAt;
+
+  AttachmentModel({
+    required this.id,
+    required this.originalName,
+    required this.fileType,
+    required this.fileSize,
+    required this.fileSizeMB,
+    required this.mimeType,
+    this.fileUrl,
+    this.thumbnailUrl,
+    required this.description,
+    this.uploadedBy,
+    required this.createdAt,
+  });
+
+  factory AttachmentModel.fromJson(Map<String, dynamic> json) {
+    return AttachmentModel(
+      id: json['id'] ?? 0,
+      originalName: json['original_name'] ?? '',
+      fileType: json['file_type'] ?? 'other',
+      fileSize: json['file_size'] ?? 0,
+      fileSizeMB: (json['file_size_mb'] ?? 0.0).toDouble(),
+      mimeType: json['mime_type'] ?? '',
+      fileUrl: json['file_url'],
+      thumbnailUrl: json['thumbnail_url'],
+      description: json['description'] ?? '',
+      uploadedBy: json['uploaded_by'],
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+
+  bool get isImage => fileType == 'image';
+  bool get isPdf => fileType == 'pdf';
+  bool get isWord => fileType == 'word';
+  bool get isExcel => fileType == 'excel';
+
+  String get sizeFormatted {
+    if (fileSize < 1024) return '$fileSize B';
+    if (fileSize < 1024 * 1024) return '${(fileSize / 1024).toStringAsFixed(1)} KB';
+    return '${fileSizeMB.toStringAsFixed(1)} MB';
+  }
+}

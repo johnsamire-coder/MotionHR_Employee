@@ -1,0 +1,126 @@
+﻿import 'package:flutter/material.dart';
+import '../../../services/reports_service.dart';
+
+class RequestsReportScreen extends StatefulWidget {
+  const RequestsReportScreen({super.key});
+
+  @override
+  State<RequestsReportScreen> createState() => _RequestsReportScreenState();
+}
+
+class _RequestsReportScreenState extends State<RequestsReportScreen> {
+  final ReportsService _service = ReportsService();
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final result = await _service.getRequestsReport();
+      if (!mounted) return;
+      setState(() {
+        _data = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ط®ط·ط£ ظپظٹ طھط­ظ…ظٹظ„ طھظ‚ط±ظٹط± ط§ظ„ط·ظ„ط¨ط§طھ: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final details = (_data?['details'] as List?) ?? const [];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('طھظ‚ط±ظٹط± ط§ظ„ط·ظ„ط¨ط§طھ'),
+        actions: [
+          IconButton(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                padding: const EdgeInsets.all(12),
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط·ظ„ط¨ط§طھ: ${_data?['total_requests'] ?? 0}'),
+                          const SizedBox(height: 6),
+                          Text('ظ…ظˆط§ظپظ‚: ${_data?['approved'] ?? 0}'),
+                          Text('ظ…ط±ظپظˆط¶: ${_data?['rejected'] ?? 0}'),
+                          Text('ظ…ط¹ظ„ظ‚: ${_data?['pending'] ?? 0}'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (details.isEmpty)
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: Text('ظ„ط§ طھظˆط¬ط¯ ط·ظ„ط¨ط§طھ ظپظٹ ط§ظ„ظپطھط±ط© ط§ظ„ط­ط§ظ„ظٹط©')),
+                      ),
+                    ),
+                  ...details.map<Widget>((r) {
+                    final item = Map<String, dynamic>.from(r as Map);
+                    final status = item['status']?.toString() ?? '-';
+
+                    return Card(
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.request_page),
+                        ),
+                        title: Text(item['employee_name']?.toString() ?? '-'),
+                        subtitle: Text(
+                          '${item['category'] ?? '-'}'
+                          ' | '
+                          '${item['subject'] ?? '-'}',
+                        ),
+                        trailing: Chip(
+                          label: Text(status),
+                          backgroundColor: _statusColor(status).withOpacity(0.15),
+                          side: BorderSide(color: _statusColor(status)),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+    );
+  }
+}

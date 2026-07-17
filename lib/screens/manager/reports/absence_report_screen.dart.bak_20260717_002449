@@ -1,0 +1,108 @@
+﻿import 'package:flutter/material.dart';
+import '../../../services/reports_service.dart';
+
+class AbsenceReportScreen extends StatefulWidget {
+  const AbsenceReportScreen({super.key});
+
+  @override
+  State<AbsenceReportScreen> createState() => _AbsenceReportScreenState();
+}
+
+class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
+  final ReportsService _service = ReportsService();
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final result = await _service.getAbsenceReport();
+      if (!mounted) return;
+      setState(() {
+        _data = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ط®ط·ط£ ظپظٹ طھط­ظ…ظٹظ„ طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final employees = (_data?['employees'] as List?) ?? const [];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨'),
+        actions: [
+          IconButton(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: employees.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 120),
+                        Center(child: Text('ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ ط؛ظٹط§ط¨')),
+                      ],
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.all(12),
+                      children: [
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.person_off),
+                            title: Text('ط¹ط¯ط¯ ط§ظ„ظ…ظˆط¸ظپظٹظ† ظ„ط¯ظٹظ‡ظ… ط؛ظٹط§ط¨: ${_data?['total_employees_with_absence'] ?? 0}'),
+                            subtitle: Text('ط¥ط¬ظ…ط§ظ„ظٹ ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„ ط¨ط§ظ„ط´ظ‡ط±: ${_data?['total_working_days_in_month'] ?? 0}'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...employees.map<Widget>((e) {
+                          final item = Map<String, dynamic>.from(e as Map);
+                          final absentDates = (item['absent_dates'] as List?) ?? const [];
+
+                          return Card(
+                            child: ExpansionTile(
+                              leading: const CircleAvatar(
+                                backgroundColor: Colors.redAccent,
+                                child: Icon(Icons.event_busy, color: Colors.white),
+                              ),
+                              title: Text(item['employee_name']?.toString() ?? '-'),
+                              subtitle: Text(
+                                'ط؛ظٹط§ط¨: ${item['absent_days'] ?? 0} | '
+                                'ط­ط¶ظˆط±: ${item['attended_days'] ?? 0} | '
+                                'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„: ${item['total_working_days'] ?? 0}',
+                              ),
+                              children: absentDates.map<Widget>((d) {
+                                return ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.date_range, size: 18),
+                                  title: Text(d.toString()),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+            ),
+    );
+  }
+}
