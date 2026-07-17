@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'screens/manager/reports/reports_hub_screen.dart';
+import 'screens/manager/payroll/payroll_hub_screen.dart';
+import 'screens/manager/reminder_settings_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -2941,7 +2944,16 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
       const SizedBox(height: 12),
       _card('نطاق موقع الشركة', 'إعدادات', Icons.fence, Colors.teal,
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen())))]));
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),
+      const SizedBox(height: 12),
+      _card('التقارير', 'عرض', Icons.analytics, Colors.indigo,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
+      const SizedBox(height: 12),
+      _card('الرواتب', 'عرض', Icons.account_balance_wallet, Colors.green,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
+      const SizedBox(height: 12),
+      _card('التذكيرات', 'إرسال', Icons.notifications_active, Colors.blueGrey, 
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen())))]));
   }
 }
 
