@@ -1,9 +1,14 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../employee/employee_summary_screen.dart';
+import '../../widgets/empty_state_widget.dart';
+import '../../services/employee_management_service.dart';
+
 
 class ManagerEmployeeDetailScreen extends StatefulWidget {
   final int employeeId;
@@ -74,6 +79,341 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
     }
   }
 
+  // ── Reset Password ──
+  Future<void> _resetPassword() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('إعادة تعيين كلمة المرور'),
+          content: Text('هل تريد إعادة تعيين كلمة مرور الموظف "${widget.employeeName}"؟\nسيتم توليد كلمة مرور جديدة تلقائياً.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('إعادة تعيين', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+
+      // توليد باسورد جديد
+      final random = Random();
+      final digits = List.generate(4, (_) => random.nextInt(10)).join();
+      final newPassword = 'Emp@$digits${String.fromCharCode(65 + random.nextInt(26))}';
+
+      final response = await http.post(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/reset-password/'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'new_password': newPassword}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        _showNewPasswordDialog(newPassword);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل إعادة التعيين'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('خطأ في الاتصال'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  void _showNewPasswordDialog(String newPassword) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green),
+              const SizedBox(width: 8),
+              const Text('تم إعادة التعيين'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('كلمة المرور الجديدة:'),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      newPassword,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        color: Colors.red,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.red),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: newPassword));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('تم النسخ'), backgroundColor: Colors.green),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  '⚠️ احتفظ بكلمة المرور وأعطها للموظف. سيُطلب منه تغييرها عند أول دخول.',
+                  style: TextStyle(fontSize: 12, color: Colors.orange),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
+              child: const Text('حسناً', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── تعديل بيانات الموظف ──
+  void _editEmployee() {
+    if (_profile == null) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EditEmployeeSheet(
+        profile: _profile!,
+        employeeId: widget.employeeId,
+        onSaved: _loadAll,
+      ),
+    );
+  }
+Future<void> _transferEmployee() async {
+  try {
+    final data = await EmployeeManagementService.getOrganizationTree();
+    if (!mounted) return;
+
+    final branches = List<Map<String, dynamic>>.from(data['branches'] ?? []);
+
+    int? selectedBranchId;
+    int? selectedDepartmentId;
+    int? selectedManagerId;
+
+    List<Map<String, dynamic>> filteredDepartments = [];
+    List<Map<String, dynamic>> filteredManagers = [];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('نقل الموظف'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<int>(
+                        value: selectedBranchId,
+                        decoration: const InputDecoration(
+                          labelText: 'اختر الفرع',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: branches.map((branch) {
+                          return DropdownMenuItem<int>(
+                            value: branch['id'],
+                            child: Text(branch['name'] ?? ''),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          selectedBranchId = value;
+                          selectedDepartmentId = null;
+                          selectedManagerId = null;
+
+                          final selectedBranch = branches.firstWhere(
+                            (b) => b['id'] == value,
+                            orElse: () => <String, dynamic>{},
+                          );
+
+                          filteredDepartments = List<Map<String, dynamic>>.from(
+                            selectedBranch['departments'] ?? [],
+                          );
+                          filteredManagers = [];
+
+                          setDialogState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<int>(
+                        value: selectedDepartmentId,
+                        decoration: const InputDecoration(
+                          labelText: 'اختر القسم',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: filteredDepartments.map((dept) {
+                          return DropdownMenuItem<int>(
+                            value: dept['id'],
+                            child: Text(dept['name'] ?? ''),
+                          );
+                        }).toList(),
+                        onChanged: selectedBranchId == null
+                            ? null
+                            : (value) {
+                                selectedDepartmentId = value;
+                                selectedManagerId = null;
+
+                                final selectedDept = filteredDepartments.firstWhere(
+                                  (d) => d['id'] == value,
+                                  orElse: () => <String, dynamic>{},
+                                );
+
+                                filteredManagers = List<Map<String, dynamic>>.from(
+                                  selectedDept['managers'] ?? [],
+                                );
+
+                                setDialogState(() {});
+                              },
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<int>(
+                        value: selectedManagerId,
+                        decoration: const InputDecoration(
+                          labelText: 'اختر المدير الجديد',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: filteredManagers.map((manager) {
+                          return DropdownMenuItem<int>(
+                            value: manager['id'],
+                            child: Text(manager['name'] ?? ''),
+                          );
+                        }).toList(),
+                        onChanged: selectedDepartmentId == null
+                            ? null
+                            : (value) {
+                                selectedManagerId = value;
+                                setDialogState(() {});
+                              },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('إلغاء'),
+                ),
+                ElevatedButton(
+onPressed: () async {
+  if (selectedBranchId == null || selectedDepartmentId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('اختر الفرع والقسم أولاً')),
+    );
+    return;
+  }
+
+  try {
+    await EmployeeManagementService.transferEmployee(
+      employeeId: widget.employeeId,
+      newManagerId: selectedManagerId,
+      newBranchId: selectedBranchId,
+      newDepartmentId: selectedDepartmentId,
+    );
+
+    if (!mounted) return;
+    Navigator.pop(context);
+    await _loadAll();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تم نقل الموظف بنجاح ✅')),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('خطأ في النقل: $e')),
+    );
+  }
+},                  child: const Text('تأكيد'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('خطأ: $e')),
+    );
+  }
+}
+List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
+  final List<DropdownMenuItem<int>> items = [];
+
+  if (data == null || data['branches'] == null) return items;
+
+  for (var branch in data['branches']) {
+    for (var dept in branch['departments']) {
+      for (var manager in dept['managers']) {
+        items.add(
+          DropdownMenuItem<int>(
+            value: manager['id'],
+            child: Text(
+              '${manager['name']} - ${dept['name']}',
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  return items;
+}
   Future<void> _openFile(String? url) async {
     if (url == null || url.isEmpty) return;
     final full = url.startsWith('http') ? url : 'https://jssolutions-eg.com$url';
@@ -136,10 +476,18 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   }
 
   Widget _buildProfileTab() {
-    if (_profile == null) return const Center(child: Text('لا توجد بيانات'));
+    if (_profile == null) {
+      return EmptyStateWidget(
+        title: 'لا توجد بيانات',
+        description: 'تعذر تحميل بيانات الموظف',
+        icon: Icons.person_off_outlined,
+        onRefresh: _loadAll,
+      );
+    }
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
+        // هيدر الموظف
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -180,28 +528,77 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
           ]),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => EmployeeSummaryScreen(
-                  employeeId: widget.employeeId,
-                  employeeName: widget.employeeName,
+        // أزرار الإجراءات - صف علوي
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EmployeeSummaryScreen(
+                      employeeId: widget.employeeId,
+                      employeeName: widget.employeeName,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.analytics, color: Colors.white, size: 18),
+                label: const Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6A1B9A),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ),
-            icon: const Icon(Icons.analytics, color: Colors.white),
-            label: const Text('عرض الملخص', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6A1B9A),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _editEmployee,
+                icon: const Icon(Icons.edit, color: Colors.white, size: 18),
+                label: const Text('تعديل', style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
             ),
-          ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // أزرار الإجراءات - صف سفلي
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _transferEmployee,
+                icon: const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                label: const Text('نقل', style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _resetPassword,
+                icon: const Icon(Icons.lock_reset, color: Colors.white, size: 18),
+                label: const Text('Reset', style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
+
         _sectionCard('البيانات الشخصية', Icons.person, const Color(0xFF1976D2), [
           _infoRow('الرقم القومي', _profile!['national_id'], icon: Icons.badge),
           _infoRow('تاريخ الميلاد', _profile!['birth_date'], icon: Icons.cake),
@@ -247,7 +644,15 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   }
 
   Widget _buildDocumentsTab() {
-    if (_documents.isEmpty) return const Center(child: Text('لا توجد مستندات'));
+    if (_documents.isEmpty) {
+      return EmptyStateWidget(
+        title: 'لا توجد مستندات',
+        description: 'لم يتم إضافة أي مستندات لهذا الموظف بعد',
+        icon: Icons.folder_open_outlined,
+        iconColor: Colors.orange,
+        onRefresh: _loadAll,
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: _documents.length,
@@ -273,19 +678,22 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(doc['document_type'] ?? '', style: TextStyle(fontSize: 11, color: Colors.grey[700])),
-                if (doc['expiry_date'] != null) Text('ينتهي: ${doc['expiry_date']}', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                if (expired) Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                  child: const Text('منتهي', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
-                )
-                else if (soon) Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                  child: const Text('ينتهي قريباً', style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold)),
-                ),
+                if (doc['expiry_date'] != null)
+                  Text('ينتهي: ${doc['expiry_date']}', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                if (expired)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                    child: const Text('منتهي', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                  )
+                else if (soon)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                    child: const Text('ينتهي قريباً', style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold)),
+                  ),
               ],
             ),
             trailing: doc['file_url'] != null ? Icon(Icons.download, color: color) : null,
@@ -297,7 +705,15 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   }
 
   Widget _buildMovementsTab() {
-    if (_movements.isEmpty) return const Center(child: Text('لا توجد حركات'));
+    if (_movements.isEmpty) {
+      return EmptyStateWidget(
+        title: 'لا توجد حركات',
+        description: 'لم يتم تسجيل أي حركات وظيفية لهذا الموظف',
+        icon: Icons.history_outlined,
+        iconColor: Colors.blueGrey,
+        onRefresh: _loadAll,
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: _movements.length,
@@ -341,8 +757,11 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         appBar: AppBar(
           backgroundColor: const Color(0xFF6A1B9A),
           foregroundColor: Colors.white,
-          title: Text(widget.employeeName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          actions: [IconButton(onPressed: _loadAll, icon: const Icon(Icons.refresh))],
+          title: Text(widget.employeeName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          actions: [
+            IconButton(onPressed: _loadAll, icon: const Icon(Icons.refresh)),
+          ],
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.white,
@@ -358,11 +777,233 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+                ? EmptyStateWidget(
+                    title: 'خطأ في التحميل',
+                    description: _error!,
+                    icon: Icons.error_outline,
+                    iconColor: Colors.red,
+                    onRefresh: _loadAll,
+                  )
                 : TabBarView(
                     controller: _tabController,
-                    children: [_buildProfileTab(), _buildDocumentsTab(), _buildMovementsTab()],
+                    children: [
+                      _buildProfileTab(),
+                      _buildDocumentsTab(),
+                      _buildMovementsTab(),
+                    ],
                   ),
+      ),
+    );
+  }
+}
+
+// ── شاشة تعديل بيانات الموظف ──
+class _EditEmployeeSheet extends StatefulWidget {
+  final Map<String, dynamic> profile;
+  final int employeeId;
+  final VoidCallback onSaved;
+
+  const _EditEmployeeSheet({
+    required this.profile,
+    required this.employeeId,
+    required this.onSaved,
+  });
+
+  @override
+  State<_EditEmployeeSheet> createState() => _EditEmployeeSheetState();
+}
+
+class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _phoneCtrl;
+  late TextEditingController _emailCtrl;
+  late TextEditingController _addressCtrl;
+  late TextEditingController _bankNameCtrl;
+  late TextEditingController _bankAccountCtrl;
+  late TextEditingController _ibanCtrl;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneCtrl = TextEditingController(text: widget.profile['phone'] ?? '');
+    _emailCtrl = TextEditingController(text: widget.profile['email'] ?? '');
+    _addressCtrl = TextEditingController(text: widget.profile['address'] ?? '');
+    _bankNameCtrl = TextEditingController(text: widget.profile['bank_name'] ?? '');
+    _bankAccountCtrl = TextEditingController(text: widget.profile['bank_account'] ?? '');
+    _ibanCtrl = TextEditingController(text: widget.profile['iban'] ?? '');
+  }
+
+  @override
+  void dispose() {
+    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _addressCtrl.dispose();
+    _bankNameCtrl.dispose();
+    _bankAccountCtrl.dispose();
+    _ibanCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() { _saving = true; _error = null; });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+
+      final response = await http.patch(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/update/'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'phone': _phoneCtrl.text.trim(),
+          'email': _emailCtrl.text.trim(),
+          'address': _addressCtrl.text.trim(),
+          'bank_name': _bankNameCtrl.text.trim(),
+          'bank_account': _bankAccountCtrl.text.trim(),
+          'iban': _ibanCtrl.text.trim(),
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
+        widget.onSaved();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم حفظ التعديلات'), backgroundColor: Colors.green),
+        );
+      } else {
+        final d = json.decode(response.body);
+        setState(() => _error = d['message'] ?? 'فشل الحفظ');
+      }
+    } catch (e) {
+      setState(() => _error = 'خطأ في الاتصال');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Widget _field(String label, TextEditingController ctrl, {TextInputType? keyboardType, bool required = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: ctrl,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null : null,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(Icons.edit, color: Color(0xFF6A1B9A)),
+                  const SizedBox(width: 8),
+                  const Text('تعديل بيانات الموظف',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('بيانات التواصل',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF388E3C))),
+                      const SizedBox(height: 8),
+                      _field('الموبايل', _phoneCtrl, keyboardType: TextInputType.phone),
+                      _field('البريد الإلكتروني', _emailCtrl, keyboardType: TextInputType.emailAddress),
+                      _field('العنوان', _addressCtrl),
+                      const SizedBox(height: 8),
+                      const Text('البيانات البنكية',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A))),
+                      const SizedBox(height: 8),
+                      _field('اسم البنك', _bankNameCtrl),
+                      _field('رقم الحساب', _bankAccountCtrl),
+                      _field('IBAN', _ibanCtrl),
+                      if (_error != null)
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                        ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _saving ? null : _save,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A1B9A),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: _saving
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text('حفظ التعديلات',
+                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

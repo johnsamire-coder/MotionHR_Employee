@@ -5,6 +5,8 @@ import 'absence_report_screen.dart';
 import 'requests_report_screen.dart';
 import 'leaves_report_screen.dart';
 import 'work_hours_report_screen.dart';
+import '../location_report_screen.dart';
+
 
 class ReportsHubScreen extends StatelessWidget {
   const ReportsHubScreen({super.key});
@@ -30,6 +32,7 @@ class ReportsHubScreen extends StatelessWidget {
           _card(context, Icons.request_page, 'تقرير الطلبات', 'كل الطلبات والحالات', const RequestsReportScreen()),
           _card(context, Icons.beach_access, 'تقرير الإجازات', 'ملخص إجازات الموظفين', const LeavesReportScreen()),
           _card(context, Icons.access_time, 'تقرير ساعات العمل', 'ساعات العمل الفعلية', const WorkHoursReportScreen()),
+          _card(context, Icons.location_on, 'تقرير المواقع اليومية', 'أماكن تواجد الموظف خلال اليوم', const LocationReportScreen()),
         ],
       ),
     );

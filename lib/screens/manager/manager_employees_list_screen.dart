@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'manager_employee_detail_screen.dart';
+import '../../widgets/empty_state_widget.dart';
+
 
 class ManagerEmployeesListScreen extends StatefulWidget {
   const ManagerEmployeesListScreen({super.key});
@@ -146,9 +148,14 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-                    : _employees.isEmpty
-                        ? const Center(child: Text('لا يوجد موظفين'))
+                    ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))                    : _employees.isEmpty
+                        ? EmptyStateWidget(
+                            title: 'لا يوجد موظفين',
+                            description: 'لم يتم العثور على موظفين بهذه المعايير.\nجرب تغيير الفلتر أو البحث.',
+                            icon: Icons.people_outline,
+                            iconColor: const Color(0xFF6A1B9A),
+                            onRefresh: _load,
+                          )
                         : RefreshIndicator(
                             onRefresh: _load,
                             child: ListView.builder(

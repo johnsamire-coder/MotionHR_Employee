@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
 import 'screens/manager/payroll/payroll_hub_screen.dart';
@@ -11,14 +10,13 @@ import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/create_announcement_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
+
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -30,13 +28,6 @@ import 'package:file_picker/file_picker.dart';
 
 
 import 'screens/employee/item_detail_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/manager/company_info_screen.dart';
-import 'screens/manager/organization_tree_screen.dart';
-import 'screens/manager/location_report_screen.dart';
-import 'widgets/empty_state_widget.dart';
-import 'services/language_service.dart';
-import 'services/location_tracking_service.dart';
 const String kBaseUrl = 'https://jssolutions-eg.com';
 const Color kPrimaryColor = Color(0xFF1976D2);
 const Color kPrimaryDark = Color(0xFF0D47A1);
@@ -209,10 +200,8 @@ Future<void> saveFCMTokenToServer() async {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Token $token',
-      },body: jsonEncode({
-  'fcm_token': fcmToken,
-  'preferred_language': LanguageService.currentLocale.value.languageCode,
-}),
+      },
+      body: jsonEncode({'fcm_token': fcmToken}),
     );
 
     if (res.statusCode == 200) {
@@ -274,7 +263,6 @@ class NotificationBellButton extends StatelessWidget {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LanguageService.loadSavedLanguage();
   try {
     await Firebase.initializeApp();
     await initLocalNotifications();
@@ -285,72 +273,17 @@ void main() async {
   runApp(const MotionHRApp());
 }
 
-class MotionHRApp extends StatefulWidget {
+class MotionHRApp extends StatelessWidget {
   const MotionHRApp({super.key});
 
   @override
-  State<MotionHRApp> createState() => _MotionHRAppState();
-}
-
-class _MotionHRAppState extends State<MotionHRApp> {
-  bool _isFirstLaunch = false;
-  bool _checking = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkFirstLaunch();
-  }
-
-  Future<void> _checkFirstLaunch() async {
-    final prefs = await SharedPreferences.getInstance();
-    final done = prefs.getBool('first_launch_done') ?? false;
-    setState(() {
-      _isFirstLaunch = !done;
-      _checking = false;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale>(
-      valueListenable: LanguageService.currentLocale,
-      builder: (context, locale, _) {
-        return MaterialApp(
-          title: 'MotionHR',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
-          locale: locale,
-          supportedLocales: const [
-            Locale('ar'),
-            Locale('en'),
-          ],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          builder: (context, child) {
-            return Directionality(
-              textDirection: locale.languageCode == 'ar'
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-              child: child ?? const SizedBox(),
-            );
-          },
-          home: _checking
-              ? const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                )
-              : _isFirstLaunch
-                  ? FirstLaunchLanguageScreen(
-                      onDone: () {
-                        setState(() => _isFirstLaunch = false);
-                      },
-                    )
-                  : const SplashScreen(),
-        );
-      },
+    return MaterialApp(
+      title: 'MotionHR',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
+      locale: const Locale('ar'),
+      home: const SplashScreen(),
     );
   }
 }
@@ -368,21 +301,43 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _checkAuth();
   }
+
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
-
     final prefs = await SharedPreferences.getInstance();
-    final stayData = await AuthStorageService.checkStayLoggedIn();
-    final bool isValidSession = stayData['valid'] == true;
-    final String? token = stayData['token'] as String?;
+    final token = prefs.getString('token');
     final appMode = prefs.getString('app_mode') ?? 'employee';
+    final stayLoggedIn = prefs.getBool('stay_logged_in') ?? true;
+    final lastLogin = prefs.getInt('last_login_timestamp') ?? 0;
 
     if (!mounted) return;
 
-    if (isValidSession && token != null && token.isNotEmpty) {
-      await prefs.setString('token', token);
-      await AuthStorageService.refreshLoginTime();
+    // إذا المستخدم اختار تسجيل الدخول في كل مرة
+    if (!stayLoggedIn) {
+      await prefs.remove('token');
+      await prefs.remove('last_login_timestamp');
+      if (!mounted) return;
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
 
+    // فحص 72 ساعة
+    if (token != null && token.isNotEmpty && lastLogin != 0) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      const seventyTwoHoursMs = 72 * 60 * 60 * 1000;
+      if (now - lastLogin > seventyTwoHoursMs) {
+        await prefs.clear();
+        unreadNotificationsCount.value = 0;
+        if (!mounted) return;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('انتهت جلسة 72 ساعة - يرجى تسجيل الدخول مرة أخرى'), backgroundColor: Colors.orange, duration: Duration(seconds: 3)),
+        );
+        return;
+      }
+    }
+
+    if (token != null && token.isNotEmpty) {
       saveFCMTokenToServer();
       fetchUnreadCount();
 
@@ -393,12 +348,9 @@ class _SplashScreenState extends State<SplashScreen> {
             Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
             headers: {'Authorization': 'Token $token'},
           );
-
           if (res.statusCode == 200) {
             final data = jsonDecode(res.body);
-            if (data['success'] == true &&
-                data['has_charter'] == true &&
-                data['needs_acceptance'] == true) {
+            if (data['success'] == true && data['has_charter'] == true && data['needs_acceptance'] == true) {
               needsCharter = true;
             }
           }
@@ -408,29 +360,14 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (needsCharter) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CharterScreen(appMode: appMode),
-          ),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => CharterScreen(appMode: appMode)));
       } else if (appMode == 'manager') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ManagerShell()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManagerShell()));
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const EmployeeShell()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const EmployeeShell()));
       }
     } else {
-      await prefs.remove('token');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
     }
   }
 
@@ -439,11 +376,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [kPrimaryDark, kPrimaryColor, kAccentColor],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient: LinearGradient(colors: [kPrimaryDark, kPrimaryColor, kAccentColor], begin: Alignment.topCenter, end: Alignment.bottomCenter),
         ),
         child: const Center(
           child: Column(
@@ -451,20 +384,9 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Icon(Icons.location_on, size: 100, color: Colors.white),
               SizedBox(height: 20),
-              Text(
-                'MotionHR',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
+              Text('MotionHR', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold, letterSpacing: 2)),
               SizedBox(height: 8),
-              Text(
-                'نظام إدارة الموارد البشرية',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              Text('نظام إدارة الموارد البشرية', style: TextStyle(color: Colors.white70, fontSize: 14)),
               SizedBox(height: 30),
               CircularProgressIndicator(color: Colors.white),
             ],
@@ -474,6 +396,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -486,39 +409,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _passFocus = FocusNode();
-
   bool _loading = false;
   bool _obscurePass = true;
   String? _error;
   bool _rememberMe = false;
-  bool _stayLoggedIn = false;
+  bool _stayLoggedIn = true;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedAuthData();
+    _loadSavedCredentials();
   }
 
-  @override
-  void dispose() {
-    _userCtrl.dispose();
-    _passCtrl.dispose();
-    _passFocus.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadSavedAuthData() async {
-    final rememberData = await AuthStorageService.getRememberMe();
+  Future<void> _loadSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
-
-    if (!mounted) return;
-
-    setState(() {
-      _rememberMe = rememberData['rememberMe'] ?? false;
-      _stayLoggedIn = prefs.getBool('stay_logged_in') ?? false;
-      _userCtrl.text = rememberData['username'] ?? '';
-      _passCtrl.text = rememberData['password'] ?? '';
-    });
+    final remember = prefs.getBool('remember_me') ?? false;
+    final savedUser = prefs.getString('saved_username') ?? '';
+    final savedPass = prefs.getString('saved_password') ?? '';
+    final stayLogged = prefs.getBool('stay_logged_in') ?? true;
+    if (mounted) {
+      setState(() {
+        _rememberMe = remember;
+        _stayLoggedIn = stayLogged;
+        if (remember && savedUser.isNotEmpty) {
+          _userCtrl.text = savedUser;
+          _passCtrl.text = savedPass;
+        }
+      });
+    }
   }
 
   Future<void> _login() async {
@@ -526,12 +444,10 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _error = 'من فضلك ادخل اسم المستخدم وكلمة المرور');
       return;
     }
-
     setState(() {
       _loading = true;
       _error = null;
     });
-
     try {
       final res = await http.post(
         Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
@@ -541,33 +457,34 @@ class _LoginScreenState extends State<LoginScreen> {
           'password': _passCtrl.text,
         }),
       );
-
       final data = jsonDecode(res.body);
-
       if (res.statusCode == 200 && data['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
-
         await prefs.setString('token', data['token']);
-
+        await prefs.setInt('last_login_timestamp', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setBool('stay_logged_in', _stayLoggedIn);
+        await prefs.setBool('remember_me', _rememberMe);
+        if (_rememberMe) {
+          await prefs.setString('saved_username', _userCtrl.text.trim());
+          await prefs.setString('saved_password', _passCtrl.text);
+        } else {
+          await prefs.remove('saved_username');
+          await prefs.remove('saved_password');
+        }
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
         String companyName = data['company_name'] ?? '';
         String firstName = data['first_name'] ?? '';
         String gender = data['gender'] ?? 'male';
-
         if (data['employee'] is Map) {
           fullName = fullName.isEmpty ? (data['employee']['name'] ?? '') : fullName;
           companyName = companyName.isEmpty ? (data['employee']['company'] ?? '') : companyName;
           firstName = firstName.isEmpty ? (data['employee']['first_name'] ?? '') : firstName;
-          gender = gender == 'male' && data['employee']['gender'] != null
-              ? data['employee']['gender']
-              : gender;
+          gender = gender == 'male' && data['employee']['gender'] != null ? data['employee']['gender'] : gender;
         }
-
         if (firstName.isEmpty && fullName.isNotEmpty) {
           firstName = fullName.split(' ').first;
         }
-
         await prefs.setString('username', username);
         await prefs.setString('full_name', fullName);
         await prefs.setString('company_name', companyName);
@@ -575,17 +492,6 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('gender', gender);
         await prefs.setString('role', data['role'] ?? 'employee');
         await prefs.setString('app_mode', data['app_mode'] ?? 'employee');
-
-        await AuthStorageService.saveRememberMe(
-          username: _userCtrl.text.trim(),
-          password: _passCtrl.text,
-          rememberMe: _rememberMe,
-        );
-
-        await AuthStorageService.saveStayLoggedIn(
-          stayLoggedIn: _stayLoggedIn,
-          token: data['token'],
-        );
 
         saveFCMTokenToServer();
         fetchUnreadCount();
@@ -602,9 +508,7 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             if (charterRes.statusCode == 200) {
               final charterData = jsonDecode(charterRes.body);
-              if (charterData['success'] == true &&
-                  charterData['has_charter'] == true &&
-                  charterData['needs_acceptance'] == true) {
+              if (charterData['success'] == true && charterData['has_charter'] == true && charterData['needs_acceptance'] == true) {
                 needsCharter = true;
               }
             }
@@ -614,29 +518,13 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
 
         if (mustChange) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const ChangePasswordScreen(forced: true),
-            ),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen(forced: true)));
         } else if (needsCharter) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CharterScreen(appMode: appMode),
-            ),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => CharterScreen(appMode: appMode)));
         } else if (appMode == 'manager') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ManagerShell()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManagerShell()));
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const EmployeeShell()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const EmployeeShell()));
         }
       } else {
         setState(() => _error = data['message'] ?? 'بيانات الدخول غير صحيحة');
@@ -644,9 +532,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       setState(() => _error = 'خطأ في الاتصال بالخادم');
     } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
+      setState(() => _loading = false);
     }
   }
 
@@ -657,15 +543,8 @@ class _LoginScreenState extends State<LoginScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           title: const Text('نسيت كلمة المرور'),
-          content: const Text(
-            'من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('حسناً'),
-            ),
-          ],
+          content: const Text('من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
         ),
       ),
     );
@@ -674,117 +553,34 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,      child: Scaffold(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [kPrimaryDark, kPrimaryColor, kAccentColor],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+          decoration: const BoxDecoration(gradient: LinearGradient(colors: [kPrimaryDark, kPrimaryColor, kAccentColor], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // ── زر تغيير اللغة ──
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: PopupMenuButton<String>(
-                        icon: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(width: 10),
-                            Icon(Icons.language, color: Colors.white, size: 20),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
-                            SizedBox(width: 6),
-                          ],
-                        ),
-                        onSelected: (value) async {
-                          await LanguageService.changeLanguage(value);
-                          if (context.mounted) setState(() {});
-                        },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'ar',
-                            child: Row(
-                              children: [
-                                Text('🇸🇦 ', style: TextStyle(fontSize: 18)),
-                                Text('العربية'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'en',
-                            child: Row(
-                              children: [
-                                Text('🇬🇧 ', style: TextStyle(fontSize: 18)),
-                                Text('English'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
+                  Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), child: const Icon(Icons.location_on, size: 70, color: Colors.white)),
+                  const SizedBox(height: 16),
+                  const Text('MotionHR', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2)),
+                  const SizedBox(height: 6),
+                  const Text('مرحباً بك، سجل دخولك للمتابعة', style: TextStyle(fontSize: 14, color: Colors.white70)),
+                  const SizedBox(height: 30),
                   Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.location_on, size: 70, color: Colors.white),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'MotionHR',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'مرحباً بك، سجل دخولك للمتابعة',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 40),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 20, offset: const Offset(0, 10))]),
                     child: Column(
                       children: [
                         TextField(
                           controller: _userCtrl,
                           textInputAction: TextInputAction.next,
                           onSubmitted: (_) => _passFocus.requestFocus(),
-                          decoration: InputDecoration(
-                            labelText: 'اسم المستخدم',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: const Icon(Icons.person, color: kPrimaryColor),
-                          ),
+                          decoration: InputDecoration(labelText: 'اسم المستخدم', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.person, color: kPrimaryColor)),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         TextField(
                           controller: _passCtrl,
                           focusNode: _passFocus,
@@ -795,163 +591,65 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelText: 'كلمة المرور',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePass ? Icons.visibility_off : Icons.visibility,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () => setState(() => _obscurePass = !_obscurePass),
-                            ),
+                            suffixIcon: IconButton(icon: Icon(_obscurePass ? Icons.visibility_off : Icons.visibility, color: Colors.grey), onPressed: () => setState(() => _obscurePass = !_obscurePass)),
                           ),
                         ),
-                        const SizedBox(height: 16),
-
+                        const SizedBox(height: 14),
+                        // تذكرني
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade200),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.check_circle_outline, color: kPrimaryColor),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
-                                    child: Text(
-                                      'تذكرني',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    activeColor: kPrimaryColor,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _rememberMe = value ?? false;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 12),
-                              Row(
-                                children: [
-                                  const Icon(Icons.verified_user_outlined, color: kPrimaryColor),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'البقاء مسجلاً',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          'يبقى الحساب مفتوحاً حتى 72 ساعة أو حتى تسجيل الخروج',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: _stayLoggedIn,
-                                    activeColor: kPrimaryColor,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _stayLoggedIn = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.blue[100]!)),
+                          child: CheckboxListTile(
+                            value: _rememberMe,
+                            onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                            title: const Row(children: [Icon(Icons.bookmark_added, color: kPrimaryColor, size: 20), SizedBox(width: 6), Text('تذكرني', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14))]),
+                            subtitle: const Text('حفظ اسم المستخدم وكلمة المرور', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                            activeColor: kPrimaryColor,
+                            dense: true,
                           ),
                         ),
-
-                        const SizedBox(height: 12),
-
+                        const SizedBox(height: 10),
+                        // البقاء مسجلا
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(color: _stayLoggedIn ? Colors.green[50] : Colors.orange[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: _stayLoggedIn ? Colors.green[100]! : Colors.orange[100]!)),
+                          child: SwitchListTile(
+                            value: _stayLoggedIn,
+                            onChanged: (v) => setState(() => _stayLoggedIn = v),
+                            title: Row(children: [Icon(_stayLoggedIn ? Icons.lock_open : Icons.lock_clock, color: _stayLoggedIn ? Colors.green : Colors.orange, size: 20), const SizedBox(width: 6), Text(_stayLoggedIn ? 'البقاء مسجلاً' : 'تسجيل كل مرة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _stayLoggedIn ? Colors.green[800] : Colors.orange[800]))]),
+                            subtitle: Text(_stayLoggedIn ? 'عدم تسجيل الخروج إلا يدوياً + خروج تلقائي كل 72 ساعة للأمان' : 'سيطلب تسجيل الدخول في كل مرة تفتح التطبيق', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            activeColor: Colors.green,
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         if (_error != null)
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red[200]!),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.error_outline, color: Colors.red[700], size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(_error!, style: TextStyle(color: Colors.red[700])),
-                                ),
-                              ],
-                            ),
+                            decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red[200]!)),
+                            child: Row(children: [Icon(Icons.error_outline, color: Colors.red[700], size: 20), const SizedBox(width: 8), Expanded(child: Text(_error!, style: TextStyle(color: Colors.red[700])))]),
                           ),
-
-                        const SizedBox(height: 20),
-
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton(
                             onPressed: _loading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kPrimaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 3,
-                            ),
-                            child: _loading
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.login, color: Colors.white),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'دخول',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                            style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 3),
+                            child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.login, color: Colors.white), SizedBox(width: 8), Text('دخول', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))]),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: _showForgotPassword,
-                          child: const Text(
-                            'نسيت كلمة المرور؟',
-                            style: TextStyle(color: kPrimaryColor),
-                          ),
-                        ),
+                        const SizedBox(height: 10),
+                        TextButton(onPressed: _showForgotPassword, child: const Text('نسيت كلمة المرور؟', style: TextStyle(color: kPrimaryColor))),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    '© 2025 MotionHR',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  const SizedBox(height: 16),
+                  const Text('© 2025 MotionHR', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
@@ -961,6 +659,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
 
 class ChangePasswordScreen extends StatefulWidget {
   final bool forced;
@@ -1009,27 +708,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['success'] == true) {
-        if (data['token'] != null) {
-          await prefs.setString('token', data['token']);
-        }
+        if (data['token'] != null) await prefs.setString('token', data['token']);
         final appMode = prefs.getString('app_mode') ?? 'employee';
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم تغيير كلمة المرور بنجاح'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح'), backgroundColor: Colors.green),
         );
         if (appMode == 'manager') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ManagerShell()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManagerShell()));
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const EmployeeShell()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const EmployeeShell()));
         }
       } else {
         setState(() => _error = data['message'] ?? 'فشل تغيير كلمة المرور');
@@ -1037,9 +725,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } catch (e) {
       setState(() => _error = 'خطأ في الاتصال');
     } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
+      setState(() => _loading = false);
     }
   }
 
@@ -1049,15 +735,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       obscureText: o,
       decoration: InputDecoration(
         labelText: l,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
         suffixIcon: IconButton(
-          icon: Icon(
-            o ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
-          ),
+          icon: Icon(o ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
           onPressed: t,
         ),
       ),
@@ -1092,45 +773,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       Icon(Icons.warning, color: Colors.orange[700]),
                       const SizedBox(width: 12),
                       const Expanded(
-                        child: Text(
-                          'يجب تغيير كلمة المرور قبل استخدام التطبيق',
-                          style: TextStyle(color: Colors.orange),
-                        ),
+                        child: Text('يجب تغيير كلمة المرور قبل استخدام التطبيق',
+                            style: TextStyle(color: Colors.orange)),
                       ),
                     ],
                   ),
                 ),
               const SizedBox(height: 20),
-              _pf(
-                _currentCtrl,
-                'كلمة المرور الحالية',
-                _obscure1,
-                () => setState(() => _obscure1 = !_obscure1),
-              ),
+              _pf(_currentCtrl, 'كلمة المرور الحالية', _obscure1,
+                  () => setState(() => _obscure1 = !_obscure1)),
               const SizedBox(height: 16),
-              _pf(
-                _newCtrl,
-                'كلمة المرور الجديدة',
-                _obscure2,
-                () => setState(() => _obscure2 = !_obscure2),
-              ),
+              _pf(_newCtrl, 'كلمة المرور الجديدة', _obscure2,
+                  () => setState(() => _obscure2 = !_obscure2)),
               const SizedBox(height: 16),
-              _pf(
-                _confirmCtrl,
-                'تأكيد كلمة المرور',
-                _obscure3,
-                () => setState(() => _obscure3 = !_obscure3),
-              ),
+              _pf(_confirmCtrl, 'تأكيد كلمة المرور', _obscure3,
+                  () => setState(() => _obscure3 = !_obscure3)),
               const SizedBox(height: 16),
               if (_error != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   color: Colors.red[50],
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
                 ),
               const SizedBox(height: 20),
               SizedBox(
@@ -1140,20 +804,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   onPressed: _loading ? null : _changePassword,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'حفظ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      : const Text('حفظ',
+                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -1188,16 +844,22 @@ class _EmployeeShellState extends State<EmployeeShell> {
         const RequestsScreen(),
         const MyItemsScreen(),
       ];
-Future<void> _logout() async {
+
+  Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await AuthStorageService.clearAll();
+    final remember = prefs.getBool('remember_me') ?? false;
+    final savedUser = prefs.getString('saved_username');
+    final savedPass = prefs.getString('saved_password');
+    await prefs.clear();
+    if (remember && savedUser != null) {
+      await prefs.setString('saved_username', savedUser);
+      await prefs.setString('saved_password', savedPass ?? '');
+      await prefs.setBool('remember_me', true);
+    }
     await stopBackgroundTracking();
     unreadNotificationsCount.value = 0;
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
@@ -1220,17 +882,12 @@ Future<void> _logout() async {
               icon: const Icon(Icons.person),
               tooltip: 'الملف الشخصي',
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
-            ),            IconButton(
+            ),
+            IconButton(
               icon: const Icon(Icons.lock),
               tooltip: 'تغيير كلمة المرور',
               onPressed: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'الإعدادات',
-              onPressed: () => Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
             ),
             IconButton(icon: const Icon(Icons.logout), tooltip: 'تسجيل الخروج', onPressed: _logout),
           ],
@@ -1335,20 +992,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       final success = data['success'] == true;
       if (mounted) {
         if (success) {
-          fetchUnreadCount();          if (action == 'check_in') {
+          fetchUnreadCount();
+          if (action == 'check_in') {
             setState(() {
               _motivationMessage = getRandomMessage(kMorningMessages, _gender, _firstName);
               _isEveningMessage = false;
             });
-            // ✅ ابدأ التتبع الخفي
-            LocationTrackingService.startTracking();
           } else if (action == 'check_out') {
             setState(() {
               _motivationMessage = getRandomMessage(kEveningMessages, _gender, _firstName);
               _isEveningMessage = true;
             });
-            // ✅ وقف التتبع الخفي
-            LocationTrackingService.stopTracking();
           }
           _showMotivationDialog();
         } else {
@@ -1647,7 +1301,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
       appBar: AppBar(title: const Text('سجل الأيام'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
       body: _loading ? const Center(child: CircularProgressIndicator())
-          : _items.isEmpty ? const Center(child: Text('لا يوجد سجل'))
+          : _items.isEmpty ? EmptyStateWidget(icon: Icons.history, title: 'لا يوجد سجل', subtitle: 'لا يوجد سجل حضور سابق', onRefresh: _load)
           : ListView.builder(padding: const EdgeInsets.all(8), itemCount: _items.length, itemBuilder: (_, i) {
               final item = _items[i];
               return Card(child: ListTile(leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
@@ -1956,7 +1610,7 @@ class _MyListState extends State<_MyList> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_items.isEmpty) return const Center(child: Text('لا يوجد طلبات'));
+    if (_items.isEmpty) return EmptyStateWidget(icon: Icons.inbox, title: 'لا توجد طلبات', subtitle: 'لم تقم بتقديم أي طلبات بعد', onRefresh: _load);
     return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i];
       final status = (item['status_display'] ?? item['status'] ?? '').toString();
@@ -3205,15 +2859,20 @@ class _ManagerShellState extends State<ManagerShell> {
   void initState() { super.initState(); _index = widget.initialIndex; fetchUnreadCount(); }
 
   List<Widget> get _pages => [const ManagerDashboard(), const ManagerPendingScreen(), const ManagerAttendanceScreen(), const ManagerLiveLocationsScreen()];
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await AuthStorageService.clearAll();
+    final remember = prefs.getBool('remember_me') ?? false;
+    final savedUser = prefs.getString('saved_username');
+    final savedPass = prefs.getString('saved_password');
+    await prefs.clear();
+    if (remember && savedUser != null) {
+      await prefs.setString('saved_username', savedUser);
+      await prefs.setString('saved_password', savedPass ?? '');
+      await prefs.setBool('remember_me', true);
+    }
     unreadNotificationsCount.value = 0;
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    if (!mounted) return; Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
@@ -3224,10 +2883,6 @@ class _ManagerShellState extends State<ManagerShell> {
           IconButton(icon: const Icon(Icons.description), tooltip: 'لائحة الشركة',
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
           const NotificationBellButton(),
-          IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'الإعدادات',
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout)]),
       body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(currentIndex: _index, onTap: (i) => setState(() => _index = i),
@@ -3240,6 +2895,50 @@ class _ManagerShellState extends State<ManagerShell> {
   }
 }
 
+// Empty State Widget - احترافي بدل الشاشة السوداء
+class EmptyStateWidget extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onRefresh;
+  final String buttonText;
+  const EmptyStateWidget({super.key, required this.icon, required this.title, this.subtitle = '', this.onRefresh, this.buttonText = 'تحديث'});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+            child: Icon(icon, size: 64, color: Colors.grey[400]),
+          ),
+          const SizedBox(height: 20),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87), textAlign: TextAlign.center),
+          if (subtitle.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5), textAlign: TextAlign.center),
+          ],
+          if (onRefresh != null) ...[
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: onRefresh,
+              icon: const Icon(Icons.refresh),
+              label: Text(buttonText),
+              style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
   @override
@@ -3249,351 +2948,162 @@ class ManagerDashboard extends StatefulWidget {
 class _ManagerDashboardState extends State<ManagerDashboard> {
   int _pending = 0, _present = 0, _fieldWorkers = 0;
   bool _loading = true;
-  String _firstName = '';
+  String _userName = '';
   String _companyName = '';
 
   @override
-  void initState() {
-    super.initState();
-    _loadUserInfo();
-    _load();
-  }
-
-  Future<void> _loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _firstName = prefs.getString('first_name') ?? prefs.getString('full_name') ?? 'المدير';
-      _companyName = prefs.getString('company_name') ?? '';
-    });
-  }
+  void initState() { super.initState(); _load(); }
 
   Future<void> _load() async {
-    if (mounted) setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
+    _userName = prefs.getString('full_name') ?? prefs.getString('username') ?? 'مدير';
+    _companyName = prefs.getString('company_name') ?? '';
     final token = prefs.getString('token') ?? '';
     try {
-      final r1 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
-        headers: {'Authorization': 'Token $token'},
-      );
-      if (r1.statusCode == 200) {
-        final d = jsonDecode(r1.body);
-        final pr = ((d['pending_requests'] as List?) ?? []).length;
-        final pl = ((d['pending_leaves'] as List?) ?? []).length;
-        final pg = ((d['pending'] as List?) ?? []).length;
-        final tp = d['total_pending'];
-        _pending = tp is num ? tp.toInt() : pr + pl + pg;
-      }
-      final r2 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'),
-        headers: {'Authorization': 'Token $token'},
-      );
-      if (r2.statusCode == 200) {
-        final d = jsonDecode(r2.body);
-        final items = ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []);
-        final total = d['total'];
-        _present = total is num ? total.toInt() : items.length;
-      }
-      final r3 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
-        headers: {'Authorization': 'Token $token'},
-      );
-      if (r3.statusCode == 200) {
-        final d = jsonDecode(r3.body);
-        _fieldWorkers = ((d['locations'] as List?) ?? []).length;
-      }
+      final r1 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+      if (r1.statusCode == 200) { final d = jsonDecode(r1.body); final pr = ((d['pending_requests'] as List?) ?? []).length; final pl = ((d['pending_leaves'] as List?) ?? []).length; final pg = ((d['pending'] as List?) ?? []).length; final tp = d['total_pending']; _pending = tp is num ? tp.toInt() : pr + pl + pg; }
+      final r2 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+      if (r2.statusCode == 200) { final d = jsonDecode(r2.body); final items = ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []); final total = d['total']; _present = total is num ? total.toInt() : items.length; }
+      final r3 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+      if (r3.statusCode == 200) { final d = jsonDecode(r3.body); _fieldWorkers = ((d['locations'] as List?) ?? []).length; }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
 
+  Widget _buildHeader() {
+    final now = DateTime.now();
+    final arabicDays = ['الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
+    final months = ['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    final dateStr = '${arabicDays[now.weekday-1]}، ${now.day} ${months[now.month]}';
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF8E24AA), Color(0xFFAB47BC)], begin: Alignment.topRight, end: Alignment.bottomLeft),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: kManagerColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.dashboard, color: Colors.white, size: 28)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('أهلاً يا $_userName 👋', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              if (_companyName.isNotEmpty) Text(_companyName, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            ])),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)), child: Text(dateStr, style: const TextStyle(color: Colors.white, fontSize: 11))),
+          ]),
+          const SizedBox(height: 16),
+          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)), child: const Row(children: [Icon(Icons.verified_user, color: Colors.white, size: 18), SizedBox(width: 8), Expanded(child: Text('لوحة تحكم احترافية لإدارة فريقك بسهولة', style: TextStyle(color: Colors.white, fontSize: 12)))])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(children: [
+        Expanded(child: _statCard('المعلقة', '$_pending', Icons.pending_actions, Colors.orange, 'طلبات')),
+        const SizedBox(width: 10),
+        Expanded(child: _statCard('حاضر اليوم', '$_present', Icons.check_circle, Colors.green, 'موظف')),
+        const SizedBox(width: 10),
+        Expanded(child: _statCard('ميداني', '$_fieldWorkers', Icons.location_on, kManagerColor, 'ميداني')),
+      ]),
+    );
+  }
+
+  Widget _statCard(String title, String value, IconData icon, Color color, String sub) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 3))], border: Border.all(color: color.withOpacity(0.15))),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 18)), Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color))]),
+        const SizedBox(height: 8),
+        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(sub, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+      ]),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 10), child: Row(children: [Container(width: 4, height: 20, decoration: BoxDecoration(color: kManagerColor, borderRadius: BorderRadius.circular(4))), const SizedBox(width: 8), Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]));
+  }
+
+  Widget _actionCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))], border: Border.all(color: Colors.grey[200]!)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)),
+            Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
+          ]),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 2),
+          Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey[600]), maxLines: 1, overflow: TextOverflow.ellipsis),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    final months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-    final dateStr = '${days[now.weekday % 7]}، ${now.day} ${months[now.month - 1]} ${now.year}';
-
+    if (_loading) return const Center(child: CircularProgressIndicator());
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // ── Header بنفسجي ──
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2), Color(0xFF9C27B0)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
-              ),
-            ),
-            padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.dashboard, color: Colors.white, size: 28),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'أهلاً يا $_firstName 👋',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_companyName.isNotEmpty)
-                            Text(
-                              _companyName,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.calendar_today, color: Colors.white70, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        dateStr,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // ── 3 كروت إحصائيات ──
-                _loading
-                    ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                    : Row(
-                        children: [
-                          _statCard('معلقة', '$_pending', Icons.pending_actions, Colors.orangeAccent),
-                          const SizedBox(width: 10),
-                          _statCard('حاضر اليوم', '$_present', Icons.how_to_reg, Colors.greenAccent),
-                          const SizedBox(width: 10),
-                          _statCard('ميداني', '$_fieldWorkers', Icons.location_on, Colors.lightBlueAccent),
-                        ],
-                      ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── قسم: الإدارة السريعة ──
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              'الإدارة السريعة',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4A148C),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.4,
-              children: [                
-		_gridCard('الطلبات المعلقة', Icons.pending_actions, Colors.orange, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerPendingScreen())),
-                    badge: _pending),
-                _gridCard('الحضور اليوم', Icons.how_to_reg, Colors.green, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerAttendanceScreen()))),
-                _gridCard('المواقع المباشرة', Icons.location_on, Color(0xFF7B1FA2), () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
-                _gridCard('الموظفين', Icons.people, Colors.indigo, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
-                _gridCard('إضافة موظف', Icons.person_add, Colors.deepOrange, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateEmployeeScreen()))),
-                _gridCard('الإعلانات', Icons.campaign, Colors.deepPurple, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()))),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // ── قسم: الأدوات ──
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              'الأدوات',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4A148C),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.4,
-              children: [
-                _gridCard('التقارير', Icons.analytics, Colors.teal, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
-                _gridCard('الرواتب', Icons.account_balance_wallet, Colors.green, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
-                _gridCard('التذكيرات', Icons.notifications_active, Colors.blueGrey, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
-                _gridCard('نطاق الجيو', Icons.fence, Colors.cyan, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),                _gridCard('لائحة الشركة', Icons.description, Colors.brown, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
-                _gridCard('الهيكل التنظيمي', Icons.account_tree, const Color(0xFF00695C), () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const OrganizationTreeScreen()))),
-                _gridCard('بيانات الشركة', Icons.business, Colors.pink, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyInfoScreen()))),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),        ],
-      ),
-    );
-  }
-
-  Widget _statCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        ),
+      child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white70, fontSize: 11),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  Widget _gridCard(String title, IconData icon, Color color, VoidCallback onTap, {int? badge}) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 3,
-      shadowColor: color.withValues(alpha: 0.3),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
+            _buildHeader(),
+            _buildStatsRow(),
+            _buildSectionTitle('الإدارة السريعة'),
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.4,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(icon, color: color, size: 28),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  _actionCard('الطلبات المعلقة', '$_pending طلب', Icons.pending_actions, Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerPendingScreen()))),
+                  _actionCard('الحضور اليوم', '$_present حاضر', Icons.people_alt, Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerAttendanceScreen()))),
+                  _actionCard('الموظفين الميدانيين', '$_fieldWorkers ميداني', Icons.location_on, kManagerColor, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
+                  _actionCard('إضافة موظف', 'جديد + PDF', Icons.person_add, Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateEmployeeScreen()))),
                 ],
               ),
             ),
-            if (badge != null && badge > 0)
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withValues(alpha: 0.4),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-                  child: Text(
-                    badge > 99 ? '99+' : '$badge',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+            _buildSectionTitle('الأدوات والتحكم'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.4,
+                children: [
+                  _actionCard('الموظفين', 'عرض الكل', Icons.people, const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
+                  _actionCard('التقارير', 'تحليل شامل', Icons.analytics, Colors.indigo, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
+                  _actionCard('الرواتب', 'كشف المرتبات', Icons.account_balance_wallet, Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
+                  _actionCard('نطاق الشركة', 'Geofence', Icons.fence, Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),
+                  _actionCard('التذكيرات', 'إرسال تنبيه', Icons.notifications_active, Colors.blueGrey, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
+                  _actionCard('الإعلانات', 'نشر إعلان', Icons.campaign, Colors.deepPurple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()))),
+                  _actionCard('لائحة الشركة', 'إدارة اللائحة', Icons.description, Colors.brown, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
+                ],
               ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -3601,6 +3111,86 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   }
 }
 
+
+class ManagerDashboard extends StatefulWidget {
+  const ManagerDashboard({super.key});
+  @override
+  State<ManagerDashboard> createState() => _ManagerDashboardState();
+}
+
+class _ManagerDashboardState extends State<ManagerDashboard> {
+  int _pending = 0, _present = 0, _fieldWorkers = 0;
+  bool _loading = true;
+
+  @override
+  void initState() { super.initState(); _load(); }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final r1 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
+      if (r1.statusCode == 200) { final d = jsonDecode(r1.body);
+        final pr = ((d['pending_requests'] as List?) ?? []).length; final pl = ((d['pending_leaves'] as List?) ?? []).length;
+        final pg = ((d['pending'] as List?) ?? []).length; final tp = d['total_pending']; _pending = tp is num ? tp.toInt() : pr + pl + pg; }
+      final r2 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
+      if (r2.statusCode == 200) { final d = jsonDecode(r2.body);
+        final items = ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []); final total = d['total']; _present = total is num ? total.toInt() : items.length; }
+      final r3 = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
+      if (r3.statusCode == 200) { final d = jsonDecode(r3.body); _fieldWorkers = ((d['locations'] as List?) ?? []).length; }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Widget _card(String title, String value, IconData icon, Color color, VoidCallback onTap) {
+    return Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(16),
+        child: Padding(padding: const EdgeInsets.all(20), child: Row(children: [
+          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 40, color: color)),
+          const SizedBox(width: 16),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontSize: 16, color: Colors.grey)), const SizedBox(height: 4),
+            Text(value, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color))])),
+          const Icon(Icons.arrow_back_ios, color: Colors.grey, size: 16)]))));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(16), children: [
+      const Padding(padding: EdgeInsets.only(bottom: 16), child: Text('لوحة التحكم', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+      _card('الطلبات المعلقة', '$_pending', Icons.pending_actions, Colors.orange,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerPendingScreen()))),
+      const SizedBox(height: 12),
+      _card('الحضور اليوم', '$_present', Icons.people, Colors.green,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerAttendanceScreen()))),
+      const SizedBox(height: 12),
+      _card('الموظفين الميدانيين', '$_fieldWorkers', Icons.location_on, kManagerColor,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
+      const SizedBox(height: 12),
+      _card('نطاق موقع الشركة', 'إعدادات', Icons.fence, Colors.teal,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),
+      const SizedBox(height: 12),
+      _card('التقارير', 'عرض', Icons.analytics, Colors.indigo,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
+      const SizedBox(height: 12),
+      _card('الموظفين', 'عرض', Icons.people, Color(0xFF6A1B9A),
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
+      const SizedBox(height: 12),
+      _card('الرواتب', 'عرض', Icons.account_balance_wallet, Colors.green,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
+      const SizedBox(height: 12),
+      _card('التذكيرات', 'إرسال', Icons.notifications_active, Colors.blueGrey, 
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
+      const SizedBox(height: 12),
+      _card('الإعلانات', 'نشر', Icons.campaign, Colors.deepPurple,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()))),
+      const SizedBox(height: 12),
+      _card('إضافة موظف', 'جديد + PDF', Icons.person_add, Colors.orange,
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateEmployeeScreen())))]));
+  }
+}
 
 class ManagerPendingScreen extends StatefulWidget {
   const ManagerPendingScreen({super.key});
@@ -3695,14 +3285,8 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
-      return const EmptyStateWidget(
-        title: 'لا توجد طلبات معلقة',
-        description: 'ممتاز! كل الطلبات تمت مراجعتها.\nستظهر هنا أي طلبات جديدة تحتاج موافقتك.',
-        icon: Icons.check_circle_outline,
-        iconColor: Colors.green,
-      );
-    }
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) return EmptyStateWidget(icon: Icons.pending_actions, title: 'لا توجد طلبات معلقة', subtitle: 'جميع الطلبات تمت معالجتها - لا يوجد شيء معلق حاليا', onRefresh: _load);
     return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i];
       return Card(margin: const EdgeInsets.all(8), child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -3746,14 +3330,8 @@ class _ManagerAttendanceScreenState extends State<ManagerAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
-      return const EmptyStateWidget(
-        title: 'لا يوجد سجلات حضور',
-        description: 'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.',
-        icon: Icons.event_busy_outlined,
-        iconColor: Color(0xFF6A1B9A),
-      );
-    }
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) return EmptyStateWidget(icon: Icons.people_outline, title: 'لا يوجد حضور اليوم', subtitle: 'لم يسجل أي موظف حضور اليوم بعد', onRefresh: _load);
     return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i];
       return Card(child: ListTile(leading: const Icon(Icons.person, color: kManagerColor),
@@ -3785,7 +3363,7 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
     final token = prefs.getString('token') ?? '';
     try {
       final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['items'] ?? []); }
+      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['locations'] ?? []); }
     } catch (_) {}
     setState(() => _loading = false);
   }
@@ -3797,15 +3375,8 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
-      return EmptyStateWidget(
-        title: 'لا توجد مواقع لحظية',
-        description: 'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم',
-        icon: Icons.location_off_outlined,
-        iconColor: Colors.orange,
-        onRefresh: _load,
-      );
-    }
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) return EmptyStateWidget(icon: Icons.location_off, title: 'لا توجد مواقع لحظية', subtitle: 'تأكد من وجود موظفين ميدانيين وتفعيل التتبع لهم', onRefresh: _load);
     return Column(children: [
       Padding(padding: const EdgeInsets.all(8), child: Row(children: [
         Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = true), icon: const Icon(Icons.map), label: const Text('خريطة'),
