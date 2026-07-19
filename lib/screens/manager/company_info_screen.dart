@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../services/employee_management_service.dart';
 import '../../widgets/empty_state_widget.dart';
 import 'company_edit_screen.dart';
@@ -27,18 +27,15 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
       _loading = true;
       _error = null;
     });
-
     try {
       final data = await EmployeeManagementService.getCompanyInfo();
       if (!mounted) return;
-
       setState(() {
         _company = data;
         _loading = false;
       });
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -48,55 +45,61 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text(context.l10n.companyInfo),
-        backgroundColor: const Color(0xFF6A1B9A),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            tooltip: 'تعديل البيانات',
-            onPressed: () async {
-  if (_company == null) return;
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => CompanyEditScreen(company: _company!),
-    ),
-  );
-  if (result == true) _load();
-},
-          ),
-          IconButton(
-            onPressed: _load,
-            icon: Icon(Icons.refresh),
-          ),
-        ],
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        appBar: AppBar(
+          title: Text(context.l10n.companyInfo),
+          backgroundColor: const Color(0xFF6A1B9A),
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: isAr ? 'تعديل البيانات' : 'Edit Info',
+              onPressed: () async {
+                if (_company == null) return;
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CompanyEditScreen(company: _company!),
+                  ),
+                );
+                if (result == true) _load();
+              },
+            ),
+            IconButton(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? EmptyStateWidget(
+                    title: isAr ? 'خطأ في التحميل' : 'Loading Error',
+                    description: _error!,
+                    icon: Icons.error_outline,
+                    iconColor: Colors.red,
+                    onRefresh: _load,
+                  )
+                : _company == null
+                    ? EmptyStateWidget(
+                        title: context.l10n.noData,
+                        description: isAr
+                            ? 'تعذر جلب بيانات الشركة'
+                            : 'Could not load company data',
+                        icon: Icons.business_outlined,
+                        onRefresh: _load,
+                      )
+                    : _buildContent(isAr),
       ),
-      body: _loading
-          ? Center(child: CircularProgressIndicator())
-          : _error != null
-              ? EmptyStateWidget(
-                  title: 'خطأ في التحميل',
-                  description: _error!,
-                  icon: Icons.error_outline,
-                  iconColor: Colors.red,
-                  onRefresh: _load,
-                )
-              : _company == null
-                  ? EmptyStateWidget(
-                      title: context.l10n.noData,
-                      description: 'تعذر جلب بيانات الشركة',
-                      icon: Icons.business_outlined,
-                      onRefresh: _load,
-                    )
-                  : _buildContent(),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(bool isAr) {
     final c = _company!;
     final stats = (c['stats'] as Map?) ?? {};
     final logoUrl = c['logo_url']?.toString() ?? '';
@@ -106,6 +109,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          // ── Header gradient ──
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
@@ -126,6 +130,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
             ),
             child: Column(
               children: [
+                // Logo
                 Container(
                   width: 110,
                   height: 110,
@@ -146,22 +151,23 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                           child: Image.network(
                             logoUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(
+                            errorBuilder: (_, __, ___) => const Icon(
                               Icons.business,
                               size: 60,
                               color: Color(0xFF6A1B9A),
                             ),
                           ),
                         )
-                      : Icon(
+                      : const Icon(
                           Icons.business,
                           size: 60,
                           color: Color(0xFF6A1B9A),
                         ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
+                // Company name AR
                 Text(
-                  c['name_ar']?.toString() ?? 'شركة',
+                  c['name_ar']?.toString() ?? (isAr ? 'شركة' : 'Company'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -169,40 +175,36 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                // Company name EN
                 if ((c['name_en'] ?? '').toString().isNotEmpty) ...[
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     c['name_en'].toString(),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
+                // Industry
                 if ((c['industry'] ?? '').toString().isNotEmpty) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       c['industry'].toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          SizedBox(height: 16),
+
+          const SizedBox(height: 16),
+
+          // ── Stats row ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
@@ -213,65 +215,71 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                   Icons.business,
                   Colors.blue,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 _statCard(
                   '${stats['departments'] ?? 0}',
                   context.l10n.departments,
                   Icons.apartment,
                   Colors.orange,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 _statCard(
                   '${stats['employees'] ?? 0}',
-                  'الموظفين',
+                  context.l10n.employees,
                   Icons.people,
                   Colors.green,
                 ),
               ],
             ),
           ),
-          SizedBox(height: 20),
+
+          const SizedBox(height: 20),
+
+          // ── Contact info ──
           _section(
-            'بيانات الاتصال',
+            isAr ? 'بيانات الاتصال' : 'Contact Info',
             Icons.phone,
             Colors.blue,
             [
               if ((c['phone'] ?? '').toString().isNotEmpty)
-                _infoRow(Icons.phone, 'الهاتف', c['phone'].toString()),
+                _infoRow(Icons.phone, isAr ? 'الهاتف' : 'Phone', c['phone'].toString()),
               if ((c['email'] ?? '').toString().isNotEmpty)
-                _infoRow(Icons.email, 'البريد', c['email'].toString()),
+                _infoRow(Icons.email, isAr ? 'البريد' : 'Email', c['email'].toString()),
               if ((c['website'] ?? '').toString().isNotEmpty)
-                _infoRow(Icons.language, 'الموقع', c['website'].toString()),
+                _infoRow(Icons.language, isAr ? 'الموقع' : 'Website', c['website'].toString()),
               if ((c['address'] ?? '').toString().isNotEmpty)
                 _infoRow(Icons.location_on, context.l10n.address, c['address'].toString()),
             ],
           ),
+
+          // ── Legal info ──
           _section(
-            'البيانات القانونية',
+            isAr ? 'البيانات القانونية' : 'Legal Info',
             Icons.gavel,
             Colors.purple,
             [
               if ((c['commercial_register'] ?? '').toString().isNotEmpty)
                 _infoRow(
                   Icons.assignment,
-                  'السجل التجاري',
+                  isAr ? 'السجل التجاري' : 'Commercial Register',
                   c['commercial_register'].toString(),
                 ),
               if ((c['tax_number'] ?? '').toString().isNotEmpty)
                 _infoRow(
                   Icons.receipt_long,
-                  'الرقم الضريبي',
+                  isAr ? 'الرقم الضريبي' : 'Tax Number',
                   c['tax_number'].toString(),
                 ),
               if ((c['founded_date'] ?? '').toString().isNotEmpty)
                 _infoRow(
                   Icons.calendar_today,
-                  'تاريخ التأسيس',
+                  isAr ? 'تاريخ التأسيس' : 'Founded Date',
                   c['founded_date'].toString(),
                 ),
             ],
           ),
-          SizedBox(height: 24),
+
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -301,7 +309,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
               ),
               child: Icon(icon, color: color, size: 22),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               value,
               style: TextStyle(
@@ -328,7 +336,6 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
     List<Widget> children,
   ) {
     if (children.isEmpty) return const SizedBox.shrink();
-
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 4, 12, 12),
       decoration: BoxDecoration(
@@ -356,7 +363,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
             child: Row(
               children: [
                 Icon(icon, size: 18, color: color),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   title,
                   style: TextStyle(
@@ -384,9 +391,9 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 16, color: Colors.grey[600]),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           SizedBox(
-            width: 100,
+            width: 110,
             child: Text(
               label,
               style: TextStyle(fontSize: 12, color: Colors.grey[700]),
@@ -395,10 +402,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
         ],

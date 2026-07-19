@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -94,7 +94,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('إعادة تعيين', style: TextStyle(color: Colors.white)),
+              child: Text('إعادة تعيين', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -150,13 +150,13 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
             children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 8),
-              const Text('تم إعادة التعيين'),
+              Text('تم إعادة التعيين'),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('كلمة المرور الجديدة:'),
+              Text('كلمة المرور الجديدة:'),
               SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -196,7 +196,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
                   color: Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
+                child: Text(
                   '⚠️ احتفظ بكلمة المرور وأعطها للموظف. سيُطلب منه تغييرها عند أول دخول.',
                   style: TextStyle(fontSize: 12, color: Colors.orange),
                   textAlign: TextAlign.center,
@@ -544,7 +544,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                   ),
                 ),
                 icon: Icon(Icons.analytics, color: Colors.white, size: 18),
-                label: const Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 13)),
+                label: Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6A1B9A),
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -575,7 +575,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               child: ElevatedButton.icon(
                 onPressed: _transferEmployee,
                 icon: Icon(Icons.swap_horiz, color: Colors.white, size: 18),
-                label: const Text('نقل', style: TextStyle(color: Colors.white, fontSize: 13)),
+                label: Text('نقل', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -588,7 +588,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               child: ElevatedButton.icon(
                 onPressed: _resetPassword,
                 icon: Icon(Icons.lock_reset, color: Colors.white, size: 18),
-                label: const Text('Reset', style: TextStyle(color: Colors.white, fontSize: 13)),
+                label: Text('Reset', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -600,7 +600,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
         ),
         SizedBox(height: 12),
 
-        _sectionCard('البيانات الشخصية', Icons.person, const Color(0xFF1976D2), [
+        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات الشخصية' : 'Personal Info', Icons.person, const Color(0xFF1976D2), [
           _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
           _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
           _infoRow(context.l10n.gender, _profile!['gender']),
@@ -612,7 +612,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           _infoRow('البريد', _profile!['email'], icon: Icons.email),
           _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
         ]),
-        _sectionCard('البيانات الوظيفية', Icons.work, const Color(0xFFE65100), [
+        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات الوظيفية' : 'Job Info', Icons.work, const Color(0xFFE65100), [
           _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
           _infoRow(context.l10n.department, _profile!['department']),
           _infoRow('المدير', _profile!['direct_manager']?['name']),
@@ -620,7 +620,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           _infoRow('نوع العقد', _profile!['contract_type']),
           _infoRow(context.l10n.status, _profile!['status']),
         ]),
-        _sectionCard('البيانات البنكية', Icons.account_balance, const Color(0xFF6A1B9A), [
+        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF6A1B9A), [
           _infoRow('البنك', _profile!['bank_name']),
           _infoRow('رقم الحساب', _profile!['bank_account']),
           _infoRow('IBAN', _profile!['iban']),
@@ -686,14 +686,14 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                    child: const Text('منتهي', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                    child: Text('منتهي', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
                   )
                 else if (soon)
                   Container(
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                    child: const Text('ينتهي قريباً', style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold)),
+                    child: Text('ينتهي قريباً', style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold)),
                   ),
               ],
             ),
@@ -751,6 +751,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -815,6 +816,8 @@ class _EditEmployeeSheet extends StatefulWidget {
 }
 
 class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _phoneCtrl;
   late TextEditingController _emailCtrl;
@@ -908,6 +911,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
@@ -960,14 +964,14 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('بيانات التواصل',
+                      Text(isAr ? 'بيانات التواصل' : 'Contact Info',
                           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF388E3C))),
                       SizedBox(height: 8),
                       _field(context.l10n.phone, _phoneCtrl, keyboardType: TextInputType.phone),
                       _field(context.l10n.email, _emailCtrl, keyboardType: TextInputType.emailAddress),
                       _field(context.l10n.address, _addressCtrl),
                       SizedBox(height: 8),
-                      const Text('البيانات البنكية',
+                      Text(isAr ? 'البيانات البنكية' : 'Bank Info',
                           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A))),
                       SizedBox(height: 8),
                       _field('اسم البنك', _bankNameCtrl),
@@ -994,7 +998,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                           ),
                           child: _saving
                               ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text('حفظ التعديلات',
+                              : Text('حفظ التعديلات',
                                   style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),

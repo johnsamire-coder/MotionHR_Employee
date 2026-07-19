@@ -31,15 +31,18 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     'normal': Colors.blue,
   };
 
-  final List<Map<String, String>> _filters = [
-    {'key': 'all', 'label': 'الكل'},
-    {'key': 'active', 'label': 'جارية'},
-    {'key': 'today', 'label': 'اليوم'},
-    {'key': 'upcoming', 'label': 'القادمة'},
-    {'key': 'completed', 'label': 'المكتملة'},
-  ];
-
   String _currentFilter = 'all';
+
+  List<Map<String, String>> _getFilters(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return [
+      {'key': 'all', 'label': isAr ? isAr ? 'الكل' : 'All' : 'All'},
+      {'key': 'active', 'label': isAr ? isAr ? 'جارية' : 'In Progress' : context.l10n.active},
+      {'key': 'today', 'label': isAr ? 'اليوم' : 'Today'},
+      {'key': 'upcoming', 'label': isAr ? 'القادمة' : 'Upcoming'},
+      {'key': 'completed', 'label': isAr ? 'المكتملة' : 'Completed'},
+    ];
+  }
 
   @override
   void initState() {
@@ -67,7 +70,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
       });
     } catch (e) {
       setState(() {
-        _error = 'حدث خطأ في تحميل المهمات';
+        _error = null;
         _loading = false;
       });
     }
@@ -75,20 +78,21 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: const Text(
-            'مهماتي',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          title: Text(
+            context.l10n.myMissions,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh, color: Colors.white),
+              icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: _loadMissions,
             ),
           ],
@@ -98,8 +102,11 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             tabs: [
-              Tab(text: context.l10n.myMissions, icon: Icon(Icons.assignment)),
-              Tab(text: 'طلب مهمة', icon: Icon(Icons.add_task)),
+              Tab(text: context.l10n.myMissions, icon: const Icon(Icons.assignment)),
+              Tab(
+                text: isAr ? 'طلب مهمة' : 'Request Mission',
+                icon: const Icon(Icons.add_task),
+              ),
             ],
           ),
         ),
@@ -117,14 +124,13 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
   Widget _buildMissionsTab() {
     return Column(
       children: [
-        // فلتر
         Container(
           height: 50,
           color: Colors.white,
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            children: _filters.map((f) {
+            children: _getFilters(context).map((f) {
               final isSelected = _currentFilter == f['key'];
               return GestureDetector(
                 onTap: () {
@@ -151,10 +157,9 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
             }).toList(),
           ),
         ),
-
         Expanded(
           child: _loading
-              ? Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
               : _error != null
                   ? _buildError()
                   : _missions.isEmpty
@@ -173,6 +178,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
   }
 
   Widget _buildMissionCard(Map<String, dynamic> m) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final status = m['status'] ?? '';
     final priority = m['priority'] ?? 'normal';
     final statusColor = _statusColors[status] ?? Colors.grey;
@@ -208,14 +214,13 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // العنوان + الحالة
               Row(
                 children: [
                   if (isActive)
                     Container(
                       width: 10,
                       height: 10,
-                      margin: const EdgeInsets.only(left: 8),
+                      margin: const EdgeInsets.only(left: 8, right: 8),
                       decoration: const BoxDecoration(
                         color: Colors.orange,
                         shape: BoxShape.circle,
@@ -233,9 +238,9 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.15),
+                      color: statusColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: statusColor.withOpacity(0.4)),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       m['status_display'] ?? status,
@@ -248,15 +253,12 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                   ),
                 ],
               ),
-
-              SizedBox(height: 8),
-
-              // الموقع
+              const SizedBox(height: 8),
               if ((m['location_name'] ?? '').isNotEmpty)
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 13, color: Colors.grey),
-                    SizedBox(width: 4),
+                    const Icon(Icons.location_on, size: 13, color: Colors.grey),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         m['location_name'],
@@ -267,29 +269,27 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                     ),
                   ],
                 ),
-
-              // العميل
               if ((m['client_name'] ?? '').isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Row(
                     children: [
-                      Icon(Icons.person_outline, size: 13, color: Colors.grey),
-                      SizedBox(width: 4),
-                      Text(m['client_name'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      const Icon(Icons.person_outline, size: 13, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        m['client_name'],
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                     ],
                   ),
                 ),
-
-              SizedBox(height: 8),
-              Divider(height: 1),
-              SizedBox(height: 8),
-
-              // الوقت + الأولوية
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 13, color: Colors.grey),
-                  SizedBox(width: 4),
+                  const Icon(Icons.access_time, size: 13, color: Colors.grey),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       _formatDateTime(m['planned_start_time']),
@@ -299,7 +299,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: priorityColor.withOpacity(0.1),
+                      color: priorityColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -309,29 +309,33 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                   ),
                 ],
               ),
-
-              // أزرار سريعة للمهمة المعلقة
               if (isPending) ...[
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _quickRespond(m['assignment_id'], 'accept'),
-                        icon: Icon(Icons.check, size: 16, color: Colors.green),
-                        label: Text(context.l10n.acceptMission, style: TextStyle(color: Colors.green, fontSize: 12)),
+                        icon: const Icon(Icons.check, size: 16, color: Colors.green),
+                        label: Text(
+                          context.l10n.acceptMission,
+                          style: const TextStyle(color: Colors.green, fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.green),
                           padding: const EdgeInsets.symmetric(vertical: 6),
                         ),
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _quickRespond(m['assignment_id'], 'reject'),
-                        icon: Icon(Icons.close, size: 16, color: Colors.red),
-                        label: Text(context.l10n.rejectMission, style: TextStyle(color: Colors.red, fontSize: 12)),
+                        icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                        label: Text(
+                          context.l10n.rejectMission,
+                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.red),
                           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -349,6 +353,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
   }
 
   Widget _buildRequestTab() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final titleCtrl = TextEditingController();
     final descCtrl = TextEditingController();
     final locationCtrl = TextEditingController();
@@ -356,79 +361,80 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     final clientPhoneCtrl = TextEditingController();
     DateTime? startTime;
     DateTime? endTime;
-    String priority = 'normal';
+    const String priority = 'normal';
 
     return StatefulBuilder(
       builder: (ctx, setTabState) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: Color(0xFFF3E5F5),
+            color: const Color(0xFFF3E5F5),
             child: Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Color(0xFF6C3FC5)),
-                  SizedBox(width: 8),
+                  const Icon(Icons.info_outline, color: Color(0xFF6C3FC5)),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'لو رتبت مع عميل مباشرة، ابعت الطلب هنا للمدير للموافقة',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF6C3FC5)),
+                      isAr
+                          ? 'لو رتبت مع عميل مباشرة، ابعت الطلب هنا للمدير للموافقة'
+                          : 'If you arranged with a client directly, send the request here for manager approval',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF6C3FC5)),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextField(
             controller: titleCtrl,
             decoration: InputDecoration(
-              labelText: 'عنوان المهمة *',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.title),
+              labelText: isAr ? 'عنوان المهمة *' : 'Mission Title *',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.title),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           TextField(
             controller: descCtrl,
             maxLines: 3,
             decoration: InputDecoration(
               labelText: context.l10n.requestDetails,
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.description),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.description),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           TextField(
             controller: locationCtrl,
             decoration: InputDecoration(
-              labelText: 'الموقع / العنوان',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.place),
+              labelText: isAr ? 'الموقع / العنوان' : 'Location / Address',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.place),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           TextField(
             controller: clientNameCtrl,
             decoration: InputDecoration(
               labelText: context.l10n.clientName,
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.person),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           TextField(
             controller: clientPhoneCtrl,
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
               labelText: context.l10n.clientPhone,
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.phone),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.phone),
             ),
           ),
-          SizedBox(height: 12),
-          // وقت البدء
+          const SizedBox(height: 12),
           InkWell(
             onTap: () async {
               final d = await showDatePicker(
@@ -450,18 +456,21 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.play_circle, color: Color(0xFF6C3FC5)),
-                  SizedBox(width: 10),
+                  const Icon(Icons.play_circle, color: Color(0xFF6C3FC5)),
+                  const SizedBox(width: 10),
                   Text(
-                    startTime == null ? 'وقت البدء *' : _formatDateTime(startTime!.toIso8601String()),
-                    style: TextStyle(color: startTime == null ? Colors.grey : Colors.black87),
+                    startTime == null
+                        ? (isAr ? 'وقت البدء *' : 'Start Time *')
+                        : _formatDateTime(startTime!.toIso8601String()),
+                    style: TextStyle(
+                      color: startTime == null ? Colors.grey : Colors.black87,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(height: 12),
-          // وقت الانتهاء
+          const SizedBox(height: 12),
           InkWell(
             onTap: () async {
               final d = await showDatePicker(
@@ -483,22 +492,30 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.stop_circle, color: Color(0xFF6C3FC5)),
-                  SizedBox(width: 10),
+                  const Icon(Icons.stop_circle, color: Color(0xFF6C3FC5)),
+                  const SizedBox(width: 10),
                   Text(
-                    endTime == null ? 'وقت الانتهاء *' : _formatDateTime(endTime!.toIso8601String()),
-                    style: TextStyle(color: endTime == null ? Colors.grey : Colors.black87),
+                    endTime == null
+                        ? (isAr ? 'وقت الانتهاء *' : 'End Time *')
+                        : _formatDateTime(endTime!.toIso8601String()),
+                    style: TextStyle(
+                      color: endTime == null ? Colors.grey : Colors.black87,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () async {
               if (titleCtrl.text.isEmpty || startTime == null || endTime == null) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
-                  SnackBar(content: Text('يرجى تعبئة الحقول المطلوبة')),
+                  SnackBar(
+                    content: Text(
+                      isAr ? 'يرجى تعبئة الحقول المطلوبة' : 'Please fill required fields',
+                    ),
+                  ),
                 );
                 return;
               }
@@ -516,7 +533,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               if (result['success'] == true) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   SnackBar(
-                    content: Text('✅ تم إرسال الطلب للمدير'),
+                    content: Text(context.l10n.missionRequestSent),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -533,7 +550,9 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                 _loadMissions();
               } else {
                 ScaffoldMessenger.of(ctx).showSnackBar(
-                  SnackBar(content: Text(result['error'] ?? 'حدث خطأ')),
+                  SnackBar(
+                    content: Text(result['error'] ?? context.l10n.error),
+                  ),
                 );
               }
             },
@@ -542,9 +561,9 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text(
-              'إرسال الطلب للمدير',
-              style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+            child: Text(
+              isAr ? 'إرسال الطلب للمدير' : 'Send Request to Manager',
+              style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -553,22 +572,31 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
   }
 
   Future<void> _quickRespond(int assignmentId, String action) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     String reason = '';
     if (action == 'reject') {
       final ctrl = TextEditingController();
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
           child: AlertDialog(
-            title: const Text('سبب الرفض'),
+            title: Text(isAr ? 'سبب الرفض' : 'Rejection Reason'),
             content: TextField(
               controller: ctrl,
-              decoration: InputDecoration(hintText: 'اكتب السبب...'),
+              decoration: InputDecoration(
+                hintText: isAr ? 'اكتب السبب...' : 'Write reason...',
+              ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
-              ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.confirm)),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(context.l10n.cancel),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(context.l10n.confirm),
+              ),
             ],
           ),
         ),
@@ -582,7 +610,12 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(result['message'] ?? (action == 'accept' ? 'تم القبول' : 'تم الرفض')),
+        content: Text(
+          result['message'] ??
+              (action == 'accept'
+                  ? (isAr ? 'تم القبول' : 'Accepted')
+                  : (isAr ? 'تم الرفض' : context.l10n.rejected)),
+        ),
         backgroundColor: action == 'accept' ? Colors.green : Colors.red,
       ),
     );
@@ -594,27 +627,38 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 60, color: Colors.red),
-          SizedBox(height: 12),
+          const Icon(Icons.error_outline, size: 60, color: Colors.red),
+          const SizedBox(height: 12),
           Text(_error ?? context.l10n.error),
-          SizedBox(height: 12),
-          ElevatedButton(onPressed: _loadMissions, child: Text(context.l10n.retry)),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _loadMissions,
+            child: Text(context.l10n.retry),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildEmpty() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade300),
-          SizedBox(height: 16),
-          Text(context.l10n.noMissions, style: TextStyle(fontSize: 18, color: Colors.grey)),
-          SizedBox(height: 8),
-          const Text('اضغط على تبويب "طلب مهمة" لإضافة مهمة جديدة',
-              style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 16),
+          Text(
+            context.l10n.noMissions,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isAr
+                ? 'اضغط على تبويب "طلب مهمة" لإضافة مهمة جديدة'
+                : 'Tap "Request Mission" tab to add a new mission',
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
         ],
       ),
     );

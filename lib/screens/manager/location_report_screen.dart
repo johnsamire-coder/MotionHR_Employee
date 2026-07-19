@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../services/location_tracking_service.dart';
 import '../../services/employee_management_service.dart';
+import '../../services/report_pdf_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
 class LocationReportScreen extends StatefulWidget {
@@ -12,11 +13,14 @@ class LocationReportScreen extends StatefulWidget {
 }
 
 class _LocationReportScreenState extends State<LocationReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   List<Map<String, dynamic>> _employees = [];
   Map<String, dynamic>? _selectedEmployee;
   DateTime _selectedDate = DateTime.now();
   bool _loadingEmployees = true;
   bool _loadingReport = false;
+  bool _printing = false;
   Map<String, dynamic>? _reportData;
   String? _error;
 
@@ -41,7 +45,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
   Future<void> _loadReport() async {
     if (_selectedEmployee == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('اختر موظفاً أولاً')),
+        const SnackBar(content: Text('اختر موظفاً أولاً')),
       );
       return;
     }
@@ -69,6 +73,33 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
     }
   }
 
+  Future<void> _print() async {
+    if (_reportData == null) return;
+    setState(() => _printing = true);
+    try {
+      final points = (_reportData!['points'] as List?) ?? [];
+      final rows = points.asMap().entries.map<List<String>>((entry) {
+        final i = entry.key;
+        final p = entry.value;
+        return [
+          '${i + 1}',
+          p['address']?.toString() ?? 'موقع غير معروف',
+          p['recorded_at']?.toString() ?? '-',
+        ];
+      }).toList();
+
+      await ReportPdfService.printReport(
+        title: isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
+        subtitle: 'الموظف: ${_reportData!['employee']?['name'] ?? ''} | التاريخ: ${_formatDate(_selectedDate)}',
+        headers: ['#', 'العنوان / الموقع', 'الوقت'],
+        rows: rows,
+      );
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e')));
+    }
+    if (mounted) setState(() => _printing = false);
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -88,6 +119,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -95,8 +127,14 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF4A148C),
           foregroundColor: Colors.white,
-          title: const Text('تقرير المواقع اليومي',
+          title: Text(isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
               style: TextStyle(fontWeight: FontWeight.bold)),
+          actions: [
+            if (_reportData != null)
+              _printing
+                  ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                  : IconButton(onPressed: _print, icon: Icon(Icons.print)),
+          ],
         ),
         body: Column(
           children: [
@@ -106,7 +144,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
               color: Colors.white,
               child: Column(
                 children: [
-                  // اختيار الموظف
                   _loadingEmployees
                       ? const CircularProgressIndicator()
                       : DropdownButtonFormField<Map<String, dynamic>>(
@@ -132,7 +169,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                               setState(() => _selectedEmployee = val),
                         ),
                   SizedBox(height: 12),
-                  // اختيار التاريخ
                   Row(
                     children: [
                       Expanded(
@@ -164,7 +200,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                         onPressed: _loadingReport ? null : _loadReport,
                         icon: Icon(Icons.search, color: Colors.white),
                         label: Text(context.l10n.search,
-                            style: TextStyle(color: Colors.white)),
+                            style: const TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A148C),
                           padding: const EdgeInsets.symmetric(
@@ -179,7 +215,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
               ),
             ),
 
-            // النتائج
             Expanded(
               child: _loadingReport
                   ? Center(child: CircularProgressIndicator())
@@ -229,7 +264,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
 
     return Column(
       children: [
-        // ملخص
         Container(
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.all(14),
@@ -273,7 +307,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
           ),
         ),
 
-        // قائمة النقاط
         Expanded(
           child: points.isEmpty
               ? Center(
@@ -300,7 +333,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -308,12 +341,11 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                       ),
                       child: Row(
                         children: [
-                          // رقم النقطة
                           Container(
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4A148C).withValues(alpha: 0.1),
+                              color: const Color(0xFF4A148C).withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -328,7 +360,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             ),
                           ),
                           SizedBox(width: 12),
-                          // التفاصيل
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +390,6 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                               ],
                             ),
                           ),
-                          // أيقونة موقع
                           Icon(Icons.location_on,
                               color: Color(0xFF4A148C), size: 20),
                         ],

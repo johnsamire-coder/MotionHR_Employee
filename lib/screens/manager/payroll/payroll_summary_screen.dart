@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/payroll_service.dart';
 import 'payroll_employee_detail_screen.dart';
 
@@ -9,6 +9,8 @@ class PayrollSummaryScreen extends StatefulWidget {
 }
 
 class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = PayrollService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -26,14 +28,15 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ملخص الرواتب'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        title: Text(isAr ? 'ملخص الرواتب' : 'Payroll Summary'),
+        actions: [IconButton(onPressed: _load, icon: Icon(Icons.refresh))],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -48,19 +51,19 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                         children: [
                           Text('الشهر: ${_data?['month'] ?? '-'} / ${_data?['year'] ?? '-'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           const Divider(),
-                          _row('عدد الموظفين', '${_data?['total_employees'] ?? 0}'),
-                          _row('إجمالي الرواتب', '${_data?['grand_total_salary'] ?? 0} ج'),
+                          _row(isAr ? 'عدد الموظفين' : 'Total Employees', '${_data?['total_employees'] ?? 0}'),
+                          _row(isAr ? 'إجمالي الرواتب' : 'Total Salary', '${_data?['grand_total_salary'] ?? 0} ج'),
                           _row('إجمالي الخصومات', '${_data?['grand_total_deductions'] ?? 0} ج', color: Colors.red),
                           _row('إجمالي Overtime', '${_data?['grand_total_overtime'] ?? 0} ج', color: Colors.blue),
                           const Divider(),
-                          _row('صافي الرواتب', '${_data?['grand_total_net'] ?? 0} ج', color: Colors.green, bold: true),
+                          _row(isAr ? 'صافي الرواتب' : 'Net Salary', '${_data?['grand_total_net'] ?? 0} ج', color: Colors.green, bold: true),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   if (employees.isEmpty)
-                    const Card(child: Padding(padding: EdgeInsets.all(20), child: Center(child: Text('لا يوجد موظفين لعرضهم')))),
+                    Card(child: Padding(padding: EdgeInsets.all(20), child: Center(child: Text(isAr ? 'لا يوجد موظفين لعرضهم' : 'No employees found')))),
                   ...employees.map<Widget>((e) {
                     final item = Map<String, dynamic>.from(e as Map);
                     return Card(
@@ -75,7 +78,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                             Text('صافي: ${item['net_salary'] ?? 0} ج', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                           ],
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                        trailing: Icon(Icons.arrow_forward_ios, size: 14),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => PayrollEmployeeDetailScreen(
                             employeeId: item['employee_id'] as int,

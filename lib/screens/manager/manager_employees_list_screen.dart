@@ -95,6 +95,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -134,7 +135,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(children: [
-                  _filterChip('الكل', ''),
+                  _filterChip(isAr ? 'الكل' : 'All', ''),
                   _filterChip(context.l10n.active, 'active'),
                   _filterChip(context.l10n.onLeave, 'on_leave'),
                   _filterChip('موقوف', 'suspended'),

@@ -20,6 +20,8 @@ class CreateEmployeeScreen extends StatefulWidget {
 }
 
 class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final PageController _pageController = PageController();
   int _currentStep = 0;
   final int _totalSteps = 4;
@@ -436,7 +438,7 @@ final List<Map<String, String>> _currencies = [
   String _getStepTitle(int index) {
     switch (index) {
       case 0:
-        return 'البيانات الشخصية';
+        return isAr ? 'البيانات الشخصية' : 'Personal Info';
       case 1:
         return 'الوظيفة';
       case 2:
@@ -455,9 +457,9 @@ final List<Map<String, String>> _currencies = [
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('البيانات الشخصية', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
+          Text(isAr ? 'البيانات الشخصية' : 'Personal Info', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
           SizedBox(height: 4),
-          const Text('أدخل بيانات الموظف الأساسية', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('أدخل بيانات الموظف الأساسية', style: TextStyle(color: Colors.grey, fontSize: 13)),
           SizedBox(height: 20),
           TextFormField(
             controller: _firstNameArCtrl,
@@ -615,9 +617,9 @@ final List<Map<String, String>> _currencies = [
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('بيانات الوظيفة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
+          Text(isAr ? 'بيانات الوظيفة' : 'Job Details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
           SizedBox(height: 4),
-          const Text('حدد الفرع والقسم والمسمى الوظيفي', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('حدد الفرع والقسم والمسمى الوظيفي', style: TextStyle(color: Colors.grey, fontSize: 13)),
           SizedBox(height: 20),
           // Branch
           DropdownButtonFormField<int>(
@@ -650,11 +652,11 @@ final List<Map<String, String>> _currencies = [
           if (_employeesSimple.isNotEmpty)
             DropdownButtonFormField<int>(
               value: _selectedManagerId,
-              decoration: _inputDec('المدير المباشر (اختياري)', Icons.supervisor_account),
-              items: [
+              decoration: _inputDec('المدير المباشر (اختياري)', Icons.supervisor_account),          items: [
                 const DropdownMenuItem<int>(value: null, child: Text('بدون مدير مباشر')),
-                ..._employeesSimple.map((e) => DropdownMenuItem<int>(value: e['id'] as int, child: Text('${e['full_name']} - ${e['job_title'] ?? ''}'))),
+                ..._employeesSimple.where((e) => e['is_manager'] == true).map((e) => DropdownMenuItem<int>(value: e['id'] as int, child: Text('${e['full_name']} - ${e['job_title'] ?? ''}'))),
               ],
+
               onChanged: (v) => setState(() => _selectedManagerId = v),
               isExpanded: true,
             ),
@@ -715,9 +717,9 @@ final List<Map<String, String>> _currencies = [
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('بيانات حساب الدخول', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
+          Text(isAr ? 'بيانات حساب الدخول' : 'Login Credentials', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
           SizedBox(height: 4),
-          const Text('سيتم استخدام هذه البيانات لتسجيل دخول الموظف', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('سيتم استخدام هذه البيانات لتسجيل دخول الموظف', style: TextStyle(color: Colors.grey, fontSize: 13)),
           SizedBox(height: 20),
           TextFormField(
             controller: _usernameCtrl,
@@ -811,7 +813,7 @@ final List<Map<String, String>> _currencies = [
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('ملخص المراجعة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(isAr ? 'ملخص المراجعة' : 'Review Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 SizedBox(height: 12),
                 _reviewRow('الاسم:', '${_firstNameArCtrl.text} ${_middleNameArCtrl.text} ${_lastNameArCtrl.text}'.trim()),
                 _reviewRow('الموبايل (واتساب):', _phoneCtrl.text, icon: Icons.chat, iconColor: Colors.green),
@@ -855,7 +857,7 @@ final List<Map<String, String>> _currencies = [
               ] else ...[
                 const CircularProgressIndicator(),
                 SizedBox(height: 16),
-                const Text('جاري إنشاء حساب الموظف...'),
+                Text('جاري إنشاء حساب الموظف...'),
               ],
             ],
           ),
@@ -882,7 +884,7 @@ final List<Map<String, String>> _currencies = [
             children: [
               Icon(Icons.check_circle, color: Colors.white, size: 60),
               SizedBox(height: 12),
-              const Text('تم إنشاء الموظف بنجاح! 🎉', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('تم إنشاء الموظف بنجاح! 🎉', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 6),
               Text('${emp['full_name_ar']}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               Text('الرقم الوظيفي: ${emp['employee_code']}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
@@ -950,7 +952,7 @@ final List<Map<String, String>> _currencies = [
         ),
         SizedBox(height: 20),
         // Share Buttons
-        const Text('مشاركة بيانات الموظف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('مشاركة بيانات الموظف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         SizedBox(height: 12),
         // Share PDF button
         SizedBox(
@@ -959,7 +961,7 @@ final List<Map<String, String>> _currencies = [
           child: ElevatedButton.icon(
             onPressed: (_pdfPath == null || _generatingPdf) ? null : _sharePdf,
             icon: Icon(Icons.share, size: 24),
-            label: const Text('مشاركة ملف PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            label: Text('مشاركة ملف PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: kPrimaryColor,
               foregroundColor: Colors.white,
@@ -991,7 +993,7 @@ final List<Map<String, String>> _currencies = [
           child: ElevatedButton.icon(
             onPressed: (_pdfPath == null || _generatingPdf) ? null : _shareViaWhatsAppWithPdf,
             icon: Icon(Icons.picture_as_pdf, size: 24),
-            label: const Text('مشاركة PDF عبر واتساب (اختار واتساب من القائمة)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            label: Text('مشاركة PDF عبر واتساب (اختار واتساب من القائمة)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: kManagerColor,
               foregroundColor: Colors.white,
@@ -1022,7 +1024,7 @@ final List<Map<String, String>> _currencies = [
               Navigator.pop(context, true);
             },
             icon: Icon(Icons.check),
-            label: const Text('تم - العودة للوحة التحكم', style: TextStyle(fontSize: 16)),
+            label: Text('تم - العودة للوحة التحكم', style: TextStyle(fontSize: 16)),
             style: OutlinedButton.styleFrom(
               foregroundColor: kManagerColor,
               side: const BorderSide(color: kManagerColor),
@@ -1066,7 +1068,7 @@ final List<Map<String, String>> _currencies = [
               _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
             icon: Icon(Icons.person_add),
-            label: const Text('إنشاء موظف آخر', style: TextStyle(fontSize: 16)),
+            label: Text('إنشاء موظف آخر', style: TextStyle(fontSize: 16)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: kManagerColor,
@@ -1132,11 +1134,12 @@ final List<Map<String, String>> _currencies = [
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('إضافة موظف جديد'),
+          title: Text('إضافة موظف جديد'),
           backgroundColor: kManagerColor,
           foregroundColor: Colors.white,
           elevation: 0,

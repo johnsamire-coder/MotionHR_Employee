@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text(isAr ? context.l10n.settings : 'Settings'),
+        title: Text(isAr ? context.l10n.settings : context.l10n.settings),
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),

@@ -17,15 +17,6 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   String? _error;
   String _statusFilter = '';
 
-  final Map<String, String> _statusLabels = {
-    '': 'الكل',
-    'approved': 'معتمدة',
-    'in_progress': 'جارية',
-    'completed': 'مكتملة',
-    'cancelled': 'ملغية',
-    'pending_approval': 'انتظار موافقة',
-  };
-
   final Map<String, Color> _statusColors = {
     'approved': Colors.blue,
     'in_progress': Colors.orange,
@@ -46,6 +37,18 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
     'high': Icons.keyboard_arrow_up,
     'normal': Icons.remove,
   };
+
+  Map<String, String> _getStatusLabels(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return {
+      '': isAr ? isAr ? 'الكل' : 'All' : 'All',
+      'approved': context.l10n.approved,
+      'in_progress': isAr ? isAr ? 'جارية' : 'In Progress' : 'In Progress',
+      'completed': isAr ? isAr ? 'مكتملة' : 'Completed' : 'Completed',
+      'cancelled': context.l10n.cancelled,
+      'pending_approval': isAr ? 'انتظار موافقة' : 'Pending Approval',
+    };
+  }
 
   @override
   void initState() {
@@ -75,7 +78,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       });
     } catch (e) {
       setState(() {
-        _error = 'حدث خطأ في تحميل المهمات';
+        _error = context.l10n.error;
         _loading = false;
       });
     }
@@ -83,25 +86,26 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: const Text(
-            'إدارة المهمات',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          title: Text(
+            isAr ? isAr ? 'إدارة المهمات' : 'Missions Management' : 'Missions Management',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh, color: Colors.white),
+              icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: _loadMissions,
             ),
             IconButton(
-              icon: Icon(Icons.pending_actions, color: Colors.white),
-              tooltip: 'الطلبات المعلقة',
+              icon: const Icon(Icons.pending_actions, color: Colors.white),
+              tooltip: isAr ? 'الطلبات المعلقة' : 'Pending Requests',
               onPressed: _showPendingRequests,
             ),
           ],
@@ -111,8 +115,11 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             tabs: [
-              Tab(text: context.l10n.missions, icon: Icon(Icons.assignment)),
-              Tab(text: 'الفيدباك', icon: Icon(Icons.feedback)),
+              Tab(text: context.l10n.missions, icon: const Icon(Icons.assignment)),
+              Tab(
+                text: isAr ? 'الفيدباك' : 'Feedback',
+                icon: const Icon(Icons.feedback),
+              ),
             ],
           ),
         ),
@@ -124,12 +131,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            // سيتم ربطها لاحقاً
-          },
+          onPressed: () {},
           backgroundColor: const Color(0xFF6C3FC5),
-          icon: Icon(Icons.add, color: Colors.white),
-          label: Text(context.l10n.newMission, style: TextStyle(color: Colors.white)),
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(
+            context.l10n.newMission,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );
@@ -144,7 +152,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            children: _statusLabels.entries.map((entry) {
+            children: _getStatusLabels(context).entries.map((entry) {
               final isSelected = _statusFilter == entry.key;
               return GestureDetector(
                 onTap: () {
@@ -173,7 +181,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         ),
         Expanded(
           child: _loading
-              ? Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
               : _error != null
                   ? _buildError()
                   : _missions.isEmpty
@@ -192,6 +200,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   }
 
   Widget _buildMissionCard(Map<String, dynamic> mission) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final status = mission['status'] ?? '';
     final priority = mission['priority'] ?? 'normal';
     final statusColor = _statusColors[status] ?? Colors.grey;
@@ -204,9 +213,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // سيتم ربطها لاحقاً
-        },
+        onTap: () {},
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -215,7 +222,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               Row(
                 children: [
                   Icon(_priorityIcons[priority] ?? Icons.remove, color: priorityColor, size: 18),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       mission['title'] ?? '',
@@ -225,9 +232,9 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.15),
+                      color: statusColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: statusColor.withOpacity(0.4)),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       mission['status_display'] ?? status,
@@ -236,12 +243,12 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                   ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               if ((mission['location_name'] ?? '').isNotEmpty)
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 14, color: Colors.grey),
-                    SizedBox(width: 4),
+                    const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         mission['location_name'],
@@ -252,13 +259,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                     ),
                   ],
                 ),
-              SizedBox(height: 8),
-              Divider(height: 1),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14, color: Colors.grey),
-                  SizedBox(width: 4),
+                  const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       _formatDateTime(mission['planned_start_time']),
@@ -268,10 +275,10 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                   if (assignments.isNotEmpty)
                     Row(
                       children: [
-                        Icon(Icons.group, size: 14, color: Colors.grey),
-                        SizedBox(width: 4),
+                        const Icon(Icons.group, size: 14, color: Colors.grey),
+                        const SizedBox(width: 4),
                         Text(
-                          '${assignments.length} مشارك',
+                          '${assignments.length} ${isAr ? 'مشارك' : 'participants'}',
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
@@ -286,11 +293,12 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   }
 
   Widget _buildFeedbackTab() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return FutureBuilder<Map<String, dynamic>>(
       future: MissionsService.getFeedbackDashboard(),
       builder: (ctx, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)));
         }
         if (!snap.hasData || snap.data == null) {
           return Center(child: Text(context.l10n.noData));
@@ -309,8 +317,8 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               children: [
                 _statCard(context.l10n.veryInterested, '${summary['very_interested'] ?? 0}', Icons.thumb_up, Colors.green),
                 _statCard(context.l10n.interested, '${summary['interested'] ?? 0}', Icons.sentiment_satisfied, Colors.blue),
-                _statCard('عقود موقعة', '${summary['contracts_signed'] ?? 0}', Icons.handshake, Colors.purple),
-                _statCard('تحتاج متابعة', '${summary['needs_followup'] ?? 0}', Icons.follow_the_signs, Colors.orange),
+                _statCard(isAr ? 'عقود موقعة' : 'Contracts Signed', '${summary['contracts_signed'] ?? 0}', Icons.handshake, Colors.purple),
+                _statCard(isAr ? 'تحتاج متابعة' : 'Needs Follow-up', '${summary['needs_followup'] ?? 0}', Icons.follow_the_signs, Colors.orange),
               ],
             ),
           ],
@@ -324,13 +332,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: color, size: 28),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
           Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
@@ -343,10 +351,10 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 60, color: Colors.red),
-          SizedBox(height: 12),
+          const Icon(Icons.error_outline, size: 60, color: Colors.red),
+          const SizedBox(height: 12),
           Text(_error ?? context.l10n.error),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           ElevatedButton(onPressed: _loadMissions, child: Text(context.l10n.retry)),
         ],
       ),
@@ -359,8 +367,8 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade300),
-          SizedBox(height: 16),
-          Text(context.l10n.noMissions, style: TextStyle(fontSize: 18, color: Colors.grey)),
+          const SizedBox(height: 16),
+          Text(context.l10n.noMissions, style: const TextStyle(fontSize: 18, color: Colors.grey)),
         ],
       ),
     );
@@ -377,21 +385,30 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   }
 
   void _showPendingRequests() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final result = await MissionsService.getPendingRequests();
     final requests = result['requests'] as List? ?? [];
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: Column(
           children: [
-            Padding(padding: EdgeInsets.all(16), child: Text('طلبات المهمات المعلقة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                isAr ? 'طلبات المهمات المعلقة' : 'Pending Mission Requests',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Divider(),
             Expanded(
               child: ListView.builder(
                 itemCount: requests.length,
-                itemBuilder: (_, i) => ListTile(title: Text(requests[i]['mission_title'] ?? '')),
+                itemBuilder: (_, i) => ListTile(
+                  title: Text(requests[i]['mission_title'] ?? ''),
+                ),
               ),
             ),
           ],

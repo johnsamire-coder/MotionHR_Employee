@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/payroll_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
@@ -9,6 +9,8 @@ class PayrollSettingsScreen extends StatefulWidget {
 }
 
 class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = PayrollService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -23,8 +25,9 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Scaffold(
-      appBar: AppBar(title: const Text('إعدادات الرواتب')),
+      appBar: AppBar(title: Text(isAr ? 'إعدادات الرواتب' : 'Payroll Settings')),
       body: _loading
           ? Center(child: CircularProgressIndicator())
           : _data == null

@@ -154,6 +154,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -257,7 +258,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                             mainAxisSpacing: 8,
                             crossAxisSpacing: 8,
                             children: [
-                              _statBox('الكل', _summary!['requests']['total'], Icons.list, const Color(0xFF616161)),
+                              _statBox(isAr ? 'الكل' : 'All', _summary!['requests']['total'], Icons.list, const Color(0xFF616161)),
                               _statBox('معلق', _summary!['requests']['pending'], Icons.schedule, const Color(0xFFFF9800)),
                               _statBox('موافق', _summary!['requests']['approved'], Icons.check, const Color(0xFF388E3C)),
                               _statBox(context.l10n.rejected, _summary!['requests']['rejected'], Icons.close, const Color(0xFFD32F2F)),
@@ -275,7 +276,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                             mainAxisSpacing: 8,
                             crossAxisSpacing: 8,
                             children: [
-                              _statBox('الكل', _summary!['leaves']['total'], Icons.list, const Color(0xFF616161)),
+                              _statBox(isAr ? 'الكل' : 'All', _summary!['leaves']['total'], Icons.list, const Color(0xFF616161)),
                               _statBox('معلق', _summary!['leaves']['pending'], Icons.schedule, const Color(0xFFFF9800)),
                               _statBox('موافق', _summary!['leaves']['approved'], Icons.check, const Color(0xFF388E3C)),
                               _statBox(context.l10n.rejected, _summary!['leaves']['rejected'], Icons.close, const Color(0xFFD32F2F)),

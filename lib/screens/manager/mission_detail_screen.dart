@@ -18,6 +18,8 @@ class MissionDetailScreen extends StatefulWidget {
 }
 
 class _MissionDetailScreenState extends State<MissionDetailScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   bool _loading = true;
   Map<String, dynamic>? _mission;
   String? _error;
@@ -64,6 +66,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -328,8 +331,8 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: Icon(Icons.feedback, color: Color(0xFF6C3FC5)),
-                title: const Text('فيدباك الزيارة متاح'),
-                subtitle: const Text('اضغط لعرض التفاصيل'),
+                title: Text('فيدباك الزيارة متاح'),
+                subtitle: Text('اضغط لعرض التفاصيل'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () => _showFeedbackDetail(),
               ),
@@ -502,7 +505,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('هل أنت متأكد من إلغاء هذه المهمة؟'),
+                Text('هل أنت متأكد من إلغاء هذه المهمة؟'),
                 SizedBox(height: 12),
                 TextField(
                   controller: reasonCtrl,
@@ -517,7 +520,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('تراجع'),
+                child: Text('تراجع'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -657,7 +660,7 @@ void _showReassignDialog() async {
                           content: Text(
                             result['success'] == true
                                 ? '✅ تم استبدال الموظف بـ $newEmpName'
-                                : result['error'] ?? 'حدث خطأ',
+                                : result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred',
                           ),
                           backgroundColor: result['success'] == true
                               ? Colors.green
@@ -669,7 +672,7 @@ void _showReassignDialog() async {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6C3FC5),
               ),
-              child: const Text('تأكيد الاستبدال',
+              child: Text('تأكيد الاستبدال',
                   style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -702,8 +705,8 @@ void _showReassignDialog() async {
             controller: controller,
             padding: const EdgeInsets.all(20),
             children: [
-              const Text(
-                'فيدباك الزيارة',
+              Text(
+                isAr ? 'فيدباك الزيارة' : 'Visit Feedback',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
