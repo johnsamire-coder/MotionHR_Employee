@@ -326,14 +326,17 @@ class _MotionHRAppState extends State<MotionHRApp> {
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
-          locale: locale,
-          supportedLocales: const [
-            Locale('ar'),
-            Locale('en'),
-          ],localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-          ],
+          locale: locale,supportedLocales: const [
+  Locale('ar'),
+  Locale('en'),
+],
+localizationsDelegates: const [
+  AppLocalizations.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+],
+
           builder: (context, child) {
             return Directionality(
               textDirection: locale.languageCode == 'ar'
@@ -1385,8 +1388,8 @@ Future<void> _logout() async {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: kPrimaryColor,
           items: [  BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.home),
-  BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'الإجازات'),
-  BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'الطلبات'),
+BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: context.l10n.leaves),
+BottomNavigationBarItem(icon: Icon(Icons.assignment), label: context.l10n.requests),
   BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: context.l10n.myMissions),
   BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: context.l10n.myRequests),
 
