@@ -1,0 +1,5548 @@
+'جاري تشغيل خدمات التطبيق'
+
+'dart:async'
+
+'dart:convert'
+
+'dart:ui'
+
+'MotionHR'
+
+'vm:entry-point'
+
+'stopService'
+
+'setAsForeground'
+
+'setAsBackground'
+
+'tracking_enabled'
+
+'token'
+
+'Content-Type'
+
+'application/json'
+
+'Authorization'
+
+'Token $token'
+
+'latitude'
+
+'longitude'
+
+'accuracy'
+
+'العربية'
+
+'s
+/// `localizationDelegates` list, and the locales they support in the app'
+
+'s supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('
+
+'Login'
+
+'Logout'
+
+'Username'
+
+'Password'
+
+'Remember me'
+
+'Stay logged in'
+
+'Account stays open for 72 hours or until logout'
+
+'Forgot password?'
+
+'Please contact your HR manager to reset your password.'
+
+'Welcome, sign in to continue'
+
+'Save'
+
+'Cancel'
+
+'Confirm'
+
+'Delete'
+
+'Edit'
+
+'Add'
+
+'Search'
+
+'Refresh'
+
+'Loading...'
+
+'Error'
+
+'Success'
+
+'No data'
+
+'Language'
+
+'Settings'
+
+'Change Language'
+
+'Yes'
+
+'Back'
+
+'Close'
+
+'Send'
+
+'Retry'
+
+'Done'
+
+'Choose Your Language'
+
+'Select your preferred language to use the app'
+
+'English'
+
+'Continue'
+
+'Login with Biometric'
+
+'Invalid login credentials'
+
+'Connection error'
+
+'Please enter username and password'
+
+'Dashboard'
+
+'Quick Management'
+
+'Tools'
+
+'Pending Requests'
+
+'Today\'
+
+'Live Locations'
+
+'Employees'
+
+'Add Employee'
+
+'Announcements'
+
+'Reports'
+
+'Payroll'
+
+'Reminders'
+
+'Company Charter'
+
+'Missions'
+
+'Company Info'
+
+'Org Chart'
+
+'Location Report'
+
+'Check In'
+
+'Check Out'
+
+'Checked In'
+
+'Checked Out'
+
+'Check-in Time'
+
+'Check-out Time'
+
+'Shift'
+
+'Remaining Time'
+
+'Shift ended, you can check out'
+
+'Previous Days'
+
+'Today'
+
+'Date'
+
+'Time'
+
+'You have early leave permission'
+
+'Attendance recorded successfully'
+
+'Great work today 👏'
+
+'Employee Code'
+
+'Full Name'
+
+'First Name'
+
+'Last Name'
+
+'Phone'
+
+'Email'
+
+'National ID'
+
+'Birth Date'
+
+'Gender'
+
+'Male'
+
+'Female'
+
+'Address'
+
+'Branch'
+
+'Department'
+
+'Job Title'
+
+'Direct Manager'
+
+'Hire Date'
+
+'Basic Salary'
+
+'Reset Password'
+
+'Create Employee'
+
+'Edit Employee'
+
+'Employee Details'
+
+'Transfer Employee'
+
+'Employees List'
+
+'No employees found'
+
+'Active'
+
+'On Leave'
+
+'Suspended'
+
+'Resigned'
+
+'Terminated'
+
+'Pending'
+
+'Approved'
+
+'Rejected'
+
+'Cancelled'
+
+'In Progress'
+
+'Completed'
+
+'Requests'
+
+'Leaves'
+
+'My Requests'
+
+'My Leaves'
+
+'Submit Request'
+
+'Request Type'
+
+'Leave Type'
+
+'Request Title'
+
+'Details'
+
+'From Date'
+
+'To Date'
+
+'Reason'
+
+'Cancel Request'
+
+'Are you sure you want to cancel this request?'
+
+'Cancel Reason (optional)'
+
+'No requests found'
+
+'Request Leave'
+
+'Remaining Balance'
+
+'days'
+
+'hours'
+
+'Amount'
+
+'Mission Title'
+
+'Mission Details'
+
+'Mission Location'
+
+'Client Name'
+
+'Client Phone'
+
+'Priority'
+
+'Urgent'
+
+'High'
+
+'Normal'
+
+'Planned Start Time'
+
+'Planned End Time'
+
+'Start Mission'
+
+'End Mission'
+
+'Accept'
+
+'Reject'
+
+'My Missions'
+
+'No missions found'
+
+'Visit Feedback'
+
+'Write Feedback'
+
+'Notifications'
+
+'No notifications'
+
+'Mark all as read'
+
+'Profile'
+
+'Change Password'
+
+'Current Password'
+
+'New Password'
+
+'Confirm Password'
+
+'Password changed successfully'
+
+'Passwords do not match'
+
+'Password must be at least 6 characters'
+
+'Biometric Login'
+
+'Sign in with biometric'
+
+'Company'
+
+'Company Name'
+
+'Company Logo'
+
+'Company Address'
+
+'Company Phone'
+
+'Branches'
+
+'Departments'
+
+'Managers'
+
+'Upload Logo'
+
+'Edit Company Info'
+
+'Attendance Report'
+
+'Leaves Report'
+
+'Late Report'
+
+'Absence Report'
+
+'Work Hours Report'
+
+'Requests Report'
+
+'Export PDF'
+
+'Export Excel'
+
+'Print'
+
+'Powered by MotionHR - JS Solutions'
+
+'Hello'
+
+'Good Morning'
+
+'Good Evening'
+
+'Goodbye'
+
+'No internet connection'
+
+'Session expired, please login again'
+
+'Permission denied'
+
+'Location permission required'
+
+'Camera'
+
+'Gallery'
+
+'Take Photo'
+
+'Choose from Gallery'
+
+'Upload File'
+
+'File uploaded'
+
+'Required'
+
+'Optional'
+
+'From'
+
+'Total'
+
+'Notes'
+
+'Status'
+
+'Type'
+
+'Name'
+
+'Code'
+
+'Number'
+
+'Copy Password'
+
+'Password copied'
+
+'New Mission'
+
+'Feedback Dashboard'
+
+'Pending Mission Requests'
+
+'No feedback'
+
+'Contract Signed'
+
+'Very Interested'
+
+'Thinking'
+
+'Not Interested'
+
+'Postponed'
+
+'Follow-up Date'
+
+'Internal Notes'
+
+'Warnings'
+
+'Participants'
+
+'Mission Lead'
+
+'Assistant'
+
+'Accompanied Manager'
+
+'Trainee'
+
+'Withdraw Request'
+
+'Withdrawal Reason'
+
+'Cancel Mission'
+
+'Cancellation Reason'
+
+'Replace Employee'
+
+'Current Employee'
+
+'New Employee'
+
+'Manager Actions'
+
+'Update Location'
+
+'Location Description'
+
+'Upload Attachment'
+
+'Attachment Caption'
+
+'Mission Started'
+
+'Mission Ended'
+
+'Mission started and attendance recorded automatically'
+
+'Please write visit feedback'
+
+'Feedback saved successfully'
+
+'Request sent to manager. Awaiting approval.'
+
+'Home'
+
+'My Items'
+
+'Attendance'
+
+'Locations'
+
+'Interested'
+
+'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+
+'an issue with the localizations generation tool. Please file an issue '
+
+'on GitHub with a reproducible sample app and the gen-l10n configuration '
+
+'that was used.'
+
+'دخول'
+
+'تسجيل الخروج'
+
+'اسم المستخدم'
+
+'كلمة المرور'
+
+'تذكرني'
+
+'البقاء مسجلاً'
+
+'يبقى الحساب مفتوحاً حتى 72 ساعة أو حتى تسجيل الخروج'
+
+'نسيت كلمة المرور؟'
+
+'من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.'
+
+'مرحباً بك، سجل دخولك للمتابعة'
+
+'حفظ'
+
+'إلغاء'
+
+'تأكيد'
+
+'حذف'
+
+'تعديل'
+
+'إضافة'
+
+'بحث'
+
+'تحديث'
+
+'جاري التحميل...'
+
+'خطأ'
+
+'تم بنجاح'
+
+'لا توجد بيانات'
+
+'اللغة'
+
+'الإعدادات'
+
+'تغيير اللغة'
+
+'نعم'
+
+'لا'
+
+'حسناً'
+
+'رجوع'
+
+'إغلاق'
+
+'إرسال'
+
+'إعادة المحاولة'
+
+'تم'
+
+'اختر لغتك'
+
+'اختر اللغة المفضلة لديك لاستخدام التطبيق'
+
+'متابعة'
+
+'دخول بالبصمة'
+
+'بيانات الدخول غير صحيحة'
+
+'خطأ في الاتصال بالخادم'
+
+'من فضلك ادخل اسم المستخدم وكلمة المرور'
+
+'لوحة التحكم'
+
+'الإدارة السريعة'
+
+'الأدوات'
+
+'الطلبات المعلقة'
+
+'الحضور اليوم'
+
+'المواقع المباشرة'
+
+'الموظفون'
+
+'إضافة موظف'
+
+'الإعلانات'
+
+'التقارير'
+
+'الرواتب'
+
+'التذكيرات'
+
+'لائحة الشركة'
+
+'المهمات'
+
+'بيانات الشركة'
+
+'الهيكل التنظيمي'
+
+'تقرير المواقع'
+
+'تسجيل الحضور'
+
+'تسجيل الانصراف'
+
+'تم الحضور'
+
+'تم الانصراف'
+
+'وقت الحضور'
+
+'وقت الانصراف'
+
+'الشيفت'
+
+'الوقت المتبقي'
+
+'الشيفت خلص، تقدر تنصرف'
+
+'سجل الأيام السابقة'
+
+'اليوم'
+
+'التاريخ'
+
+'الوقت'
+
+'عندك إذن خروج مبكر'
+
+'تم تسجيل الحضور والانصراف'
+
+'أحسنت العمل اليوم 👏'
+
+'الرقم الوظيفي'
+
+'الاسم الكامل'
+
+'الاسم الأول'
+
+'الاسم الأخير'
+
+'الموبايل'
+
+'البريد الإلكتروني'
+
+'الرقم القومي'
+
+'تاريخ الميلاد'
+
+'النوع'
+
+'ذكر'
+
+'أنثى'
+
+'العنوان'
+
+'الفرع'
+
+'الإدارة'
+
+'المسمى الوظيفي'
+
+'المدير المباشر'
+
+'تاريخ التعيين'
+
+'الراتب الأساسي'
+
+'إعادة تعيين كلمة المرور'
+
+'إنشاء موظف'
+
+'تعديل بيانات الموظف'
+
+'تفاصيل الموظف'
+
+'نقل الموظف'
+
+'قائمة الموظفين'
+
+'لا يوجد موظفون'
+
+'نشط'
+
+'في إجازة'
+
+'موقوف'
+
+'مستقيل'
+
+'مفصول'
+
+'في الانتظار'
+
+'موافق عليه'
+
+'مرفوض'
+
+'ملغي'
+
+'جارية'
+
+'مكتملة'
+
+'الطلبات'
+
+'الإجازات'
+
+'طلباتي'
+
+'إجازاتي'
+
+'تقديم طلب'
+
+'نوع الطلب'
+
+'نوع الإجازة'
+
+'عنوان الطلب'
+
+'التفاصيل'
+
+'من تاريخ'
+
+'إلى تاريخ'
+
+'السبب'
+
+'إلغاء الطلب'
+
+'هل أنت متأكد من إلغاء هذا الطلب؟'
+
+'سبب الإلغاء (اختياري)'
+
+'لا يوجد طلبات'
+
+'طلب إجازة'
+
+'الرصيد المتبقي'
+
+'يوم'
+
+'ساعة'
+
+'المبلغ'
+
+'عنوان المهمة'
+
+'تفاصيل المهمة'
+
+'موقع المهمة'
+
+'اسم العميل'
+
+'تليفون العميل'
+
+'الأولوية'
+
+'عاجل'
+
+'عالي'
+
+'عادي'
+
+'وقت البدء المخطط'
+
+'وقت الانتهاء المخطط'
+
+'بدء المهمة'
+
+'إنهاء المهمة'
+
+'قبول'
+
+'رفض'
+
+'مهماتي'
+
+'لا توجد مهمات'
+
+'فيدباك الزيارة'
+
+'كتابة الفيدباك'
+
+'الإشعارات'
+
+'لا توجد إشعارات'
+
+'تعليم الكل كمقروءة'
+
+'الملف الشخصي'
+
+'تغيير كلمة المرور'
+
+'كلمة المرور الحالية'
+
+'كلمة المرور الجديدة'
+
+'تأكيد كلمة المرور'
+
+'تم تغيير كلمة المرور بنجاح'
+
+'كلمة المرور غير متطابقة'
+
+'كلمة المرور يجب أن تكون 6 أحرف على الأقل'
+
+'الدخول بالبصمة'
+
+'سجّل دخولك بالبصمة'
+
+'الشركة'
+
+'اسم الشركة'
+
+'شعار الشركة'
+
+'عنوان الشركة'
+
+'تليفون الشركة'
+
+'الفروع'
+
+'الإدارات'
+
+'المديرون'
+
+'رفع الشعار'
+
+'تعديل بيانات الشركة'
+
+'تقرير الحضور'
+
+'تقرير الإجازات'
+
+'تقرير التأخيرات'
+
+'تقرير الغياب'
+
+'تقرير ساعات العمل'
+
+'تقرير الطلبات'
+
+'تصدير PDF'
+
+'تصدير Excel'
+
+'طباعة'
+
+'أهلاً يا'
+
+'صباح الخير'
+
+'مساء الخير'
+
+'مع السلامة'
+
+'لا يوجد اتصال بالإنترنت'
+
+'انتهت الجلسة، سجل دخولك مجدداً'
+
+'غير مصرح لك'
+
+'يجب منح صلاحية الموقع'
+
+'الكاميرا'
+
+'المعرض'
+
+'التقاط صورة'
+
+'اختر من المعرض'
+
+'رفع ملف'
+
+'تم رفع الملف'
+
+'مطلوب'
+
+'اختياري'
+
+'من'
+
+'إلى'
+
+'بواسطة'
+
+'في'
+
+'الإجمالي'
+
+'ملاحظات'
+
+'الحالة'
+
+'الاسم'
+
+'الكود'
+
+'الرقم'
+
+'نسخ كلمة المرور'
+
+'تم نسخ كلمة المرور'
+
+'مهمة جديدة'
+
+'داشبورد الفيدباك'
+
+'طلبات المهمات المعلقة'
+
+'لا يوجد فيدباك'
+
+'تم توقيع عقد'
+
+'مهتم جداً'
+
+'يفكر'
+
+'غير مهتم'
+
+'مؤجل'
+
+'تاريخ المتابعة'
+
+'ملاحظات داخلية'
+
+'تحذيرات'
+
+'المشاركون'
+
+'قائد المهمة'
+
+'مساعد'
+
+'مدير مرافق'
+
+'متدرب'
+
+'طلب الانسحاب'
+
+'سبب الانسحاب'
+
+'إلغاء المهمة'
+
+'سبب الإلغاء'
+
+'استبدال موظف'
+
+'الموظف الحالي'
+
+'الموظف الجديد'
+
+'إجراءات المدير'
+
+'تحديث الموقع'
+
+'وصف الموقع'
+
+'رفع مرفق'
+
+'وصف المرفق'
+
+'تم بدء المهمة'
+
+'تم إنهاء المهمة'
+
+'تم بدء المهمة وتسجيل حضورك تلقائياً'
+
+'يرجى كتابة فيدباك الزيارة'
+
+'تم حفظ الفيدباك بنجاح'
+
+'تم إرسال الطلب للمدير. انتظر الموافقة.'
+
+'تمت الموافقة'
+
+'تم الرفض'
+
+'تم الإلغاء'
+
+'الرئيسية'
+
+'إجازات'
+
+'طلبات'
+
+'الحضور'
+
+'المواقع'
+
+'مهتم'
+
+'موافق'
+
+'التالي'
+
+'تخطي'
+
+'فلتر'
+
+'جارٍ التحميل...'
+
+'تحذير'
+
+'لا توجد نتائج'
+
+'هذا الحقل مطلوب'
+
+'رفع'
+
+'تحميل'
+
+'مشاركة'
+
+'تصدير'
+
+'استيراد'
+
+'إزالة'
+
+'إنشاء'
+
+'عرض'
+
+'الإنجليزية'
+
+'اختر اللغة'
+
+'تم تغيير اللغة بنجاح'
+
+'اختر لغة التطبيق'
+
+'تسجيل الدخول'
+
+'البقاء مسجلاً لـ 72 ساعة'
+
+'جارٍ الدخول...'
+
+'فشل تسجيل الدخول'
+
+'اسم المستخدم أو كلمة المرور غير صحيحة'
+
+'يرجى إدخال اسم المستخدم'
+
+'يرجى إدخال كلمة المرور'
+
+'مرحباً بعودتك'
+
+'سجّل دخولك إلى حسابك'
+
+'أهلاً'
+
+'إجمالي الموظفين'
+
+'الحاضرون اليوم'
+
+'الغائبون اليوم'
+
+'إجراءات سريعة'
+
+'الحضور والانصراف'
+
+'سجل الحضور'
+
+'لقد سجلت حضورك بالفعل'
+
+'لقد سجلت انصرافك بالفعل'
+
+'لم تسجل حضورك بعد'
+
+'تم تسجيل الحضور بنجاح'
+
+'تم تسجيل الانصراف بنجاح'
+
+'لا يمكن الانصراف - لديك مهمة نشطة'
+
+'ساعات العمل'
+
+'وقت إضافي'
+
+'متأخر'
+
+'مغادرة مبكرة'
+
+'غائب'
+
+'حاضر'
+
+'في مهمة'
+
+'موظف'
+
+'بيانات الموظف'
+
+'حذف الموظف'
+
+'بحث في الموظفين'
+
+'رقم الموظف'
+
+'اسم الموظف'
+
+'الاسم بالعربية'
+
+'الاسم بالإنجليزية'
+
+'الاسم الأول بالعربية'
+
+'الاسم الأخير بالعربية'
+
+'الاسم الأول بالإنجليزية'
+
+'الاسم الأخير بالإنجليزية'
+
+'القسم'
+
+'الهاتف'
+
+'الراتب'
+
+'العملة'
+
+'غير نشط'
+
+'الجنس'
+
+'كلمتا المرور غير متطابقتان'
+
+'تم إعادة تعيين كلمة المرور'
+
+'تم نقل الموظف بنجاح'
+
+'اختر القسم'
+
+'اختر الفرع'
+
+'اختر المسمى الوظيفي'
+
+'اختر المدير'
+
+'إنشاء موظف جديد'
+
+'تم إنشاء الموظف بنجاح'
+
+'تم تحديث بيانات الموظف'
+
+'اسم المستخدم المقترح'
+
+'سيتم توليده تلقائياً'
+
+'إجازة'
+
+'طلبات الإجازات'
+
+'رصيد الإجازات'
+
+'عدد الأيام'
+
+'سبب الإجازة'
+
+'حالة الطلب'
+
+'معلق'
+
+'قبول الإجازة'
+
+'رفض الإجازة'
+
+'إجازة سنوية'
+
+'إجازة مرضية'
+
+'إجازة بدون راتب'
+
+'إجازة طارئة'
+
+'إجازة أمومة'
+
+'إجازة أبوة'
+
+'لا توجد طلبات إجازة'
+
+'الأيام المتبقية'
+
+'طلب'
+
+'طلب جديد'
+
+'تاريخ الطلب'
+
+'تفاصيل الطلب'
+
+'ملاحظات الطلب'
+
+'لا توجد طلبات'
+
+'قبول الطلب'
+
+'رفض الطلب'
+
+'تمت الموافقة على الطلب'
+
+'تم رفض الطلب'
+
+'سبب الرفض'
+
+'مهمة'
+
+'كل المهمات'
+
+'وصف المهمة'
+
+'تاريخ المهمة'
+
+'وقت البدء الفعلي'
+
+'وقت الانتهاء الفعلي'
+
+'حالة المهمة'
+
+'أولوية المهمة'
+
+'المعينون'
+
+'هاتف العميل'
+
+'شركة العميل'
+
+'قبول المهمة'
+
+'رفض المهمة'
+
+'طلب انسحاب'
+
+'تم إلغاء المهمة'
+
+'مهمات اليوم'
+
+'المهمات القادمة'
+
+'المهمات السابقة'
+
+'تقرير ما بعد الزيارة'
+
+'كتابة التقرير'
+
+'يرجى كتابة التقرير قبل الإغلاق'
+
+'حالة العميل'
+
+'تقييم الاهتمام'
+
+'احتمالية التعاقد'
+
+'احتياجات العميل'
+
+'الميزانية التقديرية'
+
+'تاريخ القرار المتوقع'
+
+'يحتاج متابعة'
+
+'ملاحظات المتابعة'
+
+'المسؤول عن المتابعة'
+
+'قيمة الصفقة'
+
+'طلب مهمة'
+
+'طلبات المهمات'
+
+'تم إرسال طلب المهمة'
+
+'تمت الموافقة على المهمة'
+
+'صور الإثبات'
+
+'إضافة صورة'
+
+'وصف الصورة'
+
+'مسار التنقل'
+
+'تم تحديث الموقع'
+
+'حضور تلقائي من المهمة'
+
+'الموقع'
+
+'الموقع الحالي'
+
+'المواقع الحية'
+
+'تقرير المواقع اليومي'
+
+'تم حفظ الموقع'
+
+'فشل تحديد الموقع'
+
+'تم رفض إذن الموقع'
+
+'يرجى تفعيل خدمة الموقع'
+
+'أنت خارج النطاق المسموح'
+
+'أنت داخل النطاق'
+
+'المسافة'
+
+'خط العرض'
+
+'خط الطول'
+
+'هاتف الشركة'
+
+'بريد الشركة'
+
+'موقع الشركة'
+
+'تغيير الشعار'
+
+'تم رفع الشعار بنجاح'
+
+'تم تحديث بيانات الشركة'
+
+'الأقسام'
+
+'تقرير'
+
+'إنشاء تقرير'
+
+'تاريخ التقرير'
+
+'طباعة التقرير'
+
+'قسيمة الراتب'
+
+'البدلات'
+
+'الخصومات'
+
+'صافي الراتب'
+
+'إجمالي البدلات'
+
+'إجمالي الخصومات'
+
+'شهر الراتب'
+
+'سنة الراتب'
+
+'لا توجد بيانات رواتب'
+
+'إعلان'
+
+'لا توجد إعلانات'
+
+'إعلان جديد'
+
+'عنوان الإعلان'
+
+'محتوى الإعلان'
+
+'تاريخ الإعلان'
+
+'نشر الإعلان'
+
+'المحادثات'
+
+'رسالة'
+
+'الرسائل'
+
+'إرسال رسالة'
+
+'اكتب رسالة...'
+
+'لا توجد رسائل'
+
+'متصل'
+
+'غير متصل'
+
+'آخر ظهور'
+
+'محادثة جماعية'
+
+'مجموعة جديدة'
+
+'اسم المجموعة'
+
+'الأعضاء'
+
+'إضافة أعضاء'
+
+'كلمة المرور الجديدة (8 أحرف على الأقل)'
+
+'كلمة المرور قصيرة جداً'
+
+'بصمة الإصبع / الوجه'
+
+'تفعيل البصمة'
+
+'تم تفعيل البصمة'
+
+'تم تعطيل البصمة'
+
+'البصمة غير متوفرة على هذا الجهاز'
+
+'تسجيل الدخول بالبصمة'
+
+'المستندات'
+
+'مستند'
+
+'لا توجد مستندات'
+
+'رفع مستند'
+
+'نوع المستند'
+
+'تاريخ المستند'
+
+'الحركات'
+
+'لا توجد حركات'
+
+'نوع الحركة'
+
+'تاريخ الحركة'
+
+'سبب الحركة'
+
+'تذكير'
+
+'لا توجد تذكيرات'
+
+'تذكير جديد'
+
+'عنوان التذكير'
+
+'تاريخ التذكير'
+
+'وقت التذكير'
+
+'الصلاحيات'
+
+'ليس لديك صلاحية للوصول'
+
+'المشرف العام'
+
+'مدير الشركة'
+
+'مدير'
+
+'مدير الموارد البشرية'
+
+'خطأ في الاتصال بالإنترنت'
+
+'خطأ في السيرفر، يرجى المحاولة لاحقاً'
+
+'انتهت مهلة الاتصال'
+
+'حدث خطأ غير متوقع'
+
+'حاول مرة أخرى'
+
+'فشل الاتصال'
+
+'تحقق من اتصالك بالإنترنت'
+
+'يناير'
+
+'فبراير'
+
+'مارس'
+
+'أبريل'
+
+'مايو'
+
+'يونيو'
+
+'يوليو'
+
+'أغسطس'
+
+'سبتمبر'
+
+'أكتوبر'
+
+'نوفمبر'
+
+'ديسمبر'
+
+'الإثنين'
+
+'الثلاثاء'
+
+'الأربعاء'
+
+'الخميس'
+
+'الجمعة'
+
+'السبت'
+
+'الأحد'
+
+'الإصدار'
+
+'تواصل مع الدعم'
+
+'شروط الخدمة'
+
+'سياسة الخصوصية'
+
+'عن التطبيق'
+
+'التحقق من التحديثات'
+
+'الوضع الداكن'
+
+'الوضع الفاتح'
+
+'حجم الخط'
+
+'هل أنت متأكد من تسجيل الخروج؟'
+
+'انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى'
+
+'استيراد الموظفين'
+
+'تحميل القالب'
+
+'استيراد من Excel'
+
+'تم الاستيراد بنجاح'
+
+'فشل الاستيراد'
+
+'أخطاء الاستيراد'
+
+'رقم الصف'
+
+'إجمالي المستوردين'
+
+'إجمالي الفاشلين'
+
+'اختر ملفاً'
+
+'لم يتم اختيار ملف'
+
+'المناطق الجغرافية'
+
+'نطاق العمل'
+
+'دخلت نطاق العمل'
+
+'خرجت من نطاق العمل'
+
+'النطاق المسموح (متر)'
+
+'موقع العمل'
+
+'إضافة موقع عمل'
+
+'استيراد موظفين'
+
+'تقرير الموظف'
+
+'تقرير المهمة'
+
+'تم تسجيل حضورك تلقائياً عبر المهمة'
+
+'تم تسجيل انصرافك تلقائياً بعد انتهاء المهمة'
+
+'لا يمكن تسجيل الانصراف أثناء وجود مهمة نشطة'
+
+'مهمة مقترحة من الموظف'
+
+'في انتظار الموافقة'
+
+'موافقة المدير'
+
+'موافقة الموارد البشرية'
+
+'يتطلب موافقة'
+
+'إرسال للموافقة'
+
+'في انتظار موافقة المدير'
+
+'في انتظار موافقة الموارد البشرية'
+
+'تمت الموافقة الكاملة'
+
+'ملاحظة إضافية'
+
+'إضافة ملاحظة'
+
+'ملاحظتك'
+
+'ملاحظات المشاركين'
+
+'إنشاء مهمة متابعة'
+
+'تم إنشاء مهمة المتابعة'
+
+'لوحة تحكم الفيدباك'
+
+'عملاء مهتمون جداً'
+
+'المتابعات القادمة'
+
+'إجمالي الصفقات المتوقعة'
+
+'العقود الموقعة'
+
+'وسيلة التواصل المفضلة'
+
+'هاتف'
+
+'واتساب'
+
+'بريد إلكتروني'
+
+'زيارة'
+
+'مهتم بـ'
+
+'المنصب'
+
+'العنوان الفعلي'
+
+'MotionHR v1.0'
+
+'صباح الخير يا {name} 🌅 يومك جميل بإذن الله'
+
+'يومك سعيد يا {name} 😊 يارب يومك طاقة إيجابية'
+
+'أهلاً يا {name}، جاهز نبدع النهاردة! 🚀'
+
+'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدع'
+
+'شغلك النهاردة هيكون سبب في نجاحك يا {name} 💪'
+
+'أنت جزء مهم من الفريق يا {name}، يوم موفق 🎯'
+
+'صباح الورد يا {name} 🌹 اعمل يومك أحلى ما يكون'
+
+'كل خطوة بتاخدها بتقربك من هدفك يا {name} 🏆'
+
+'صباح الفل يا {name}، نجاح قادم في انتظارك 💼'
+
+'اجعل يومك مليئًا بالإنجازات يا {name} 🌟'
+
+'أهلاً يا {name}، جاهزة نبدعي النهاردة! 🚀'
+
+'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدعة'
+
+'أنتِ جزء مهم من الفريق يا {name}، يوم موفق 🎯'
+
+'صباح الورد يا {name} 🌹 اعملي يومك أحلى ما يكون'
+
+'كل خطوة بتاخديها بتقربك من هدفك يا {name} 🏆'
+
+'اجعلي يومك مليئًا بالإنجازات يا {name} 🌟'
+
+'شكراً على مجهودك النهاردة يا {name} 🌙 استريح كويس'
+
+'يوم عمل جميل يا {name}، تستاهل راحة ممتعة 😴'
+
+'أحسنت يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟'
+
+'شغل رائع النهاردة يا {name}، مساء الخير والراحة 🎉'
+
+'انتهيت من يوم منتج يا {name}، وقت العافية والراحة 🛌'
+
+'أنت تستحق الراحة يا {name}، مساءك أحلى 💤'
+
+'يوم موفق انتهى يا {name}، وقت الاستجمام 🏖'
+
+'الله يبارك في مجهودك يا {name}، خد قسط من الراحة 🌟'
+
+'يوم رائع يا {name}، استمر 🎯'
+
+'مساء الخير يا {name}، تستاهل كل خير 🌞'
+
+'شكراً على مجهودك النهاردة يا {name} 🌙 استريحي كويس'
+
+'يوم عمل جميل يا {name}، تستاهلي راحة ممتعة 😴'
+
+'أحسنتِ يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟'
+
+'انتهيتي من يوم منتج يا {name}، وقت العافية والراحة 🛌'
+
+'أنتِ تستحقي الراحة يا {name}، مساءك أحلى 💤'
+
+'الله يبارك في مجهودك يا {name}، خدي قسط من الراحة 🌟'
+
+'يوم رائع يا {name}، استمري 🎯'
+
+'مساء الخير يا {name}، تستاهلي كل خير 🌞'
+
+'صديقنا'
+
+'نظام إدارة الموارد البشرية'
+
+') ?? false;
+    if (!mounted) return;
+    setState(() {
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
+    });
+    // لو البصمة مفعلة وفيه token محفوظ → جرب تسجل دخول بالبصمة تلقائياً
+    if (available && enabled) {
+      final token = await AuthStorageService.getSavedToken();
+      if (token != null && token.isNotEmpty) {
+        final auth = await BiometricAuthService.authenticate(
+          reason: '
+
+'يرجى تسجيل الدخول مرة واحدة أولاً لتفعيل البصمة'
+
+']); // للبصمة
+
+        String username = data['
+
+'],
+        );
+// لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
+        if (_biometricAvailable) {
+          final prefs2 = await SharedPreferences.getInstance();
+          await prefs2.setBool('
+
+'تأكيد تفعيل الدخول بالبصمة'
+
+'يبقى الحساب مفتوحاً حتى 72 ساعة'
+
+'نسيت كلمة المرور?'
+
+'فشل تغيير كلمة المرور'
+
+'خطأ في الاتصال'
+
+'يجب تغيير كلمة المرور قبل استخدام التطبيق'
+
+'الاثنين'
+
+') {
+            setState(() {
+              _motivationMessage = getRandomMessage(kMorningMessages, _gender, _firstName);
+              _isEveningMessage = false;
+            });
+            // ✅ ابدأ التتبع الخفي
+            LocationTrackingService.startTracking();
+          } else if (action == '
+
+') {
+            setState(() {
+              _motivationMessage = getRandomMessage(kEveningMessages, _gender, _firstName);
+              _isEveningMessage = true;
+            });
+            // ✅ وقف التتبع الخفي
+            LocationTrackingService.stopTracking();
+          }
+          _showMotivationDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['
+
+'حدث خطأ'
+
+'خطأ: $e'
+
+'أهلاً بيك'
+
+'شكراً'
+
+'بك'
+
+'أهلاً يا $displayName'
+
+'شيفت: $shiftName ($shiftStart - $shiftEnd)'
+
+'باقي على الانصراف'
+
+'${(_progressValue() * 100).toInt()}% من الشيفت'
+
+'عندك إذن خروج مبكر 🕐'
+
+'تم الحضور 🕐'
+
+'مقفول'
+
+'سجل الأيام'
+
+'لا يوجد سجل'
+
+'حضور: ${item['
+
+'}  |  انصراف: ${item['
+
+'سنوية'
+
+'عارضة'
+
+'طارئة'
+
+'مرضية'
+
+'مرضي'
+
+'أبوة'
+
+'أنواع الإجازات والأرصدة'
+
+'الرصيد المتبقي: $balance يوم'
+
+'تقديم طلب إجازة'
+
+'يرجى ملء جميع الحقول'
+
+'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}'
+
+'أخرى'
+
+'اذكر نوع الإجازة'
+
+'إرسال الطلب'
+
+'يرجى اختيار النوع وكتابة العنوان'
+
+'يرجى إدخال مبلغ السلفة'
+
+'يرجى إدخال تاريخ ووقت ومدة الإذن'
+
+'نوع آخر: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}'
+
+'حدث: $e'
+
+'هذا الطلب سيعامل كإذن تأخير ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.'
+
+'هذا الطلب سيعامل كإذن خروج مبكر ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.'
+
+'تاريخ الإذن'
+
+'وقت الحضور المتوقع'
+
+'وقت الخروج المطلوب'
+
+'عدد الساعات'
+
+'المبلغ المطلوب'
+
+'جنيه'
+
+'اذكر نوع الطلب'
+
+'التفاصيل / السبب'
+
+'تراجع'
+
+'الآن'
+
+'منذ ${diff.inMinutes} دقيقة'
+
+'منذ ${diff.inHours} ساعة'
+
+'منذ ${diff.inDays} يوم'
+
+'الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'
+
+'تعذر فتح الملف'
+
+'يرجى الموافقة على اللائحة أولاً'
+
+'تم تسجيل موافقتك بنجاح ✅'
+
+'الملف المرفق'
+
+'لا توجد لائحة حالياً'
+
+'الإصدار ${_charter!['
+
+'أقر بأنني قرأت واطلعت على لائحة الشركة وأوافق على جميع بنودها'
+
+'أوافق على اللائحة'
+
+'تعذر قراءة الملف المختار'
+
+'خطأ في اختيار الملف: $e'
+
+'العنوان والمحتوى مطلوبان'
+
+'تمت العملية'
+
+'خطأ في الاتصال: $e'
+
+'تعديل اللائحة'
+
+'تقرير الموافقات'
+
+'لا توجد لائحة بعد'
+
+'اضغط تعديل لإنشاء لائحة جديدة'
+
+'إنشاء لائحة جديدة'
+
+'وافقوا'
+
+'لم يوافقوا'
+
+'✅ وافقوا على اللائحة'
+
+'⏳ لم يوافقوا بعد'
+
+'لا يوجد موظفين بعد'
+
+'لا يوجد ملف مرفق حاليًا'
+
+'الملف الحالي'
+
+'فتح الملف'
+
+'حذف الملف الحالي عند الحفظ'
+
+'لم يتم اختيار ملف جديد بعد\nالمسموح: PDF / Word / PNG / JPG — الحد الأقصى 10 MB'
+
+'إلغاء الملف المختار'
+
+'أي تعديل في المحتوى أو الملف المرفق سيطلب من الموظفين الموافقة مجددًا'
+
+'عنوان اللائحة *'
+
+'المقدمة (اختياري)'
+
+'محتوى اللائحة *'
+
+'1- البند الأول\n2- البند الثاني\n3- البند الثالث'
+
+'ملف جديد'
+
+'اختيار ملف PDF / Word / صورة'
+
+'حفظ اللائحة'
+
+'إدارة لائحة الشركة'
+
+'الإصدار $charterVersion'
+
+'تاريخ التقرير: ${_formatNow()}'
+
+'وافقوا على اللائحة (${accepted.length})'
+
+'وافق في: ${_formatDate(emp['
+
+'لم يوافقوا بعد (${pending.length})'
+
+'تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}'
+
+'تم تحديد موقعك الحالي 🕐'
+
+'يرجى تحديد الموقع أولاً'
+
+'النطاق يجب أن يكون بين 10 و 5000 متر'
+
+'نطاق موقع الشركة'
+
+'حدد موقع الشركة عشان الموظفين ما يقدروش يسجلوا حضور من برة النطاق ده. الموظف الميداني مستثنى.'
+
+'محدد'
+
+'خط العرض: ${_currentLat!.toStringAsFixed(6)}'
+
+'خط الطول: ${_currentLng!.toStringAsFixed(6)}'
+
+'لم يحدد موقع بعد'
+
+'استخدم موقعي الحالي'
+
+'💡 قف في مكان الشركة واضغط الزر ده'
+
+'نصف قطر النطاق'
+
+'المسافة بالمتر'
+
+'متر'
+
+'💡 مثال: 100 متر = الموظف لازم يكون قريب من الشركة في نطاق 100 متر'
+
+'تفعيل النطاق الجغرافي'
+
+'مفعل - سيتم رفض الحضور من خارج النطاق'
+
+'معطل - سيتم قبول الحضور من أي مكان'
+
+'حفظ الإعدادات'
+
+'MotionHR - المدير'
+
+'المدير'
+
+';
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          // ── Header بنفسجي ──
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2), Color(0xFF9C27B0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.dashboard, color: Colors.white, size: 28),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '
+
+',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (_companyName.isNotEmpty)
+                            Text(
+                              _companyName,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.white70, size: 16),
+                      SizedBox(width: 8),
+                      Text(
+                        dateStr,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                // ── 3 كروت إحصائيات ──
+                _loading
+                    ? Center(child: CircularProgressIndicator(color: Colors.white))
+                    : Row(
+                        children: [
+                          _statCard('
+
+'حاضر اليوم'
+
+'ميداني'
+
+', Icons.location_on, Colors.lightBlueAccent),
+                        ],
+                      ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          // ── قسم: الإدارة السريعة ──
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(
+              '
+
+'الموظفين'
+
+'نطاق الجيو'
+
+'يرجى كتابة سبب الرفض (إجباري)'
+
+'اكتب السبب هنا...'
+
+'تأكيد الرفض'
+
+'لا توجد طلبات معلقة'
+
+'ممتاز! كل الطلبات تمت مراجعتها.\nستظهر هنا أي طلبات جديدة تحتاج موافقتك.'
+
+'موافقة'
+
+'لا يوجد سجلات حضور'
+
+'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.'
+
+'لا توجد مواقع لحظية'
+
+'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم'
+
+'خريطة'
+
+'قائمة'
+
+'dart:math'
+
+'unread_count'
+
+'motionhr_channel'
+
+'MotionHR Notifications'
+
+'male'
+
+'female'
+
+'fcm_token'
+
+'preferred_language'
+
+'first_launch_done'
+
+'Arial'
+
+'valid'
+
+'app_mode'
+
+'employee'
+
+'manager'
+
+'success'
+
+'has_charter'
+
+'needs_acceptance'
+
+'biometric_enabled'
+
+'rememberMe'
+
+'stay_logged_in'
+
+'username'
+
+'password'
+
+'auth_token'
+
+'full_name'
+
+'company_name'
+
+'first_name'
+
+'gender'
+
+'name'
+
+'company'
+
+'role'
+
+'must_change_password'
+
+'Token ${data['
+
+'message'
+
+'current_password'
+
+'new_password'
+
+'action'
+
+'check_in'
+
+'check_out'
+
+'shift_end_timestamp'
+
+'remaining_seconds'
+
+'shift_duration_seconds'
+
+'checked_in'
+
+'checked_out'
+
+'can_check_out'
+
+'has_early_leave_permission'
+
+'shift_name'
+
+'shift_start'
+
+'shift_end'
+
+'check_in_time'
+
+'check_out_time'
+
+'history'
+
+'date'
+
+'category'
+
+'annual'
+
+'casual'
+
+'emergency'
+
+'sick'
+
+'leave_types'
+
+'types'
+
+'paternity'
+
+'balance'
+
+'remaining'
+
+'other'
+
+'start_date'
+
+'end_date'
+
+'reason'
+
+'leave_type_id'
+
+'requires_amount'
+
+'permission_kind'
+
+'late'
+
+'late_arrival'
+
+'early_leave'
+
+'exit'
+
+'none'
+
+'requires_date_range'
+
+'requires_document'
+
+'categories'
+
+'title'
+
+'description'
+
+'request_type_id'
+
+'amount'
+
+'permission_date'
+
+'permission_time'
+
+'duration_hours'
+
+'my-requests'
+
+'requests'
+
+'my-leaves'
+
+'leaves'
+
+'approved'
+
+'reject'
+
+'cancel'
+
+'status'
+
+'pending'
+
+'manager_approved'
+
+'status_display'
+
+'leave_request'
+
+'request'
+
+'leave_type'
+
+'type'
+
+'created_at'
+
+'notifications'
+
+'is_read'
+
+'notification_type'
+
+'new_request'
+
+'new_leave'
+
+'new_permission'
+
+'attendance'
+
+'manager_attendance'
+
+'request_approved'
+
+'request_rejected'
+
+'leave_approved'
+
+'leave_rejected'
+
+'charter_acceptance'
+
+'geofence_violation'
+
+'rejected'
+
+'geofence'
+
+'new_'
+
+'charter'
+
+'general'
+
+'body'
+
+'attachment_url'
+
+'error'
+
+'attachment_name'
+
+'version'
+
+'introduction'
+
+'content'
+
+'accepted'
+
+'employees'
+
+'pdf'
+
+'doc'
+
+'docx'
+
+'png'
+
+'jpg'
+
+'jpeg'
+
+'POST'
+
+'remove_attachment'
+
+'true'
+
+'attachment'
+
+'accepted_at'
+
+'ip_address'
+
+'IP: ${emp['
+
+'radius'
+
+'enabled'
+
+'pending_requests'
+
+'pending_leaves'
+
+'total_pending'
+
+'items'
+
+'total'
+
+'locations'
+
+'notes'
+
+'employee_name'
+
+'subject'
+
+'type_name'
+
+'details'
+
+'approve'
+
+'com.motionhr.app'
+
+'address'
+
+'إعلانات الشركة'
+
+'لا توجد إعلانات حالياً'
+
+'announcements'
+
+'Error loading announcements: $e'
+
+'urgent'
+
+'high'
+
+'low'
+
+'holiday'
+
+'meeting'
+
+'event'
+
+'celebration'
+
+'priority'
+
+'type_display'
+
+'publish_at'
+
+'تفاصيل الإعلان'
+
+'تاريخ النشر'
+
+'ينتهي في'
+
+'تم تأكيد القراءة'
+
+'يتطلب هذا الإعلان تأكيد القراءة'
+
+'تأكيد القراءة'
+
+'announcement_id'
+
+'Error marking as read: $e'
+
+'policy'
+
+'reminder'
+
+'medium'
+
+'requires_confirmation'
+
+'priority_display'
+
+'expires_at'
+
+'created_by'
+
+'تعذر التحميل (${response.statusCode})'
+
+'منتهي'
+
+'ينتهي قريباً'
+
+'$expiredCount منتهي • $soonCount ينتهي قريباً'
+
+'ينتهي: ${doc['
+
+'documents'
+
+'national_id'
+
+'passport'
+
+'contract'
+
+'certificate'
+
+'medical'
+
+'license'
+
+'insurance'
+
+'is_expired'
+
+'expires_soon'
+
+'document_type_code'
+
+'document_type'
+
+'expiry_date'
+
+'file_url'
+
+'تاريخ الموظف'
+
+'movements'
+
+'promotion'
+
+'transfer'
+
+'salary_change'
+
+'department_change'
+
+'branch_change'
+
+'job_title_change'
+
+'contract_renewal'
+
+'warning'
+
+'suspension'
+
+'resignation'
+
+'termination'
+
+'return_from_leave'
+
+'type_code'
+
+'تعذر تحميل البيانات (${response.statusCode})'
+
+'البيانات الشخصية'
+
+'الديانة'
+
+'الجنسية'
+
+'التواصل'
+
+'موبايل آخر'
+
+'البريد'
+
+'المدينة'
+
+'البيانات الوظيفية'
+
+'المسمى'
+
+'نوع العقد'
+
+'انتهاء العقد'
+
+'البيانات البنكية'
+
+'البنك'
+
+'رقم الحساب'
+
+'الملخص'
+
+'photo'
+
+'full_name_ar'
+
+'employee_code'
+
+'job_title'
+
+'birth_date'
+
+'marital_status'
+
+'religion'
+
+'nationality'
+
+'phone'
+
+'phone2'
+
+'email'
+
+'city'
+
+'branch'
+
+'department'
+
+'direct_manager'
+
+'hire_date'
+
+'contract_type'
+
+'contract_end_date'
+
+'bank_name'
+
+'bank_account'
+
+'IBAN'
+
+'iban'
+
+'مستخدم: ${b['
+
+']}  •  معلق: ${b['
+
+'ملخص: ${widget.employeeName}'
+
+'شهر: ${_summary!['
+
+',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          ]),
+                        ),
+                        SizedBox(height: 12),
+
+                        // الحضور
+                        _section('
+
+'ساعات عمل'
+
+'ساعات إضافية'
+
+'دقائق تأخير'
+
+'لا يوجد رصيد إجازات'
+
+'] as List))
+                                    _leaveBalanceRow(b as Map<String, dynamic>)
+                                ]),
+                        ),
+
+                        // الطلبات
+                        _section(context.l10n.requests, Icons.assignment, const Color(0xFFE65100),
+                          GridView.count(
+                            crossAxisCount: 4,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            childAspectRatio: 0.9,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            children: [
+                              _statBox('
+
+'], Icons.close, const Color(0xFFD32F2F)),
+                            ],
+                          ),
+                        ),
+
+                        // طلبات الإجازة
+                        _section('
+
+'الكل'
+
+'used'
+
+'month'
+
+'present'
+
+'absent'
+
+'on_leave'
+
+'total_work_hours'
+
+'total_overtime_hours'
+
+'total_late_minutes'
+
+'leave_balances'
+
+'تفاصيل الإجازة'
+
+'$days يوم'
+
+'$amount جنيه'
+
+'المدة'
+
+'السبب / الملاحظات'
+
+'reject_reason'
+
+'duration_days'
+
+'leave_type_name'
+
+'request_type_name'
+
+'leaves.LeaveRequest'
+
+'requests_app.EmployeeRequest'
+
+'القادمة'
+
+'المكتملة'
+
+'لو رتبت مع عميل مباشرة، ابعت الطلب هنا للمدير للموافقة'
+
+'عنوان المهمة *'
+
+'الموقع / العنوان'
+
+'وقت البدء *'
+
+'وقت الانتهاء *'
+
+'يرجى تعبئة الحقول المطلوبة'
+
+'إرسال الطلب للمدير'
+
+'اكتب السبب...'
+
+'تم القبول'
+
+'اضغط على تبويب "طلب مهمة" لإضافة مهمة جديدة'
+
+'in_progress'
+
+'completed'
+
+'normal'
+
+'all'
+
+'key'
+
+'label'
+
+'All'
+
+'active'
+
+'today'
+
+'upcoming'
+
+'Upcoming'
+
+'missions'
+
+'Request Mission'
+
+'assignment_id'
+
+'mission_id'
+
+'location_name'
+
+'client_name'
+
+'planned_start_time'
+
+'accept'
+
+'If you arranged with a client directly, send the request here for manager approval'
+
+'Mission Title *'
+
+'Location / Address'
+
+'Start Time *'
+
+'End Time *'
+
+'Please fill required fields'
+
+'Send Request to Manager'
+
+'Rejection Reason'
+
+'Write reason...'
+
+'Accepted'
+
+'Tap "Request Mission" tab to add a new mission'
+
+'حدث خطأ في تحميل المهمة'
+
+'المهمة غير موجودة'
+
+';
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // هيدر المهمة
+        _headerCard(m),
+
+        SizedBox(height: 12),
+
+        // التوقيت
+        _infoCard(
+          title: '
+
+'البدء المخطط'
+
+'الانتهاء المخطط'
+
+'بدأت فعلياً'
+
+'انتهت فعلياً'
+
+']),
+          ],
+        ),
+
+        // العميل
+        if ((m['
+
+'بيانات العميل'
+
+'التليفون'
+
+']),
+            ],
+          ),
+        ],
+
+        SizedBox(height: 12),
+
+        // أزرار الإجراءات
+        if (isPending) _buildPendingActions(),
+        if (isAccepted) _buildAcceptedActions(m),
+        if (isActive) _buildActiveActions(m),
+        if (isCompleted && m['
+
+'] != true)
+          _buildFeedbackPrompt(),
+
+        // طلب الانسحاب
+        if (isPending || isAccepted) ...[
+          SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _showWithdrawDialog,
+              icon: Icon(Icons.exit_to_app, color: Colors.orange),
+              label: Text('
+
+'الرد على المهمة'
+
+'ابدأ المهمة'
+
+'عند الوصول للموقع، اضغط "بدء المهمة" لتسجيل حضورك تلقائياً'
+
+'المهمة جارية الآن'
+
+'تحديث موقعي الحالي'
+
+'المهمة مكتملة! أضف فيدباك الزيارة'
+
+'✅ تم بدء المهمة وتسجيل حضورك تلقائياً'
+
+'✅ تم بدء المهمة'
+
+'هل أنت متأكد من إنهاء المهمة؟'
+
+'إنهاء'
+
+'انتقلنا لمكان جديد'
+
+'وصف الموقع الحالي:'
+
+'مثال: انتقلنا للمعاينة، اجتماع العميل...'
+
+'سيتم إرسال طلب الانسحاب للمدير للموافقة'
+
+'سبب الانسحاب *'
+
+'تم إرسال الطلب'
+
+';
+    final clientNeedsCtrl = TextEditingController();
+    final internalNotesCtrl = TextEditingController();
+    bool contractSigned = false;
+    bool needsFollowup = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => DraggableScrollableSheet(
+            initialChildSize: 0.85,
+            maxChildSize: 0.95,
+            minChildSize: 0.5,
+            expand: false,
+            builder: (_, controller) => ListView(
+              controller: controller,
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(context.l10n.missionFeedback,
+                    style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 16),
+
+                // حالة العميل
+                const Text('
+
+'🟢 مهتم جداً'
+
+'🔵 مهتم'
+
+'🟡 يفكر'
+
+'🔴 غير مهتم'
+
+'⚪ مؤجل'
+
+'تقييم اهتمام العميل:'
+
+'احتمال الصفقة:'
+
+'ملاحظات داخلية للفريق'
+
+'✅ تم حفظ الفيدباك'
+
+'حفظ الفيدباك'
+
+'planned_end_time'
+
+'started_at'
+
+'ended_at'
+
+'client_phone'
+
+'is_lead'
+
+'has_feedback'
+
+'auto_checkin'
+
+'thinking'
+
+'very_interested'
+
+'interested'
+
+'not_interested'
+
+'postponed'
+
+', true);
+    widget.onDone();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                SizedBox(height: 40),
+
+                // ── لوجو ──
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.language, size: 70, color: Colors.white),
+                ),
+                SizedBox(height: 24),
+
+                // ── عناوين مزدوجة ──
+                const Text(
+                  '
+
+',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white70,
+                  ),
+                ),
+
+                SizedBox(height: 50),
+
+                // ── العربية ──
+                _langCard(
+                  code: '
+
+',
+                ),
+                SizedBox(height: 16),
+
+                // ── الإنجليزية ──
+                _langCard(
+                  code: '
+
+'إنجليزي'
+
+'Choose your language'
+
+'Arabic'
+
+'❌ نوع الملف غير مدعوم: .$ext\nالمسموح: JPG / PNG / GIF / WEBP'
+
+'❌ حجم الصورة ${sizeMB.toStringAsFixed(2)} MB\nالحد الأقصى: 5 MB'
+
+'✅ الصورة جاهزة (${sizeMB.toStringAsFixed(2)} MB)'
+
+'✅ تم رفع اللوجو بنجاح'
+
+'❌ فشل رفع اللوجو:\n$e'
+
+'✅ تم حفظ البيانات بنجاح'
+
+'❌ فشل حفظ البيانات'
+
+'❌ خطأ: $e'
+
+'اختر صورة'
+
+'رفع اللوجو'
+
+'اسم الشركة بالعربي *'
+
+'اسم الشركة بالإنجليزي'
+
+'بيانات الاتصال'
+
+'الموقع الإلكتروني'
+
+'البيانات القانونية'
+
+'السجل التجاري'
+
+'الرقم الضريبي'
+
+'حفظ البيانات'
+
+'dart:io'
+
+'name_ar'
+
+'name_en'
+
+'website'
+
+'commercial_register'
+
+'tax_number'
+
+'gif'
+
+'webp'
+
+'logo_url'
+
+'Choose Image'
+
+'Company Name (Arabic) *'
+
+'Company Name (English)'
+
+'Contact Info'
+
+'Website'
+
+'Legal Info'
+
+'Commercial Register'
+
+'Tax Number'
+
+'Save Data'
+
+'This field is required'
+
+'تعديل البيانات'
+
+'خطأ في التحميل'
+
+'تعذر جلب بيانات الشركة'
+
+'شركة'
+
+'تاريخ التأسيس'
+
+'Edit Info'
+
+'Loading Error'
+
+'Could not load company data'
+
+'stats'
+
+'industry'
+
+'branches'
+
+'departments'
+
+'founded_date'
+
+'Founded Date'
+
+'📢 إعلان عام'
+
+'🏖️ إجازة رسمية'
+
+'👥 اجتماع'
+
+'🎉 فعالية'
+
+'📋 سياسة جديدة'
+
+'🔔 تذكير'
+
+'🚨 عاجل'
+
+'🎊 مناسبة'
+
+'منخفض'
+
+'متوسط'
+
+'مرتفع'
+
+'كل الموظفين'
+
+'حسب الإدارة'
+
+'حسب الفرع'
+
+'تم نشر الإعلان ✅ (أُرسل لـ ${data['
+
+']} موظف)'
+
+'إنشاء إعلان جديد'
+
+'معلومات الإعلان'
+
+'عنوان الإعلان *'
+
+'العنوان مطلوب'
+
+'محتوى الإعلان *'
+
+'المحتوى مطلوب'
+
+'إعدادات الإعلان'
+
+'نوع الإعلان'
+
+'المستهدفون'
+
+'إرسال إشعار Push'
+
+'إشعار فوري على جوال الموظفين'
+
+'يتطلب تأكيد القراءة'
+
+'الموظف لازم يضغط "تأكيد القراءة"'
+
+'جاري النشر...'
+
+'value'
+
+'by_department'
+
+'by_branch'
+
+'target_type'
+
+'send_push'
+
+'total_sent'
+
+'جنيه مصري'
+
+'دولار أمريكي'
+
+'ريال سعودي'
+
+'درهم إماراتي'
+
+'يرجى اختيار تاريخ الميلاد'
+
+'يرجى اختيار الفرع والقسم والمسمى الوظيفي'
+
+'يرجى اختيار تاريخ التعيين'
+
+';
+
+      // جلب بيانات الشركة الكاملة (لوجو + عنوان + هاتف)
+      String? logoUrl;
+      String? phone;
+      String? address;
+      try {
+        final companyInfo = await EmployeeManagementService.getCompanyInfo();
+        logoUrl = companyInfo['
+
+'خطأ في توليد PDF: $e'
+
+'خطأ في المشاركة: $e'
+
+'رقم الموبايل غير متوفر'
+
+'مرحبا $name 👋
+
+تم إنشاء حسابك في نظام MotionHR
+
+🔹 اسم المستخدم: $username
+🔹 كلمة المرور: $password
+
+📎 الملف المرفق يحتوي على بيانات الدخول الكاملة
+
+يرجى تحميل تطبيق MotionHR وتسجيل الدخول، وستحتاج لتغيير كلمة المرور عند أول دخول.
+
+شكرا لك!'
+
+'الوظيفة'
+
+'الحساب'
+
+'المشاركة'
+
+'أدخل بيانات الموظف الأساسية'
+
+'الاسم الأول بالعربي *'
+
+'مطلوب (حرفين على الأقل)'
+
+'الاسم الأوسط (اختياري)'
+
+'الاسم الأخير بالعربي *'
+
+'الاسم بالإنجليزي مطلوب لتوليد اسم المستخدم تلقائياً'
+
+'الاسم الأول بالإنجليزي *'
+
+'مطلوب بالإنجليزي'
+
+'الاسم الأخير بالإنجليزي *'
+
+'النوع *'
+
+'الرقم القومي * (14 رقم)'
+
+'يجب أن يكون 14 رقم'
+
+'تاريخ الميلاد *'
+
+'اختر التاريخ'
+
+'رقم الموبايل * (للواتساب)'
+
+'مطلوب - سيتم استخدامه للواتساب'
+
+'رقم غير صحيح'
+
+'رقم موبايل آخر (اختياري)'
+
+'البريد الإلكتروني (اختياري)'
+
+'بريد غير صحيح'
+
+'جاري تحميل البيانات...'
+
+'خطأ: $_lookupError'
+
+'بيانات الوظيفة'
+
+'حدد الفرع والقسم والمسمى الوظيفي'
+
+'الفرع *'
+
+'القسم / الإدارة *'
+
+'المسمى الوظيفي *'
+
+'المدير المباشر (اختياري)'
+
+'بدون مدير مباشر'
+
+'تاريخ التعيين *'
+
+'الراتب الأساسي (اختياري)'
+
+'تأكد من البيانات قبل المتابعة\nعدد الفروع: ${_branches.length} | الأقسام: ${_departments.length} | المسميات: ${_jobTitles.length}'
+
+'بيانات حساب الدخول'
+
+'سيتم استخدام هذه البيانات لتسجيل دخول الموظف'
+
+'اسم المستخدم (اختياري - سيتم توليده تلقائيا)'
+
+'قصير جداً'
+
+'💡 إذا تركته فارغاً سيتم إنشاؤه تلقائيا من رقم الموبايل: emp + آخر 7 أرقام'
+
+'كلمة المرور (اختياري - سيتم توليدها)'
+
+'توليد كلمة مرور'
+
+'يجب أن تكون 6 أحرف على الأقل'
+
+'💡 كلمة المرور المؤقتة: Emp@ + آخر 4 أرقام الموبايل + رقم عشوائي\nمثال: Emp@5678 12 - الموظف سيغيرها عند أول دخول'
+
+'الرقم الوظيفي (اختياري - تلقائي)'
+
+'💡 إذا تركته فارغاً سيتم توليده تلقائيا مثل EMP00001'
+
+'ملاحظة أمنية'
+
+'• سيتم إجبار الموظف على تغيير كلمة المرور عند أول دخول\n• كلمة المرور ستظهر مرة واحدة فقط في هذه الشاشة ثم في ملف PDF\n• احتفظ بملف PDF في مكان آمن وشاركه فقط مع الموظف عبر الواتساب'
+
+'ملخص المراجعة'
+
+'الاسم:'
+
+'الموبايل (واتساب):'
+
+'الرقم القومي:'
+
+'الفرع:'
+
+'القسم:'
+
+'المسمى:'
+
+'تاريخ التعيين:'
+
+'خطأ: $_errorMessage'
+
+'جاري إنشاء حساب الموظف...'
+
+'تم إنشاء الموظف بنجاح! 🎉'
+
+'الرقم الوظيفي: ${emp['
+
+'بيانات الدخول'
+
+'رابط الدخول'
+
+'تم إنشاء ملف PDF'
+
+'جاري إنشاء PDF...'
+
+'فتح PDF'
+
+'مشاركة بيانات الموظف'
+
+'مشاركة ملف PDF'
+
+'إرسال واتساب إلى $phone'
+
+'مشاركة PDF عبر واتساب (اختار واتساب من القائمة)'
+
+'• اضغط "مشاركة PDF" واختار واتساب من قائمة المشاركة لإرسال الملف\n• أو اضغط "إرسال واتساب" لفتح محادثة واتساب مباشرة مع الموظف\n• الملف يحتوي على بيانات الدخول كاملة'
+
+'تم - العودة للوحة التحكم'
+
+'إنشاء موظف آخر'
+
+'إضافة موظف جديد'
+
+'خطوة ${_currentStep + 1}/$_totalSteps'
+
+'إنشاء الموظف ✓'
+
+'التالي →'
+
+'EGP'
+
+'code'
+
+'USD'
+
+'SAR'
+
+'AED'
+
+'Emp@$suffix$random'
+
+'credentials'
+
+'whatsapp'
+
+'is_manager'
+
+'auto'
+
+'login_url'
+
+';
+  DateTime? _startTime;
+  DateTime? _endTime;
+
+  // المشاركون المختارون
+  List<Map<String, dynamic>> _selectedAssignees = [];
+
+  final Map<String, String> _priorityLabels = {
+    '
+
+'إضافة مشارك'
+
+'اختر الموظف'
+
+'الدور'
+
+'يرجى تحديد وقت البدء والانتهاء'
+
+'يرجى إضافة موظف واحد على الأقل'
+
+'✅ تم إنشاء المهمة بنجاح'
+
+'حدث خطأ في الاتصال'
+
+'إنشاء مهمة جديدة'
+
+'بيانات المهمة'
+
+'التوقيت'
+
+'وقت البدء'
+
+'وقت الانتهاء'
+
+'الموقع والعميل'
+
+'اسم الموقع / العنوان'
+
+'إيميل العميل'
+
+'إنشاء المهمة'
+
+'lead'
+
+'employee_id'
+
+'assistant'
+
+'trainee'
+
+'اختر موظفاً أولاً'
+
+'موقع غير معروف'
+
+'الموظف: ${_reportData!['
+
+'} | التاريخ: ${_formatDate(_selectedDate)}'
+
+'العنوان / الموقع'
+
+'خطأ في الطباعة: $e'
+
+'اختر موظفاً وتاريخاً للبحث'
+
+'$total نقطة'
+
+'لا توجد بيانات موقع لهذا اليوم'
+
+'points'
+
+'recorded_at'
+
+'total_points'
+
+'الموظفين${_employees.isNotEmpty ? " (${_employees.length})" : ""}'
+
+'بحث بالاسم / الكود / الموبايل'
+
+'لا يوجد موظفين'
+
+'لم يتم العثور على موظفين بهذه المعايير.\nجرب تغيير الفلتر أو البحث.'
+
+'search'
+
+'suspended'
+
+'resigned'
+
+'terminated'
+
+'retired'
+
+'status_code'
+
+'هل تريد إعادة تعيين كلمة مرور الموظف "${widget.employeeName}"؟\nسيتم توليد كلمة مرور جديدة تلقائياً.'
+
+'إعادة تعيين'
+
+';
+
+      // توليد باسورد جديد
+      final random = Random();
+      final digits = List.generate(4, (_) => random.nextInt(10)).join();
+      final newPassword = '
+
+'فشل إعادة التعيين'
+
+'تم إعادة التعيين'
+
+'كلمة المرور الجديدة:'
+
+'تم النسخ'
+
+'⚠️ احتفظ بكلمة المرور وأعطها للموظف. سيُطلب منه تغييرها عند أول دخول.'
+
+'اختر المدير الجديد'
+
+'اختر الفرع والقسم أولاً'
+
+'تم نقل الموظف بنجاح ✅'
+
+'خطأ في النقل: $e'
+
+'تعذر تحميل بيانات الموظف'
+
+',
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+          ]),
+        ),
+        SizedBox(height: 12),
+        // أزرار الإجراءات - صف علوي
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EmployeeSummaryScreen(
+                      employeeId: widget.employeeId,
+                      employeeName: widget.employeeName,
+                    ),
+                  ),
+                ),
+                icon: Icon(Icons.analytics, color: Colors.white, size: 18),
+                label: const Text('
+
+', style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6A1B9A),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _editEmployee,
+                icon: Icon(Icons.edit, color: Colors.white, size: 18),
+                label: Text(context.l10n.edit, style: TextStyle(color: Colors.white, fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        // أزرار الإجراءات - صف سفلي
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _transferEmployee,
+                icon: Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                label: const Text('
+
+'لم يتم إضافة أي مستندات لهذا الموظف بعد'
+
+'لم يتم تسجيل أي حركات وظيفية لهذا الموظف'
+
+'الملف'
+
+'تم حفظ التعديلات'
+
+'فشل الحفظ'
+
+'بيانات التواصل'
+
+'اسم البنك'
+
+'حفظ التعديلات'
+
+'Emp@$digits${String.fromCharCode(65 + random.nextInt(26))}'
+
+'managers'
+
+'Reset'
+
+'basic_salary'
+
+'انتظار موافقة'
+
+'إدارة المهمات'
+
+'الفيدباك'
+
+'مشارك'
+
+'عقود موقعة'
+
+'تحتاج متابعة'
+
+'cancelled'
+
+'pending_approval'
+
+'draft'
+
+'Pending Approval'
+
+'Missions Management'
+
+'Feedback'
+
+'assignments'
+
+'participants'
+
+'summary'
+
+'Contracts Signed'
+
+'contracts_signed'
+
+'Needs Follow-up'
+
+'needs_followup'
+
+'mission_title'
+
+'] as List? ?? [];
+
+    return RefreshIndicator(
+      onRefresh: _loadMission,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // هيدر المهمة
+          Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [const Color(0xFF6C3FC5), const Color(0xFF9B6FE8)],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          mission['
+
+'] ?? priority,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          // التوقيت والموقع
+          _infoCard(
+            title: '
+
+']),
+            ],
+          ),
+
+          // العميل
+          if ((mission['
+
+'الإيميل'
+
+']),
+                ],
+              ],
+            ),
+          ],
+
+          // المشاركون
+          if (assignments.isNotEmpty) ...[
+            SizedBox(height: 12),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.group, color: Color(0xFF6C3FC5)),
+                        SizedBox(width: 8),
+                        Text(
+                          '
+
+',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Color(0xFF6C3FC5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(height: 16),
+                    ...assignments.map((a) => _assigneeRow(a)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          // أزرار المدير
+          if (widget.isManager && _mission!['
+
+'),
+                        icon: Icon(Icons.cancel, color: Colors.red),
+                        label: Text(context.l10n.cancelMission, style: TextStyle(color: Colors.red)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          // الفيدباك
+          if (mission['
+
+'فيدباك الزيارة متاح'
+
+'اضغط لعرض التفاصيل'
+
+'هل أنت متأكد من إلغاء هذه المهمة؟'
+
+'سبب الإلغاء *'
+
+';
+
+  // جيب قائمة الموظفين
+  List<dynamic> allEmployees = [];
+  try {
+    final result = await EmployeeManagementService.getEmployeesSimple();
+    allEmployees = result;
+  } catch (_) {}
+
+  if (!mounted) return;
+
+  await showDialog(
+    context: context,
+    builder: (_) => Directionality(
+      textDirection: TextDirection.rtl,
+      child: StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('
+
+'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // الموظف الحالي
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: '
+
+'),
+                    );
+                  }).toList(),
+                  onChanged: (v) => setDialogState(() => oldEmpId = v),
+                ),
+                SizedBox(height: 12),
+                // الموظف الجديد
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: '
+
+' (مُعيَّن)'
+
+'];
+                    });
+                  },
+                ),
+                SizedBox(height: 12),
+                // السبب
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: '
+
+'✅ تم استبدال الموظف بـ $newEmpName'
+
+'تأكيد الاستبدال'
+
+'احتمال الصفقة'
+
+'نعم ✅'
+
+'mission'
+
+'force_cancel'
+
+'client_info'
+
+'role_display'
+
+'feedback'
+
+'client_status_display'
+
+'interest_rating'
+
+'deal_probability'
+
+'client_needs'
+
+'contract_signed'
+
+'deal_value'
+
+'followup_date'
+
+'internal_notes'
+
+'warnings'
+
+'] ?? 0} إدارة • ${branch['
+
+'] ?? 0} موظف'
+
+'] ?? 0} مدير • ${dept['
+
+'} • ${subordinates.length} موظف'
+
+'departments_count'
+
+'employees_count'
+
+'managers_count'
+
+'subordinates'
+
+'الملخص المالي'
+
+'] ?? 0} ج'
+
+'خصم التأخير'
+
+'خصم الغياب'
+
+'بونص Overtime'
+
+'ملخص الحضور'
+
+'أيام الحضور'
+
+'أيام الحاضر (present)'
+
+'أيام التأخير'
+
+'أيام الغياب'
+
+'أيام الإجازة'
+
+'دقائق التأخير'
+
+'] ?? 0} د'
+
+'إجمالي ساعات العمل'
+
+'] ?? 0} س'
+
+'ساعات Overtime'
+
+'التفاصيل اليومية'
+
+'دخول: ${day['
+
+'} | خروج: ${day['
+
+'} | ساعات: ${day['
+
+'daily_details'
+
+'late_deduction'
+
+'absence_deduction'
+
+'total_deductions'
+
+'overtime_bonus'
+
+'net_salary'
+
+'attended_days'
+
+'present_days'
+
+'late_days'
+
+'absent_days'
+
+'on_leave_days'
+
+'overtime_hours'
+
+'work_hours'
+
+'نظام الرواتب'
+
+'ملخص الرواتب - تفاصيل الموظف - الإعدادات'
+
+'ملخص الرواتب الشهري'
+
+'كل الموظفين مع الخصومات والبونص'
+
+'إعدادات حساب الرواتب'
+
+'قواعد الخصومات والبونص'
+
+'Payroll System'
+
+'Payroll Summary - Employee Details - Settings'
+
+'Monthly Payroll Summary'
+
+'All employees with deductions and bonuses'
+
+'Payroll Calculation Settings'
+
+'Deduction and bonus rules'
+
+'إعدادات الرواتب'
+
+'ملاحظة'
+
+'الإعدادات حالياً ثابتة وستكون قابلة للتعديل لاحقاً'
+
+'خصم التأخير / دقيقة'
+
+'} ج'
+
+'خصم الغياب / يوم'
+
+'معدل Overtime / ساعة'
+
+'late_deduction_per_minute'
+
+'absence_deduction_per_day'
+
+'overtime_rate_per_hour'
+
+'ملخص الرواتب'
+
+'الشهر: ${_data?['
+
+'عدد الموظفين'
+
+'إجمالي الرواتب'
+
+'إجمالي Overtime'
+
+'صافي الرواتب'
+
+'لا يوجد موظفين لعرضهم'
+
+'] ?? 0} | غياب: ${item['
+
+'] ?? 0} | تأخير: ${item['
+
+'ساعات: ${item['
+
+'صافي: ${item['
+
+'year'
+
+'total_employees'
+
+'grand_total_salary'
+
+'grand_total_deductions'
+
+'grand_total_overtime'
+
+'grand_total_net'
+
+'تذكير الحضور'
+
+'للموظفين الذين لم يسجلوا حضورهم'
+
+'10:00 صباحا'
+
+'تذكير الانصراف'
+
+'للموظفين الذين لم يسجلوا انصرافهم'
+
+'6:00 مساء'
+
+'طلبات معلقة اكثر من 24 ساعة'
+
+'11:00 صباحا'
+
+'موافقات اللائحة'
+
+'موظفون لم يوافقوا على اللائحة'
+
+'9:30 صباحا'
+
+'المستندات المنتهية'
+
+'مستندات تنتهي خلال 30 يوم'
+
+'8:00 صباحا'
+
+'تاكيد الارسال'
+
+'ارسال ${_reminders[index]['
+
+']} الان؟'
+
+'الغاء'
+
+'ارسال'
+
+'تم ارسال: ${_reminders[index]['
+
+']} بنجاح'
+
+'حدث خطا اثناء الارسال'
+
+'تعذر الاتصال بالسيرفر'
+
+'ارسال الكل'
+
+'ارسال جميع التذكيرات الان؟'
+
+'تم ارسال جميع التذكيرات بنجاح'
+
+'حدث خطا'
+
+'تعذر الاتصال'
+
+'التذكيرات التلقائية'
+
+'اضغط على اي تذكير لارساله'
+
+'جاري الارسال...'
+
+'قريبا'
+
+'مفعل'
+
+'يتطلب المرحلة 6'
+
+'checkin'
+
+'subtitle'
+
+'time'
+
+'icon'
+
+'color'
+
+'locked'
+
+'sending'
+
+'checkout'
+
+'MaterialIcons'
+
+'الشهر: ${_data!['
+
+'تواريخ الغياب'
+
+'لا توجد حالات غياب'
+
+'غياب: ${item['
+
+'absent_dates'
+
+'total_working_days'
+
+'تقرير الحضور الشهري'
+
+'عدد الموظفين: ${_data?['
+
+'أيام الحضور: ${item['
+
+'working_days'
+
+'] as List?) ?? [];
+        
+        // سطر الموظف الرئيسي
+        rows.add([
+          item['
+
+'إجمالي'
+
+']} د'
+
+'تأخير يومي'
+
+'تقرير التأخير'
+
+'الموظف / التاريخ'
+
+'الأيام / الساعة'
+
+'لا توجد حالات تأخير'
+
+'أيام التأخير: ${item['
+
+']} دقيقة'
+
+'total_late_days'
+
+'total_late_hours'
+
+'minutes_late'
+
+']} يوم'
+
+'الموظف / نوع الإجازة'
+
+'إجمالي الأيام'
+
+'الموافق'
+
+'إجمالي الإجازات: ${_data?['
+
+'موافق: ${_data?['
+
+'] ?? 0} | مرفوض: ${_data?['
+
+'] ?? 0} | معلق: ${_data?['
+
+'إجمالي: ${item['
+
+'] ?? 0} - موافق: ${item['
+
+'من ${lv['
+
+']} إلى ${lv['
+
+'total_days'
+
+'approved_days'
+
+'total_leaves'
+
+'from'
+
+'تقارير المدير'
+
+'الحضور - التأخير - الغياب - الطلبات - الإجازات - ساعات العمل'
+
+'عدد أيام الحضور لكل موظف'
+
+'تفاصيل أيام التأخير'
+
+'أيام الغياب الشهرية'
+
+'كل الطلبات والحالات'
+
+'ملخص إجازات الموظفين'
+
+'ساعات العمل الفعلية'
+
+'أماكن تواجد الموظف خلال اليوم'
+
+'Manager Reports'
+
+'Attendance - Late - Absence - Requests - Leaves - Work Hours'
+
+'Monthly Attendance Report'
+
+'Attendance days per employee'
+
+'Details of late days'
+
+'Monthly absence days'
+
+'All requests and statuses'
+
+'Employee leaves summary'
+
+'Actual work hours'
+
+'Daily Location Report'
+
+'Employee locations during the day'
+
+'إجمالي: ${_data!['
+
+']} (موافق: ${_data!['
+
+']} - معلق: ${_data!['
+
+'الفئة'
+
+'الموضوع'
+
+'إجمالي الطلبات: ${_data?['
+
+'total_requests'
+
+'إجمالي الساعات'
+
+'أيام العمل'
+
+'] ?? 0} س - أيام: ${item['
+
+'total_hours'
+
+'total_days_worked'
+
+'تم تغيير اللغة إلى العربية'
+
+'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = LanguageService.isArabic;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: Text(isAr ? context.l10n.settings : context.l10n.settings),
+        backgroundColor: const Color(0xFF1976D2),
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // ── قسم اللغة ──
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8),
+              ],
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1976D2).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.language, color: Color(0xFF1976D2)),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isAr ? context.l10n.language : '
+
+', style: TextStyle(fontSize: 15)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 16),
+
+          // ── معلومات التطبيق ──
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.info, color: Colors.purple),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isAr ? '
+
+'Language changed to English'
+
+'Choose app language'
+
+'About'
+
+'MotionHR v1.0.0'
+
+': {
+      // ── عام ──
+      '
+
+'اختر'
+
+'السابق'
+
+'الموظفون الميدانيون'
+
+'الاسم الأوسط'
+
+'الاسم الأول بالعربي'
+
+'الاسم الأخير بالعربي'
+
+'الاسم الأول بالإنجليزي'
+
+'الاسم الأخير بالإنجليزي'
+
+'قائمة المهمات'
+
+'تقييم اهتمام العميل'
+
+'منذ {n} دقيقة'
+
+'منذ {n} ساعة'
+
+'منذ {n} يوم'
+
+'إيميل الشركة'
+
+'app_name'
+
+'login'
+
+'logout'
+
+'remember_me'
+
+'forgot_password'
+
+'welcome'
+
+'save'
+
+'confirm'
+
+'delete'
+
+'edit'
+
+'add'
+
+'refresh'
+
+'loading'
+
+'no_data'
+
+'language'
+
+'settings'
+
+'change_language'
+
+'yes'
+
+'back'
+
+'close'
+
+'send'
+
+'retry'
+
+'select'
+
+'submit'
+
+'next'
+
+'previous'
+
+'done'
+
+'skip'
+
+'choose_language'
+
+'choose_language_desc'
+
+'arabic'
+
+'english'
+
+'continue'
+
+'login_biometric'
+
+'login_error'
+
+'connection_error'
+
+'enter_username_password'
+
+'stay_logged_in_desc'
+
+'forgot_password_desc'
+
+'dashboard'
+
+'quick_management'
+
+'tools'
+
+'attendance_today'
+
+'field_workers'
+
+'live_locations'
+
+'add_employee'
+
+'reports'
+
+'payroll'
+
+'reminders'
+
+'company_charter'
+
+'company_info'
+
+'org_tree'
+
+'location_report'
+
+'shift'
+
+'remaining_time'
+
+'shift_ended'
+
+'early_leave_permission'
+
+'attendance_done'
+
+'great_work'
+
+'last_name'
+
+'middle_name'
+
+'first_name_ar'
+
+'last_name_ar'
+
+'first_name_en'
+
+'last_name_en'
+
+'reset_password'
+
+'create_employee'
+
+'edit_employee'
+
+'employee_details'
+
+'transfer_employee'
+
+'employees_list'
+
+'no_employees'
+
+'required'
+
+'my_requests'
+
+'my_leaves'
+
+'submit_request'
+
+'request_type'
+
+'request_title'
+
+'request_details'
+
+'from_date'
+
+'to_date'
+
+'cancel_request'
+
+'cancel_request_confirm'
+
+'cancel_reason'
+
+'no_requests'
+
+'request_leave'
+
+'leave_balance'
+
+'missions_list'
+
+'create_mission'
+
+'mission_details'
+
+'mission_location'
+
+'planned_start'
+
+'planned_end'
+
+'start_mission'
+
+'end_mission'
+
+'accept_mission'
+
+'reject_mission'
+
+'my_missions'
+
+'no_missions'
+
+'mission_feedback'
+
+'write_feedback'
+
+'client_status'
+
+'mission_lead'
+
+'withdraw_request'
+
+'withdraw_reason'
+
+'no_notifications'
+
+'mark_all_read'
+
+'now'
+
+'minutes_ago'
+
+'hours_ago'
+
+'days_ago'
+
+'profile'
+
+'change_password'
+
+'confirm_password'
+
+'password_changed'
+
+'password_mismatch'
+
+'password_too_short'
+
+'biometric_login'
+
+'biometric_confirm'
+
+'biometric_prompt'
+
+'company_logo'
+
+'company_address'
+
+'company_phone'
+
+'company_email'
+
+'upload_logo'
+
+'edit_company'
+
+'attendance_report'
+
+'leaves_report'
+
+'late_report'
+
+'absence_report'
+
+'work_hours_report'
+
+'requests_report'
+
+'export_pdf'
+
+'export_excel'
+
+'print'
+
+'powered_by'
+
+'Select'
+
+'Submit'
+
+'Next'
+
+'Previous'
+
+'Skip'
+
+'Field Workers'
+
+'Geofence'
+
+'Middle Name'
+
+'First Name (Arabic)'
+
+'Last Name (Arabic)'
+
+'First Name (English)'
+
+'Last Name (English)'
+
+'Mission'
+
+'Missions List'
+
+'Create New Mission'
+
+'Interest Rating'
+
+'Deal Probability'
+
+'Client Status'
+
+'Now'
+
+'Confirm biometric activation'
+
+'Company Email'
+
+'حجم الملف كبير: ${sizeInMB.toStringAsFixed(1)} MB (الحد الأقصى $maxFileSizeMB MB)'
+
+'خطأ في التقاط الصورة: $e'
+
+'خطأ في اختيار الصورة: $e'
+
+'غير مسجل الدخول'
+
+'الملف غير موجود'
+
+'خطأ في الرفع (${response.statusCode})'
+
+'heic'
+
+'xls'
+
+'xlsx'
+
+'model'
+
+'object_id'
+
+'file'
+
+'detail'
+
+'attachments'
+
+'original_name'
+
+'file_type'
+
+'file_size'
+
+'file_size_mb'
+
+'mime_type'
+
+'thumbnail_url'
+
+'uploaded_by'
+
+'image'
+
+'word'
+
+'excel'
+
+';
+  static const int _stayLoggedInHours = 72;
+
+  // حفظ بيانات تذكرني
+  static Future<void> saveRememberMe({
+    required String username,
+    required String password,
+    required bool rememberMe,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyRememberMe, rememberMe);
+    if (rememberMe) {
+      await prefs.setString(_keyUsername, username);
+      await prefs.setString(_keyPassword, password);
+    } else {
+      await prefs.remove(_keyUsername);
+      await prefs.remove(_keyPassword);
+    }
+  }
+
+  // جلب بيانات تذكرني
+  static Future<Map<String, dynamic>> getRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      '
+
+',
+    };
+  }
+
+  // حفظ حالة البقاء مسجلاً
+  static Future<void> saveStayLoggedIn({
+    required bool stayLoggedIn,
+    required String token,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyStayLoggedIn, stayLoggedIn);
+    if (stayLoggedIn) {
+      await prefs.setString(_keyAuthToken, token);
+      await prefs.setInt(
+        _keyLastLoginTime,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } else {
+      await prefs.remove(_keyAuthToken);
+      await prefs.remove(_keyLastLoginTime);
+    }
+  }
+
+  // فحص لو البقاء مسجلاً شغال وصالح
+  static Future<Map<String, dynamic>> checkStayLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stayLoggedIn = prefs.getBool(_keyStayLoggedIn) ?? false;
+    if (!stayLoggedIn) return {'
+
+': null};
+
+    final lastLoginTime = prefs.getInt(_keyLastLoginTime) ?? 0;
+    final lastLogin = DateTime.fromMillisecondsSinceEpoch(lastLoginTime);
+    final diff = DateTime.now().difference(lastLogin);
+
+    if (diff.inHours >= _stayLoggedInHours) {
+      // انتهت الـ 72 ساعة - امسح
+      await clearStayLoggedIn();
+      return {'
+
+': token};
+  }
+
+  // مسح البقاء مسجلاً
+  static Future<void> clearStayLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyAuthToken);
+    await prefs.remove(_keyLastLoginTime);
+    await prefs.setBool(_keyStayLoggedIn, false);
+  }
+
+  // تحديث وقت آخر استخدام (كل مرة بيفتح التطبيق)
+  static Future<void> refreshLoginTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stayLoggedIn = prefs.getBool(_keyStayLoggedIn) ?? false;
+    if (stayLoggedIn) {
+      await prefs.setInt(
+        _keyLastLoginTime,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    }
+  }
+  // مسح كل حاجة عند الخروج
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyAuthToken);
+    await prefs.remove(_keyLastLoginTime);
+    await prefs.setBool(_keyStayLoggedIn, false);
+    // ⚠️ biometric_enabled محتاج يفضل موجود عشان البصمة تشتغل بعد الـ Logout
+    // لكن نعمل flag إن التوكن اتمسح وهيحتاج login عادي مرة واحدة
+    await prefs.setBool('
+
+'saved_username'
+
+'saved_password'
+
+'last_login_time'
+
+'biometric_needs_reauth'
+
+'يرجى التحقق بالبصمة للمتابعة'
+
+';
+
+class BrandingService {
+  static Map<String, dynamic>? cachedCompany;
+  static pw.MemoryImage? cachedLogo;
+
+  /// جلب بيانات الشركة (مع cache)
+  static Future<Map<String, dynamic>> getCompany() async {
+    if (cachedCompany != null) return cachedCompany!;
+    try {
+      cachedCompany = await EmployeeManagementService.getCompanyInfo();
+    } catch (_) {
+      cachedCompany = {};
+    }
+    return cachedCompany!;
+  }
+
+  /// جلب لوجو الشركة (مع cache)
+  static Future<pw.MemoryImage?> getLogo() async {
+    if (cachedLogo != null) return cachedLogo;
+    try {
+      final company = await getCompany();
+      final logoUrl = company['
+
+';
+      if (logoUrl.isEmpty) return null;
+
+      final res = await http
+          .get(Uri.parse(logoUrl))
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        cachedLogo = pw.MemoryImage(res.bodyBytes);
+      }
+    } catch (_) {}
+    return cachedLogo;
+  }
+
+  /// مسح الـ cache (لو الشركة عدلت اللوجو)
+  static void clearCache() {
+    cachedCompany = null;
+    cachedLogo = null;
+  }
+
+  /// PDF Header موحد
+  static pw.Widget buildPdfHeader({
+    required Map<String, dynamic> company,
+    pw.MemoryImage? logo,
+    String? subtitle,
+  }) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromInt(0xFF6A1B9A),
+        borderRadius: pw.BorderRadius.circular(10),
+      ),
+      child: pw.Row(
+        children: [
+          pw.Container(
+            width: 65,
+            height: 65,
+            decoration: pw.BoxDecoration(
+              color: PdfColors.white,
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            padding: const pw.EdgeInsets.all(4),
+            child: logo != null
+                ? pw.Image(logo, fit: pw.BoxFit.contain)
+                : pw.Center(
+                    child: pw.Text(
+                      '
+
+',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      color: PdfColor.fromInt(0xFFE1BEE7),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// PDF Footer موحد ✅ Powered by MotionHR - JS Solutions
+  static pw.Widget buildPdfFooter({Map<String, dynamic>? company}) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Divider(thickness: 0.5, color: PdfColors.grey400),
+        pw.SizedBox(height: 4),
+        if (company != null &&
+            (company['
+
+',
+              style: pw.TextStyle(
+                fontSize: 8,
+                color: PdfColor.fromInt(0xFF6A1B9A),
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// نص Excel Footer الموحد
+  static String excelFooterText() {
+    return '
+
+';
+  }
+
+  /// اسم الشركة للاستخدام في Excel/PDF headers
+  static String companyDisplayName(Map<String, dynamic> company) {
+    return company['
+
+'Tel: ${company['
+
+'Generated: ${DateTime.now().toString().split('
+
+'خطأ في جلب الفروع'
+
+'خطأ: ${res.statusCode}'
+
+'خطأ في جلب الأقسام'
+
+'خطأ في جلب المسميات الوظيفية'
+
+'خطأ في جلب بيانات الشركة'
+
+'خطأ في جلب الموظفين'
+
+'فشل إنشاء الموظف (${res.statusCode})'
+
+'فشل نقل الموظف'
+
+'خطأ في جلب الهيكل التنظيمي'
+
+'job_titles'
+
+'Status: ${res.statusCode} | Body: ${res.body}'
+
+'image/png'
+
+'image/gif'
+
+'image/webp'
+
+'image/jpeg'
+
+'logo'
+
+'Status: ${response.statusCode} | Body: ${response.body}'
+
+'branch_id'
+
+'department_id'
+
+'job_title_id'
+
+'currency'
+
+'middle_name_ar'
+
+'direct_manager_id'
+
+'new_manager_id'
+
+'new_branch_id'
+
+'new_department_id'
+
+'new_job_title_id'
+
+';
+
+class EmployeePdfService {
+  static Future<String> generateEmployeePdf({
+    required Map<String, dynamic> employee,
+    required Map<String, dynamic> credentials,
+    required Map<String, dynamic> whatsapp,
+    String? companyName,
+    String? companyLogoUrl,
+    String? companyPhone,
+    String? companyAddress,
+  }) async {
+    // جلب البيانات واللوجو من الخدمة الموحدة
+    final company = await BrandingService.getCompany();
+    final logo = await BrandingService.getLogo();
+
+    final pdf = pw.Document();
+
+    pw.Font? arabicFont;
+    try {
+      arabicFont = pw.Font.helvetica();
+    } catch (_) {
+      arabicFont = pw.Font.helvetica();
+    }
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // ── Header الموحد ──
+                BrandingService.buildPdfHeader(
+                  company: company,
+                  logo: logo,
+                  subtitle: '
+
+'الاسم الكامل:'
+
+'الرقم الوظيفي:'
+
+'رقم الموبايل:'
+
+'المسمى الوظيفي:'
+
+', arabicFont),
+                    ],
+                  ),
+                ),
+
+                pw.Spacer(),
+
+                // ── Footer الموحد (المطلوب: Powered by MotionHR - JS Solutions) ──
+                BrandingService.buildPdfFooter(company: company),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    final dir = await getTemporaryDirectory();
+    final fileName = '
+
+'بيانات حسابك في MotionHR'
+
+'مرحبا! تم إنشاء حسابك في MotionHR'
+
+'Employee Account Details'
+
+'Username:'
+
+'Password:'
+
+'Login URL:'
+
+'MotionHR_${employee['
+
+'emp'
+
+'whatsapp://send?phone=$cleanPhone&text=${Uri.encodeComponent(text)}'
+
+'));
+
+  // تحميل اللغة المحفوظة عند فتح التطبيق
+  static Future<void> loadSavedLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lang = prefs.getString(_keyLanguage) ?? _defaultLanguage;
+    currentLocale.value = Locale(lang);
+  }
+
+  // تغيير اللغة
+  static Future<void> changeLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLanguage, languageCode);
+    currentLocale.value = Locale(languageCode);
+  }
+
+  // اللغة الحالية
+  static String get currentLanguage => currentLocale.value.languageCode;
+
+  // فحص العربية
+  static bool get isArabic => currentLocale.value.languageCode == '
+
+';
+
+  // اسم اللغة
+  static String getLanguageName(String code) {
+    switch (code) {
+      case '
+
+';
+      default:
+        return code;
+    }
+  }
+}
+
+// ── الترجمات ──
+class AppStrings {
+  static final Map<String, Map<String, String>> _translations = {
+    '
+
+': {
+      // عام
+      '
+
+'الموظفين الميدانيين'
+
+'app_language'
+
+'Change language'
+
+'Today Attendance'
+
+');
+  }
+
+  // ── بدء التتبع كل ساعة ──
+  static Future<void> startTracking() async {
+    if (_isRunning) return;
+    _isRunning = true;
+
+    // أول نقطة فوراً
+    await _saveCurrentLocation();
+
+    // ثم كل ساعة
+    _timer = Timer.periodic(const Duration(hours: 1), (_) async {
+      await _saveCurrentLocation();
+    });
+  }
+
+  // ── إيقاف التتبع ──
+  static void stopTracking() {
+    _timer?.cancel();
+    _timer = null;
+    _isRunning = false;
+  }
+
+  static bool get isRunning => _isRunning;
+
+  // ── جيب الموقع الحالي وارسله ──
+  static Future<bool> _saveCurrentLocation() async {
+    try {
+      // تحقق من الصلاحيات
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return false;
+      }
+      if (permission == LocationPermission.deniedForever) return false;
+
+      // جيب الموقع
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+
+      // جيب اسم المكان
+      String address = '
+
+';
+      }
+
+      // ارسل للسيرفر
+      final token = await _getToken();
+      if (token == null) return false;
+
+      final now = DateTime.now();
+      final shiftDate = '
+
+': address,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ── جيب تقرير اليوم (للمدير) ──
+  static Future<Map<String, dynamic>> getLocationReport({
+    required int employeeId,
+    required String shiftDate,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('
+
+'خطأ في جلب التقرير'
+
+'shift_date'
+
+'موقع جديد'
+
+'location_lat'
+
+'location_lng'
+
+'client_company'
+
+'client_position'
+
+'client_email'
+
+'client_address'
+
+'assignees'
+
+'old_employee_id'
+
+'new_employee_id'
+
+'lat'
+
+'lng'
+
+'caption'
+
+'estimated_budget'
+
+'expected_decision_date'
+
+'interested_in'
+
+'preferred_contact'
+
+'followup_owner_id'
+
+'followup_notes'
+
+'note'
+
+'Failed: ${response.statusCode}'
+
+'Failed to load: ${response.statusCode}'
+
+';
+
+class ReportPdfService {
+  /// طباعة / مشاركة تقرير عام مع Branding كامل
+  static Future<void> printReport({
+    required String title,
+    required List<List<String>> rows,
+    List<String>? headers,
+    String? subtitle,
+  }) async {
+    final company = await BrandingService.getCompany();
+    final logo = await BrandingService.getLogo();
+
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        header: (ctx) => pw.Column(
+          children: [
+            BrandingService.buildPdfHeader(
+              company: company,
+              logo: logo,
+              subtitle: subtitle ?? title,
+            ),
+            pw.SizedBox(height: 12),
+          ],
+        ),
+        footer: (ctx) => BrandingService.buildPdfFooter(company: company),
+        build: (ctx) {
+          final widgets = <pw.Widget>[];
+
+          // عنوان التقرير
+          widgets.add(
+            pw.Container(
+              width: double.infinity,
+              padding: const pw.EdgeInsets.symmetric(vertical: 8),
+              child: pw.Text(
+                title,
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+                textAlign: pw.TextAlign.center,
+              ),
+            ),
+          );
+          widgets.add(pw.SizedBox(height: 8));
+
+          // الجدول
+          if (headers != null && rows.isNotEmpty) {
+            widgets.add(
+              pw.TableHelper.fromTextArray(
+                context: ctx,
+                headerDirection: pw.TextDirection.rtl,
+                cellAlignment: pw.Alignment.centerRight,
+                headerAlignment: pw.Alignment.centerRight,
+                headerStyle: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 10,
+                  color: PdfColors.white,
+                ),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColor.fromInt(0xFF4A148C),
+                ),
+                cellStyle: const pw.TextStyle(fontSize: 9),
+                oddCellStyle: const pw.TextStyle(fontSize: 9),
+                cellDecoration: (index, data, rowNum) => pw.BoxDecoration(
+                  color: rowNum % 2 == 0
+                      ? PdfColors.white
+                      : PdfColor.fromInt(0xFFF3E5F5),
+                ),
+                headers: headers,
+                data: rows,
+              ),
+            );
+          } else if (rows.isNotEmpty) {
+            // بدون headers - كل صف كـ text
+            for (final row in rows) {
+              widgets.add(
+                pw.Container(
+                  width: double.infinity,
+                  padding: const pw.EdgeInsets.symmetric(
+                      vertical: 4, horizontal: 8),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border(
+                      bottom:
+                          pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                    ),
+                  ),
+                  child: pw.Text(
+                    row.join('
+
+'تاريخ التقرير: ${DateTime.now().toString().split('
+
+'خطأ في تحميل المرفقات: $e'
+
+'الحد الأقصى ${widget.maxFiles} ملفات'
+
+'اختر مصدر الملف'
+
+'من المعرض'
+
+'اختيار ملف (PDF/Word/Excel)'
+
+'احفظ الطلب أولاً قبل رفع المرفقات'
+
+'تم رفع الملف بنجاح'
+
+'خطأ في الرفع'
+
+'حذف المرفق'
+
+'هل تريد حذف "${attachment.originalName}"؟'
+
+'تم حذف المرفق'
+
+'فشل حذف المرفق'
+
+'جاري فتح الملف...'
+
+'لا يمكن فتح الملف'
+
+'المرفقات'
+
+'جاري الرفع...'
+
+'لا توجد مرفقات'
+
+'اضغط "إضافة" لرفع ملف'
+
+'camera'
+
+'gallery'
