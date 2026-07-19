@@ -1,0 +1,359 @@
+﻿
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2954:10 - expected_token
+  error - Undefined name 'enterUsernamePassword'. Try correcting the name to one that is defined, or defining the 
+name - lib\l10n\generated\app_localizations.dart:2954:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2955:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2955:10 - duplicate_definition
+  error - Undefined name 'loginError'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2955:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2956:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2956:10 - duplicate_definition
+  error - Undefined name 'connectionError'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2956:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2957:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2957:10 - duplicate_definition
+  error - Undefined name 'loginBiometric'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2957:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2958:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2958:10 - duplicate_definition
+  error - Undefined name 'stayLoggedInDesc'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2958:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2959:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2959:10 - duplicate_definition
+  error - Undefined name 'goodbye'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2959:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2960:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2960:10 - duplicate_definition
+  error - Undefined name 'shiftEnded'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2960:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2961:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2961:10 - duplicate_definition
+  error - Undefined name 'attendanceDone'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2961:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2962:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2962:10 - duplicate_definition
+  error - Undefined name 'history'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2962:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2963:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2963:10 - duplicate_definition
+  error - Undefined name 'requestLeave'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2963:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2964:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2964:10 - duplicate_definition
+  error - Undefined name 'reason'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2964:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2965:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2965:10 - duplicate_definition
+  error - Undefined name 'submitRequest'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2965:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2966:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2966:10 - duplicate_definition
+  error - Undefined name 'hours'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2966:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2967:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2967:10 - duplicate_definition
+  error - Undefined name 'requestTitle'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2967:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2968:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2968:10 - duplicate_definition
+  error - Undefined name 'cancelRequest'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2968:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2969:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2969:10 - duplicate_definition
+  error - Undefined name 'cancelReason'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2969:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2970:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2970:10 - duplicate_definition
+  error - Undefined name 'markAllRead'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2970:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2971:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2971:10 - duplicate_definition
+  error - Undefined name 'noNotifications'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2971:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2972:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2972:10 - duplicate_definition
+  error - Undefined name 'companyCharter'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2972:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2973:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2973:10 - duplicate_definition
+  error - Undefined name 'quickManagement'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2973:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2974:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2974:10 - duplicate_definition
+  error - Undefined name 'orgTree'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2974:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2975:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2975:10 - duplicate_definition
+  error - Undefined name 'absenceReport'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2975:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2976:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2976:10 - duplicate_definition
+  error - Undefined name 'requestsReport'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2976:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2977:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2977:10 - duplicate_definition
+  error - Undefined name 'leavesReport'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2977:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2978:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2978:10 - duplicate_definition
+  error - Undefined name 'workHoursReport'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2978:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2979:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2979:10 - duplicate_definition
+  error - Undefined name 'suspended'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2979:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2980:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2980:10 - duplicate_definition
+  error - Undefined name 'resigned'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2980:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2981:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2981:10 - duplicate_definition
+  error - Undefined name 'terminated'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2981:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2982:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2982:10 - duplicate_definition
+  error - Undefined name 'pendingMissionRequests'. Try correcting the name to one that is defined, or defining the 
+name - lib\l10n\generated\app_localizations.dart:2982:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2983:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2983:10 - duplicate_definition
+  error - Undefined name 'amount'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2983:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2984:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2984:10 - duplicate_definition
+  error - Undefined name 'takePhoto'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2984:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2985:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2985:10 - duplicate_definition
+  error - Undefined name 'withdrawRequest'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2985:14 - undefined_identifier
+  error - Expected to find ';' - lib\l10n\generated\app_localizations.dart:2986:10 - expected_token
+  error - The name 'get' is already defined. Try renaming one of the declarations - 
+lib\l10n\generated\app_localizations.dart:2986:10 - duplicate_definition
+  error - Undefined name 'missionEnded'. Try correcting the name to one that is defined, or defining the name - 
+lib\l10n\generated\app_localizations.dart:2986:14 - undefined_identifier
+  error - The getter 'enterUsernamePassword' isn't defined for the type 'AppLocalizations'. Try importing the library 
+that defines 'enterUsernamePassword', correcting the name to the name of an existing getter, or defining a getter or 
+field named 'enterUsernamePassword' - lib\main.dart:590:44 - undefined_getter
+  error - The getter 'loginError' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'loginError', correcting the name to the name of an existing getter, or defining a getter or field named 
+'loginError' - lib\main.dart:711:65 - undefined_getter
+  error - The getter 'connectionError' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'connectionError', correcting the name to the name of an existing getter, or defining a getter or field named 
+'connectionError' - lib\main.dart:714:44 - undefined_getter
+  error - The getter 'loginBiometric' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'loginBiometric', correcting the name to the name of an existing getter, or defining a getter or field named 
+'loginBiometric' - lib\main.dart:921:54 - undefined_getter
+  error - The getter 'stayLoggedInDesc' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'stayLoggedInDesc', correcting the name to the name of an existing getter, or defining a getter or field 
+named 'stayLoggedInDesc' - lib\main.dart:974:56 - undefined_getter
+  error - The getter 'goodbye' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'goodbye', correcting the name to the name of an existing getter, or defining a getter or field named 'goodbye' - 
+lib\main.dart:1527:53 - undefined_getter
+  error - The getter 'shiftEnded' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'shiftEnded', correcting the name to the name of an existing getter, or defining a getter or field named 
+'shiftEnded' - lib\main.dart:1662:51 - undefined_getter
+  error - The getter 'attendanceDone' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'attendanceDone', correcting the name to the name of an existing getter, or defining a getter or field named 
+'attendanceDone' - lib\main.dart:1698:35 - undefined_getter
+  error - The getter 'history' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'history', correcting the name to the name of an existing getter, or defining a getter or field named 'history' - 
+lib\main.dart:1755:38 - undefined_getter
+  error - The getter 'requestLeave' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'requestLeave', correcting the name to the name of an existing getter, or defining a getter or field named 
+'requestLeave' - lib\main.dart:1905:47 - undefined_getter
+  error - The getter 'reason' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'reason', correcting the name to the name of an existing getter, or defining a getter or field named 'reason' - 
+lib\main.dart:1919:109 - undefined_getter
+  error - The getter 'submitRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'submitRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'submitRequest' - lib\main.dart:2022:25 - undefined_getter
+  error - The getter 'hours' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'hours', correcting the name to the name of an existing getter, or defining a getter or field named 'hours' - 
+lib\main.dart:2039:122 - undefined_getter
+  error - The getter 'requestTitle' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'requestTitle', correcting the name to the name of an existing getter, or defining a getter or field named 
+'requestTitle' - lib\main.dart:2046:93 - undefined_getter
+  error - The getter 'cancelRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'cancelRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'cancelRequest' - lib\main.dart:2111:36 - undefined_getter
+  error - The getter 'cancelReason' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'cancelReason', correcting the name to the name of an existing getter, or defining a getter or field named 
+'cancelReason' - lib\main.dart:2120:43 - undefined_getter
+  error - The getter 'cancelRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'cancelRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'cancelRequest' - lib\main.dart:2134:40 - undefined_getter
+  error - The getter 'cancelRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'cancelRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'cancelRequest' - lib\main.dart:2233:54 - undefined_getter
+  error - The getter 'markAllRead' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'markAllRead', correcting the name to the name of an existing getter, or defining a getter or field named 
+'markAllRead' - lib\main.dart:2356:102 - undefined_getter
+  error - The getter 'noNotifications' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'noNotifications', correcting the name to the name of an existing getter, or defining a getter or field named 
+'noNotifications' - lib\main.dart:2361:33 - undefined_getter
+  error - The getter 'companyCharter' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'companyCharter', correcting the name to the name of an existing getter, or defining a getter or field named 
+'companyCharter' - lib\main.dart:2441:47 - undefined_getter
+  error - The getter 'companyCharter' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'companyCharter', correcting the name to the name of an existing getter, or defining a getter or field named 
+'companyCharter' - lib\main.dart:2450:61 - undefined_getter
+  error - The getter 'companyCharter' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'companyCharter', correcting the name to the name of an existing getter, or defining a getter or field named 
+'companyCharter' - lib\main.dart:2714:60 - undefined_getter
+  error - The getter 'companyCharter' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'companyCharter', correcting the name to the name of an existing getter, or defining a getter or field named 
+'companyCharter' - lib\main.dart:3494:75 - undefined_getter
+  error - The getter 'quickManagement' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'quickManagement', correcting the name to the name of an existing getter, or defining a getter or field named 
+'quickManagement' - lib\main.dart:3687:28 - undefined_getter
+  error - The getter 'companyCharter' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'companyCharter', correcting the name to the name of an existing getter, or defining a getter or field named 
+'companyCharter' - lib\main.dart:3757:151 - undefined_getter
+  error - The getter 'orgTree' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'orgTree', correcting the name to the name of an existing getter, or defining a getter or field named 'orgTree' - 
+lib\main.dart:3759:40 - undefined_getter
+  error - The getter 'from' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'from', correcting the name to the name of an existing getter, or defining a getter or field named 'from' - 
+lib\screens\employee\announcement_detail_screen.dart:161:60 - undefined_getter
+  error - The getter 'from' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'from', correcting the name to the name of an existing getter, or defining a getter or field named 'from' - 
+lib\screens\employee\item_detail_screen.dart:142:72 - undefined_getter
+  error - The getter 'amount' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'amount', correcting the name to the name of an existing getter, or defining a getter or field named 'amount' - 
+lib\screens\employee\item_detail_screen.dart:147:69 - undefined_getter
+  error - The getter 'name' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'name', correcting the name to the name of an existing getter, or defining a getter or field named 'name' - 
+lib\screens\employee_mission_detail_screen.dart:136:51 - undefined_getter
+  error - The getter 'withdrawRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'withdrawRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'withdrawRequest' - lib\screens\employee_mission_detail_screen.dart:160:40 - undefined_getter
+  error - The getter 'missionEnded' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'missionEnded', correcting the name to the name of an existing getter, or defining a getter or field named 
+'missionEnded' - lib\screens\employee_mission_detail_screen.dart:671:57 - undefined_getter
+  error - The getter 'locationUpdate' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'locationUpdate', correcting the name to the name of an existing getter, or defining a getter or field named 
+'locationUpdate' - lib\screens\employee_mission_detail_screen.dart:685:36 - undefined_getter
+  error - The getter 'withdrawRequest' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'withdrawRequest', correcting the name to the name of an existing getter, or defining a getter or field named 
+'withdrawRequest' - lib\screens\employee_mission_detail_screen.dart:739:36 - undefined_getter
+  error - The getter 'editCompany' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'editCompany', correcting the name to the name of an existing getter, or defining a getter or field named 
+'editCompany' - lib\screens\manager\company_edit_screen.dart:177:34 - undefined_getter
+  error - The getter 'priority' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'priority', correcting the name to the name of an existing getter, or defining a getter or field named 'priority' - 
+lib\screens\manager\create_announcement_screen.dart:205:51 - undefined_getter
+  error - The getter 'accompaniedManager' isn't defined for the type 'AppLocalizations'. Try importing the library 
+that defines 'accompaniedManager', correcting the name to the name of an existing getter, or defining a getter or 
+field named 'accompaniedManager' - lib\screens\manager\create_mission_screen.dart:139:81 - undefined_getter
+  error - The getter 'trainee' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'trainee', correcting the name to the name of an existing getter, or defining a getter or field named 'trainee' - 
+lib\screens\manager\create_mission_screen.dart:140:81 - undefined_getter
+  error - The getter 'participants' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'participants', correcting the name to the name of an existing getter, or defining a getter or field named 
+'participants' - lib\screens\manager\create_mission_screen.dart:412:43 - undefined_getter
+  error - The getter 'accompaniedManager' isn't defined for the type 'AppLocalizations'. Try importing the library 
+that defines 'accompaniedManager', correcting the name to the name of an existing getter, or defining a getter or 
+field named 'accompaniedManager' - lib\screens\manager\create_mission_screen.dart:559:43 - undefined_getter
+  error - The getter 'trainee' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'trainee', correcting the name to the name of an existing getter, or defining a getter or field named 'trainee' - 
+lib\screens\manager\create_mission_screen.dart:560:43 - undefined_getter
+  error - The getter 'suspended' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'suspended', correcting the name to the name of an existing getter, or defining a getter or field named 
+'suspended' - lib\screens\manager\manager_employees_list_screen.dart:140:44 - undefined_getter
+  error - The getter 'resigned' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'resigned', correcting the name to the name of an existing getter, or defining a getter or field named 'resigned' - 
+lib\screens\manager\manager_employees_list_screen.dart:141:44 - undefined_getter
+  error - The getter 'terminated' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'terminated', correcting the name to the name of an existing getter, or defining a getter or field named 
+'terminated' - lib\screens\manager\manager_employees_list_screen.dart:142:44 - undefined_getter
+  error - The getter 'pendingMissionRequests' isn't defined for the type 'AppLocalizations'. Try importing the 
+library that defines 'pendingMissionRequests', correcting the name to the name of an existing getter, or defining a 
+getter or field named 'pendingMissionRequests' - lib\screens\manager\manager_missions_screen.dart:389:75 - 
+undefined_getter
+  error - The getter 'name' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'name', correcting the name to the name of an existing getter, or defining a getter or field named 'name' - 
+lib\screens\manager\mission_detail_screen.dart:221:55 - undefined_getter
+  error - The getter 'managerActions' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'managerActions', correcting the name to the name of an existing getter, or defining a getter or field named 
+'managerActions' - lib\screens\manager\mission_detail_screen.dart:284:40 - undefined_getter
+  error - The getter 'replaceEmployee' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'replaceEmployee', correcting the name to the name of an existing getter, or defining a getter or field named 
+'replaceEmployee' - lib\screens\manager\mission_detail_screen.dart:299:50 - undefined_getter
+  error - The getter 'replaceEmployee' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'replaceEmployee', correcting the name to the name of an existing getter, or defining a getter or field named 
+'replaceEmployee' - lib\screens\manager\mission_detail_screen.dart:574:36 - undefined_getter
+  error - The getter 'currentEmployee' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'currentEmployee', correcting the name to the name of an existing getter, or defining a getter or field named 
+'currentEmployee' - lib\screens\manager\mission_detail_screen.dart:582:45 - undefined_getter
+  error - The getter 'newEmployee' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'newEmployee', correcting the name to the name of an existing getter, or defining a getter or field named 
+'newEmployee' - lib\screens\manager\mission_detail_screen.dart:597:45 - undefined_getter
+  error - The getter 'warnings' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'warnings', correcting the name to the name of an existing getter, or defining a getter or field named 'warnings' - 
+lib\screens\manager\mission_detail_screen.dart:724:45 - undefined_getter
+  error - The getter 'noFeedback' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'noFeedback', correcting the name to the name of an existing getter, or defining a getter or field named 
+'noFeedback' - lib\screens\manager\mission_detail_screen.dart:726:49 - undefined_getter
+  error - The getter 'orgTree' isn't defined for the type 'AppLocalizations'. Try importing the library that defines 
+'orgTree', correcting the name to the name of an existing getter, or defining a getter or field named 'orgTree' - 
+lib\screens\manager\organization_tree_screen.dart:42:36 - undefined_getter
+  error - The getter 'absenceReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'absenceReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'absenceReport' - lib\screens\manager\reports\absence_report_screen.dart:29:34 - undefined_getter
+  error - The getter 'leavesReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'leavesReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'leavesReport' - lib\screens\manager\reports\leaves_report_screen.dart:29:34 - undefined_getter
+  error - The getter 'absenceReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'absenceReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'absenceReport' - lib\screens\manager\reports\reports_hub_screen.dart:32:57 - undefined_getter
+  error - The getter 'requestsReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'requestsReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'requestsReport' - lib\screens\manager\reports\reports_hub_screen.dart:33:59 - undefined_getter
+  error - The getter 'leavesReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'leavesReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'leavesReport' - lib\screens\manager\reports\reports_hub_screen.dart:34:59 - undefined_getter
+  error - The getter 'workHoursReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'workHoursReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'workHoursReport' - lib\screens\manager\reports\reports_hub_screen.dart:35:58 - undefined_getter
+  error - The getter 'requestsReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'requestsReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'requestsReport' - lib\screens\manager\reports\requests_report_screen.dart:29:34 - undefined_getter
+  error - The getter 'workHoursReport' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'workHoursReport', correcting the name to the name of an existing getter, or defining a getter or field named 
+'workHoursReport' - lib\screens\manager\reports\work_hours_report_screen.dart:29:34 - undefined_getter
+  error - The getter 'takePhoto' isn't defined for the type 'AppLocalizations'. Try importing the library that 
+defines 'takePhoto', correcting the name to the name of an existing getter, or defining a getter or field named 
+'takePhoto' - lib\widgets\attachments_widget.dart:105:35 - undefined_getter
+
+

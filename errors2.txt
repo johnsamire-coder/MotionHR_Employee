@@ -1,0 +1,6 @@
+  error - Invalid constant value - lib\main.dart:1084:29 - invalid_constant
+  error - Invalid constant value - lib\main.dart:1291:27 - invalid_constant
+  error - Invalid constant value - lib\main.dart:2062:95 - invalid_constant
+  error - Invalid constant value - lib\screens\employee_missions_screen.dart:84:13 - invalid_constant
+  error - Invalid constant value - lib\screens\first_launch_language_screen.dart:57:19 - invalid_constant
+  error - Invalid constant value - lib\screens\manager\mission_detail_screen.dart:706:17 - invalid_constant

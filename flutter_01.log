@@ -1,0 +1,117 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter gen-l10n
+
+## exception
+
+ProcessException: ProcessException: `dart format` failed with exit code 65
+
+stdout:
+Formatted no files in 0.04 seconds.
+
+
+stderr:
+Could not format because the source could not be parsed:
+
+line 636, column 14 of c:/MotionHR/motionhr_employee/motionhr_employee/lib/l10n/generated/app_localizations_ar.dart: 'for' can't be used as an identifier because it's a keyword.
+    â•·
+636 â”‚   String get for => 'ظ„ظ€';
+    â”‚              ^^^
+    â•µ
+Could not format because the source could not be parsed:
+
+line 636, column 14 of c:/MotionHR/motionhr_employee/motionhr_employee/lib/l10n/generated/app_localizations_en.dart: 'for' can't be used as an identifier because it's a keyword.
+    â•·
+636 â”‚   String get for => 'ظ„ظ€';
+    â”‚              ^^^
+    â•µ
+Could not format because the source could not be parsed:
+
+line 1350, column 14 of c:/MotionHR/motionhr_employee/motionhr_employee/lib/l10n/generated/app_localizations.dart: 'for' can't be used as an identifier because it's a keyword.
+     â•·
+1350 â”‚   String get for;
+     â”‚              ^^^
+     â•µ
+
+  Command: C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe format C:\MotionHR\motionhr_employee\motionhr_employee\lib\l10n\generated\app_localizations_ar.dart C:\MotionHR\motionhr_employee\motionhr_employee\lib\l10n\generated\app_localizations_en.dart C:\MotionHR\motionhr_employee\motionhr_employee\lib\l10n\generated\app_localizations.dart
+
+```
+#0      generateLocalizations (package:flutter_tools/src/localizations/gen_l10n.dart:96:7)
+<asynchronous suspension>
+#1      GenerateLocalizationsCommand.runCommand (package:flutter_tools/src/commands/generate_localizations.dart:263:5)
+<asynchronous suspension>
+#2      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1630:27)
+<asynchronous suspension>
+#3      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#4      CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#5      FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:496:9)
+<asynchronous suspension>
+#6      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#7      FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:431:5)
+<asynchronous suspension>
+#8      FlutterCommandRunner.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:307:33)
+<asynchronous suspension>
+#9      run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:104:11)
+<asynchronous suspension>
+#10     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#11     main (package:flutter_tools/executable.dart:103:3)
+<asynchronous suspension>
+```
+
+## flutter doctor
+
+```
+[33m[!][39m Flutter (Channel stable, 3.44.6, on Microsoft Windows [Version 10.0.19045.7548], locale ar-EG) [١٬٦٤٢ms]
+    [32m•[39m Flutter version 3.44.6 on channel stable at C:\src\flutter
+    [33m![39m Warning: `flutter` on your path resolves to C:\MotionHR\motionhr_employee\motionhr_employee\flutter, which is not
+      inside your current Flutter SDK checkout at C:\src\flutter. Consider adding C:\src\flutter\bin to the front of
+      your path.
+    [32m•[39m Upstream repository https://github.com/flutter/flutter.git
+    [32m•[39m Framework revision ee80f08bbf (10 days ago), 2026-07-08 15:02:06 -0700
+    [32m•[39m Engine revision 83675ed276
+    [32m•[39m Dart version 3.12.2
+    [32m•[39m DevTools version 2.57.0
+    [32m•[39m Feature flags: enable-web, enable-linux-desktop, enable-macos-desktop, enable-windows-desktop, enable-android,
+      enable-ios, cli-animations, enable-native-assets, enable-swift-package-manager, omit-legacy-version-file,
+      enable-lldb-debugging, enable-uiscene-migration
+    [32m•[39m If those were intentional, you can disregard the above warnings; however it is recommended to use "git" directly
+      to perform update checks and upgrades.
+
+[32m[✓][39m Windows Version (Windows 10, 22H2, 2009) [١٢٫٢s]
+
+[32m[✓][39m Android toolchain - develop for Android devices (Android SDK version 36.1.0) [١٣٫٠s]
+    [32m•[39m Android SDK at C:\Users\MotionDev\AppData\Local\Android\sdk
+    [32m•[39m Emulator version 36.6.11.0 (build_id 15507667) (CL:N/A)
+    [32m•[39m Platform android-36.1, build-tools 36.1.0
+    [32m•[39m Java binary at: C:\Program Files\Android\Android Studio\jbr\bin\java
+      This is the JDK bundled with the latest Android Studio installation on this machine.
+      To manually set the JDK path, use: `flutter config --jdk-dir="path/to/jdk"`.
+    [32m•[39m Java version OpenJDK Runtime Environment (build 21.0.10+-14961533-b1163.108)
+    [32m•[39m All Android licenses accepted.
+
+[32m[✓][39m Chrome - develop for the web [٨٣٩ms]
+    [32m•[39m Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
+
+[31m[✗][39m Visual Studio - develop Windows apps [٨٣٦ms]
+    [31m✗[39m Visual Studio not installed; this is necessary to develop Windows apps.
+      Download at https://visualstudio.microsoft.com/downloads/.
+      Please install the "Desktop development with C++" workload, including all of its default components
+
+[32m[✓][39m Connected device (4 available) [٦٫٦s]
+    [32m•[39m V2511 (mobile)    • 10JF9Y02R1000CT • android-arm64  • Android 16 (API 36)
+    [32m•[39m Windows (desktop) • windows         • windows-x64    • Microsoft Windows [Version 10.0.19045.7548]
+    [32m•[39m Chrome (web)      • chrome          • web-javascript • Google Chrome 150.0.7871.125
+    [32m•[39m Edge (web)        • edge            • web-javascript • Microsoft Edge 150.0.4078.65
+
+[32m[✓][39m Network resources [٥٠٣ms]
+    [32m•[39m All expected network resources are available.
+
+[33m![39m Doctor found issues in 2 categories.
+```

@@ -1,0 +1,235 @@
+﻿============================================================
+MAIN FILE INSPECTION REPORT
+============================================================
+
+MAIN file: C:\MotionHR\motionhr_employee\motionhr_employee\lib\main.dart
+Project folder: C:\MotionHR\motionhr_employee\motionhr_employee\lib
+File extension: .dart
+File size: 181.3 KB
+Total lines: 4111
+
+============================================================
+PROJECT FILES THAT MAY IDENTIFY THE TECHNOLOGY
+============================================================
+No common project marker files found.
+
+============================================================
+POSSIBLE LANGUAGE / TRANSLATION RELATED LINES IN MAIN
+============================================================
+Line 6: import 'screens/first_launch_language_screen.dart';
+Line 43: import 'services/language_service.dart';
+Line 219: 'preferred_language': LanguageService.currentLocale.value.languageCode,
+Line 282: await LanguageService.loadSavedLanguage();
+Line 321: return ValueListenableBuilder<Locale>(
+Line 322: valueListenable: LanguageService.currentLocale,
+Line 323: builder: (context, locale, _) {
+Line 328: locale: locale,
+Line 329: supportedLocales: const [
+Line 330: Locale('ar'),
+Line 331: Locale('en'),
+Line 338: textDirection: locale.languageCode == 'ar'
+Line 339: ? TextDirection.rtl
+Line 340: : TextDirection.ltr,
+Line 349: ? FirstLaunchLanguageScreen(
+Line 725: textDirection: TextDirection.rtl,
+Line 745: textDirection: TextDirection.rtl,      child: Scaffold(
+Line 772: Icon(Icons.language, color: Colors.white, size: 20),
+Line 779: await LanguageService.changeLanguage(value);
+Line 797: Text('English'),
+Line 1210: textDirection: TextDirection.rtl,
+Line 1347: textDirection: TextDirection.rtl,
+Line 1416: final List<String> _arabicDays = [
+Line 1421: final List<String> _arabicMonths = [
+Line 1517: textDirection: TextDirection.rtl,
+Line 1546: final dayName = _arabicDays[_now.weekday - 1];
+Line 1547: final monthName = _arabicMonths[_now.month];
+Line 1789: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 1903: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 2108: textDirection: TextDirection.rtl,
+Line 2351: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 2439: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 3246: textDirection: TextDirection.rtl,
+Line 3281: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 3416: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 3490: return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
+Line 3604: padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
+Line 3907: textDirection: TextDirection.rtl,
+
+============================================================
+POSSIBLE UI TEXT RELATED LINES IN MAIN
+============================================================
+Line 63: headers: {'Authorization': 'Token $token'},
+Line 90: Future<void> showLocalNotification(String title, String body) async {
+Line 93: title,
+Line 107: Map<String, List<String>> kMorningMessages = {
+Line 134: Map<String, List<String>> kEveningMessages = {
+Line 161: String getRandomMessage(
+Line 162: Map<String, List<String>> messages,
+Line 166: final list = messages[gender] ?? messages['male']!;
+Line 172: Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
+Line 173: print('🔔 Background message: ${message.notification?.title}');
+Line 179: await messaging.requestPermission(alert: true, badge: true, sound: true);
+Line 181: FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+Line 182: print('🔔 Foreground message: ${message.notification?.title}');
+Line 183: if (message.notification != null) {
+Line 185: message.notification!.title ?? '',
+Line 186: message.notification!.body ?? '',
+Line 192: FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+Line 193: print('👆 User tapped notification: ${message.notification?.title}');
+Line 199: print('❌ Firebase Messaging error: $e');
+Line 214: headers: {
+Line 229: class NotificationBellButton extends StatelessWidget {
+Line 231: const NotificationBellButton({super.key, this.color = Colors.white});
+Line 240: IconButton(
+Line 286: FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
+Line 325: title: 'MotionHR',
+Line 397: headers: {'Authorization': 'Token $token'},
+Line 402: if (data['success'] == true &&
+Line 495: String? _error;bool _rememberMe = false;
+Line 589: setState(() => _error = 'من فضلك ادخل اسم المستخدم وكلمة المرور');
+Line 595: _error = null;
+Line 601: headers: {'Content-Type': 'application/json'},
+Line 610: if (res.statusCode == 200 && data['success'] == true) {
+Line 669: headers: {'Authorization': 'Token ${data['token']}'},
+Line 673: if (charterData['success'] == true &&
+Line 710: setState(() => _error = data['message'] ?? 'بيانات الدخول غير صحيحة');
+Line 713: setState(() => _error = 'خطأ في الاتصال بالخادم');
+Line 722: showDialog(
+Line 726: child: AlertDialog(
+Line 727: title: const Text('نسيت كلمة المرور'),
+Line 732: TextButton(
+Line 767: child: PopupMenuButton<String>(
+Line 850: labelText: 'اسم المستخدم',
+Line 863: labelText: 'كلمة المرور',
+Line 866: suffixIcon: IconButton(
+Line 999: if (_error != null)
+Line 1010: Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+Line 1013: child: Text(_error!, style: TextStyle(color: Colors.red[700])),
+Line 1024: child: ElevatedButton(
+Line 1026: style: ElevatedButton.styleFrom(
+Line 1060: child: OutlinedButton.icon(
+Line 1063: label: const Text(
+Line 1071: style: OutlinedButton.styleFrom(
+Line 1080: TextButton(
+Line 1121: String? _error;
+Line 1125: setState(() => _error = 'كلمة المرور غير متطابقة');
+Line 1129: setState(() => _error = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+Line 1134: _error = null;
+Line 1141: headers: {
+Line 1151: if (res.statusCode == 200 && data['success'] == true) {
+Line 1175: setState(() => _error = data['message'] ?? 'فشل تغيير كلمة المرور');
+Line 1178: setState(() => _error = 'خطأ في الاتصال');
+Line 1191: labelText: l,
+Line 1196: suffixIcon: IconButton(
+Line 1213: title: const Text('تغيير كلمة المرور'),
+Line 1265: if (_error != null)
+Line 1271: _error!,
+Line 1279: child: ElevatedButton(
+Line 1281: style: ElevatedButton.styleFrom(
+Line 1350: title: const Text('MotionHR'),
+Line 1354: const NotificationBellButton(),
+Line 1355: IconButton(
+Line 1360: IconButton(
+Line 1364: ),            IconButton(
+Line 1370: IconButton(
+Line 1376: IconButton(icon: const Icon(Icons.logout), tooltip: 'تسجيل الخروج', onPressed: _logout),
+Line 1385: items: const [  BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
+Line 1386: BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'إجازات'),
+Line 1387: BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'طلبات'),
+Line 1388: BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: 'مهماتي'),
+Line 1389: BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'طلباتي'),
+Line 1413: String? _motivationMessage;
+Line 1414: bool _isEveningMessage = false;
+Line 1451: headers: {'Authorization': 'Token $token'},
+Line 1469: headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+Line 1477: final success = data['success'] == true;
+Line 1479: if (success) {
+Line 1482: _motivationMessage = getRandomMessage(kMorningMessages, _gender, _firstName);
+Line 1483: _isEveningMessage = false;
+Line 1489: _motivationMessage = getRandomMessage(kEveningMessages, _gender, _firstName);
+Line 1490: _isEveningMessage = true;
+Line 1495: _showMotivationDialog();
+Line 1498: SnackBar(content: Text(data['message'] ?? 'حدث خطأ'), backgroundColor: Colors.orange, duration: const Duration(seconds: 5)),
+Line 1512: void _showMotivationDialog() {
+Line 1513: if (_motivationMessage == null) return;
+Line 1514: showDialog(
+Line 1518: child: AlertDialog(
+Line 1523: Icon(_isEveningMessage ? Icons.nightlight_round : Icons.wb_sunny,
+Line 1524: size: 60, color: _isEveningMessage ? Colors.indigo : Colors.orange),
+Line 1526: Text(_isEveningMessage ? 'مع السلامة' : 'أهلاً بيك',
+Line 1529: color: _isEveningMessage ? Colors.indigo : Colors.orange)),
+Line 1531: Text(_motivationMessage!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.5)),
+Line 1535: TextButton(
+Line 1704: Expanded(child: SizedBox(height: 110, child: ElevatedButton(
+Line 1706: style: ElevatedButton.styleFrom(
+Line 1717: Expanded(child: SizedBox(height: 110, child: ElevatedButton(
+Line 1719: style: ElevatedButton.styleFrom(
+Line 1739: title: const Text('وقت الحضور'),
+Line 1740: subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+Line 1747: title: const Text('وقت الانصراف'),
+Line 1748: subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+Line 1751: SizedBox(height: 50, child: ElevatedButton.icon(
+Line 1754: label: const Text('سجل الأيام السابقة', style: TextStyle(fontSize: 16)),
+Line 1755: style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: kPrimaryColor,
+Line 1781: final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
+Line 1790: appBar: AppBar(title: const Text('سجل الأيام'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
+Line 1796: title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}')));
+Line 1828: final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'), headers: {'Authorization': 'Token $token'});
+Line 1848: return Card(child: ListTile(leading: const Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+Line 1851: SizedBox(height: 52, child: ElevatedButton.icon(
+Line 1853: icon: const Icon(Icons.add), label: const Text('تقديم طلب إجازة', style: TextStyle(fontSize: 16)),
+Line 1854: style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+Line 1894: headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+Line 1896: if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم'))); if (data['success'] == true) Navigator.pop(context); }
+Line 1904: appBar: AppBar(title: const Text('طلب إجازة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
+Line 1906: DropdownButtonFormField<String>(
+Line 1907: decoration: const InputDecoration(labelText: 'نوع الإجازة', border: OutlineInputBorder()), value: _selectedValue,
+Line 1912: if (_isOther) ...[const SizedBox(height: 16), TextField(controller: _otherCtrl, decoration: const InputDecoration(labelText: 'اذكر نوع الإجازة', border: OutlineInputBorder()))],
+Line 1914: TextField(controller: _startCtrl, readOnly: true, onTap: () => _pickDate(_startCtrl), decoration: const InputDecoration(labelText: 'من تاريخ', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+Line 1916: TextField(controller: _endCtrl, readOnly: true, onTap: () => _pickDate(_endCtrl), decoration: const InputDecoration(labelText: 'إلى تاريخ', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+Line 1918: TextField(controller: _reasonCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'السبب', border: OutlineInputBorder())),
+Line 1920: SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _loading ? null : _submit,
+Line 1921: style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
+Line 1939: final _titleCtrl = TextEditingController();
+Line 1970: final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'), headers: {'Authorization': 'Token $token'});
+Line 1995: if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار النوع وكتابة العنوان'))); return; }
+Line 2003: final body = <String, dynamic>{'title': _titleCtrl.text.trim(),
+Line 2009: headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+Line 2011: if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم')));
+Line 2012: if (data['success'] == true) { _titleCtrl.clear(); _descCtrl.clear(); _otherCtrl.clear(); _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); setState(() => _selectedValue = null); } }
+Line 2023: DropdownButtonFormField<String>(decoration: const InputDecoration(labelText: 'نوع الطلب', border: OutlineInputBorder()), value: _selectedValue,
+Line 2032: TextField(controller: _permissionDateCtrl, readOnly: true, onTap: () => _pickDate(_permissionDateCtrl), decoration: const InputDecoration(labelText: 'تاريخ الإذن', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+Line 2035: decoration: InputDecoration(labelText: _permissionKind == 'late_arrival' ? 'وقت الحضور المتوقع' : 'وقت الخروج المطلوب', border: const OutlineInputBorder(), suffixIcon: const Icon(Icons.access_time))),
+Line 2038: decoration: const InputDecoration(labelText: 'عدد الساعات', border: OutlineInputBorder(), suffixText: 'ساعة')),
+Line 2041: TextField(controller: _amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'المبلغ المطلوب', border: OutlineInputBorder(), suffixText: 'جنيه'))],
+Line 2043: TextField(controller: _otherCtrl, decoration: const InputDecoration(labelText: 'اذكر نوع الطلب', border: OutlineInputBorder()))],
+Line 2045: TextField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'عنوان الطلب', border: OutlineInputBorder())),
+Line 2047: TextField(controller: _descCtrl, maxLines: 4, decoration: const InputDecoration(labelText: 'التفاصيل / السبب', border: OutlineInputBorder())),
+Line 2049: SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _submitting ? null : _submit,
+Line 2050: style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
+Line 2061: const TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: 'طلباتي'), Tab(text: 'إجازاتي')]),
+
+============================================================
+SPLITTING MAIN INTO 4 PARTS
+============================================================
+Part 1: Lines 1 to 1028
+Saved to: C:\MotionHR\motionhr_employee\motionhr_employee\lib\__main_inspect\MAIN.part1.txt
+Part 2: Lines 1029 to 2056
+Saved to: C:\MotionHR\motionhr_employee\motionhr_employee\lib\__main_inspect\MAIN.part2.txt
+Part 3: Lines 2057 to 3084
+Saved to: C:\MotionHR\motionhr_employee\motionhr_employee\lib\__main_inspect\MAIN.part3.txt
+Part 4: Lines 3085 to 4111
+Saved to: C:\MotionHR\motionhr_employee\motionhr_employee\lib\__main_inspect\MAIN.part4.txt
+
+============================================================
+DONE
+============================================================
+Output folder:
+C:\MotionHR\motionhr_employee\motionhr_employee\lib\__main_inspect
+
+Send these files:
+1. report.txt
+2. MAIN.part1.txt
+3. MAIN.part2.txt
+4. MAIN.part3.txt
+5. MAIN.part4.txt

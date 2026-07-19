@@ -1,0 +1,21 @@
+﻿4715:   }
+4716: 
+4717:   List<Widget> get _pages => [
+4718:         const ManagerDashboard(),
+4719:         const ManagerPendingScreen(),
+4720:         const ManagerAttendanceScreen(),
+4721:         const ManagerLiveLocationsScreen(),
+4722:       ];
+4723: 
+4724:   Future<void> _logout() async {
+4725:     final prefs = await SharedPreferences.getInstance();
+4726:     await AuthStorageService.clearAll();
+4727:     unreadNotificationsCount.value = 0;
+4728:     if (!mounted) return;
+4729:     Navigator.pushReplacement(
+4730:       context,
+4731:       MaterialPageRoute(builder: (_) => const LoginScreen()),
+4732:     );
+4733:   }
+4734: 
+4735:   @override

@@ -35,22 +35,26 @@ class AuthStorageService {
       'password': prefs.getString(_keyPassword) ?? '',
     };
   }
-
   // حفظ حالة البقاء مسجلاً
   static Future<void> saveStayLoggedIn({
     required bool stayLoggedIn,
     required String token,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+
+    // احتفظ دائماً بالتوكن للبصمة
+    await prefs.setString(_keyAuthToken, token);
+
     await prefs.setBool(_keyStayLoggedIn, stayLoggedIn);
+
     if (stayLoggedIn) {
-      await prefs.setString(_keyAuthToken, token);
       await prefs.setInt(
         _keyLastLoginTime,
         DateTime.now().millisecondsSinceEpoch,
       );
     } else {
-      await prefs.remove(_keyAuthToken);
+      // عند إلغاء stay logged in امسح وقت الجلسة فقط
+      // لكن لا تمسح auth_token لأن البصمة تعتمد عليه
       await prefs.remove(_keyLastLoginTime);
     }
   }
@@ -76,13 +80,12 @@ class AuthStorageService {
 
     return {'valid': true, 'token': token};
   }
-
   // مسح البقاء مسجلاً
   static Future<void> clearStayLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyAuthToken);
     await prefs.remove(_keyLastLoginTime);
     await prefs.setBool(_keyStayLoggedIn, false);
+    // لا تمسح auth_token هنا لأن البصمة تعتمد عليه
   }
 
   // تحديث وقت آخر استخدام (كل مرة بيفتح التطبيق)
@@ -106,9 +109,20 @@ class AuthStorageService {
     // تذكرني يفضل محفوظ حتى بعد الخروج
   }
 
-  // جلب التوكن المحفوظ
+    // احصل على التوكن المحفوظ
   static Future<String?> getSavedToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyAuthToken);
+    String? token = prefs.getString(_keyAuthToken);
+    if (token == null || token.isEmpty) {
+      token = prefs.getString('token');
+    }
+    return (token == null || token.isEmpty) ? null : token;
+  }
+
+  // حفظ التوكن بشكل متزامن
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyAuthToken, token);
+    await prefs.setString('token', token);
   }
 }

@@ -1,0 +1,1889 @@
+﻿import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
+
+import 'l10n/generated/app_localizations.dart';
+import 'screens/first_launch_language_screen.dart';
+import 'package:flutter/material.dart';
+import 'screens/manager/reports/reports_hub_screen.dart';
+import 'screens/manager/payroll/payroll_hub_screen.dart';
+import 'screens/manager/reminder_settings_screen.dart';
+import 'screens/employee/employee_profile_screen.dart';
+import 'screens/employee/announcements_screen.dart';
+import 'screens/manager/create_announcement_screen.dart';
+import 'screens/manager/create_employee_screen.dart';
+import 'screens/manager/manager_employees_list_screen.dart';
+import 'screens/manager/manager_missions_screen.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'services/auth_storage_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'services/biometric_auth_service.dart';
+import 'services/app_strings.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'background_service.dart';
+import 'package:file_picker/file_picker.dart';
+
+import 'screens/employee/item_detail_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/manager/company_info_screen.dart';
+import 'screens/manager/organization_tree_screen.dart';
+import 'screens/manager/location_report_screen.dart';
+import 'screens/employee_missions_screen.dart';
+import 'widgets/empty_state_widget.dart';
+import 'services/language_service.dart' hide AppStrings;
+import 'services/location_tracking_service.dart';
+
+const String kBaseUrl = 'https://jssolutions-eg.com';
+const Color kPrimaryColor = Color(0xFF1976D2);
+const Color kPrimaryDark = Color(0xFF0D47A1);
+const Color kAccentColor = Color(0xFF42A5F5);
+const Color kManagerColor = Color(0xFF6A1B9A);
+
+final FlutterLocalNotificationsPlugin _localNotif =
+    FlutterLocalNotificationsPlugin();
+
+final ValueNotifier<int> unreadNotificationsCount = ValueNotifier<int>(0);
+
+Future<void> fetchUnreadCount() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    if (token.isEmpty) return;
+    final res = await http.get(
+      Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
+      headers: {'Authorization': 'Token $token'},
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      unreadNotificationsCount.value = data['unread_count'] ?? 0;
+    }
+  } catch (_) {}
+}
+
+Future<void> initLocalNotifications() async {
+  const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+  await _localNotif.initialize(
+    const InitializationSettings(android: android),
+    onDidReceiveNotificationResponse: (_) {},
+  );
+  await _localNotif
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'motionhr_channel',
+          'MotionHR Notifications',
+          importance: Importance.max,
+        ),
+      );
+}
+
+Future<void> showLocalNotification(String title, String body) async {
+  await _localNotif.show(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    title,
+    body,
+    const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'motionhr_channel',
+        'MotionHR Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+    ),
+  );
+}
+
+Map<String, List<String>> kMorningMessages = {
+  'male': [
+    'طµط¨ط§ط­ ط§ظ„ط®ظٹط± ظٹط§ {name} ًںŒ… ظٹظˆظ…ظƒ ط¬ظ…ظٹظ„ ط¨ط¥ط°ظ† ط§ظ„ظ„ظ‡',
+    'ظٹظˆظ…ظƒ ط³ط¹ظٹط¯ ظٹط§ {name} ًںکٹ ظٹط§ط±ط¨ ظٹظˆظ…ظƒ ط·ط§ظ‚ط© ط¥ظٹط¬ط§ط¨ظٹط©',
+    'ط£ظ‡ظ„ط§ظ‹ ظٹط§ {name}طŒ ط¬ط§ظ‡ط² ظ†ط¨ط¯ط¹ ط§ظ„ظ†ظ‡ط§ط±ط¯ط©! ًںڑ€',
+    'طµط¨ط§ط­ ط§ظ„ظ†ظˆط± ظٹط§ {name} ًںŒ‍ ط«ظ‚طھظƒ ظ…ظ…ظٹط²ط© ظٹط§ ظ…ط¨ط¯ط¹',
+    'ط´ط؛ظ„ظƒ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظ‡ظٹظƒظˆظ† ط³ط¨ط¨ ظپظٹ ظ†ط¬ط§ط­ظƒ ظٹط§ {name} ًں’ھ',
+    'ط£ظ†طھ ط¬ط²ط، ظ…ظ‡ظ… ظ…ظ† ط§ظ„ظپط±ظٹظ‚ ظٹط§ {name}طŒ ظٹظˆظ… ظ…ظˆظپظ‚ ًںژ¯',
+    'طµط¨ط§ط­ ط§ظ„ظˆط±ط¯ ظٹط§ {name} ًںŒ¹ ط§ط¹ظ…ظ„ ظٹظˆظ…ظƒ ط£ط­ظ„ظ‰ ظ…ط§ ظٹظƒظˆظ†',
+    'ظƒظ„ ط®ط·ظˆط© ط¨طھط§ط®ط¯ظ‡ط§ ط¨طھظ‚ط±ط¨ظƒ ظ…ظ† ظ‡ط¯ظپظƒ ظٹط§ {name} ًںڈ†',
+    'طµط¨ط§ط­ ط§ظ„ظپظ„ ظٹط§ {name}طŒ ظ†ط¬ط§ط­ ظ‚ط§ط¯ظ… ظپظٹ ط§ظ†طھط¸ط§ط±ظƒ ًں’¼',
+    'ط§ط¬ط¹ظ„ ظٹظˆظ…ظƒ ظ…ظ„ظٹط¦ظ‹ط§ ط¨ط§ظ„ط¥ظ†ط¬ط§ط²ط§طھ ظٹط§ {name} ًںŒں',
+  ],
+  'female': [
+    'طµط¨ط§ط­ ط§ظ„ط®ظٹط± ظٹط§ {name} ًںŒ… ظٹظˆظ…ظƒ ط¬ظ…ظٹظ„ ط¨ط¥ط°ظ† ط§ظ„ظ„ظ‡',
+    'ظٹظˆظ…ظƒ ط³ط¹ظٹط¯ ظٹط§ {name} ًںکٹ ظٹط§ط±ط¨ ظٹظˆظ…ظƒ ط·ط§ظ‚ط© ط¥ظٹط¬ط§ط¨ظٹط©',
+    'ط£ظ‡ظ„ط§ظ‹ ظٹط§ {name}طŒ ط¬ط§ظ‡ط²ط© ظ†ط¨ط¯ط¹ظٹ ط§ظ„ظ†ظ‡ط§ط±ط¯ط©! ًںڑ€',
+    'طµط¨ط§ط­ ط§ظ„ظ†ظˆط± ظٹط§ {name} ًںŒ‍ ط«ظ‚طھظƒ ظ…ظ…ظٹط²ط© ظٹط§ ظ…ط¨ط¯ط¹ط©',
+    'ط´ط؛ظ„ظƒ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظ‡ظٹظƒظˆظ† ط³ط¨ط¨ ظپظٹ ظ†ط¬ط§ط­ظƒ ظٹط§ {name} ًں’ھ',
+    'ط£ظ†طھظگ ط¬ط²ط، ظ…ظ‡ظ… ظ…ظ† ط§ظ„ظپط±ظٹظ‚ ظٹط§ {name}طŒ ظٹظˆظ… ظ…ظˆظپظ‚ ًںژ¯',
+    'طµط¨ط§ط­ ط§ظ„ظˆط±ط¯ ظٹط§ {name} ًںŒ¹ ط§ط¹ظ…ظ„ظٹ ظٹظˆظ…ظƒ ط£ط­ظ„ظ‰ ظ…ط§ ظٹظƒظˆظ†',
+    'ظƒظ„ ط®ط·ظˆط© ط¨طھط§ط®ط¯ظٹظ‡ط§ ط¨طھظ‚ط±ط¨ظƒ ظ…ظ† ظ‡ط¯ظپظƒ ظٹط§ {name} ًںڈ†',
+    'طµط¨ط§ط­ ط§ظ„ظپظ„ ظٹط§ {name}طŒ ظ†ط¬ط§ط­ ظ‚ط§ط¯ظ… ظپظٹ ط§ظ†طھط¸ط§ط±ظƒ ًں’¼',
+    'ط§ط¬ط¹ظ„ظٹ ظٹظˆظ…ظƒ ظ…ظ„ظٹط¦ظ‹ط§ ط¨ط§ظ„ط¥ظ†ط¬ط§ط²ط§طھ ظٹط§ {name} ًںŒں',
+  ],
+};
+
+Map<String, List<String>> kEveningMessages = {
+  'male': [
+    'ط´ظƒط±ط§ظ‹ ط¹ظ„ظ‰ ظ…ط¬ظ‡ظˆط¯ظƒ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظٹط§ {name} ًںŒ™ ط§ط³طھط±ظٹط­ ظƒظˆظٹط³',
+    'ظٹظˆظ… ط¹ظ…ظ„ ط¬ظ…ظٹظ„ ظٹط§ {name}طŒ طھط³طھط§ظ‡ظ„ ط±ط§ط­ط© ظ…ظ…طھط¹ط© ًںک´',
+    'ط£ط­ط³ظ†طھ ظٹط§ {name}! ط§ظ„ظٹظˆظ… ط¯ظ‡ ظƒط§ظ† ظپظٹظ‡ ط¥ظ†ط¬ط§ط²طŒ ظ…ط³ط§ط،ظƒ ط³ط¹ظٹط¯ ًںŒں',
+    'ط´ط؛ظ„ ط±ط§ط¦ط¹ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظٹط§ {name}طŒ ظ…ط³ط§ط، ط§ظ„ط®ظٹط± ظˆط§ظ„ط±ط§ط­ط© ًںژ‰',
+    'ط§ظ†طھظ‡ظٹطھ ظ…ظ† ظٹظˆظ… ظ…ظ†طھط¬ ظٹط§ {name}طŒ ظˆظ‚طھ ط§ظ„ط¹ط§ظپظٹط© ظˆط§ظ„ط±ط§ط­ط© ًں›Œ',
+    'ط£ظ†طھ طھط³طھط­ظ‚ ط§ظ„ط±ط§ط­ط© ظٹط§ {name}طŒ ظ…ط³ط§ط،ظƒ ط£ط­ظ„ظ‰ ًں’¤',
+    'ظٹظˆظ… ظ…ظˆظپظ‚ ط§ظ†طھظ‡ظ‰ ظٹط§ {name}طŒ ظˆظ‚طھ ط§ظ„ط§ط³طھط¬ظ…ط§ظ… ًںڈ–',
+    'ط§ظ„ظ„ظ‡ ظٹط¨ط§ط±ظƒ ظپظٹ ظ…ط¬ظ‡ظˆط¯ظƒ ظٹط§ {name}طŒ ط®ط¯ ظ‚ط³ط· ظ…ظ† ط§ظ„ط±ط§ط­ط© ًںŒں',
+    'ظٹظˆظ… ط±ط§ط¦ط¹ ظٹط§ {name}طŒ ط§ط³طھظ…ط± ًںژ¯',
+    'ظ…ط³ط§ط، ط§ظ„ط®ظٹط± ظٹط§ {name}طŒ طھط³طھط§ظ‡ظ„ ظƒظ„ ط®ظٹط± ًںŒ‍',
+  ],
+  'female': [
+    'ط´ظƒط±ط§ظ‹ ط¹ظ„ظ‰ ظ…ط¬ظ‡ظˆط¯ظƒ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظٹط§ {name} ًںŒ™ ط§ط³طھط±ظٹط­ظٹ ظƒظˆظٹط³',
+    'ظٹظˆظ… ط¹ظ…ظ„ ط¬ظ…ظٹظ„ ظٹط§ {name}طŒ طھط³طھط§ظ‡ظ„ظٹ ط±ط§ط­ط© ظ…ظ…طھط¹ط© ًںک´',
+    'ط£ط­ط³ظ†طھظگ ظٹط§ {name}! ط§ظ„ظٹظˆظ… ط¯ظ‡ ظƒط§ظ† ظپظٹظ‡ ط¥ظ†ط¬ط§ط²طŒ ظ…ط³ط§ط،ظƒ ط³ط¹ظٹط¯ ًںŒں',
+    'ط´ط؛ظ„ ط±ط§ط¦ط¹ ط§ظ„ظ†ظ‡ط§ط±ط¯ط© ظٹط§ {name}طŒ ظ…ط³ط§ط، ط§ظ„ط®ظٹط± ظˆط§ظ„ط±ط§ط­ط© ًںژ‰',
+    'ط§ظ†طھظ‡ظٹطھظٹ ظ…ظ† ظٹظˆظ… ظ…ظ†طھط¬ ظٹط§ {name}طŒ ظˆظ‚طھ ط§ظ„ط¹ط§ظپظٹط© ظˆط§ظ„ط±ط§ط­ط© ًں›Œ',
+    'ط£ظ†طھظگ طھط³طھط­ظ‚ظٹ ط§ظ„ط±ط§ط­ط© ظٹط§ {name}طŒ ظ…ط³ط§ط،ظƒ ط£ط­ظ„ظ‰ ًں’¤',
+    'ظٹظˆظ… ظ…ظˆظپظ‚ ط§ظ†طھظ‡ظ‰ ظٹط§ {name}طŒ ظˆظ‚طھ ط§ظ„ط§ط³طھط¬ظ…ط§ظ… ًںڈ–',
+    'ط§ظ„ظ„ظ‡ ظٹط¨ط§ط±ظƒ ظپظٹ ظ…ط¬ظ‡ظˆط¯ظƒ ظٹط§ {name}طŒ ط®ط¯ظٹ ظ‚ط³ط· ظ…ظ† ط§ظ„ط±ط§ط­ط© ًںŒں',
+    'ظٹظˆظ… ط±ط§ط¦ط¹ ظٹط§ {name}طŒ ط§ط³طھظ…ط±ظٹ ًںژ¯',
+    'ظ…ط³ط§ط، ط§ظ„ط®ظٹط± ظٹط§ {name}طŒ طھط³طھط§ظ‡ظ„ظٹ ظƒظ„ ط®ظٹط± ًںŒ‍',
+  ],
+};
+
+String getRandomMessage(
+  Map<String, List<String>> messages,
+  String gender,
+  String name,
+) {
+  final list = messages[gender] ?? messages['male']!;
+  final msg = list[Random().nextInt(list.length)];
+  return msg.replaceAll('{name}', name.isEmpty ? 'طµط¯ظٹظ‚ظ†ط§' : name);
+}
+
+@pragma('vm:entry-point')
+Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
+  print('ًں”” Background message: ${message.notification?.title}');
+}
+
+Future<void> initFirebaseMessaging() async {
+  try {
+    final messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(alert: true, badge: true, sound: true);
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      print('ًں”” Foreground message: ${message.notification?.title}');
+      if (message.notification != null) {
+        await showLocalNotification(
+          message.notification!.title ?? '',
+          message.notification!.body ?? '',
+        );
+        await fetchUnreadCount();
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('ًں‘† User tapped notification: ${message.notification?.title}');
+      fetchUnreadCount();
+    });
+
+    print('âœ… Firebase Messaging initialized');
+  } catch (e) {
+    print('â‌Œ Firebase Messaging error: $e');
+  }
+}
+
+Future<void> saveFCMTokenToServer() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null || token.isEmpty) return;
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken == null) return;
+
+    final res = await http.post(
+      Uri.parse('$kBaseUrl/attendance/api/mobile/fcm-token/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode({
+        'fcm_token': fcmToken,
+        'preferred_language': LanguageService.currentLocale.value.languageCode,
+      }),
+    );
+
+    if (res.statusCode == 200) {
+      await prefs.setString('fcm_token', fcmToken);
+    }
+  } catch (_) {}
+}
+
+// â”€â”€â”€ Helper: TextDirection ط­ط³ط¨ ط§ظ„ظ„ط؛ط© â”€â”€â”€
+TextDirection get appDir =>
+    LanguageService.currentLanguage == 'ar'
+        ? TextDirection.rtl
+        : TextDirection.ltr;
+
+class NotificationBellButton extends StatelessWidget {
+  final Color color;
+  const NotificationBellButton({super.key, this.color = Colors.white});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: unreadNotificationsCount,
+      builder: (context, count, _) {
+        return Stack(
+          children: [
+            IconButton(
+              icon: Icon(Icons.notifications, color: color),
+              tooltip: AppStrings.tr('notifications'),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen()),
+                );
+                fetchUnreadCount();
+              },
+            ),
+            if (count > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints:
+                      const BoxConstraints(minWidth: 18, minHeight: 18),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LanguageService.loadSavedLanguage();
+  try {
+    await Firebase.initializeApp();
+    await initLocalNotifications();
+    FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
+    await initFirebaseMessaging();
+  } catch (_) {}
+  await configureBackgroundTracking();
+  runApp(const MotionHRApp());
+}
+
+class MotionHRApp extends StatefulWidget {
+  const MotionHRApp({super.key});
+
+  @override
+  State<MotionHRApp> createState() => _MotionHRAppState();
+}
+
+class _MotionHRAppState extends State<MotionHRApp> {
+  bool _isFirstLaunch = false;
+  bool _checking = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstLaunch();
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final done = prefs.getBool('first_launch_done') ?? false;
+    setState(() {
+      _isFirstLaunch = !done;
+      _checking = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Locale>(
+      valueListenable: LanguageService.currentLocale,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          title: 'MotionHR',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
+          locale: locale,
+          supportedLocales: const [
+            Locale('ar'),
+            Locale('en'),
+          ],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+          ],
+          builder: (context, child) {
+            return Directionality(
+              textDirection: locale.languageCode == 'ar'
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              child: child ?? const SizedBox(),
+            );
+          },
+          home: _checking
+              ? const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                )
+              : _isFirstLaunch
+                  ? FirstLaunchLanguageScreen(
+                      onDone: () {
+                        setState(() => _isFirstLaunch = false);
+                      },
+                    )
+                  : const SplashScreen(),
+        );
+      },
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    final prefs = await SharedPreferences.getInstance();
+    final stayData = await AuthStorageService.checkStayLoggedIn();
+    final bool isValidSession = stayData['valid'] == true;
+    final String? token = stayData['token'] as String?;
+    final appMode = prefs.getString('app_mode') ?? 'employee';
+
+    if (!mounted) return;
+
+    if (isValidSession && token != null && token.isNotEmpty) {
+      await prefs.setString('token', token);
+      await AuthStorageService.refreshLoginTime();
+
+      saveFCMTokenToServer();
+      fetchUnreadCount();
+
+      bool needsCharter = false;
+      if (appMode != 'manager') {
+        try {
+          final res = await http.get(
+            Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+            headers: {'Authorization': 'Token $token'},
+          );
+
+          if (res.statusCode == 200) {
+            final data = jsonDecode(res.body);
+            if (data['success'] == true &&
+                data['has_charter'] == true &&
+                data['needs_acceptance'] == true) {
+              needsCharter = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+
+      if (needsCharter) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CharterScreen(appMode: appMode),
+          ),
+        );
+      } else if (appMode == 'manager') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ManagerShell()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const EmployeeShell()),
+        );
+      }
+    } else {
+      await prefs.remove('token');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [kPrimaryDark, kPrimaryColor, kAccentColor],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.location_on, size: 100, color: Colors.white),
+              const SizedBox(height: 20),
+              const Text(
+                'MotionHR',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                AppStrings.tr('app_subtitle') == 'app_subtitle'
+                    ? 'ظ†ط¸ط§ظ… ط¥ط¯ط§ط±ط© ط§ظ„ظ…ظˆط§ط±ط¯ ط§ظ„ط¨ط´ط±ظٹط©'
+                    : AppStrings.tr('app_subtitle'),
+                style:
+                    const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 30),
+              const CircularProgressIndicator(color: Colors.white),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _passFocus = FocusNode();
+
+  bool _loading = false;
+  bool _obscurePass = true;
+  String? _error;
+  bool _rememberMe = false;
+  bool _stayLoggedIn = false;
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedAuthData();
+    _checkBiometric();
+  }
+
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    _passFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkBiometric() async {
+    final available = await BiometricAuthService.isBiometricAvailable();
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('biometric_enabled') ?? false;
+    if (!mounted) return;
+    setState(() {
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
+    });
+    if (available && enabled) {
+      final token = await AuthStorageService.getSavedToken();
+      if (token != null && token.isNotEmpty) {
+        final auth = await BiometricAuthService.authenticate(
+          reason: AppStrings.tr('biometric_prompt'),
+        );
+        if (auth && mounted) {
+          _navigateByToken(token);
+        }
+      }
+    }
+  }
+
+  Future<void> _navigateByToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    final appMode = prefs.getString('app_mode') ?? 'employee';
+    if (!mounted) return;
+    if (appMode == 'manager') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ManagerShell()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EmployeeShell()),
+      );
+    }
+  }
+
+  Future<void> _loginWithBiometric() async {
+    final token = await AuthStorageService.getSavedToken();
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.tr('biometric_prompt')),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    final auth = await BiometricAuthService.authenticate(
+      reason: AppStrings.tr('biometric_prompt'),
+    );
+    if (auth && mounted) {
+      _navigateByToken(token);
+    }
+  }
+
+  Future<void> _loadSavedAuthData() async {
+    final rememberData = await AuthStorageService.getRememberMe();
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _rememberMe = rememberData['rememberMe'] ?? false;
+      _stayLoggedIn = prefs.getBool('stay_logged_in') ?? false;
+      _userCtrl.text = rememberData['username'] ?? '';
+      _passCtrl.text = rememberData['password'] ?? '';
+    });
+  }
+
+  Future<void> _login() async {
+    if (_userCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
+      setState(() => _error = AppStrings.tr('enter_username_password'));
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': _userCtrl.text.trim(),
+          'password': _passCtrl.text,
+        }),
+      );
+
+      final data = jsonDecode(res.body);
+
+      if (res.statusCode == 200 && data['success'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', data['token']);
+
+        String username = data['username'] ?? '';
+        String fullName = data['full_name'] ?? '';
+        String companyName = data['company_name'] ?? '';
+        String firstName = data['first_name'] ?? '';
+        String gender = data['gender'] ?? 'male';
+
+        if (data['employee'] is Map) {
+          fullName = fullName.isEmpty
+              ? (data['employee']['name'] ?? '')
+              : fullName;
+          companyName = companyName.isEmpty
+              ? (data['employee']['company'] ?? '')
+              : companyName;
+          firstName = firstName.isEmpty
+              ? (data['employee']['first_name'] ?? '')
+              : firstName;
+          gender = gender == 'male' && data['employee']['gender'] != null
+              ? data['employee']['gender']
+              : gender;
+        }
+
+        if (firstName.isEmpty && fullName.isNotEmpty) {
+          firstName = fullName.split(' ').first;
+        }
+
+        await prefs.setString('username', username);
+        await prefs.setString('full_name', fullName);
+        await prefs.setString('company_name', companyName);
+        await prefs.setString('first_name', firstName);
+        await prefs.setString('gender', gender);
+        await prefs.setString('role', data['role'] ?? 'employee');
+        await prefs.setString('app_mode', data['app_mode'] ?? 'employee');
+
+        await AuthStorageService.saveRememberMe(
+          username: _userCtrl.text.trim(),
+          password: _passCtrl.text,
+          rememberMe: _rememberMe,
+        );
+
+        await AuthStorageService.saveStayLoggedIn(
+          stayLoggedIn: _stayLoggedIn,
+          token: data['token'],
+        );
+
+        if (_biometricAvailable) {
+          final prefs2 = await SharedPreferences.getInstance();
+          await prefs2.setBool('biometric_enabled', true);
+        }
+
+        saveFCMTokenToServer();
+        fetchUnreadCount();
+
+        final mustChange = data['must_change_password'] == true;
+        final appMode = data['app_mode'] ?? 'employee';
+
+        bool needsCharter = false;
+        if (appMode != 'manager') {
+          try {
+            final charterRes = await http.get(
+              Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+              headers: {'Authorization': 'Token ${data['token']}'},
+            );
+            if (charterRes.statusCode == 200) {
+              final charterData = jsonDecode(charterRes.body);
+              if (charterData['success'] == true &&
+                  charterData['has_charter'] == true &&
+                  charterData['needs_acceptance'] == true) {
+                needsCharter = true;
+              }
+            }
+          } catch (_) {}
+        }
+
+        if (!mounted) return;
+
+        if (mustChange) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ChangePasswordScreen(forced: true),
+            ),
+          );
+        } else if (needsCharter) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CharterScreen(appMode: appMode),
+            ),
+          );
+        } else if (appMode == 'manager') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ManagerShell()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const EmployeeShell()),
+          );
+        }
+      } else {
+        setState(
+            () => _error = data['message'] ?? AppStrings.tr('login_error'));
+      }
+    } catch (e) {
+      setState(() => _error = AppStrings.tr('connection_error'));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _showForgotPassword() {
+    showDialog(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: appDir,
+        child: AlertDialog(
+          title: Text(AppStrings.tr('forgot_password')),
+          content: Text(AppStrings.tr('forgot_password_desc')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppStrings.tr('ok')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [kPrimaryDark, kPrimaryColor, kAccentColor],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: PopupMenuButton<String>(
+                        icon: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(width: 10),
+                            Icon(Icons.language,
+                                color: Colors.white, size: 20),
+                            SizedBox(width: 4),
+                            Icon(Icons.arrow_drop_down,
+                                color: Colors.white, size: 20),
+                            SizedBox(width: 6),
+                          ],
+                        ),
+                        onSelected: (value) async {
+                          await LanguageService.changeLanguage(value);
+                          if (context.mounted) setState(() {});
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'ar',
+                            child: Row(
+                              children: [
+                                Text('ًں‡¸ًں‡¦ ',
+                                    style: TextStyle(fontSize: 18)),
+                                Text('ط§ظ„ط¹ط±ط¨ظٹط©'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'en',
+                            child: Row(
+                              children: [
+                                Text('ًں‡¬ًں‡§ ',
+                                    style: TextStyle(fontSize: 18)),
+                                Text('English'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.location_on,
+                        size: 70, color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'MotionHR',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppStrings.tr('welcome'),
+                    style: const TextStyle(
+                        fontSize: 14, color: Colors.white70),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _userCtrl,
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) => _passFocus.requestFocus(),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.tr('username'),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: const Icon(Icons.person,
+                                color: kPrimaryColor),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _passCtrl,
+                          focusNode: _passFocus,
+                          obscureText: _obscurePass,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _login(),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.tr('password'),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: const Icon(Icons.lock,
+                                color: kPrimaryColor),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePass
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () => setState(
+                                  () => _obscurePass = !_obscurePass),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border:
+                                Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                      Icons.check_circle_outline,
+                                      color: kPrimaryColor),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      AppStrings.tr('remember_me'),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: _rememberMe,
+                                    activeColor: kPrimaryColor,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberMe = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              if (_biometricAvailable)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.fingerprint,
+                                        color: kPrimaryColor),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        AppStrings.tr('biometric_login'),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: _biometricEnabled,
+                                      activeColor: kPrimaryColor,
+                                      onChanged: (value) async {
+                                        if (value) {
+                                          final authenticated =
+                                              await BiometricAuthService
+                                                  .authenticate(
+                                            reason: AppStrings.tr(
+                                                'biometric_confirm'),
+                                          );
+                                          if (!authenticated ||
+                                              !mounted) return;
+                                        }
+                                        final prefs =
+                                            await SharedPreferences
+                                                .getInstance();
+                                        await prefs.setBool(
+                                            'biometric_enabled', value);
+                                        if (mounted) {
+                                          setState(() {
+                                            _biometricEnabled = value;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              const Divider(height: 12),
+                              Row(
+                                children: [
+                                  const Icon(
+                                      Icons.verified_user_outlined,
+                                      color: kPrimaryColor),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          AppStrings.tr('stay_logged_in'),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          AppStrings.tr(
+                                              'stay_logged_in_desc'),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: _stayLoggedIn,
+                                    activeColor: kPrimaryColor,
+                                    onChanged: (value) {
+                                      setState(
+                                          () => _stayLoggedIn = value);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        if (_error != null)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border:
+                                  Border.all(color: Colors.red[200]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    color: Colors.red[700], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(_error!,
+                                      style: TextStyle(
+                                          color: Colors.red[700])),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _loading ? null : _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 3,
+                            ),
+                            child: _loading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.login,
+                                          color: Colors.white),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        AppStrings.tr('login'),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        if (_biometricAvailable && _biometricEnabled)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: OutlinedButton.icon(
+                                onPressed: _loginWithBiometric,
+                                icon: const Icon(Icons.fingerprint,
+                                    size: 28, color: kPrimaryColor),
+                                label: Text(
+                                  AppStrings.tr('login_biometric'),
+                                  style: const TextStyle(
+                                    color: kPrimaryColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                      color: kPrimaryColor, width: 2),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        TextButton(
+                          onPressed: _showForgotPassword,
+                          child: Text(
+                            AppStrings.tr('forgot_password'),
+                            style:
+                                const TextStyle(color: kPrimaryColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'آ© 2025 MotionHR',
+                    style:
+                        TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+class ChangePasswordScreen extends StatefulWidget {
+  final bool forced;
+  const ChangePasswordScreen({super.key, this.forced = false});
+
+  @override
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final _currentCtrl = TextEditingController();
+  final _newCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  bool _loading = false;
+  bool _obscure1 = true;
+  bool _obscure2 = true;
+  bool _obscure3 = true;
+  String? _error;
+
+  Future<void> _changePassword() async {
+    if (_newCtrl.text != _confirmCtrl.text) {
+      setState(() => _error = AppStrings.tr('password_mismatch'));
+      return;
+    }
+    if (_newCtrl.text.length < 6) {
+      setState(() => _error = AppStrings.tr('password_too_short'));
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token',
+        },
+        body: jsonEncode({
+          'current_password': _currentCtrl.text,
+          'new_password': _newCtrl.text,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['success'] == true) {
+        if (data['token'] != null) {
+          await prefs.setString('token', data['token']);
+        }
+        final appMode = prefs.getString('app_mode') ?? 'employee';
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.tr('password_changed')),
+            backgroundColor: Colors.green,
+          ),
+        );
+        if (appMode == 'manager') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ManagerShell()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const EmployeeShell()),
+          );
+        }
+      } else {
+        setState(() => _error = data['message'] ?? AppStrings.tr('error'));
+      }
+    } catch (e) {
+      setState(() => _error = AppStrings.tr('connection_error'));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Widget _pf(TextEditingController c, String l, bool o, VoidCallback t) {
+    return TextField(
+      controller: c,
+      obscureText: o,
+      decoration: InputDecoration(
+        labelText: l,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
+        suffixIcon: IconButton(
+          icon: Icon(o ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+          onPressed: t,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('change_password')),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          automaticallyImplyLeading: !widget.forced,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              if (widget.forced)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning, color: Colors.orange[700]),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          AppStrings.tr('change_password'),
+                          style: const TextStyle(color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 20),
+              _pf(_currentCtrl, AppStrings.tr('current_password'), _obscure1,
+                  () => setState(() => _obscure1 = !_obscure1)),
+              const SizedBox(height: 16),
+              _pf(_newCtrl, AppStrings.tr('new_password'), _obscure2,
+                  () => setState(() => _obscure2 = !_obscure2)),
+              const SizedBox(height: 16),
+              _pf(_confirmCtrl, AppStrings.tr('confirm_password'), _obscure3,
+                  () => setState(() => _obscure3 = !_obscure3)),
+              const SizedBox(height: 16),
+              if (_error != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.red[50],
+                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _changePassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          AppStrings.tr('save'),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class EmployeeShell extends StatefulWidget {
+  final int initialIndex;
+  const EmployeeShell({super.key, this.initialIndex = 0});
+
+  @override
+  State<EmployeeShell> createState() => _EmployeeShellState();
+}
+
+class _EmployeeShellState extends State<EmployeeShell> {
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+    fetchUnreadCount();
+  }
+
+  List<Widget> get _pages => [
+        const EmployeeHomeScreen(),
+        const LeavesScreen(),
+        const RequestsScreen(),
+        const EmployeeMissionsScreen(),
+        const MyItemsScreen(),
+      ];
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await AuthStorageService.clearAll();
+    await stopBackgroundTracking();
+    unreadNotificationsCount.value = 0;
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('MotionHR'),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          actions: [
+            const NotificationBellButton(),
+            IconButton(
+              icon: const Icon(Icons.campaign),
+              tooltip: AppStrings.tr('announcements'),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AnnouncementsScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              tooltip: AppStrings.tr('profile'),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.lock),
+              tooltip: AppStrings.tr('change_password'),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: AppStrings.tr('settings'),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: AppStrings.tr('logout'),
+              onPressed: _logout,
+            ),
+          ],
+        ),
+        body: _pages[_index],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _index,
+          onTap: (i) => setState(() => _index = i),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: kPrimaryColor,
+          items: [
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.home),
+                label: AppStrings.tr('dashboard')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.beach_access),
+                label: AppStrings.tr('leaves')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.assignment),
+                label: AppStrings.tr('requests')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.task_alt),
+                label: AppStrings.tr('my_missions')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.list_alt),
+                label: AppStrings.tr('my_requests')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EmployeeHomeScreen extends StatefulWidget {
+  const EmployeeHomeScreen({super.key});
+
+  @override
+  State<EmployeeHomeScreen> createState() => _EmployeeHomeScreenState();
+}
+
+class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
+  String _fullName = '';
+  String _companyName = '';
+  String _firstName = '';
+  String _gender = 'male';
+  Map<String, dynamic>? _status;
+  bool _loading = false;
+  Timer? _clockTimer;
+  DateTime _now = DateTime.now();
+  String? _motivationMessage;
+  bool _isEveningMessage = false;
+
+  final List<String> _arabicDays = [
+    'ط§ظ„ط§ط«ظ†ظٹظ†','ط§ظ„ط«ظ„ط§ط«ط§ط،','ط§ظ„ط£ط±ط¨ط¹ط§ط،','ط§ظ„ط®ظ…ظٹط³','ط§ظ„ط¬ظ…ط¹ط©','ط§ظ„ط³ط¨طھ','ط§ظ„ط£ط­ط¯',
+  ];
+  final List<String> _arabicMonths = [
+    '','ظٹظ†ط§ظٹط±','ظپط¨ط±ط§ظٹط±','ظ…ط§ط±ط³','ط£ط¨ط±ظٹظ„','ظ…ط§ظٹظˆ','ظٹظˆظ†ظٹظˆ',
+    'ظٹظˆظ„ظٹظˆ','ط£ط؛ط³ط·ط³','ط³ط¨طھظ…ط¨ط±','ط£ظƒطھظˆط¨ط±','ظ†ظˆظپظ…ط¨ط±','ط¯ظٹط³ظ…ط¨ط±',
+  ];
+
+  final List<String> _englishDays = [
+    'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
+  ];
+  final List<String> _englishMonths = [
+    '','January','February','March','April','May','June',
+    'July','August','September','October','November','December',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _fullName = prefs.getString('full_name') ?? '';
+    _companyName = prefs.getString('company_name') ?? '';
+    _firstName = prefs.getString('first_name') ?? '';
+    _gender = prefs.getString('gender') ?? 'male';
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/status/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+      if (res.statusCode == 200) {
+        setState(() => _status = jsonDecode(res.body));
+      }
+    } catch (_) {}
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _attendanceAction(String action) async {
+    setState(() => _loading = true);
+    try {
+      await requestLocationPermissionsForTracking();
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
+        body: jsonEncode({
+          'action': action,
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      final success = data['success'] == true;
+      if (mounted) {
+        if (success) {
+          fetchUnreadCount();
+          if (action == 'check_in') {
+            setState(() {
+              _motivationMessage =
+                  getRandomMessage(kMorningMessages, _gender, _firstName);
+              _isEveningMessage = false;
+            });
+            LocationTrackingService.startTracking();
+          } else if (action == 'check_out') {
+            setState(() {
+              _motivationMessage =
+                  getRandomMessage(kEveningMessages, _gender, _firstName);
+              _isEveningMessage = true;
+            });
+            LocationTrackingService.stopTracking();
+          }
+          _showMotivationDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? AppStrings.tr('error')),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.tr('error')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _showMotivationDialog() {
+    if (_motivationMessage == null) return;
+    showDialog(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: appDir,
+        child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isEveningMessage ? Icons.nightlight_round : Icons.wb_sunny,
+                size: 60,
+                color: _isEveningMessage ? Colors.indigo : Colors.orange,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _isEveningMessage
+                    ? AppStrings.tr('logout')
+                    : AppStrings.tr('welcome'),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: _isEveningMessage ? Colors.indigo : Colors.orange,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _motivationMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, height: 1.5),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                AppStrings.tr('done'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String get _formattedDate {
+    final isAr = LanguageService.currentLanguage == 'ar';
+    final dayName = isAr
+        ? _arabicDays[_now.weekday - 1]
+        : _englishDays[_now.weekday - 1];
+    final monthName = isAr
+        ? _arabicMonths[_now.month]
+        : _englishMonths[_now.month];
+    return '$dayNameطŒ ${_now.day} $monthName ${_now.year}';
+  }
+
+  String get _formattedTime {
+    final h = _now.hour.toString().padLeft(2, '0');
+    final m = _now.minute.toString().padLeft(2, '0');
+    final s = _now.second.toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  int _calculateRemainingSeconds() {
+    if (_status == null) return 0;
+    final timestamp = _status!['shift_end_timestamp'];
+    if (timestamp != null) {
+      try {
+        final endTime = DateTime.parse(timestamp).toLocal();
+        final diff = endTime.difference(_now).inSeconds;
+        return diff > 0 ? diff : 0;
+      } catch (_) {}
+    }
+    return (_status!['remaining_seconds'] ?? 0) as int;
+  }
+
+  String _formatCountdown(int seconds) {
+    if (seconds <= 0) return '00:00:00';
+    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
+    final m = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  double _progressValue() {
+    if (_status == null) return 0.0;
+    final total = (_status!['shift_duration_seconds'] ?? 0) as int;
+    if (total <= 0) return 0.0;
+    final remaining = _calculateRemainingSeconds();
+    final elapsed = total - remaining;
+    return (elapsed / total).clamp(0.0, 1.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final checkedIn = _status?['checked_in'] == true;
+    final checkedOut = _status?['checked_out'] == true;
+    final canCheckOut = _status?['can_check_out'] == true;
+    final hasEarlyLeave = _status?['has_early_leave_permission'] == true;
+    final shiftName = _status?['shift_name'] ?? '';
+    final shiftStart = _status?['shift_start'] ?? '';
+    final shiftEnd = _status?['shift_end'] ?? '';
+    final remainingSecs = _calculateRemainingSeconds();
+    final displayName = _firstName.isNotEmpty
+        ? _firstName
+        : (_fullName.isEmpty ? '' : _fullName);
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                  colors: [kPrimaryDark, kPrimaryColor],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: kPrimaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  const CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, color: kPrimaryColor, size: 30)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(
+                          '${AppStrings.tr('welcome')} $displayName',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        if (_companyName.isNotEmpty)
+                          Text(_companyName,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 14)),
+                      ])),
+                ]),
+                const Divider(color: Colors.white24, height: 24),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(AppStrings.tr('date'),
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 12)),
+                        Text(_formattedDate,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold)),
+                      ]),
+                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                        Text(AppStrings.tr('time'),
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 12)),
+                        Text(_formattedTime,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1)),
+                      ]),
+                    ]),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (shiftName.toString().isNotEmpty)
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(children: [
+                    const Icon(Icons.schedule, color: kPrimaryColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(
+                            '${AppStrings.tr('shift')}: $shiftName ($shiftStart - $shiftEnd)',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold))),
+                  ])),
+            ),
+          const SizedBox(height: 16),
+          if (checkedIn && !checkedOut)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: canCheckOut ? Colors.green[50] : Colors.blue[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: canCheckOut
+                        ? Colors.green[200]!
+                        : Colors.blue[200]!),
+              ),
+              child: Column(children: [
+                Row(children: [
+                  Icon(
+                      canCheckOut ? Icons.check_circle : Icons.timer,
+                      color: canCheckOut ? Colors.green : kPrimaryColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    canCheckOut
+                        ? AppStrings.tr('shift_ended')
+                        : AppStrings.tr('remaining_time'),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: canCheckOut ? Colors.green : kPrimaryColor),
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                Text(_formatCountdown(remainingSecs),
+                    style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: canCheckOut ? Colors.green : kPrimaryColor,
+                        letterSpacing: 2)),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: _progressValue(),
+                    minHeight: 12,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation(
+                        canCheckOut ? Colors.green : kPrimaryColor),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${(_progressValue() * 100).toInt()}% ${AppStrings.tr('shift')}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                if (hasEarlyLeave) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.info, size: 16, color: Colors.orange),
+                      const SizedBox(width: 4),
+                      Text(AppStrings.tr('early_leave_permission'),
+                          style: const TextStyle(
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold)),
+                    ]),
+                  ),
+                ],
+              ]),
+            ),
+          const SizedBox(height: 20),
+          if (checkedOut)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.green[200]!)),
+              child: Column(children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 60),
+                const SizedBox(height: 10),
+                Text(AppStrings.tr('attendance_done'),
+                    style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(AppStrings.tr('great_work'),
+                    style: const TextStyle(color: Colors.green)),
+              ]),
+            )
+          else
+            Row(children: [
+              Expanded(
+                  child: SizedBox(
+                      height: 110,
+                      child: ElevatedButton(
+                        onPressed: (_loading || checkedIn)
+                            ? null
+                            : () => _attendanceAction('check_in'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              checkedIn ? Colors.grey[400] : Colors.green,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          elevation: checkedIn ? 0 : 4,
+                          disabledBackgroundColor: Colors.grey[400],
+                          disabledForegroundColor: Colors.white,
+                        ),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(checkedIn
+                                  ? Icons.check_circle
+                                  : Icons.login,
+                                  size: 40),
+                              const SizedBox(height: 6),
+                              Text(

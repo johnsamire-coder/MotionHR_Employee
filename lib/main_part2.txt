@@ -1,0 +1,1889 @@
+﻿                                checkedIn
+                                    ? AppStrings.tr('checked_in')
+                                    : AppStrings.tr('check_in'),
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ]),
+                      ))),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: SizedBox(
+                      height: 110,
+                      child: ElevatedButton(
+                        onPressed: (_loading ||
+                                !checkedIn ||
+                                (!canCheckOut && !hasEarlyLeave))
+                            ? null
+                            : () => _attendanceAction('check_out'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              (!checkedIn || (!canCheckOut && !hasEarlyLeave))
+                                  ? Colors.grey[400]
+                                  : Colors.orange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          elevation:
+                              (!checkedIn || (!canCheckOut && !hasEarlyLeave))
+                                  ? 0
+                                  : 4,
+                          disabledBackgroundColor: Colors.grey[400],
+                          disabledForegroundColor: Colors.white,
+                        ),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                (!checkedIn ||
+                                        (!canCheckOut && !hasEarlyLeave))
+                                    ? Icons.lock
+                                    : Icons.logout,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                !checkedIn
+                                    ? AppStrings.tr('check_out')
+                                    : (canCheckOut || hasEarlyLeave
+                                        ? AppStrings.tr('check_out')
+                                        : AppStrings.tr('pending')),
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ]),
+                      ))),
+            ]),
+          const SizedBox(height: 20),
+          if (_status?['check_in_time'] != null &&
+              (_status?['check_in_time'] ?? '').toString().isNotEmpty)
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: ListTile(
+                leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.login, color: Colors.green)),
+                title: Text(AppStrings.tr('check_in_time')),
+                subtitle: Text('${_status?['check_in_time']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          if (_status?['check_out_time'] != null &&
+              (_status?['check_out_time'] ?? '').toString().isNotEmpty)
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: ListTile(
+                leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Colors.orange[50],
+                        borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.logout, color: Colors.orange)),
+                title: Text(AppStrings.tr('check_out_time')),
+                subtitle: Text('${_status?['check_out_time']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const HistoryScreen())),
+              icon: const Icon(Icons.history),
+              label: Text(AppStrings.tr('history'),
+                  style: const TextStyle(fontSize: 16)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: kPrimaryColor,
+                side: const BorderSide(color: kPrimaryColor),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({super.key});
+  @override
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  List<dynamic> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/history/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = data['history'] ?? []);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('history')),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _items.isEmpty
+                ? Center(child: Text(AppStrings.tr('no_data')))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _items.length,
+                    itemBuilder: (_, i) {
+                      final item = _items[i];
+                      return Card(
+                          child: ListTile(
+                        leading: const Icon(Icons.calendar_today,
+                            color: kPrimaryColor),
+                        title: Text(item['date'] ?? ''),
+                        subtitle: Text(
+                            '${AppStrings.tr('check_in_time')}: ${item['check_in'] ?? '-'}  |  ${AppStrings.tr('check_out_time')}: ${item['check_out'] ?? '-'}'),
+                      ));
+                    }),
+      ),
+    );
+  }
+}
+
+class LeavesScreen extends StatefulWidget {
+  const LeavesScreen({super.key});
+  @override
+  State<LeavesScreen> createState() => _LeavesScreenState();
+}
+
+class _LeavesScreenState extends State<LeavesScreen> {
+  List<dynamic> _types = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  int _orderKey(Map t) {
+    final category = (t['category'] ?? '').toString().toLowerCase();
+    final name = (t['name'] ?? '').toString();
+    if (category == 'annual' || name.contains('ط³ظ†ظˆظٹط©')) return 1;
+    if (category == 'casual' ||
+        category == 'emergency' ||
+        name.contains('ط¹ط§ط±ط¶ط©') ||
+        name.contains('ط·ط§ط±ط¦ط©')) return 2;
+    if (category == 'sick' ||
+        name.contains('ظ…ط±ط¶ظٹط©') ||
+        name.contains('ظ…ط±ط¶ظٹ')) return 3;
+    return 4;
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        List<dynamic> list = data['leave_types'] ?? data['types'] ?? [];
+        list = list.where((t) {
+          final c = (t['category'] ?? '').toString().toLowerCase();
+          final n = (t['name'] ?? '').toString();
+          return c != 'paternity' && !n.contains('ط£ط¨ظˆط©');
+        }).toList();
+        list.sort((a, b) => _orderKey(a).compareTo(_orderKey(b)));
+        setState(() => _types = list);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(AppStrings.tr('leaves'),
+            style:
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        ..._types.map((t) {
+          final balance = t['balance'] is Map
+              ? (t['balance']['remaining'] ?? 0)
+              : (t['balance'] ?? 0);
+          return Card(
+              child: ListTile(
+            leading:
+                const Icon(Icons.beach_access, color: kPrimaryColor),
+            title: Text(t['name'] ?? ''),
+            subtitle: Text(
+                '${AppStrings.tr('leave_balance')}: $balance ${AppStrings.tr('days')}'),
+          ));
+        }),
+        const SizedBox(height: 20),
+        SizedBox(
+          height: 52,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => LeaveRequestScreen(types: _types))),
+            icon: const Icon(Icons.add),
+            label: Text(AppStrings.tr('request_leave'),
+                style: const TextStyle(fontSize: 16)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class LeaveRequestScreen extends StatefulWidget {
+  final List<dynamic> types;
+  const LeaveRequestScreen({super.key, required this.types});
+  @override
+  State<LeaveRequestScreen> createState() => _LeaveRequestScreenState();
+}
+
+class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
+  String? _selectedValue;
+  final _otherCtrl = TextEditingController();
+  final _startCtrl = TextEditingController();
+  final _endCtrl = TextEditingController();
+  final _reasonCtrl = TextEditingController();
+  bool _loading = false;
+  bool get _isOther => _selectedValue == 'other';
+
+  Future<void> _pickDate(TextEditingController c) async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (d != null) {
+      c.text =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_selectedValue == null ||
+        _startCtrl.text.isEmpty ||
+        _endCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.tr('required'))),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final body = <String, dynamic>{
+        'start_date': _startCtrl.text,
+        'end_date': _endCtrl.text,
+        'reason': _isOther
+            ? 'ظ†ظˆط¹ ط¢ط®ط±: ${_otherCtrl.text}\n${_reasonCtrl.text}'
+            : _reasonCtrl.text,
+      };
+      if (!_isOther) body['leave_type_id'] = _selectedValue;
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
+        body: jsonEncode(body),
+      );
+      final data = jsonDecode(res.body);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(data['message'] ?? AppStrings.tr('done'))),
+        );
+        if (data['success'] == true) Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('${AppStrings.tr('error')}: $e')),
+        );
+      }
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('request_leave')),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                  labelText: AppStrings.tr('leave_type'),
+                  border: const OutlineInputBorder()),
+              value: _selectedValue,
+              items: [
+                ...widget.types
+                    .where((t) {
+                      final c =
+                          (t['category'] ?? '').toString().toLowerCase();
+                      final n = (t['name'] ?? '').toString();
+                      return c != 'paternity' && !n.contains('ط£ط¨ظˆط©');
+                    })
+                    .map((t) => DropdownMenuItem<String>(
+                          value: t['id'].toString(),
+                          child: Text(t['name'] ?? ''),
+                        )),
+                DropdownMenuItem<String>(
+                    value: 'other',
+                    child: Text(AppStrings.tr('all'))),
+              ],
+              onChanged: (v) => setState(() => _selectedValue = v),
+            ),
+            if (_isOther) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _otherCtrl,
+                decoration: InputDecoration(
+                    labelText: AppStrings.tr('leave_type'),
+                    border: const OutlineInputBorder()),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: _startCtrl,
+              readOnly: true,
+              onTap: () => _pickDate(_startCtrl),
+              decoration: InputDecoration(
+                labelText: AppStrings.tr('from_date'),
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _endCtrl,
+              readOnly: true,
+              onTap: () => _pickDate(_endCtrl),
+              decoration: InputDecoration(
+                labelText: AppStrings.tr('to_date'),
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _reasonCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                  labelText: AppStrings.tr('reason'),
+                  border: const OutlineInputBorder()),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    foregroundColor: Colors.white),
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(AppStrings.tr('submit'),
+                        style: const TextStyle(fontSize: 18)),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+class RequestsScreen extends StatefulWidget {
+  const RequestsScreen({super.key});
+  @override
+  State<RequestsScreen> createState() => _RequestsScreenState();
+}
+
+class _RequestsScreenState extends State<RequestsScreen> {
+  List<dynamic> _types = [];
+  bool _loading = true;
+  String? _selectedValue;
+  final _otherCtrl = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _amountCtrl = TextEditingController();
+  final _permissionDateCtrl = TextEditingController();
+  final _permissionTimeCtrl = TextEditingController();
+  final _durationHoursCtrl = TextEditingController();
+  bool _submitting = false;
+  bool get _isOther => _selectedValue == 'other';
+
+  Map<String, dynamic>? get _selectedType {
+    try {
+      return _types
+          .cast<Map<String, dynamic>>()
+          .firstWhere((t) => t['id'].toString() == _selectedValue);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _isLoan {
+    final t = _selectedType;
+    final name = (t?['name'] ?? '').toString();
+    return name.contains('ط³ظ„ظپط©') || _selectedValue == '2';
+  }
+
+  String get _permissionKind {
+    final t = _selectedType;
+    final explicit = (t?['permission_kind'] ?? '').toString();
+    if (explicit.isNotEmpty && explicit != 'none') return explicit;
+    final name = (t?['name'] ?? '').toString();
+    if (name.contains('ط¥ط°ظ† طھط£ط®ظٹط±')) return 'late_arrival';
+    if (name.contains('ط¥ط°ظ† ط®ط±ظˆط¬') ||
+        name.contains('ط¥ط°ظ† ط§ظ†طµط±ط§ظپ') ||
+        name.contains('ط®ط±ظˆط¬ ظ…ط¨ظƒط±')) return 'early_leave';
+    return 'none';
+  }
+
+  bool get _isPermissionRequest =>
+      _permissionKind == 'late_arrival' || _permissionKind == 'early_leave';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        List<dynamic> flatTypes = [];
+        if (data['categories'] is List) {
+          for (final cat in data['categories']) {
+            if (cat['types'] is List) {
+              for (final t in cat['types']) {
+                flatTypes.add({
+                  'id': t['id'],
+                  'name': t['name'],
+                  'category': cat['name'],
+                  'permission_kind': t['permission_kind'] ?? 'none',
+                });
+              }
+            }
+          }
+        } else if (data['types'] is List) {
+          flatTypes = (data['types'] as List)
+              .map((t) => {
+                    'id': t['id'],
+                    'name': t['name'],
+                    'category': t['category'] ?? '',
+                    'permission_kind': t['permission_kind'] ?? 'none',
+                  })
+              .toList();
+        }
+        setState(() => _types = flatTypes);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _pickDate(TextEditingController c) async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (d != null) {
+      c.text =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final t =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (t != null) {
+      _permissionTimeCtrl.text =
+          '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+      setState(() {});
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.tr('required'))),
+      );
+      return;
+    }
+    if (_isLoan && _amountCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.tr('required'))),
+      );
+      return;
+    }
+    if (_isPermissionRequest &&
+        (_permissionDateCtrl.text.trim().isEmpty ||
+            _permissionTimeCtrl.text.trim().isEmpty ||
+            _durationHoursCtrl.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.tr('required'))),
+      );
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final body = <String, dynamic>{
+        'title': _titleCtrl.text.trim(),
+        'description': _isOther
+            ? 'ظ†ظˆط¹ ط¢ط®ط±: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}'
+            : _descCtrl.text.trim(),
+      };
+      if (!_isOther) body['request_type_id'] = _selectedValue;
+      if (_isLoan && _amountCtrl.text.trim().isNotEmpty) {
+        body['amount'] = _amountCtrl.text.trim();
+      }
+      if (_isPermissionRequest) {
+        body['permission_date'] = _permissionDateCtrl.text.trim();
+        body['permission_time'] = _permissionTimeCtrl.text.trim();
+        body['duration_hours'] = _durationHoursCtrl.text.trim();
+      }
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
+        body: jsonEncode(body),
+      );
+      final data = jsonDecode(res.body);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(data['message'] ?? AppStrings.tr('done'))),
+        );
+        if (data['success'] == true) {
+          _titleCtrl.clear();
+          _descCtrl.clear();
+          _otherCtrl.clear();
+          _amountCtrl.clear();
+          _permissionDateCtrl.clear();
+          _permissionTimeCtrl.clear();
+          _durationHoursCtrl.clear();
+          setState(() => _selectedValue = null);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.tr('error')}: $e')),
+        );
+      }
+    } finally {
+      setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: [
+        Text(AppStrings.tr('submit_request'),
+            style:
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 20),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+              labelText: AppStrings.tr('request_type'),
+              border: const OutlineInputBorder()),
+          value: _selectedValue,
+          items: [
+            ..._types.map((t) => DropdownMenuItem<String>(
+                  value: t['id'].toString(),
+                  child: Text(t['name'] ?? ''),
+                )),
+            DropdownMenuItem<String>(
+                value: 'other', child: Text(AppStrings.tr('all'))),
+          ],
+          onChanged: (v) {
+            setState(() {
+              _selectedValue = v;
+              _amountCtrl.clear();
+              _permissionDateCtrl.clear();
+              _permissionTimeCtrl.clear();
+              _durationHoursCtrl.clear();
+            });
+          },
+        ),
+        if (_isPermissionRequest) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Text(
+              _permissionKind == 'late_arrival'
+                  ? AppStrings.tr('pending')
+                  : AppStrings.tr('early_leave_permission'),
+              style: TextStyle(color: Colors.orange[900]),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _permissionDateCtrl,
+            readOnly: true,
+            onTap: () => _pickDate(_permissionDateCtrl),
+            decoration: InputDecoration(
+              labelText: AppStrings.tr('date'),
+              border: const OutlineInputBorder(),
+              suffixIcon: const Icon(Icons.calendar_today),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _permissionTimeCtrl,
+            readOnly: true,
+            onTap: _pickTime,
+            decoration: InputDecoration(
+              labelText: AppStrings.tr('time'),
+              border: const OutlineInputBorder(),
+              suffixIcon: const Icon(Icons.access_time),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _durationHoursCtrl,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: AppStrings.tr('hours'),
+              border: const OutlineInputBorder(),
+              suffixText: AppStrings.tr('hours'),
+            ),
+          ),
+        ],
+        if (_isLoan) ...[
+          const SizedBox(height: 16),
+          TextField(
+            controller: _amountCtrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: AppStrings.tr('amount'),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+        if (_isOther) ...[
+          const SizedBox(height: 16),
+          TextField(
+            controller: _otherCtrl,
+            decoration: InputDecoration(
+                labelText: AppStrings.tr('request_type'),
+                border: const OutlineInputBorder()),
+          ),
+        ],
+        const SizedBox(height: 16),
+        TextField(
+          controller: _titleCtrl,
+          decoration: InputDecoration(
+              labelText: AppStrings.tr('request_title'),
+              border: const OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _descCtrl,
+          maxLines: 4,
+          decoration: InputDecoration(
+              labelText: AppStrings.tr('request_details'),
+              border: const OutlineInputBorder()),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: _submitting ? null : _submit,
+            style: ElevatedButton.styleFrom(
+                backgroundColor: kPrimaryColor,
+                foregroundColor: Colors.white),
+            child: _submitting
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(AppStrings.tr('submit'),
+                    style: const TextStyle(fontSize: 18)),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+class MyItemsScreen extends StatelessWidget {
+  const MyItemsScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(children: [
+        TabBar(
+          labelColor: kPrimaryColor,
+          indicatorColor: kPrimaryColor,
+          tabs: [
+            Tab(text: AppStrings.tr('my_requests')),
+            Tab(text: AppStrings.tr('my_leaves')),
+          ],
+        ),
+        Expanded(
+          child: TabBarView(children: [
+            _MyList(endpoint: 'my-requests', keyName: 'requests'),
+            _MyList(endpoint: 'my-leaves', keyName: 'leaves'),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+class _MyList extends StatefulWidget {
+  final String endpoint;
+  final String keyName;
+  const _MyList({required this.endpoint, required this.keyName});
+  @override
+  State<_MyList> createState() => _MyListState();
+}
+
+class _MyListState extends State<_MyList> {
+  List<dynamic> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = data[widget.keyName] ?? []);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Color _statusColor(String s) {
+    if (s.contains('ظ…ظˆط§ظپظ‚') || s.toLowerCase().contains('approved')) return Colors.green;
+    if (s.contains('ط±ظپط¶') || s.toLowerCase().contains('reject')) return Colors.red;
+    if (s.contains('ظ…ظ„ط؛ظٹ') || s.toLowerCase().contains('cancel')) return Colors.grey;
+    return Colors.orange;
+  }
+
+  bool _canCancel(dynamic item) {
+    final status = (item['status'] ?? '').toString();
+    return status == 'pending' || status == 'manager_approved';
+  }
+
+  Future<void> _cancelItem(dynamic item) async {
+    final reasonCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: appDir,
+        child: AlertDialog(
+          title: Text(AppStrings.tr('cancel_request')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(AppStrings.tr('cancel_request_confirm')),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: InputDecoration(
+                  labelText: AppStrings.tr('cancel_reason'),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(AppStrings.tr('back')),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text(AppStrings.tr('cancel_request'),
+                  style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final id = item['id'];
+    final isLeave = widget.keyName == 'leaves';
+    final url = isLeave
+        ? '$kBaseUrl/attendance/api/mobile/my-leaves/$id/cancel/'
+        : '$kBaseUrl/attendance/api/mobile/my-requests/$id/cancel/';
+    try {
+      final res = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
+        body: jsonEncode({'reason': reasonCtrl.text.trim()}),
+      );
+      final data = jsonDecode(res.body);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message'] ??
+              (data['success'] == true
+                  ? AppStrings.tr('done')
+                  : AppStrings.tr('error'))),
+          backgroundColor:
+              data['success'] == true ? Colors.green : Colors.red,
+        ),
+      );
+      if (data['success'] == true) _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.tr('error')}: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) return Center(child: Text(AppStrings.tr('no_requests')));
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (_, i) {
+          final item = _items[i];
+          final status =
+              (item['status_display'] ?? item['status'] ?? '').toString();
+          final isLeaveTab = widget.keyName == 'leaves';
+          final canCancel = _canCancel(item);
+          return Card(
+            margin: const EdgeInsets.all(8),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ItemDetailScreen(
+                      item: Map<String, dynamic>.from(item),
+                      itemType: isLeaveTab ? 'leave_request' : 'request',
+                    ),
+                  ),
+                );
+                _load();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item['title'] ??
+                                item['leave_type'] ??
+                                item['type'] ??
+                                '-',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _statusColor(status).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(status,
+                              style: TextStyle(
+                                  color: _statusColor(status),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11)),
+                        ),
+                      ],
+                    ),
+                    if ((item['date'] ?? item['created_at'] ?? '')
+                        .toString()
+                        .isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                            item['date'] ?? item['created_at'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12)),
+                      ),
+                    if (canCancel) ...[
+                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _cancelItem(item),
+                            icon: const Icon(Icons.cancel_outlined,
+                                size: 16, color: Colors.red),
+                            label: Text(AppStrings.tr('cancel_request'),
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              minimumSize: Size.zero,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key});
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  List<dynamic> _notifications = [];
+  int _unreadCount = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() {
+          _notifications = data['notifications'] ?? [];
+          _unreadCount = data['unread_count'] ?? 0;
+        });
+        unreadNotificationsCount.value = _unreadCount;
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _markAllRead() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          });
+      _load();
+    } catch (_) {}
+  }
+
+  Future<void> _markOneRead(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode({'id': id}));
+      _load();
+    } catch (_) {}
+  }
+
+  Future<void> _openNotification(dynamic raw) async {
+    final n = Map<String, dynamic>.from(raw as Map);
+    if (n['id'] != null && n['is_read'] != true) await _markOneRead(n['id']);
+    final type = (n['notification_type'] ?? '').toString();
+    final prefs = await SharedPreferences.getInstance();
+    final appMode = prefs.getString('app_mode') ?? 'employee';
+    Widget page;
+    switch (type) {
+      case 'new_request':
+      case 'new_leave':
+      case 'new_permission':
+        page = const ManagerShell(initialIndex: 1);
+        break;
+      case 'attendance':
+      case 'check_in':
+      case 'check_out':
+      case 'manager_attendance':
+        page = const ManagerShell(initialIndex: 2);
+        break;
+      case 'request_approved':
+      case 'request_rejected':
+      case 'leave_approved':
+      case 'leave_rejected':
+        page = appMode == 'manager'
+            ? const ManagerShell(initialIndex: 1)
+            : const EmployeeShell(initialIndex: 3);
+        break;
+      case 'charter_acceptance':
+        page = const ManagerCharterScreen();
+        break;
+      default:
+        page = appMode == 'manager'
+            ? const ManagerShell(initialIndex: 0)
+            : const EmployeeShell(initialIndex: 0);
+    }
+    if (!mounted) return;
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    if (mounted) _load();
+  }
+
+  IconData _typeIcon(String type) {
+    switch (type) {
+      case 'new_request': return Icons.assignment;
+      case 'new_leave': return Icons.beach_access;
+      case 'request_approved': case 'leave_approved': return Icons.check_circle;
+      case 'request_rejected': case 'leave_rejected': return Icons.cancel;
+      case 'geofence_violation': return Icons.warning;
+      case 'attendance': case 'manager_attendance': return Icons.access_time;
+      case 'charter_acceptance': return Icons.description;
+      default: return Icons.notifications;
+    }
+  }
+
+  Color _typeColor(String type) {
+    if (type.contains('approved')) return Colors.green;
+    if (type.contains('rejected')) return Colors.red;
+    if (type.contains('geofence')) return Colors.orange;
+    if (type.contains('new_')) return Colors.blue;
+    if (type.contains('attendance')) return Colors.teal;
+    if (type.contains('charter')) return kManagerColor;
+    return Colors.grey;
+  }
+
+  String _formatTime(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return AppStrings.tr('now');
+      if (diff.inMinutes < 60) {
+        return AppStrings.trWith('minutes_ago', {'n': '${diff.inMinutes}'});
+      }
+      if (diff.inHours < 24) {
+        return AppStrings.trWith('hours_ago', {'n': '${diff.inHours}'});
+      }
+      if (diff.inDays < 7) {
+        return AppStrings.trWith('days_ago', {'n': '${diff.inDays}'});
+      }
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+              '${AppStrings.tr('notifications')}${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          actions: [
+            if (_unreadCount > 0)
+              IconButton(
+                icon: const Icon(Icons.done_all),
+                tooltip: AppStrings.tr('mark_all_read'),
+                onPressed: _markAllRead,
+              ),
+          ],
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _notifications.isEmpty
+                ? Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        Icon(Icons.notifications_off,
+                            size: 80, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        Text(AppStrings.tr('no_notifications'),
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.grey)),
+                      ]))
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.builder(
+                      itemCount: _notifications.length,
+                      itemBuilder: (_, i) {
+                        final n = _notifications[i];
+                        final isRead = n['is_read'] == true;
+                        final type = n['notification_type'] ?? 'general';
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
+                          color: isRead ? Colors.white : Colors.blue[50],
+                          elevation: isRead ? 1 : 3,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor:
+                                  _typeColor(type).withOpacity(0.15),
+                              child: Icon(_typeIcon(type),
+                                  color: _typeColor(type)),
+                            ),
+                            title: Text(n['title'] ?? '',
+                                style: TextStyle(
+                                    fontWeight: isRead
+                                        ? FontWeight.normal
+                                        : FontWeight.bold)),
+                            subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Text(n['body'] ?? ''),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                      _formatTime(n['created_at'] ?? ''),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[500])),
+                                ]),
+                            isThreeLine: true,
+                            onTap: () => _openNotification(n),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+      ),
+    );
+  }
+}
+
+class CharterScreen extends StatefulWidget {
+  final String appMode;
+  const CharterScreen({super.key, required this.appMode});
+  @override
+  State<CharterScreen> createState() => _CharterScreenState();
+}
+
+class _CharterScreenState extends State<CharterScreen> {
+  Map<String, dynamic>? _charter;
+  bool _loading = true;
+  bool _submitting = false;
+  bool _agreed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['success'] == true && data['has_charter'] == true) {
+          setState(() => _charter = data['charter']);
+        }
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _openAttachment() async {
+    final url = _charter?['attachment_url'] ?? '';
+    if (url.isEmpty) return;
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.tr('error'))),
+        );
+      }
+    }
+  }
+
+  Future<void> _accept() async {
+    if (!_agreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.tr('required')),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final res = await http.post(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          });
+      final data = jsonDecode(res.body);
+      if (data['success'] == true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.tr('success')),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => widget.appMode == 'manager'
+                ? const ManagerShell()
+                : const EmployeeShell(),
+          ),
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    data['message'] ?? data['error'] ?? AppStrings.tr('error'))),
+          );
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.tr('connection_error'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final attachmentUrl = _charter?['attachment_url'] ?? '';
+    final attachmentName = _charter?['attachment_name'] ?? '';
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('company_charter')),
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          automaticallyImplyLeading: false,
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _charter == null
+                ? Center(child: Text(AppStrings.tr('no_data')))
+                : Column(children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                      colors: [kPrimaryDark, kPrimaryColor]),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(children: [
+                                  const Icon(Icons.description,
+                                      color: Colors.white, size: 48),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _charter!['title'] ??
+                                        AppStrings.tr('company_charter'),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ]),
+                              ),
+                              const SizedBox(height: 16),
+                              if (attachmentUrl.isNotEmpty) ...[
+                                InkWell(
+                                  onTap: _openAttachment,
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple[50],
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                          color: Colors.purple[200]!),
+                                    ),
+                                    child: Row(children: [
+                                      Icon(Icons.attach_file,
+                                          color: Colors.purple[700]),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                          child: Text(
+                                        attachmentName.isNotEmpty
+                                            ? attachmentName
+                                            : AppStrings.tr('company_charter'),
+                                        style: TextStyle(
+                                            color: Colors.purple[700]),
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                                      Icon(Icons.open_in_new,
+                                          color: Colors.purple[700], size: 20),
+                                    ]),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              if ((_charter!['introduction'] ?? '')
+                                  .toString()
+                                  .isNotEmpty) ...[
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[50],
+                                    borderRadius: BorderRadius.circular(10),
+                                    border:
+                                        Border.all(color: Colors.blue[200]!),
+                                  ),
+                                  child: Text(_charter!['introduction'],
+                                      style: const TextStyle(
+                                          fontSize: 15, height: 1.6)),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: Text(_charter!['content'] ?? '',
+                                    style: const TextStyle(
+                                        fontSize: 15, height: 1.8)),
+                              ),
+                              const SizedBox(height: 20),
+                            ]),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, -4))
+                        ],
+                      ),
+                      child: Column(children: [
+                        CheckboxListTile(
+                          value: _agreed,
+                          onChanged: (v) =>
+                              setState(() => _agreed = v ?? false),
+                          title: Text(AppStrings.tr('confirm'),
+                              style: const TextStyle(fontSize: 14)),
+                          activeColor: kPrimaryColor,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed:
+                                (_submitting || !_agreed) ? null : _accept,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: _submitting
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.check_circle),
+                                      const SizedBox(width: 8),
+                                      Text(AppStrings.tr('confirm'),
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ]),
+      ),
+    );
+  }
+}
+
+class ManagerCharterScreen extends StatefulWidget {
+  const ManagerCharterScreen({super.key});
+  @override
+  State<ManagerCharterScreen> createState() => _ManagerCharterScreenState();
+}
+
+class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
+  Map<String, dynamic>? _charter;
+  List<dynamic> _accepted = [];
+  List<dynamic> _pending = [];
+  bool _loading = true;
+  bool _saving = false;
+  bool _showEdit = false;
+  String _attachmentUrl = '';
+  String _attachmentName = '';
+  PlatformFile? _pickedAttachment;
+  bool _removeCurrentAttachment = false;
+  final _titleCtrl = TextEditingController();
+  final _introCtrl = TextEditingController();
+  final _contentCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _introCtrl.dispose();
+    _contentCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final r1 = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+          headers: {'Authorization': 'Token $token'});
+      if (r1.statusCode == 200) {
+        final data = jsonDecode(r1.body);
+        if (data['has_charter'] == true) {
+          _charter = data['charter'];
+          _titleCtrl.text = _charter!['title'] ?? '';
+          _introCtrl.text = _charter!['introduction'] ?? '';
+          _contentCtrl.text = _charter!['content'] ?? '';
+          _attachmentUrl = _charter!['attachment_url'] ?? '';
+          _attachmentName = _charter!['attachment_name'] ?? '';
+        }
+      }
+      final r2 = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
+          headers: {'Authorization': 'Token $token'});
+      if (r2.statusCode == 200) {
+        final data = jsonDecode(r2.body);
+        _accepted = data['accepted']?['employees'] ?? [];
+        _pending = data['pending']?['employees'] ?? [];
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _pickedAttachment = null;
+        _removeCurrentAttachment = false;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _pickAttachment() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowMultiple: false,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
+      );
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      if (file.path == null || file.path!.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppStrings.tr('error'))),
+          );
+        }
+        return;
+      }
+      setState(() {
+        _pickedAttachment = file;
+        _removeCurrentAttachment = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.tr('error')}: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openAttachment() async {
+    if (_attachmentUrl.isEmpty) return;
+    try {
+      final uri = Uri.parse(_attachmentUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.tr('error'))),
+        );
+      }
+    }
+  }
+
+  Future<void> _save() async {
+    if (_titleCtrl.text.trim().isEmpty || _contentCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.tr('required')),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
+      );
+      request.headers['Authorization'] = 'Token $token';
+      request.fields['title'] = _titleCtrl.text.trim();
+      request.fields['introduction'] = _introCtrl.text.trim();
+      request.fields['content'] = _contentCtrl.text.trim();
+      if (_removeCurrentAttachment) {
+        request.fields['remove_attachment'] = 'true';
+      }
+      if (_pickedAttachment != null &&
+          _pickedAttachment!.path != null &&
+          _pickedAttachment!.path!.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'attachment',
+          _pickedAttachment!.path!,
+          filename: _pickedAttachment!.name,
+        ));
+      }
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      Map<String, dynamic> data = {};
+      try {
+        data = jsonDecode(response.body);
+      } catch (_) {}
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ??
+                data['error'] ??
+                AppStrings.tr('done')),
+            backgroundColor:
+                data['success'] == true ? Colors.green : Colors.red,
+          ),
+        );
+      }
+      if (data['success'] == true) {
+        setState(() {
+          _showEdit = false;
+          _pickedAttachment = null;
+          _removeCurrentAttachment = false;
+        });
+        await _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.tr('connection_error')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  void _showReport() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CharterReportScreen(
+          accepted: _accepted,
+          pending: _pending,
+          charterTitle:
+              _charter?['title'] ?? AppStrings.tr('company_charter'),
+          charterVersion: _charter?['version'] ?? 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _statCard(String label, int count, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(children: [
+        Icon(icon, color: color, size: 32),
+        const SizedBox(height: 8),
+        Text('$count',
+            style: TextStyle(
+                fontSize: 28, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(color: color, fontSize: 13)),
+      ]),
+    );
+  }
+
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Widget _buildInfoView() {
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(padding: const EdgeInsets.all(16), children: [
+        if (_charter != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                  colors: [kPrimaryDark, kManagerColor]),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(children: [
+              const Icon(Icons.description, color: Colors.white, size: 40),
+              const SizedBox(height: 8),
+              Text(_charter!['title'] ?? '',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          if (_attachmentUrl.isNotEmpty) ...[
+            InkWell(
+              onTap: _openAttachment,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.purple[50],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.purple[200]!),
+                ),
+                child: Row(children: [
+                  Icon(Icons.attach_file, color: Colors.purple[700]),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: Text(
+                    _attachmentName.isNotEmpty
+                        ? _attachmentName
+                        : AppStrings.tr('company_charter'),
+                    style: TextStyle(color: Colors.purple[700]),
+                    overflow: TextOverflow.ellipsis,
+                  )),
+                  Icon(Icons.open_in_new,
+                      color: Colors.purple[700], size: 18),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          Row(children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => setState(() => _showEdit = true),
+                icon: const Icon(Icons.edit),
+                label: Text(AppStrings.tr('edit')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kManagerColor,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 48),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _showReport,
+                icon: const Icon(Icons.print),
+                label: Text(AppStrings.tr('print')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 48),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ]),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange[200]!),

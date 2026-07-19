@@ -1,0 +1,1887 @@
+﻿            ),
+            child: Column(children: [
+              const Icon(Icons.warning, color: Colors.orange, size: 40),
+              const SizedBox(height: 8),
+              Text(AppStrings.tr('no_data'),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () => setState(() => _showEdit = true),
+            icon: const Icon(Icons.add),
+            label: Text(AppStrings.tr('add')),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kManagerColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+        const SizedBox(height: 20),
+        Row(children: [
+          Expanded(
+              child: _statCard(AppStrings.tr('approved'), _accepted.length,
+                  Colors.green, Icons.check_circle)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: _statCard(AppStrings.tr('pending'), _pending.length,
+                  Colors.orange, Icons.pending)),
+        ]),
+        const SizedBox(height: 16),
+        if (_accepted.isNotEmpty) ...[
+          Text('âœ… ${AppStrings.tr('approved')}',
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green)),
+          const SizedBox(height: 8),
+          ..._accepted.map((emp) => Card(
+                color: Colors.green[50],
+                child: ListTile(
+                  leading: const CircleAvatar(
+                      backgroundColor: Colors.green,
+                      child:
+                          Icon(Icons.check, color: Colors.white, size: 18)),
+                  title: Text(emp['name'] ?? emp['username'] ?? ''),
+                  subtitle: Text(_formatDate(emp['accepted_at'] ?? ''),
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              )),
+          const SizedBox(height: 16),
+        ],
+        if (_pending.isNotEmpty) ...[
+          Text('âڈ³ ${AppStrings.tr('pending')}',
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange)),
+          const SizedBox(height: 8),
+          ..._pending.map((emp) => Card(
+                color: Colors.orange[50],
+                child: ListTile(
+                  leading: const CircleAvatar(
+                      backgroundColor: Colors.orange,
+                      child: Icon(Icons.schedule,
+                          color: Colors.white, size: 18)),
+                  title: Text(emp['name'] ?? emp['username'] ?? ''),
+                  subtitle: Text(AppStrings.tr('pending'),
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              )),
+        ],
+        if (_accepted.isEmpty && _pending.isEmpty)
+          Center(
+              child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(AppStrings.tr('no_employees'),
+                style: const TextStyle(color: Colors.grey)),
+          )),
+      ]),
+    );
+  }
+
+  Widget _buildCurrentAttachmentCard() {
+    if (_attachmentUrl.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Text(AppStrings.tr('no_data')),
+      );
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _removeCurrentAttachment ? Colors.red[50] : Colors.purple[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: _removeCurrentAttachment
+                ? Colors.red[200]!
+                : Colors.purple[200]!),
+      ),
+      child: Column(children: [
+        Row(children: [
+          Icon(Icons.attach_file,
+              color:
+                  _removeCurrentAttachment ? Colors.red : Colors.purple),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Text(
+            _attachmentName.isNotEmpty
+                ? _attachmentName
+                : AppStrings.tr('company_charter'),
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: _removeCurrentAttachment
+                  ? Colors.red
+                  : Colors.purple[700],
+              decoration: _removeCurrentAttachment
+                  ? TextDecoration.lineThrough
+                  : TextDecoration.none,
+            ),
+          )),
+          IconButton(
+            onPressed: _openAttachment,
+            icon: const Icon(Icons.open_in_new),
+          ),
+        ]),
+        CheckboxListTile(
+          value: _removeCurrentAttachment,
+          onChanged: (v) =>
+              setState(() => _removeCurrentAttachment = v ?? false),
+          title: Text(AppStrings.tr('delete')),
+          controlAffinity: ListTileControlAffinity.leading,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildPickedAttachmentCard() {
+    if (_pickedAttachment == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.blue[200]!),
+        ),
+        child: Text(AppStrings.tr('no_data')),
+      );
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.green[200]!),
+      ),
+      child: Row(children: [
+        const Icon(Icons.insert_drive_file, color: Colors.green),
+        const SizedBox(width: 8),
+        Expanded(
+            child: Text(_pickedAttachment!.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        IconButton(
+          onPressed: () => setState(() => _pickedAttachment = null),
+          icon: const Icon(Icons.close, color: Colors.red),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildEditView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.blue[200]!),
+          ),
+          child: Row(children: [
+            const Icon(Icons.info, color: Colors.blue),
+            const SizedBox(width: 8),
+            Expanded(child: Text(AppStrings.tr('company_charter'),
+                style: const TextStyle(fontSize: 13))),
+          ]),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _titleCtrl,
+          decoration: InputDecoration(
+            labelText: AppStrings.tr('company_charter'),
+            border: const OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.title),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _introCtrl,
+          maxLines: 3,
+          decoration: InputDecoration(
+            labelText: AppStrings.tr('request_details'),
+            border: const OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.short_text),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _contentCtrl,
+          maxLines: 12,
+          decoration: InputDecoration(
+            labelText: AppStrings.tr('request_details'),
+            border: const OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.article),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(AppStrings.tr('edit'),
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800])),
+        ),
+        const SizedBox(height: 8),
+        _buildCurrentAttachmentCard(),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(AppStrings.tr('add'),
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800])),
+        ),
+        const SizedBox(height: 8),
+        _buildPickedAttachmentCard(),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _pickAttachment,
+            icon: const Icon(Icons.upload_file),
+            label: Text(AppStrings.tr('add')),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => setState(() => _showEdit = false),
+              style:
+                  OutlinedButton.styleFrom(minimumSize: const Size(0, 50)),
+              child: Text(AppStrings.tr('cancel')),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kManagerColor,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 50),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: _saving
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text(AppStrings.tr('save'),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ]),
+      ]),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('company_charter')),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: Icon(_showEdit ? Icons.visibility : Icons.edit),
+              tooltip: _showEdit
+                  ? AppStrings.tr('back')
+                  : AppStrings.tr('edit'),
+              onPressed: () =>
+                  setState(() => _showEdit = !_showEdit),
+            ),
+          ],
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _showEdit
+                ? _buildEditView()
+                : _buildInfoView(),
+      ),
+    );
+  }
+}
+
+class CharterReportScreen extends StatelessWidget {
+  final List<dynamic> accepted;
+  final List<dynamic> pending;
+  final String charterTitle;
+  final int charterVersion;
+  const CharterReportScreen(
+      {super.key,
+      required this.accepted,
+      required this.pending,
+      required this.charterTitle,
+      required this.charterVersion});
+
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String _formatNow() {
+    final dt = DateTime.now();
+    return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('reports')),
+          backgroundColor: Colors.teal,
+          foregroundColor: Colors.white,
+        ),
+        body: ListView(padding: const EdgeInsets.all(16), children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: [Colors.teal, kPrimaryColor]),
+                borderRadius: BorderRadius.circular(12)),
+            child: Column(children: [
+              const Icon(Icons.description, color: Colors.white, size: 40),
+              const SizedBox(height: 8),
+              Text(charterTitle,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center),
+              Text('v$charterVersion',
+                  style: const TextStyle(color: Colors.white70)),
+              const SizedBox(height: 4),
+              Text(_formatNow(),
+                  style: const TextStyle(
+                      color: Colors.white60, fontSize: 12)),
+            ]),
+          ),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(
+                child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green[200]!)),
+              child: Column(children: [
+                const Icon(Icons.check_circle,
+                    color: Colors.green, size: 32),
+                const SizedBox(height: 8),
+                Text('${accepted.length}',
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green)),
+                Text(AppStrings.tr('approved'),
+                    style: const TextStyle(color: Colors.green)),
+              ]),
+            )),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange[200]!)),
+              child: Column(children: [
+                const Icon(Icons.pending, color: Colors.orange, size: 32),
+                const SizedBox(height: 8),
+                Text('${pending.length}',
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange)),
+                Text(AppStrings.tr('pending'),
+                    style: const TextStyle(color: Colors.orange)),
+              ]),
+            )),
+          ]),
+          const SizedBox(height: 20),
+          if (accepted.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: Colors.green[700],
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10))),
+              child: Row(children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                    '${AppStrings.tr('approved')} (${accepted.length})',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16)),
+              ]),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.green[200]!),
+                  borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10))),
+              child: Column(
+                  children: accepted.asMap().entries.map((entry) {
+                final i = entry.key;
+                final emp = entry.value;
+                return Container(
+                  decoration: BoxDecoration(
+                    color: i.isEven ? Colors.green[50] : Colors.white,
+                    border: i < accepted.length - 1
+                        ? Border(
+                            bottom: BorderSide(color: Colors.green[100]!))
+                        : null,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(children: [
+                      CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.green[100],
+                          child: Text('${i + 1}',
+                              style: TextStyle(
+                                  color: Colors.green[700],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12))),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(emp['name'] ?? emp['username'] ?? '',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            if ((emp['accepted_at'] ?? '').isNotEmpty)
+                              Text(_formatDate(emp['accepted_at']),
+                                  style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12)),
+                          ])),
+                      const Icon(Icons.verified,
+                          color: Colors.green, size: 20),
+                    ]),
+                  ),
+                );
+              }).toList()),
+            ),
+            const SizedBox(height: 20),
+          ],
+          if (pending.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: Colors.orange[700],
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10))),
+              child: Row(children: [
+                const Icon(Icons.pending, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                    '${AppStrings.tr('pending')} (${pending.length})',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16)),
+              ]),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.orange[200]!),
+                  borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10))),
+              child: Column(
+                  children: pending.asMap().entries.map((entry) {
+                final i = entry.key;
+                final emp = entry.value;
+                return Container(
+                  decoration: BoxDecoration(
+                    color: i.isEven ? Colors.orange[50] : Colors.white,
+                    border: i < pending.length - 1
+                        ? Border(
+                            bottom:
+                                BorderSide(color: Colors.orange[100]!))
+                        : null,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(children: [
+                      CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.orange[100],
+                          child: Text('${i + 1}',
+                              style: TextStyle(
+                                  color: Colors.orange[700],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12))),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Text(
+                              emp['name'] ?? emp['username'] ?? '',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold))),
+                      const Icon(Icons.schedule,
+                          color: Colors.orange, size: 20),
+                    ]),
+                  ),
+                );
+              }).toList()),
+            ),
+          ],
+          const SizedBox(height: 30),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!)),
+            child: Text(
+              '${AppStrings.tr('powered_by')}\n${_formatNow()}',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ]),
+      ),
+    );
+  }
+}
+
+class ManagerGeofenceScreen extends StatefulWidget {
+  const ManagerGeofenceScreen({super.key});
+  @override
+  State<ManagerGeofenceScreen> createState() => _ManagerGeofenceScreenState();
+}
+
+class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
+  Map<String, dynamic>? _geofence;
+  bool _loading = true;
+  bool _saving = false;
+  double? _currentLat;
+  double? _currentLng;
+  final _radiusCtrl = TextEditingController(text: '100');
+  bool _enabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGeofence();
+  }
+
+  Future<void> _loadGeofence() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['success'] == true && data['geofence'] != null) {
+          setState(() {
+            _geofence = data['geofence'];
+            _currentLat =
+                (data['geofence']['latitude'] as num?)?.toDouble();
+            _currentLng =
+                (data['geofence']['longitude'] as num?)?.toDouble();
+            _radiusCtrl.text =
+                (data['geofence']['radius'] ?? 100).toString();
+            _enabled = data['geofence']['enabled'] ?? false;
+          });
+        }
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() => _saving = true);
+    try {
+      await requestLocationPermissionsForTracking();
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLat = position.latitude;
+        _currentLng = position.longitude;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.tr('success')),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.tr('error')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _saveGeofence() async {
+    if (_currentLat == null || _currentLng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.tr('required')),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    final radius = int.tryParse(_radiusCtrl.text) ?? 100;
+    if (radius < 10 || radius > 5000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.tr('error')),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final res = await http.post(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
+        body: jsonEncode({
+          'latitude': _currentLat,
+          'longitude': _currentLng,
+          'radius': radius,
+          'enabled': _enabled,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? AppStrings.tr('done')),
+            backgroundColor:
+                data['success'] == true ? Colors.green : Colors.red,
+          ),
+        );
+        if (data['success'] == true) _loadGeofence();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.tr('error')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppStrings.tr('geofence')),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue[200]!)),
+                  child: Row(children: [
+                    const Icon(Icons.info_outline, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(AppStrings.tr('geofence'),
+                            style: const TextStyle(fontSize: 13))),
+                  ]),
+                ),
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            const Icon(Icons.location_on,
+                                color: kManagerColor),
+                            const SizedBox(width: 8),
+                            Text(AppStrings.tr('company_info'),
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                          ]),
+                          const SizedBox(height: 12),
+                          if (_currentLat != null && _currentLng != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                  color: Colors.green[50],
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(children: [
+                                      const Icon(Icons.check_circle,
+                                          color: Colors.green, size: 20),
+                                      const SizedBox(width: 6),
+                                      Text(AppStrings.tr('success'),
+                                          style: TextStyle(
+                                              color: Colors.green[700],
+                                              fontWeight: FontWeight.bold)),
+                                    ]),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                        '${AppStrings.tr('address')}: ${_currentLat!.toStringAsFixed(6)}'),
+                                    Text(
+                                        '${AppStrings.tr('address')}: ${_currentLng!.toStringAsFixed(6)}'),
+                                  ]),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Row(children: [
+                                const Icon(Icons.warning,
+                                    color: Colors.orange, size: 20),
+                                const SizedBox(width: 6),
+                                Text(AppStrings.tr('no_data'),
+                                    style: const TextStyle(
+                                        color: Colors.orange)),
+                              ]),
+                            ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              onPressed: _saving
+                                  ? null
+                                  : _getCurrentLocation,
+                              icon: const Icon(Icons.my_location),
+                              label: Text(AppStrings.tr('refresh'),
+                                  style:
+                                      const TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kManagerColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ),
+                        ]),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            const Icon(Icons.radio_button_checked,
+                                color: kManagerColor),
+                            const SizedBox(width: 8),
+                            Text(AppStrings.tr('geofence'),
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                          ]),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _radiusCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.tr('geofence'),
+                              border: const OutlineInputBorder(),
+                              suffixText: AppStrings.tr('address'),
+                            ),
+                          ),
+                        ]),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: SwitchListTile(
+                    title: Text(AppStrings.tr('geofence'),
+                        style:
+                            const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(_enabled
+                        ? AppStrings.tr('active')
+                        : AppStrings.tr('cancelled')),
+                    value: _enabled,
+                    activeColor: kManagerColor,
+                    onChanged: (v) => setState(() => _enabled = v),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: _saving ? null : _saveGeofence,
+                    icon: _saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.save),
+                    label: Text(AppStrings.tr('save'),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ]),
+        ),
+      ),
+    );
+  }
+}
+
+class ManagerShell extends StatefulWidget {
+  final int initialIndex;
+  const ManagerShell({super.key, this.initialIndex = 0});
+  @override
+  State<ManagerShell> createState() => _ManagerShellState();
+}
+
+class _ManagerShellState extends State<ManagerShell> {
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+    fetchUnreadCount();
+  }
+
+  List<Widget> get _pages => [
+        const ManagerDashboard(),
+        const ManagerPendingScreen(),
+        const ManagerAttendanceScreen(),
+        const ManagerLiveLocationsScreen(),
+      ];
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await AuthStorageService.clearAll();
+    unreadNotificationsCount.value = 0;
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appDir,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('MotionHR - ${AppStrings.tr('dashboard')}'),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.description),
+              tooltip: AppStrings.tr('company_charter'),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ManagerCharterScreen())),
+            ),
+            const NotificationBellButton(),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: AppStrings.tr('settings'),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: AppStrings.tr('logout'),
+              onPressed: _logout,
+            ),
+          ],
+        ),
+        body: _pages[_index],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _index,
+          onTap: (i) => setState(() => _index = i),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: kManagerColor,
+          items: [
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.dashboard),
+                label: AppStrings.tr('dashboard')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.pending_actions),
+                label: AppStrings.tr('requests')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.people),
+                label: AppStrings.tr('attendance_today')),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.location_on),
+                label: AppStrings.tr('live_locations')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ManagerDashboard extends StatefulWidget {
+  const ManagerDashboard({super.key});
+  @override
+  State<ManagerDashboard> createState() => _ManagerDashboardState();
+}
+
+class _ManagerDashboardState extends State<ManagerDashboard> {
+  int _pending = 0, _present = 0, _fieldWorkers = 0;
+  bool _loading = true;
+  String _firstName = '';
+  String _companyName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+    _load();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _firstName = prefs.getString('first_name') ??
+          prefs.getString('full_name') ??
+          '';
+      _companyName = prefs.getString('company_name') ?? '';
+    });
+  }
+
+  Future<void> _load() async {
+    if (mounted) setState(() => _loading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final r1 = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
+          headers: {'Authorization': 'Token $token'});
+      if (r1.statusCode == 200) {
+        final d = jsonDecode(r1.body);
+        final pr = ((d['pending_requests'] as List?) ?? []).length;
+        final pl = ((d['pending_leaves'] as List?) ?? []).length;
+        final pg = ((d['pending'] as List?) ?? []).length;
+        final tp = d['total_pending'];
+        _pending = tp is num ? tp.toInt() : pr + pl + pg;
+      }
+      final r2 = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+          headers: {'Authorization': 'Token $token'});
+      if (r2.statusCode == 200) {
+        final d = jsonDecode(r2.body);
+        final items =
+            ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []);
+        final total = d['total'];
+        _present = total is num ? total.toInt() : items.length;
+      }
+      final r3 = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+          headers: {'Authorization': 'Token $token'});
+      if (r3.statusCode == 200) {
+        final d = jsonDecode(r3.body);
+        _fieldWorkers = ((d['locations'] as List?) ?? []).length;
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isAr = LanguageService.currentLanguage == 'ar';
+    final days = isAr
+        ? ['ط§ظ„ط£ط­ط¯','ط§ظ„ط§ط«ظ†ظٹظ†','ط§ظ„ط«ظ„ط§ط«ط§ط،','ط§ظ„ط£ط±ط¨ط¹ط§ط،','ط§ظ„ط®ظ…ظٹط³','ط§ظ„ط¬ظ…ط¹ط©','ط§ظ„ط³ط¨طھ']
+        : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    final months = isAr
+        ? ['ظٹظ†ط§ظٹط±','ظپط¨ط±ط§ظٹط±','ظ…ط§ط±ط³','ط£ط¨ط±ظٹظ„','ظ…ط§ظٹظˆ','ظٹظˆظ†ظٹظˆ','ظٹظˆظ„ظٹظˆ','ط£ط؛ط³ط·ط³','ط³ط¨طھظ…ط¨ط±','ط£ظƒطھظˆط¨ط±','ظ†ظˆظپظ…ط¨ط±','ط¯ظٹط³ظ…ط¨ط±']
+        : ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    final dateStr =
+        '${days[now.weekday % 7]}طŒ ${now.day} ${months[now.month - 1]} ${now.year}';
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF4A148C),
+                  Color(0xFF7B1FA2),
+                  Color(0xFF9C27B0)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.dashboard,
+                        color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${AppStrings.tr('welcome')} $_firstName ًں‘‹',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          if (_companyName.isNotEmpty)
+                            Text(_companyName,
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 13)),
+                        ]),
+                  ),
+                ]),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.calendar_today,
+                            color: Colors.white70, size: 16),
+                        const SizedBox(width: 8),
+                        Text(dateStr,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 13)),
+                      ]),
+                ),
+                const SizedBox(height: 20),
+                _loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: Colors.white))
+                    : Row(children: [
+                        _statCard(AppStrings.tr('pending'), '$_pending',
+                            Icons.pending_actions, Colors.orangeAccent),
+                        const SizedBox(width: 10),
+                        _statCard(
+                            AppStrings.tr('attendance_today'),
+                            '$_present',
+                            Icons.how_to_reg,
+                            Colors.greenAccent),
+                        const SizedBox(width: 10),
+                        _statCard(AppStrings.tr('field_workers'),
+                            '$_fieldWorkers', Icons.location_on,
+                            Colors.lightBlueAccent),
+                      ]),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(AppStrings.tr('quick_management'),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4A148C))),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.4,
+              children: [
+                _gridCard(
+                    AppStrings.tr('pending_requests'),
+                    Icons.pending_actions,
+                    Colors.orange,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerPendingScreen())),
+                    badge: _pending),
+                _gridCard(
+                    AppStrings.tr('attendance_today'),
+                    Icons.how_to_reg,
+                    Colors.green,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerAttendanceScreen()))),
+                _gridCard(
+                    AppStrings.tr('live_locations'),
+                    Icons.location_on,
+                    const Color(0xFF7B1FA2),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerLiveLocationsScreen()))),
+                _gridCard(
+                    AppStrings.tr('employees'),
+                    Icons.people,
+                    Colors.indigo,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerEmployeesListScreen()))),
+                _gridCard(
+                    AppStrings.tr('add_employee'),
+                    Icons.person_add,
+                    Colors.deepOrange,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CreateEmployeeScreen()))),
+                _gridCard(
+                    AppStrings.tr('missions'),
+                    Icons.assignment,
+                    const Color(0xFF6C3FC5),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerMissionsScreen()))),
+                _gridCard(
+                    AppStrings.tr('announcements'),
+                    Icons.campaign,
+                    Colors.deepPurple,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CreateAnnouncementScreen()))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(AppStrings.tr('tools'),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4A148C))),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.4,
+              children: [
+                _gridCard(
+                    AppStrings.tr('reports'),
+                    Icons.analytics,
+                    Colors.teal,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ReportsHubScreen()))),
+                _gridCard(
+                    AppStrings.tr('payroll'),
+                    Icons.account_balance_wallet,
+                    Colors.green,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PayrollHubScreen()))),
+                _gridCard(
+                    AppStrings.tr('reminders'),
+                    Icons.notifications_active,
+                    Colors.blueGrey,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ReminderSettingsScreen()))),
+                _gridCard(
+                    AppStrings.tr('geofence'),
+                    Icons.fence,
+                    Colors.cyan,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerGeofenceScreen()))),
+                _gridCard(
+                    AppStrings.tr('company_charter'),
+                    Icons.description,
+                    Colors.brown,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerCharterScreen()))),
+                _gridCard(
+                    AppStrings.tr('org_tree'),
+                    Icons.account_tree,
+                    const Color(0xFF00695C),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const OrganizationTreeScreen()))),
+                _gridCard(
+                    AppStrings.tr('company_info'),
+                    Icons.business,
+                    Colors.pink,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CompanyInfoScreen()))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _statCard(
+      String title, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3)),
+        ),
+        child: Column(children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          Text(title,
+              style: const TextStyle(
+                  color: Colors.white70, fontSize: 11),
+              textAlign: TextAlign.center),
+        ]),
+      ),
+    );
+  }
+
+  Widget _gridCard(String title, IconData icon, Color color,
+      VoidCallback onTap,
+      {int? badge}) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 3,
+      shadowColor: color.withValues(alpha: 0.3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: color, size: 28),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: color),
+                      textAlign: TextAlign.center),
+                ]),
+          ),
+          if (badge != null && badge > 0)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                constraints: const BoxConstraints(
+                    minWidth: 24, minHeight: 24),
+                child: Text(
+                  badge > 99 ? '99+' : '$badge',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ]),
+      ),
+    );
+  }
+}
+
+class ManagerPendingScreen extends StatefulWidget {
+  const ManagerPendingScreen({super.key});
+  @override
+  State<ManagerPendingScreen> createState() => _ManagerPendingScreenState();
+}
+
+class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
+  List<dynamic> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/pending/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = [
+              ...List.from(data['pending_requests'] ?? []),
+              ...List.from(data['pending_leaves'] ?? []),
+              ...List.from(data['pending'] ?? []),
+            ]);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _showRejectDialog(dynamic item) async {
+    final reasonCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: appDir,
+        child: AlertDialog(
+          title: Row(children: [
+            const Icon(Icons.cancel, color: Colors.red),
+            const SizedBox(width: 8),
+            Text(AppStrings.tr('rejected')),
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(AppStrings.tr('required')),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: AppStrings.tr('reason'),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(AppStrings.tr('cancel')),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (reasonCtrl.text.trim().isEmpty) return;
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white),
+              child: Text(AppStrings.tr('confirm')),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == true && reasonCtrl.text.trim().isNotEmpty) {
+      await _action(item, 'reject', notes: reasonCtrl.text.trim());
+    }
+    reasonCtrl.dispose();
+  }
+
+  Future<void> _action(dynamic item, String action,
+      {String notes = ''}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final body = {
+        'id': item['id'],
+        'type': item['type'],
+        'action': action
+      };
+      if (notes.isNotEmpty) body['notes'] = notes;
+      final res = await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/action/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode(body));
+      final data = jsonDecode(res.body);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(data['message'] ?? AppStrings.tr('done'))),
+        );
+        fetchUnreadCount();
+      }
+      _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('${AppStrings.tr('error')}: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
+      return EmptyStateWidget(
+        title: AppStrings.tr('no_requests'),
+        description: AppStrings.tr('no_data'),
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.green,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (_, i) {
+          final item = _items[i];
+          return Card(
+            margin: const EdgeInsets.all(8),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item['employee_name'] ?? '',
+                        style:
+                            const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(item['subject'] ??
+                        item['type_name'] ??
+                        item['leave_type'] ??
+                        item['title'] ??
+                        ''),
+                    Text(
+                        item['details'] ??
+                            item['description'] ??
+                            item['reason'] ??
+                            '',
+                        style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _action(item, 'approve'),
+                          icon: const Icon(Icons.check),
+                          label: Text(AppStrings.tr('approved')),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showRejectDialog(item),
+                          icon: const Icon(Icons.close),
+                          label: Text(AppStrings.tr('rejected')),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white),
+                        ),
+                      ),
+                    ]),
+                  ]),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ManagerAttendanceScreen extends StatefulWidget {
+  const ManagerAttendanceScreen({super.key});
+  @override
+  State<ManagerAttendanceScreen> createState() =>
+      _ManagerAttendanceScreenState();
+}
+
+class _ManagerAttendanceScreenState
+    extends State<ManagerAttendanceScreen> {
+  List<dynamic> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() =>
+            _items = data['items'] ?? data['attendance'] ?? []);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
+      return EmptyStateWidget(
+        title: AppStrings.tr('no_data'),
+        description: AppStrings.tr('no_data'),
+        icon: Icons.event_busy_outlined,
+        iconColor: kManagerColor,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (_, i) {
+          final item = _items[i];
+          return Card(
+            child: ListTile(
+              leading:
+                  const Icon(Icons.person, color: kManagerColor),
+              title: Text(
+                  item['employee_name'] ?? item['name'] ?? ''),
+              subtitle: Text(
+                  '${AppStrings.tr('check_in_time')}: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  ${AppStrings.tr('check_out_time')}: ${item['check_out'] ?? item['check_out_time'] ?? '-'}'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ManagerLiveLocationsScreen extends StatefulWidget {
+  const ManagerLiveLocationsScreen({super.key});
+  @override
+  State<ManagerLiveLocationsScreen> createState() =>
+      _ManagerLiveLocationsScreenState();
+}
+
+class _ManagerLiveLocationsScreenState
+    extends State<ManagerLiveLocationsScreen> {
+  List<dynamic> _items = [];
+  bool _loading = true;
+  bool _showMap = true;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    _timer =
+        Timer.periodic(const Duration(minutes: 2), (_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = data['items'] ?? []);
+      }
+    } catch (_) {}
+    setState(() => _loading = false);
+  }
+
+  Future<void> _openMap(double lat, double lng) async {
+    final url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
+      return EmptyStateWidget(
+        title: AppStrings.tr('no_data'),
+        description: AppStrings.tr('field_workers'),
+        icon: Icons.location_off_outlined,
+        iconColor: Colors.orange,
+        onRefresh: _load,
+      );
+    }
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => setState(() => _showMap = true),
+              icon: const Icon(Icons.map),
+              label: Text(AppStrings.tr('location_report')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    _showMap ? kManagerColor : Colors.grey,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => setState(() => _showMap = false),
+              icon: const Icon(Icons.list),
+              label: Text(AppStrings.tr('employees')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    !_showMap ? kManagerColor : Colors.grey,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
+        ]),
+      ),
+      Expanded(child: _showMap ? _buildMap() : _buildList()),
+    ]);
+  }
+
+  Widget _buildMap() {
+    final markers = <Marker>[];
+    for (final item in _items) {
+      final lat = (item['latitude'] as num?)?.toDouble();
+      final lng = (item['longitude'] as num?)?.toDouble();
+      if (lat == null || lng == null) continue;
+      markers.add(Marker(
+        point: LatLng(lat, lng),
+        width: 40,
+        height: 40,
+        child: const Icon(Icons.location_on,
+            color: Colors.red, size: 40),
+      ));
+    }
+    final center = markers.isNotEmpty
+        ? markers.first.point
+        : const LatLng(30.0444, 31.2357);
+    return FlutterMap(
+      options: MapOptions(
+          initialCenter: center, initialZoom: 13),
+      children: [
+        TileLayer(
+          urlTemplate:
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.motionhr.app',
+        ),
+        MarkerLayer(markers: markers),
+      ],
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      itemCount: _items.length,
+      itemBuilder: (_, i) {
+        final item = _items[i];
+        final lat =
+            (item['latitude'] as num?)?.toDouble() ?? 0;
+        final lng =
+            (item['longitude'] as num?)?.toDouble() ?? 0;
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.person_pin_circle,
+                color: Colors.red),
+            title: Text(item['employee_name'] ?? ''),
+            subtitle:
+                Text(item['address'] ?? '$lat, $lng'),
+            trailing: IconButton(
+              icon: const Icon(Icons.map,
+                  color: kPrimaryColor),
+              onPressed: () => _openMap(lat, lng),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
