@@ -96,13 +96,15 @@ class AuthStorageService {
       );
     }
   }
-
   // مسح كل حاجة عند الخروج
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyAuthToken);
     await prefs.remove(_keyLastLoginTime);
     await prefs.setBool(_keyStayLoggedIn, false);
+    // ⚠️ biometric_enabled محتاج يفضل موجود عشان البصمة تشتغل بعد الـ Logout
+    // لكن نعمل flag إن التوكن اتمسح وهيحتاج login عادي مرة واحدة
+    await prefs.setBool('biometric_needs_reauth', true);
     // تذكرني يفضل محفوظ حتى بعد الخروج
   }
 

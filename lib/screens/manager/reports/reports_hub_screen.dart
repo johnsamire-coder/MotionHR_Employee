@@ -33,7 +33,7 @@ class ReportsHubScreen extends StatelessWidget {
           _card(context, Icons.request_page, 'تقرير الطلبات', 'كل الطلبات والحالات', const RequestsReportScreen()),
           _card(context, Icons.beach_access, 'تقرير الإجازات', 'ملخص إجازات الموظفين', const LeavesReportScreen()),
           _card(context, Icons.access_time, 'تقرير ساعات العمل', 'ساعات العمل الفعلية', const WorkHoursReportScreen()),
-          _card(context, Icons.location_on, 'تقرير المواقع اليومية', 'أماكن تواجد الموظف خلال اليوم', const LocationReportScreen()),
+          _card(context, Icons.location_on, 'تقرير المواقع اليومي', 'أماكن تواجد الموظف خلال اليوم', const LocationReportScreen()),
         ],
       ),
     );

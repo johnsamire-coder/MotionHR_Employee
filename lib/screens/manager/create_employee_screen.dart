@@ -650,11 +650,11 @@ final List<Map<String, String>> _currencies = [
           if (_employeesSimple.isNotEmpty)
             DropdownButtonFormField<int>(
               value: _selectedManagerId,
-              decoration: _inputDec('المدير المباشر (اختياري)', Icons.supervisor_account),
-              items: [
+              decoration: _inputDec('المدير المباشر (اختياري)', Icons.supervisor_account),          items: [
                 const DropdownMenuItem<int>(value: null, child: Text('بدون مدير مباشر')),
-                ..._employeesSimple.map((e) => DropdownMenuItem<int>(value: e['id'] as int, child: Text('${e['full_name']} - ${e['job_title'] ?? ''}'))),
+                ..._employeesSimple.where((e) => e['is_manager'] == true).map((e) => DropdownMenuItem<int>(value: e['id'] as int, child: Text('${e['full_name']} - ${e['job_title'] ?? ''}'))),
               ],
+
               onChanged: (v) => setState(() => _selectedManagerId = v),
               isExpanded: true,
             ),

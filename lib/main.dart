@@ -612,6 +612,7 @@ Future<void> _checkBiometric() async {
         final prefs = await SharedPreferences.getInstance();
 
         await prefs.setString('token', data['token']);
+await prefs.setString('auth_token', data['token']); // للبصمة
 
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
@@ -1384,8 +1385,8 @@ Future<void> _logout() async {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: kPrimaryColor,
           items: [  BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.home),
-  BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'إجازات'),
-  BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'طلبات'),
+  BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'الإجازات'),
+  BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'الطلبات'),
   BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: context.l10n.myMissions),
   BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: context.l10n.myRequests),
 
@@ -1943,23 +1944,42 @@ class _RequestsScreenState extends State<RequestsScreen> {
   final _permissionDateCtrl = TextEditingController();
   final _permissionTimeCtrl = TextEditingController();
   final _durationHoursCtrl = TextEditingController();
+  final _startDateCtrl = TextEditingController();
+  final _endDateCtrl = TextEditingController();
   bool _submitting = false;
   bool get _isOther => _selectedValue == 'other';
 
   Map<String, dynamic>? get _selectedType { try { return _types.cast<Map<String, dynamic>>().firstWhere((t) => t['id'].toString() == _selectedValue); } catch (_) { return null; } }
-  bool get _isLoan { final t = _selectedType; final name = (t?['name'] ?? '').toString(); return name.contains('سلفة') || _selectedValue == '2'; }
+bool get _isLoan {
+  final t = _selectedType;
+  return t?['requires_amount'] == true;
+}
 
-  String get _permissionKind {
-    final t = _selectedType;
-    final explicit = (t?['permission_kind'] ?? '').toString();
-    if (explicit.isNotEmpty && explicit != 'none') return explicit;
-    final name = (t?['name'] ?? '').toString();
-    if (name.contains('إذن تأخير')) return 'late_arrival';
-    if (name.contains('إذن خروج') || name.contains('إذن انصراف') || name.contains('خروج مبكر')) return 'early_leave';
-    return 'none';
+String get _permissionKind {
+  final t = _selectedType;
+  final explicit = (t?['permission_kind'] ?? '').toString().trim();
+
+  if (explicit == 'late' || explicit == 'late_arrival') {
+    return 'late_arrival';
   }
 
-  bool get _isPermissionRequest => _permissionKind == 'late_arrival' || _permissionKind == 'early_leave';
+  if (explicit == 'early_leave' || explicit == 'exit') {
+    return 'early_leave';
+  }
+
+  return 'none';
+}
+
+bool get _isPermissionRequest => _permissionKind != 'none';
+bool get _requiresDateRange {
+  final t = _selectedType;
+  return t?['requires_date_range'] == true;
+}
+
+bool get _requiresDocument {
+  final t = _selectedType;
+  return t?['requires_document'] == true;
+}
 
   @override
   void initState() { super.initState(); _load(); }
@@ -1973,8 +1993,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
         final data = jsonDecode(res.body);
         List<dynamic> flatTypes = [];
         if (data['categories'] is List) { for (final cat in data['categories']) { if (cat['types'] is List) { for (final t in cat['types']) {
-          flatTypes.add({'id': t['id'], 'name': t['name'], 'category': cat['name'], 'permission_kind': t['permission_kind'] ?? 'none'}); } } }
-        } else if (data['types'] is List) { flatTypes = (data['types'] as List).map((t) => {'id': t['id'], 'name': t['name'], 'category': t['category'] ?? '', 'permission_kind': t['permission_kind'] ?? 'none'}).toList(); }
+                    flatTypes.add({'id': t['id'], 'name': t['name'], 'category': cat['name'], 'permission_kind': t['permission_kind'] ?? 'none', 'requires_amount': t['requires_amount'] ?? false, 'requires_date_range': t['requires_date_range'] ?? false, 'requires_document': t['requires_document'] ?? false}); } } }
+        } else if (data['types'] is List) { flatTypes = (data['types'] as List).map((t) => {'id': t['id'], 'name': t['name'], 'category': t['category'] ?? '', 'permission_kind': t['permission_kind'] ?? 'none', 'requires_amount': t['requires_amount'] ?? false, 'requires_date_range': t['requires_date_range'] ?? false, 'requires_document': t['requires_document'] ?? false}).toList(); }
         setState(() => _types = flatTypes);
       }
     } catch (_) {}
@@ -2004,8 +2024,20 @@ class _RequestsScreenState extends State<RequestsScreen> {
       final body = <String, dynamic>{'title': _titleCtrl.text.trim(),
         'description': _isOther ? 'نوع آخر: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}' : _descCtrl.text.trim()};
       if (!_isOther) body['request_type_id'] = _selectedValue;
-      if (_isLoan && _amountCtrl.text.trim().isNotEmpty) body['amount'] = _amountCtrl.text.trim();
-      if (_isPermissionRequest) { body['permission_date'] = _permissionDateCtrl.text.trim(); body['permission_time'] = _permissionTimeCtrl.text.trim(); body['duration_hours'] = _durationHoursCtrl.text.trim(); }
+      if (_isLoan && _amountCtrl.text.trim().isNotEmpty) {
+        body['amount'] = _amountCtrl.text.trim();
+      }
+
+      if (_requiresDateRange) {
+        body['start_date'] = _startDateCtrl.text.trim();
+        body['end_date'] = _endDateCtrl.text.trim();
+      }
+
+      if (_isPermissionRequest) {
+        body['permission_date'] = _permissionDateCtrl.text.trim();
+        body['permission_time'] = _permissionTimeCtrl.text.trim();
+        body['duration_hours'] = _durationHoursCtrl.text.trim();
+      }
       final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
       final data = jsonDecode(res.body);
@@ -2025,6 +2057,30 @@ class _RequestsScreenState extends State<RequestsScreen> {
         items: [..._types.map((t) => DropdownMenuItem<String>(value: t['id'].toString(), child: Text(t['name'] ?? ''))),
           const DropdownMenuItem<String>(value: 'other', child: Text('أخرى'))],
         onChanged: (v) { setState(() { _selectedValue = v; _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); }); }),
+      if (_requiresDateRange) ...[
+        SizedBox(height: 16),
+        TextField(
+          controller: _startDateCtrl,
+          readOnly: true,
+          onTap: () => _pickDate(_startDateCtrl),
+          decoration: InputDecoration(
+            labelText: 'من تاريخ',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Icons.calendar_today),
+          ),
+        ),
+        SizedBox(height: 16),
+        TextField(
+          controller: _endDateCtrl,
+          readOnly: true,
+          onTap: () => _pickDate(_endDateCtrl),
+          decoration: InputDecoration(
+            labelText: 'إلى تاريخ',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Icons.calendar_today),
+          ),
+        ),
+      ],
       if (_isPermissionRequest) ...[
         SizedBox(height: 16),
         Container(width: double.infinity, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.orange.shade200)),
@@ -3756,7 +3812,7 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
                 _gridCard('نطاق الجيو', Icons.fence, Colors.cyan, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),                _gridCard('لائحة الشركة', Icons.description, Colors.brown, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
-                _gridCard('الهيكل التنظيمي', Icons.account_tree, const Color(0xFF00695C), () =>
+                _gridCard(context.l10n.organizationTree, Icons.account_tree, const Color(0xFF00695C), () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const OrganizationTreeScreen()))),
                 _gridCard(context.l10n.companyInfo, Icons.business, Colors.pink, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyInfoScreen()))),
