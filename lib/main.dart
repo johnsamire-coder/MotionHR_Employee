@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -654,6 +654,7 @@ await prefs.setString('auth_token', data['token']); // للبصمة
           stayLoggedIn: _stayLoggedIn,
           token: data['token'],
         );
+        await AuthStorageService.saveToken(data['token']);
 // لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
         if (_biometricAvailable) {
           final prefs2 = await SharedPreferences.getInstance();
