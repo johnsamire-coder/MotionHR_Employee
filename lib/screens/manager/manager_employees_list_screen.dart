@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'manager_employee_detail_screen.dart';
 import '../../widgets/empty_state_widget.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 
 class ManagerEmployeesListScreen extends StatefulWidget {
@@ -106,7 +107,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           actions: [
-            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
           ],
         ),
         body: Column(children: [
@@ -119,7 +120,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
                 onChanged: _onSearchChanged,
                 decoration: InputDecoration(
                   hintText: 'بحث بالاسم / الكود / الموبايل',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   filled: true,
                   fillColor: Colors.grey[100],
                   border: OutlineInputBorder(
@@ -129,13 +130,13 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(children: [
                   _filterChip('الكل', ''),
-                  _filterChip('نشط', 'active'),
-                  _filterChip('في إجازة', 'on_leave'),
+                  _filterChip(context.l10n.active, 'active'),
+                  _filterChip(context.l10n.onLeave, 'on_leave'),
                   _filterChip('موقوف', 'suspended'),
                   _filterChip('مستقيل', 'resigned'),
                   _filterChip('مفصول', 'terminated'),
@@ -146,7 +147,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
 
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : _error != null
                     ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))                    : _employees.isEmpty
                         ? EmptyStateWidget(
@@ -182,7 +183,7 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
                                           ? NetworkImage('https://jssolutions-eg.com${emp['photo']}')
                                           : null,
                                       child: (emp['photo'] == null || emp['photo'].toString().isEmpty)
-                                          ? const Icon(Icons.person, color: Color(0xFF6A1B9A))
+                                          ? Icon(Icons.person, color: Color(0xFF6A1B9A))
                                           : null,
                                     ),
                                     title: Text(
@@ -192,16 +193,16 @@ class _ManagerEmployeesListScreenState extends State<ManagerEmployeesListScreen>
                                     subtitle: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const SizedBox(height: 4),
+                                        SizedBox(height: 4),
                                         Text('${emp['job_title'] ?? '-'}  •  ${emp['department'] ?? '-'}',
                                             style: TextStyle(fontSize: 12, color: Colors.grey[700])),
-                                        const SizedBox(height: 2),
+                                        SizedBox(height: 2),
                                         Row(children: [
                                           Icon(Icons.badge, size: 12, color: Colors.grey[500]),
-                                          const SizedBox(width: 4),
+                                          SizedBox(width: 4),
                                           Text(emp['employee_code'] ?? '',
                                               style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: 12),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(

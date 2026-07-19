@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/payroll_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class PayrollSettingsScreen extends StatefulWidget {
   const PayrollSettingsScreen({super.key});
@@ -25,20 +26,20 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('إعدادات الرواتب')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _data == null
-              ? const Center(child: Text('لا توجد بيانات'))
+              ? Center(child: Text(context.l10n.noData))
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    const Card(
+                    Card(
                       child: ListTile(
                         leading: Icon(Icons.info_outline, color: Colors.blue),
                         title: Text('ملاحظة'),
                         subtitle: Text('الإعدادات حالياً ثابتة وستكون قابلة للتعديل لاحقاً'),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _card(Icons.money_off, 'خصم التأخير / دقيقة', '${_data?['late_deduction_per_minute'] ?? '-'} ج'),
                     _card(Icons.event_busy, 'خصم الغياب / يوم', '${_data?['absence_deduction_per_day'] ?? '-'} ج'),
                     _card(Icons.more_time, 'معدل Overtime / ساعة', '${_data?['overtime_rate_per_hour'] ?? '-'} ج'),

@@ -31,6 +31,7 @@ dependencies:
   pdf: ^3.10.7
   share_plus: ^7.2.1
   printing: ^5.11.1
+  local_auth: ^3.0.2
 
 
 dev_dependencies:
@@ -38,3 +39,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
+
+  assets:
+    - lib/l10n/

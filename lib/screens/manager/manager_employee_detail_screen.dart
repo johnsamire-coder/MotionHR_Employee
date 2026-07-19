@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../employee/employee_summary_screen.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../services/employee_management_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 
 class ManagerEmployeeDetailScreen extends StatefulWidget {
@@ -86,10 +87,10 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Text('إعادة تعيين كلمة المرور'),
+          title: Text(context.l10n.resetPassword),
           content: Text('هل تريد إعادة تعيين كلمة مرور الموظف "${widget.employeeName}"؟\nسيتم توليد كلمة مرور جديدة تلقائياً.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -126,13 +127,13 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         _showNewPasswordDialog(newPassword);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل إعادة التعيين'), backgroundColor: Colors.red),
+          SnackBar(content: Text('فشل إعادة التعيين'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('خطأ في الاتصال'), backgroundColor: Colors.red),
+          SnackBar(content: Text('خطأ في الاتصال'), backgroundColor: Colors.red),
         );
       }
     }
@@ -147,8 +148,8 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         child: AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 8),
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
               const Text('تم إعادة التعيين'),
             ],
           ),
@@ -156,7 +157,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('كلمة المرور الجديدة:'),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -177,18 +178,18 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.copy, color: Colors.red),
+                      icon: Icon(Icons.copy, color: Colors.red),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: newPassword));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('تم النسخ'), backgroundColor: Colors.green),
+                          SnackBar(content: Text('تم النسخ'), backgroundColor: Colors.green),
                         );
                       },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -207,7 +208,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
-              child: const Text('حسناً', style: TextStyle(color: Colors.white)),
+              child: Text(context.l10n.ok, style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -249,7 +250,7 @@ Future<void> _transferEmployee() async {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('نقل الموظف'),
+              title: Text(context.l10n.transferEmployee),
               content: SizedBox(
                 width: double.maxFinite,
                 child: SingleChildScrollView(
@@ -258,7 +259,7 @@ Future<void> _transferEmployee() async {
                     children: [
                       DropdownButtonFormField<int>(
                         value: selectedBranchId,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'اختر الفرع',
                           border: OutlineInputBorder(),
                         ),
@@ -286,10 +287,10 @@ Future<void> _transferEmployee() async {
                           setDialogState(() {});
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       DropdownButtonFormField<int>(
                         value: selectedDepartmentId,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'اختر القسم',
                           border: OutlineInputBorder(),
                         ),
@@ -317,10 +318,10 @@ Future<void> _transferEmployee() async {
                                 setDialogState(() {});
                               },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       DropdownButtonFormField<int>(
                         value: selectedManagerId,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'اختر المدير الجديد',
                           border: OutlineInputBorder(),
                         ),
@@ -344,13 +345,13 @@ Future<void> _transferEmployee() async {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('إلغاء'),
+                  child: Text(context.l10n.cancel),
                 ),
                 ElevatedButton(
 onPressed: () async {
   if (selectedBranchId == null || selectedDepartmentId == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('اختر الفرع والقسم أولاً')),
+      SnackBar(content: Text('اختر الفرع والقسم أولاً')),
     );
     return;
   }
@@ -368,7 +369,7 @@ onPressed: () async {
     await _loadAll();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('تم نقل الموظف بنجاح ✅')),
+      SnackBar(content: Text('تم نقل الموظف بنجاح ✅')),
     );
   } catch (e) {
     if (!mounted) return;
@@ -376,7 +377,7 @@ onPressed: () async {
       SnackBar(content: Text('خطأ في النقل: $e')),
     );
   }
-},                  child: const Text('تأكيد'),
+},                  child: Text(context.l10n.confirm),
                 ),
               ],
             );
@@ -432,7 +433,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 16, color: Colors.grey[600]),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
           ],
           SizedBox(width: 110, child: Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700]))),
           Expanded(child: Text(v, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
@@ -462,7 +463,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             ),
             child: Row(children: [
               Icon(icon, size: 18, color: color),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
             ]),
           ),
@@ -478,7 +479,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
   Widget _buildProfileTab() {
     if (_profile == null) {
       return EmptyStateWidget(
-        title: 'لا توجد بيانات',
+        title: context.l10n.noData,
         description: 'تعذر تحميل بيانات الموظف',
         icon: Icons.person_off_outlined,
         onRefresh: _loadAll,
@@ -502,20 +503,20 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                   ? NetworkImage('https://jssolutions-eg.com${_profile!['photo']}')
                   : null,
               child: (_profile!['photo'] == null || _profile!['photo'].toString().isEmpty)
-                  ? const Icon(Icons.person, size: 34, color: Color(0xFF6A1B9A))
+                  ? Icon(Icons.person, size: 34, color: Color(0xFF6A1B9A))
                   : null,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(_profile!['full_name_ar'] ?? '',
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(_profile!['job_title'] ?? '',
                       style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10)),
@@ -527,7 +528,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             ),
           ]),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // أزرار الإجراءات - صف علوي
         Row(
           children: [
@@ -542,7 +543,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                     ),
                   ),
                 ),
-                icon: const Icon(Icons.analytics, color: Colors.white, size: 18),
+                icon: Icon(Icons.analytics, color: Colors.white, size: 18),
                 label: const Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6A1B9A),
@@ -551,12 +552,12 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _editEmployee,
-                icon: const Icon(Icons.edit, color: Colors.white, size: 18),
-                label: const Text('تعديل', style: TextStyle(color: Colors.white, fontSize: 13)),
+                icon: Icon(Icons.edit, color: Colors.white, size: 18),
+                label: Text(context.l10n.edit, style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -566,14 +567,14 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         // أزرار الإجراءات - صف سفلي
         Row(
           children: [
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _transferEmployee,
-                icon: const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                icon: Icon(Icons.swap_horiz, color: Colors.white, size: 18),
                 label: const Text('نقل', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
@@ -582,11 +583,11 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _resetPassword,
-                icon: const Icon(Icons.lock_reset, color: Colors.white, size: 18),
+                icon: Icon(Icons.lock_reset, color: Colors.white, size: 18),
                 label: const Text('Reset', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
@@ -597,33 +598,33 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
 
         _sectionCard('البيانات الشخصية', Icons.person, const Color(0xFF1976D2), [
-          _infoRow('الرقم القومي', _profile!['national_id'], icon: Icons.badge),
-          _infoRow('تاريخ الميلاد', _profile!['birth_date'], icon: Icons.cake),
-          _infoRow('النوع', _profile!['gender']),
-          _infoRow('الحالة', _profile!['marital_status']),
+          _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
+          _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
+          _infoRow(context.l10n.gender, _profile!['gender']),
+          _infoRow(context.l10n.status, _profile!['marital_status']),
           _infoRow('الجنسية', _profile!['nationality']),
         ]),
         _sectionCard('التواصل', Icons.phone, const Color(0xFF388E3C), [
-          _infoRow('الموبايل', _profile!['phone'], icon: Icons.phone_android),
+          _infoRow(context.l10n.phone, _profile!['phone'], icon: Icons.phone_android),
           _infoRow('البريد', _profile!['email'], icon: Icons.email),
-          _infoRow('العنوان', _profile!['address'], icon: Icons.location_on),
+          _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
         ]),
         _sectionCard('البيانات الوظيفية', Icons.work, const Color(0xFFE65100), [
-          _infoRow('الفرع', _profile!['branch'], icon: Icons.business),
-          _infoRow('الإدارة', _profile!['department']),
+          _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
+          _infoRow(context.l10n.department, _profile!['department']),
           _infoRow('المدير', _profile!['direct_manager']?['name']),
-          _infoRow('تاريخ التعيين', _profile!['hire_date'], icon: Icons.calendar_today),
+          _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
           _infoRow('نوع العقد', _profile!['contract_type']),
-          _infoRow('الحالة', _profile!['status']),
+          _infoRow(context.l10n.status, _profile!['status']),
         ]),
         _sectionCard('البيانات البنكية', Icons.account_balance, const Color(0xFF6A1B9A), [
           _infoRow('البنك', _profile!['bank_name']),
           _infoRow('رقم الحساب', _profile!['bank_account']),
           _infoRow('IBAN', _profile!['iban']),
-          _infoRow('الراتب الأساسي', _profile!['basic_salary']),
+          _infoRow(context.l10n.basicSalary, _profile!['basic_salary']),
         ]),
       ],
     );
@@ -730,15 +731,15 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Icon(Icons.history, size: 16, color: Color(0xFFE65100)),
-                const SizedBox(width: 6),
+                Icon(Icons.history, size: 16, color: Color(0xFFE65100)),
+                SizedBox(width: 6),
                 Text(mv['type'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 const Spacer(),
                 Text((mv['date'] ?? '').toString().split('T').first,
                     style: TextStyle(fontSize: 11, color: Colors.grey[600])),
               ]),
               if ((mv['notes'] ?? '').toString().isNotEmpty) ...[
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(mv['notes'], style: const TextStyle(fontSize: 12)),
               ],
             ],
@@ -760,22 +761,22 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           title: Text(widget.employeeName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           actions: [
-            IconButton(onPressed: _loadAll, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _loadAll, icon: Icon(Icons.refresh)),
           ],
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             indicatorColor: Colors.white,
-            tabs: const [
+            tabs: [
               Tab(icon: Icon(Icons.person), text: 'الملف'),
               Tab(icon: Icon(Icons.folder), text: 'المستندات'),
-              Tab(icon: Icon(Icons.history), text: 'التاريخ'),
+              Tab(icon: Icon(Icons.history), text: context.l10n.date),
             ],
           ),
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? EmptyStateWidget(
                     title: 'خطأ في التحميل',
@@ -876,7 +877,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
         Navigator.pop(context);
         widget.onSaved();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم حفظ التعديلات'), backgroundColor: Colors.green),
+          SnackBar(content: Text('تم حفظ التعديلات'), backgroundColor: Colors.green),
         );
       } else {
         final d = json.decode(response.body);
@@ -900,7 +901,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-        validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null : null,
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? context.l10n.required : null : null,
       ),
     );
   }
@@ -933,19 +934,19 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.edit, color: Color(0xFF6A1B9A)),
-                  const SizedBox(width: 8),
-                  const Text('تعديل بيانات الموظف',
+                  Icon(Icons.edit, color: Color(0xFF6A1B9A)),
+                  SizedBox(width: 8),
+                  Text(context.l10n.editEmployee,
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1),
             Flexible(
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(
@@ -961,14 +962,14 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                     children: [
                       const Text('بيانات التواصل',
                           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF388E3C))),
-                      const SizedBox(height: 8),
-                      _field('الموبايل', _phoneCtrl, keyboardType: TextInputType.phone),
-                      _field('البريد الإلكتروني', _emailCtrl, keyboardType: TextInputType.emailAddress),
-                      _field('العنوان', _addressCtrl),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
+                      _field(context.l10n.phone, _phoneCtrl, keyboardType: TextInputType.phone),
+                      _field(context.l10n.email, _emailCtrl, keyboardType: TextInputType.emailAddress),
+                      _field(context.l10n.address, _addressCtrl),
+                      SizedBox(height: 8),
                       const Text('البيانات البنكية',
                           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A))),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       _field('اسم البنك', _bankNameCtrl),
                       _field('رقم الحساب', _bankAccountCtrl),
                       _field('IBAN', _ibanCtrl),
@@ -981,7 +982,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                           ),
                           child: Text(_error!, style: const TextStyle(color: Colors.red)),
                         ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         height: 48,

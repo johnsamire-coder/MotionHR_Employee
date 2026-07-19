@@ -4,6 +4,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http_parser/http_parser.dart';
+
 
 class EmployeeManagementService {
   static const String baseUrl = 'https://jssolutions-eg.com';
@@ -73,6 +75,7 @@ class EmployeeManagementService {
     }
     throw Exception('خطأ: ${res.statusCode}');
   }
+
   // ── COMPANY INFO ──
   static Future<Map<String, dynamic>> getCompanyInfo() async {
     final token = await _getToken();
@@ -90,6 +93,64 @@ class EmployeeManagementService {
     }
     throw Exception('خطأ: ${res.statusCode}');
   }
+
+  // ── UPDATE COMPANY INFO ──
+  static Future<bool> updateCompanyInfo(Map<String, dynamic> data) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.patch(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/company-info/update/'),
+      headers: _headers(token),
+      body: jsonEncode(data),
+    );
+    if (res.statusCode == 200 || res.statusCode == 204) return true;
+    throw Exception(
+      'Status: ${res.statusCode} | Body: ${res.body}',
+    );
+  }
+
+  // ── UPLOAD COMPANY LOGO ──
+  static Future<bool> uploadCompanyLogo(String filePath) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+          '$baseUrl/attendance/api/mobile/manager/company-info/upload-logo/'),
+    );
+    request.headers['Authorization'] = 'Token $token';
+    request.headers['Accept'] = 'application/json';    final ext = filePath.split('.').last.toLowerCase();
+    final mimeType = ext == 'png'
+        ? 'image/png'
+        : ext == 'gif'
+            ? 'image/gif'
+            : ext == 'webp'
+                ? 'image/webp'
+                : 'image/jpeg';
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'logo',
+        filePath,
+        contentType: MediaType('image', mimeType.split('/').last),
+      ),
+    );
+
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+
+    if (response.statusCode == 200 ||
+        response.statusCode == 201 ||
+        response.statusCode == 204) {
+      return true;
+    }
+    throw Exception(
+      'Status: ${response.statusCode} | Body: ${response.body}',
+    );
+  }
+
   // ── EMPLOYEES SIMPLE ──
   static Future<List<Map<String, dynamic>>> getEmployeesSimple() async {
     final token = await _getToken();
@@ -151,14 +212,18 @@ class EmployeeManagementService {
       'currency': currency,
     };
 
-    if (middleNameAr != null && middleNameAr.isNotEmpty) body['middle_name_ar'] = middleNameAr;
+    if (middleNameAr != null && middleNameAr.isNotEmpty) {
+      body['middle_name_ar'] = middleNameAr;
+    }
     if (phone2 != null && phone2.isNotEmpty) body['phone2'] = phone2;
     if (email != null && email.isNotEmpty) body['email'] = email;
     if (basicSalary != null) body['basic_salary'] = basicSalary;
     if (directManagerId != null) body['direct_manager_id'] = directManagerId;
     if (username != null && username.isNotEmpty) body['username'] = username;
     if (password != null && password.isNotEmpty) body['password'] = password;
-    if (employeeCode != null && employeeCode.isNotEmpty) body['employee_code'] = employeeCode;
+    if (employeeCode != null && employeeCode.isNotEmpty) {
+      body['employee_code'] = employeeCode;
+    }
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/create/'),
@@ -168,12 +233,12 @@ class EmployeeManagementService {
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 201 || res.statusCode == 200) {
-      if (data['success'] == true) {
-        return data;
-      }
+      if (data['success'] == true) return data;
     }
-    throw Exception(data['error'] ?? data['message'] ?? 'فشل إنشاء الموظف (${res.statusCode})');
+    throw Exception(
+        data['error'] ?? data['message'] ?? 'فشل إنشاء الموظف (${res.statusCode})');
   }
+
   // ── TRANSFER EMPLOYEE ──
   static Future<Map<String, dynamic>> transferEmployee({
     required int employeeId,
@@ -194,7 +259,8 @@ class EmployeeManagementService {
     if (reason != null && reason.isNotEmpty) body['reason'] = reason;
 
     final res = await http.post(
-      Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/$employeeId/transfer/'),
+      Uri.parse(
+          '$baseUrl/attendance/api/mobile/manager/employees/$employeeId/transfer/'),
       headers: _headers(token),
       body: jsonEncode(body),
     );
@@ -205,12 +271,14 @@ class EmployeeManagementService {
     }
     throw Exception(data['error'] ?? 'فشل نقل الموظف');
   }
+
   // ── ORGANIZATION TREE ──
   static Future<Map<String, dynamic>> getOrganizationTree() async {
     final token = await _getToken();
     if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
-      Uri.parse('$baseUrl/attendance/api/mobile/manager/organization-tree/'),
+      Uri.parse(
+          '$baseUrl/attendance/api/mobile/manager/organization-tree/'),
       headers: _headers(token),
     );
     if (res.statusCode == 200) {

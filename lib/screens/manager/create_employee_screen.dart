@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/employee_management_service.dart';
 import '../../services/employee_pdf_service.dart';
 import 'package:open_file/open_file.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 const Color kPrimaryColor = Color(0xFF1976D2);
 const Color kManagerColor = Color(0xFF6A1B9A);
@@ -141,7 +142,7 @@ final List<Map<String, String>> _currencies = [
     if (!(_formKeyStep1.currentState?.validate() ?? false)) return false;
     if (_birthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى اختيار تاريخ الميلاد'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('يرجى اختيار تاريخ الميلاد'), backgroundColor: Colors.orange),
       );
       return false;
     }
@@ -151,13 +152,13 @@ final List<Map<String, String>> _currencies = [
   bool _validateStep2() {
     if (_selectedBranchId == null || _selectedDepartmentId == null || _selectedJobTitleId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى اختيار الفرع والقسم والمسمى الوظيفي'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('يرجى اختيار الفرع والقسم والمسمى الوظيفي'), backgroundColor: Colors.orange),
       );
       return false;
     }
     if (_hireDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى اختيار تاريخ التعيين'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('يرجى اختيار تاريخ التعيين'), backgroundColor: Colors.orange),
       );
       return false;
     }
@@ -350,7 +351,7 @@ final List<Map<String, String>> _currencies = [
   Future<void> _openWhatsApp() async {
     final phone = _createdEmployee?['phone'] ?? _whatsappPhone;
     if (phone == null || phone.toString().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رقم الموبايل غير متوفر')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('رقم الموبايل غير متوفر')));
       return;
     }
     final name = _createdEmployee?['full_name_ar'] ?? '';
@@ -413,7 +414,7 @@ final List<Map<String, String>> _currencies = [
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     _getStepTitle(index),
                     style: TextStyle(
@@ -455,27 +456,27 @@ final List<Map<String, String>> _currencies = [
         padding: const EdgeInsets.all(16),
         children: [
           const Text('البيانات الشخصية', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           const Text('أدخل بيانات الموظف الأساسية', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           TextFormField(
             controller: _firstNameArCtrl,
             decoration: _inputDec('الاسم الأول بالعربي *', Icons.person),
             validator: (v) => (v == null || v.trim().length < 2) ? 'مطلوب (حرفين على الأقل)' : null,
             onChanged: (_) => _autoSuggestUsername(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _middleNameArCtrl,
             decoration: _inputDec('الاسم الأوسط (اختياري)', Icons.person_outline),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
                     TextFormField(
             controller: _lastNameArCtrl,
             decoration: _inputDec('الاسم الأخير بالعربي *', Icons.person),
-            validator: (v) => (v == null || v.trim().length < 2) ? 'مطلوب' : null,
+            validator: (v) => (v == null || v.trim().length < 2) ? context.l10n.required : null,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // ── الاسم بالإنجليزي ──
           Container(
@@ -485,7 +486,7 @@ final List<Map<String, String>> _currencies = [
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.blue[200]!),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.info_outline, color: Colors.blue, size: 18),
                 SizedBox(width: 8),
@@ -498,7 +499,7 @@ final List<Map<String, String>> _currencies = [
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _firstNameEnCtrl,
             decoration: _inputDec('الاسم الأول بالإنجليزي *', Icons.person),
@@ -509,7 +510,7 @@ final List<Map<String, String>> _currencies = [
             validator: (v) => (v == null || v.trim().length < 2) ? 'مطلوب بالإنجليزي' : null,
             onChanged: (_) => _autoSuggestUsername(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _lastNameEnCtrl,
             decoration: _inputDec('الاسم الأخير بالإنجليزي *', Icons.person),
@@ -520,30 +521,30 @@ final List<Map<String, String>> _currencies = [
             validator: (v) => (v == null || v.trim().length < 2) ? 'مطلوب بالإنجليزي' : null,
             onChanged: (_) => _autoSuggestUsername(),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           DropdownButtonFormField<String>(
             value: _gender,
             decoration: _inputDec('النوع *', Icons.wc),
-            items: const [
-              DropdownMenuItem(value: 'male', child: Text('ذكر')),
-              DropdownMenuItem(value: 'female', child: Text('أنثى')),
+            items: [
+              DropdownMenuItem(value: 'male', child: Text(context.l10n.male)),
+              DropdownMenuItem(value: 'female', child: Text(context.l10n.female)),
             ],
             onChanged: (v) => setState(() => _gender = v ?? 'male'),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _nationalIdCtrl,
             keyboardType: TextInputType.number,
             maxLength: 14,
             decoration: _inputDec('الرقم القومي * (14 رقم)', Icons.badge),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'مطلوب';
+              if (v == null || v.trim().isEmpty) return context.l10n.required;
               if (!RegExp(r'^\d{14}$').hasMatch(v.trim())) return 'يجب أن يكون 14 رقم';
               return null;
             },
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           InkWell(
             onTap: () => _pickDate(isBirth: true),
             child: InputDecorator(
@@ -554,7 +555,7 @@ final List<Map<String, String>> _currencies = [
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextFormField(
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
@@ -567,13 +568,13 @@ final List<Map<String, String>> _currencies = [
             },
             onChanged: (_) => _autoSuggestUsername(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _phone2Ctrl,
             keyboardType: TextInputType.phone,
             decoration: _inputDec('رقم موبايل آخر (اختياري)', Icons.phone),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
@@ -590,7 +591,7 @@ final List<Map<String, String>> _currencies = [
 
   Widget _buildStep2() {
     if (_loadingLookups) {
-      return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [CircularProgressIndicator(), SizedBox(height: 12), Text('جاري تحميل البيانات...')]));
+      return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [CircularProgressIndicator(), SizedBox(height: 12), Text('جاري تحميل البيانات...')]));
     }
     if (_lookupError != null) {
       return Center(
@@ -599,11 +600,11 @@ final List<Map<String, String>> _currencies = [
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 50),
-              const SizedBox(height: 12),
+              Icon(Icons.error_outline, color: Colors.red, size: 50),
+              SizedBox(height: 12),
               Text('خطأ: $_lookupError', textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(onPressed: _loadLookups, icon: const Icon(Icons.refresh), label: const Text('إعادة المحاولة')),
+              SizedBox(height: 16),
+              ElevatedButton.icon(onPressed: _loadLookups, icon: Icon(Icons.refresh), label: Text(context.l10n.retry)),
             ],
           ),
         ),
@@ -615,36 +616,36 @@ final List<Map<String, String>> _currencies = [
         padding: const EdgeInsets.all(16),
         children: [
           const Text('بيانات الوظيفة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           const Text('حدد الفرع والقسم والمسمى الوظيفي', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // Branch
           DropdownButtonFormField<int>(
             value: _selectedBranchId,
             decoration: _inputDec('الفرع *', Icons.business),
             items: _branches.map((b) => DropdownMenuItem<int>(value: b['id'] as int, child: Text(b['name_ar'] ?? ''))).toList(),
             onChanged: (v) => setState(() => _selectedBranchId = v),
-            validator: (v) => v == null ? 'مطلوب' : null,
+            validator: (v) => v == null ? context.l10n.required : null,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Department
           DropdownButtonFormField<int>(
             value: _selectedDepartmentId,
             decoration: _inputDec('القسم / الإدارة *', Icons.apartment),
             items: _departments.map((d) => DropdownMenuItem<int>(value: d['id'] as int, child: Text(d['name_ar'] ?? ''))).toList(),
             onChanged: (v) => setState(() => _selectedDepartmentId = v),
-            validator: (v) => v == null ? 'مطلوب' : null,
+            validator: (v) => v == null ? context.l10n.required : null,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Job Title
           DropdownButtonFormField<int>(
             value: _selectedJobTitleId,
             decoration: _inputDec('المسمى الوظيفي *', Icons.work),
             items: _jobTitles.map((j) => DropdownMenuItem<int>(value: j['id'] as int, child: Text(j['name_ar'] ?? ''))).toList(),
             onChanged: (v) => setState(() => _selectedJobTitleId = v),
-            validator: (v) => v == null ? 'مطلوب' : null,
+            validator: (v) => v == null ? context.l10n.required : null,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Direct Manager
           if (_employeesSimple.isNotEmpty)
             DropdownButtonFormField<int>(
@@ -657,7 +658,7 @@ final List<Map<String, String>> _currencies = [
               onChanged: (v) => setState(() => _selectedManagerId = v),
               isExpanded: true,
             ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           InkWell(
             onTap: () => _pickDate(isBirth: false),
             child: InputDecorator(
@@ -668,7 +669,7 @@ final List<Map<String, String>> _currencies = [
               ),
             ),
           ),
-          const SizedBox(height: 12),          TextFormField(
+          SizedBox(height: 12),          TextFormField(
             controller: _salaryCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: _inputDec('الراتب الأساسي (اختياري)', Icons.attach_money),
@@ -677,7 +678,7 @@ final List<Map<String, String>> _currencies = [
               return null;
             },
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: _selectedCurrency,
             decoration: _inputDec('العملة', Icons.currency_exchange),
@@ -693,13 +694,13 @@ final List<Map<String, String>> _currencies = [
               }
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.blue[200]!)),
             child: Row(children: [
-              const Icon(Icons.info_outline, color: Colors.blue, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.info_outline, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
               Expanded(child: Text('تأكد من البيانات قبل المتابعة\nعدد الفروع: ${_branches.length} | الأقسام: ${_departments.length} | المسميات: ${_jobTitles.length}', style: const TextStyle(fontSize: 12, color: Colors.blueGrey))),
             ]),
           ),
@@ -715,9 +716,9 @@ final List<Map<String, String>> _currencies = [
         padding: const EdgeInsets.all(16),
         children: [
           const Text('بيانات حساب الدخول', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kManagerColor)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           const Text('سيتم استخدام هذه البيانات لتسجيل دخول الموظف', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           TextFormField(
             controller: _usernameCtrl,
             decoration: _inputDec('اسم المستخدم (اختياري - سيتم توليده تلقائيا)', Icons.alternate_email, suffixText: 'auto'),
@@ -726,19 +727,19 @@ final List<Map<String, String>> _currencies = [
               return null;
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '💡 إذا تركته فارغاً سيتم إنشاؤه تلقائيا من رقم الموبايل: emp + آخر 7 أرقام',
             style: TextStyle(fontSize: 11, color: Colors.grey[600]),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextFormField(
             controller: _passwordCtrl,
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: 'كلمة المرور (اختياري - سيتم توليدها)',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.lock, color: kManagerColor),
+              prefixIcon: Icon(Icons.lock, color: kManagerColor),
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -747,7 +748,7 @@ final List<Map<String, String>> _currencies = [
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.auto_fix_high, color: kManagerColor),
+                    icon: Icon(Icons.auto_fix_high, color: kManagerColor),
                     tooltip: 'توليد كلمة مرور',
                     onPressed: _generateRandomPassword,
                   ),
@@ -759,22 +760,22 @@ final List<Map<String, String>> _currencies = [
               return null;
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '💡 كلمة المرور المؤقتة: Emp@ + آخر 4 أرقام الموبايل + رقم عشوائي\nمثال: Emp@5678 12 - الموظف سيغيرها عند أول دخول',
             style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.4),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextFormField(
             controller: _employeeCodeCtrl,
             decoration: _inputDec('الرقم الوظيفي (اختياري - تلقائي)', Icons.numbers),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '💡 إذا تركته فارغاً سيتم توليده تلقائيا مثل EMP00001',
             style: TextStyle(fontSize: 11, color: Colors.grey[600]),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -785,12 +786,12 @@ final List<Map<String, String>> _currencies = [
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(children: [
+                Row(children: [
                   Icon(Icons.security, color: Colors.orange, size: 20),
                   SizedBox(width: 8),
                   Text('ملاحظة أمنية', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
                 ]),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   '• سيتم إجبار الموظف على تغيير كلمة المرور عند أول دخول\n• كلمة المرور ستظهر مرة واحدة فقط في هذه الشاشة ثم في ملف PDF\n• احتفظ بملف PDF في مكان آمن وشاركه فقط مع الموظف عبر الواتساب',
                   style: TextStyle(fontSize: 12, color: Colors.orange[900], height: 1.5),
@@ -798,7 +799,7 @@ final List<Map<String, String>> _currencies = [
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           // Review Summary
           Container(
             padding: const EdgeInsets.all(14),
@@ -811,7 +812,7 @@ final List<Map<String, String>> _currencies = [
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('ملخص المراجعة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _reviewRow('الاسم:', '${_firstNameArCtrl.text} ${_middleNameArCtrl.text} ${_lastNameArCtrl.text}'.trim()),
                 _reviewRow('الموبايل (واتساب):', _phoneCtrl.text, icon: Icons.chat, iconColor: Colors.green),
                 _reviewRow('الرقم القومي:', _nationalIdCtrl.text),
@@ -836,10 +837,10 @@ final List<Map<String, String>> _currencies = [
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (_errorMessage != null) ...[
-                const Icon(Icons.error_outline, color: Colors.red, size: 60),
-                const SizedBox(height: 16),
+                Icon(Icons.error_outline, color: Colors.red, size: 60),
+                SizedBox(height: 16),
                 Text('خطأ: $_errorMessage', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () {
                     setState(() {
@@ -848,12 +849,12 @@ final List<Map<String, String>> _currencies = [
                     });
                     _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                   },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('إعادة المحاولة'),
+                  icon: Icon(Icons.refresh),
+                  label: Text(context.l10n.retry),
                 ),
               ] else ...[
                 const CircularProgressIndicator(),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 const Text('جاري إنشاء حساب الموظف...'),
               ],
             ],
@@ -879,16 +880,16 @@ final List<Map<String, String>> _currencies = [
           ),
           child: Column(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 60),
-              const SizedBox(height: 12),
+              Icon(Icons.check_circle, color: Colors.white, size: 60),
+              SizedBox(height: 12),
               const Text('تم إنشاء الموظف بنجاح! 🎉', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Text('${emp['full_name_ar']}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               Text('الرقم الوظيفي: ${emp['employee_code']}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         // Credentials Card
         Container(
           padding: const EdgeInsets.all(16),
@@ -901,21 +902,21 @@ final List<Map<String, String>> _currencies = [
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(children: [
+              Row(children: [
                 Icon(Icons.vpn_key, color: kManagerColor),
                 SizedBox(width: 8),
                 Text('بيانات الدخول', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kManagerColor)),
               ]),
-              const SizedBox(height: 12),
-              _credentialTile('اسم المستخدم', cred['username'] ?? '', Icons.alternate_email, Colors.blue),
-              const SizedBox(height: 8),
-              _credentialTile('كلمة المرور', cred['password'] ?? '', Icons.lock, Colors.red, isSensitive: true),
-              const SizedBox(height: 8),
+              SizedBox(height: 12),
+              _credentialTile(context.l10n.username, cred['username'] ?? '', Icons.alternate_email, Colors.blue),
+              SizedBox(height: 8),
+              _credentialTile(context.l10n.password, cred['password'] ?? '', Icons.lock, Colors.red, isSensitive: true),
+              SizedBox(height: 8),
               _credentialTile('رابط الدخول', cred['login_url'] ?? 'https://jssolutions-eg.com', Icons.link, Colors.green),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // PDF Status
         Container(
           padding: const EdgeInsets.all(14),
@@ -927,7 +928,7 @@ final List<Map<String, String>> _currencies = [
           child: Row(
             children: [
               Icon(_pdfPath != null ? Icons.picture_as_pdf : Icons.hourglass_top, color: _pdfPath != null ? Colors.green : Colors.orange),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -937,27 +938,27 @@ final List<Map<String, String>> _currencies = [
                   ],
                 ),
               ),
-              if (_generatingPdf) const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              if (_generatingPdf) SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
               if (_pdfPath != null)
                 IconButton(
-                  icon: const Icon(Icons.open_in_new, color: kPrimaryColor),
+                  icon: Icon(Icons.open_in_new, color: kPrimaryColor),
                   tooltip: 'فتح PDF',
                   onPressed: () => OpenFile.open(_pdfPath!),
                 ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         // Share Buttons
         const Text('مشاركة بيانات الموظف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // Share PDF button
         SizedBox(
           width: double.infinity,
           height: 56,
           child: ElevatedButton.icon(
             onPressed: (_pdfPath == null || _generatingPdf) ? null : _sharePdf,
-            icon: const Icon(Icons.share, size: 24),
+            icon: Icon(Icons.share, size: 24),
             label: const Text('مشاركة ملف PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: kPrimaryColor,
@@ -966,14 +967,14 @@ final List<Map<String, String>> _currencies = [
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // WhatsApp button
         SizedBox(
           width: double.infinity,
           height: 56,
           child: ElevatedButton.icon(
             onPressed: _openWhatsApp,
-            icon: const Icon(Icons.chat, size: 28),
+            icon: Icon(Icons.chat, size: 28),
             label: Text('إرسال واتساب إلى $phone', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF25D366),
@@ -982,14 +983,14 @@ final List<Map<String, String>> _currencies = [
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // Share PDF + WhatsApp combined
         SizedBox(
           width: double.infinity,
           height: 56,
           child: ElevatedButton.icon(
             onPressed: (_pdfPath == null || _generatingPdf) ? null : _shareViaWhatsAppWithPdf,
-            icon: const Icon(Icons.picture_as_pdf, size: 24),
+            icon: Icon(Icons.picture_as_pdf, size: 24),
             label: const Text('مشاركة PDF عبر واتساب (اختار واتساب من القائمة)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: kManagerColor,
@@ -998,11 +999,11 @@ final List<Map<String, String>> _currencies = [
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.blue[200]!)),
-          child: const Row(
+          child: Row(
             children: [
               Icon(Icons.info_outline, color: Colors.blue, size: 20),
               SizedBox(width: 8),
@@ -1010,7 +1011,7 @@ final List<Map<String, String>> _currencies = [
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         // Done button
         SizedBox(
           width: double.infinity,
@@ -1020,7 +1021,7 @@ final List<Map<String, String>> _currencies = [
               // Go back to dashboard or create another
               Navigator.pop(context, true);
             },
-            icon: const Icon(Icons.check),
+            icon: Icon(Icons.check),
             label: const Text('تم - العودة للوحة التحكم', style: TextStyle(fontSize: 16)),
             style: OutlinedButton.styleFrom(
               foregroundColor: kManagerColor,
@@ -1029,7 +1030,7 @@ final List<Map<String, String>> _currencies = [
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           height: 50,
@@ -1064,7 +1065,7 @@ final List<Map<String, String>> _currencies = [
               });
               _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
-            icon: const Icon(Icons.person_add),
+            icon: Icon(Icons.person_add),
             label: const Text('إنشاء موظف آخر', style: TextStyle(fontSize: 16)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -1074,7 +1075,7 @@ final List<Map<String, String>> _currencies = [
             ),
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: 30),
       ],
     );
   }
@@ -1090,13 +1091,13 @@ final List<Map<String, String>> _currencies = [
       child: Row(
         children: [
           Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 SelectableText(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isSensitive ? Colors.red[800] : Colors.black87)),
               ],
             ),
@@ -1111,7 +1112,7 @@ final List<Map<String, String>> _currencies = [
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          if (icon != null) ...[Icon(icon, size: 16, color: iconColor ?? Colors.grey), const SizedBox(width: 6)],
+          if (icon != null) ...[Icon(icon, size: 16, color: iconColor ?? Colors.grey), SizedBox(width: 6)],
           SizedBox(width: 90, child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey))),
           Expanded(child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
         ],
@@ -1173,15 +1174,15 @@ final List<Map<String, String>> _currencies = [
                 child: Row(
                   children: [
                     if (_currentStep > 0)
-                      Expanded(child: OutlinedButton(onPressed: _prevStep, style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52), side: const BorderSide(color: kManagerColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('رجوع'))),
-                    if (_currentStep > 0) const SizedBox(width: 12),
+                      Expanded(child: OutlinedButton(onPressed: _prevStep, style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52), side: const BorderSide(color: kManagerColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: Text(context.l10n.back))),
+                    if (_currentStep > 0) SizedBox(width: 12),
                     Expanded(
                       flex: 2,
                       child: ElevatedButton(
                         onPressed: _creating ? null : (_currentStep == 2 ? _createEmployee : _nextStep),
                         style: ElevatedButton.styleFrom(backgroundColor: kManagerColor, foregroundColor: Colors.white, minimumSize: const Size(0, 52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         child: _creating
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                             : Text(_currentStep == 2 ? 'إنشاء الموظف ✓' : 'التالي →', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),

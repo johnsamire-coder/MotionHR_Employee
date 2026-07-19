@@ -324,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (_userCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
-      setState(() => _error = 'من فضلك ادخل اسم المستخدم وكلمة المرور');
+      setState(() => _error = context.l10n.enterUsernamePassword);
       return;
     }
     setState(() {
@@ -401,10 +401,10 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        setState(() => _error = data['message'] ?? 'بيانات الدخول غير صحيحة');
+        setState(() => _error = data['message'] ?? context.l10n.loginError);
       }
     } catch (e) {
-      setState(() => _error = 'خطأ في الاتصال بالخادم');
+      setState(() => _error = context.l10n.connectionError);
     } finally {
       setState(() => _loading = false);
     }
@@ -417,14 +417,14 @@ class _LoginScreenState extends State<LoginScreen> {
           (_) => Directionality(
             textDirection: TextDirection.rtl,
             child: AlertDialog(
-              title: const Text('نسيت كلمة المرور'),
+              title: const Text(context.l10n.forgotPassword),
               content: const Text(
-                'من فضلك تواصل مع مسؤول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.',
+                context.l10n.forgotPasswordDesc,
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('حسناً'),
+                  child: const Text(context.l10n.ok),
                 ),
               ],
             ),
@@ -499,7 +499,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.next,
                           onSubmitted: (_) => _passFocus.requestFocus(),
                           decoration: InputDecoration(
-                            labelText: 'اسم المستخدم',
+                            labelText: context.l10n.username,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -517,7 +517,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.done,
                           onSubmitted: (_) => _login(),
                           decoration: InputDecoration(
-                            labelText: 'كلمة المرور',
+                            labelText: context.l10n.password,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -609,7 +609,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextButton(
                           onPressed: _showForgotPassword,
                           child: const Text(
-                            'نسيت كلمة المرور؟',
+                            context.l10n.forgotPassword,
                             style: TextStyle(color: kPrimaryColor),
                           ),
                         ),
@@ -651,11 +651,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Future<void> _changePassword() async {
     if (_newCtrl.text != _confirmCtrl.text) {
-      setState(() => _error = 'كلمة المرور غير متطابقة');
+      setState(() => _error = context.l10n.passwordMismatch);
       return;
     }
     if (_newCtrl.text.length < 6) {
-      setState(() => _error = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      setState(() => _error = context.l10n.passwordTooShort);
       return;
     }
     setState(() {
@@ -685,7 +685,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم تغيير كلمة المرور بنجاح'),
+            content: Text(context.l10n.passwordChanged),
             backgroundColor: Colors.green,
           ),
         );
@@ -732,7 +732,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('تغيير كلمة المرور'),
+          title: const Text(context.l10n.changePassword),
           backgroundColor: kPrimaryColor,
           foregroundColor: Colors.white,
           automaticallyImplyLeading: !widget.forced,
@@ -765,21 +765,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 20),
               _pf(
                 _currentCtrl,
-                'كلمة المرور الحالية',
+                context.l10n.currentPassword,
                 _obscure1,
                 () => setState(() => _obscure1 = !_obscure1),
               ),
               const SizedBox(height: 16),
               _pf(
                 _newCtrl,
-                'كلمة المرور الجديدة',
+                context.l10n.newPassword,
                 _obscure2,
                 () => setState(() => _obscure2 = !_obscure2),
               ),
               const SizedBox(height: 16),
               _pf(
                 _confirmCtrl,
-                'تأكيد كلمة المرور',
+                context.l10n.confirmPassword,
                 _obscure3,
                 () => setState(() => _obscure3 = !_obscure3),
               ),
@@ -807,7 +807,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       _loading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
-                            'حفظ',
+                            context.l10n.save,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -870,7 +870,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
           actions: [
             IconButton(
               icon: const Icon(Icons.notifications),
-              tooltip: 'الإشعارات',
+              tooltip: context.l10n.notifications,
               onPressed:
                   () => Navigator.push(
                     context,
@@ -881,7 +881,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
             ),
             IconButton(
               icon: const Icon(Icons.lock),
-              tooltip: 'تغيير كلمة المرور',
+              tooltip: context.l10n.changePassword,
               onPressed:
                   () => Navigator.push(
                     context,
@@ -892,7 +892,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
             ),
             IconButton(
               icon: const Icon(Icons.logout),
-              tooltip: 'تسجيل الخروج',
+              tooltip: context.l10n.logout,
               onPressed: _logout,
             ),
           ],
@@ -904,7 +904,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: kPrimaryColor,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.home),
             BottomNavigationBarItem(
               icon: Icon(Icons.beach_access),
               label: 'إجازات',
@@ -915,7 +915,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.list_alt),
-              label: 'طلباتي',
+              label: context.l10n.myRequests,
             ),
           ],
         ),
@@ -1093,7 +1093,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _isEveningMessage ? 'مع السلامة' : 'أهلاً بيك',
+                    _isEveningMessage ? context.l10n.goodbye : 'أهلاً بيك',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -1249,7 +1249,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'التاريخ',
+                          context.l10n.date,
                           style: TextStyle(color: Colors.white60, fontSize: 12),
                         ),
                         Text(
@@ -1266,7 +1266,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         const Text(
-                          'الوقت',
+                          context.l10n.time,
                           style: TextStyle(color: Colors.white60, fontSize: 12),
                         ),
                         Text(
@@ -1330,7 +1330,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       const SizedBox(width: 8),
                       Text(
                         canCheckOut
-                            ? 'الشيفت خلص، تقدر تنصرف'
+                            ? context.l10n.shiftEnded
                             : 'باقي على الانصراف',
                         style: TextStyle(
                           fontSize: 16,
@@ -1411,7 +1411,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   Icon(Icons.check_circle, color: Colors.green, size: 60),
                   SizedBox(height: 10),
                   Text(
-                    'تم تسجيل الحضور والانصراف',
+                    context.l10n.attendanceDone,
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.green,
@@ -1454,7 +1454,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            checkedIn ? 'تم الحضور ✓' : 'تسجيل الحضور',
+                            checkedIn ? 'تم الحضور ✓' : context.l10n.checkIn,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -1502,9 +1502,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                           const SizedBox(height: 6),
                           Text(
                             !checkedIn
-                                ? 'تسجيل الانصراف'
+                                ? context.l10n.checkOut
                                 : (canCheckOut || hasEarlyLeave
-                                    ? 'تسجيل الانصراف'
+                                    ? context.l10n.checkOut
                                     : 'مقفول'),
                             style: const TextStyle(
                               fontSize: 15,
@@ -1535,7 +1535,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                   child: const Icon(Icons.login, color: Colors.green),
                 ),
-                title: const Text('وقت الحضور'),
+                title: const Text(context.l10n.checkInTime),
                 subtitle: Text(
                   '${_status?['check_in_time']}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -1558,7 +1558,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                   child: const Icon(Icons.logout, color: Colors.orange),
                 ),
-                title: const Text('وقت الانصراف'),
+                title: const Text(context.l10n.checkOutTime),
                 subtitle: Text(
                   '${_status?['check_out_time']}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -1576,7 +1576,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
               icon: const Icon(Icons.history),
               label: const Text(
-                'سجل الأيام السابقة',
+                context.l10n.history,
                 style: TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
@@ -1840,7 +1840,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم')));
+        ).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done)));
         if (data['success'] == true) Navigator.pop(context);
       }
     } catch (e) {
@@ -1860,7 +1860,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('طلب إجازة'),
+          title: const Text(context.l10n.requestLeave),
           backgroundColor: kPrimaryColor,
           foregroundColor: Colors.white,
         ),
@@ -1870,7 +1870,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
             children: [
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
-                  labelText: 'نوع الإجازة',
+                  labelText: context.l10n.leaveType,
                   border: OutlineInputBorder(),
                 ),
                 value: _selectedValue,
@@ -1911,7 +1911,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 readOnly: true,
                 onTap: () => _pickDate(_startCtrl),
                 decoration: const InputDecoration(
-                  labelText: 'من تاريخ',
+                  labelText: context.l10n.fromDate,
                   border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
@@ -1922,7 +1922,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 readOnly: true,
                 onTap: () => _pickDate(_endCtrl),
                 decoration: const InputDecoration(
-                  labelText: 'إلى تاريخ',
+                  labelText: context.l10n.toDate,
                   border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
@@ -1932,7 +1932,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 controller: _reasonCtrl,
                 maxLines: 3,
                 decoration: const InputDecoration(
-                  labelText: 'السبب',
+                  labelText: context.l10n.reason,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -2049,7 +2049,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم')));
+        ).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done)));
         if (data['success'] == true) {
           _titleCtrl.clear();
           _descCtrl.clear();
@@ -2082,7 +2082,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           const SizedBox(height: 20),
           DropdownButtonFormField<String>(
             decoration: const InputDecoration(
-              labelText: 'نوع الطلب',
+              labelText: context.l10n.requestType,
               border: OutlineInputBorder(),
             ),
             value: _selectedValue,
@@ -2123,7 +2123,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           TextField(
             controller: _titleCtrl,
             decoration: const InputDecoration(
-              labelText: 'عنوان الطلب',
+              labelText: context.l10n.requestTitle,
               border: OutlineInputBorder(),
             ),
           ),
@@ -2132,7 +2132,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
             controller: _descCtrl,
             maxLines: 4,
             decoration: const InputDecoration(
-              labelText: 'التفاصيل',
+              labelText: context.l10n.requestDetails,
               border: OutlineInputBorder(),
             ),
           ),
@@ -2149,7 +2149,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
               child:
                   _submitting
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('إرسال', style: TextStyle(fontSize: 18)),
+                      : const Text(context.l10n.send, style: TextStyle(fontSize: 18)),
             ),
           ),
         ],
@@ -2170,7 +2170,7 @@ class MyItemsScreen extends StatelessWidget {
           const TabBar(
             labelColor: kPrimaryColor,
             indicatorColor: kPrimaryColor,
-            tabs: [Tab(text: 'طلباتي'), Tab(text: 'إجازاتي')],
+            tabs: [Tab(text: context.l10n.myRequests), Tab(text: context.l10n.myLeaves)],
           ),
           Expanded(
             child: TabBarView(
@@ -2225,7 +2225,7 @@ class _MyListState extends State<_MyList> {
     if (s.contains('موافق') || s.toLowerCase().contains('approved')) {
       return Colors.green;
     }
-    if (s.contains('رفض') || s.toLowerCase().contains('reject')) {
+    if (s.contains(context.l10n.rejectMission) || s.toLowerCase().contains('reject')) {
       return Colors.red;
     }
     return Colors.orange;
@@ -2234,7 +2234,7 @@ class _MyListState extends State<_MyList> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_items.isEmpty) return const Center(child: Text('لا يوجد طلبات'));
+    if (_items.isEmpty) return const Center(child: Text(context.l10n.noRequests));
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
@@ -2469,7 +2469,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'لا توجد إشعارات',
+                        context.l10n.noNotifications,
                         style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
                     ],
@@ -2655,7 +2655,7 @@ class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['message'] ?? 'تم'),
+            content: Text(data['message'] ?? context.l10n.done),
             backgroundColor: data['success'] == true ? Colors.green : Colors.red,
           ),
         );
@@ -2968,7 +2968,7 @@ class _ManagerShellState extends State<ManagerShell> {
           actions: [
             IconButton(
               icon: const Icon(Icons.notifications),
-              tooltip: 'الإشعارات',
+              tooltip: context.l10n.notifications,
               onPressed:
                   () => Navigator.push(
                     context,
@@ -2989,11 +2989,11 @@ class _ManagerShellState extends State<ManagerShell> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.dashboard),
-              label: 'الرئيسية',
+              label: context.l10n.home,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.pending_actions),
-              label: 'الطلبات',
+              label: context.l10n.requests,
             ),
             BottomNavigationBarItem(icon: Icon(Icons.people), label: 'الحضور'),
             BottomNavigationBarItem(
@@ -3138,7 +3138,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           const Padding(
             padding: EdgeInsets.only(bottom: 16),
             child: Text(
-              'لوحة التحكم',
+              context.l10n.dashboard,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),
@@ -3251,7 +3251,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم')));
+        ).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done)));
       }
       _load();
     } catch (e) {
@@ -3318,7 +3318,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () => _action(item, 'reject'),
                           icon: const Icon(Icons.close),
-                          label: const Text('رفض'),
+                          label: const Text(context.l10n.rejectMission),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -3471,7 +3471,7 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
               ElevatedButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh),
-                label: const Text('تحديث'),
+                label: const Text(context.l10n.refresh),
               ),
             ],
           ),

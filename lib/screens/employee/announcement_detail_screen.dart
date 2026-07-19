@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 const kPrimaryColor = Color(0xFF6C63FF);
 const kBaseUrl = 'https://jssolutions-eg.com';
@@ -106,7 +107,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       size: 32,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text(
                     ann['title'] ?? '',
                     style: const TextStyle(
@@ -115,7 +116,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -136,7 +137,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Details
             Card(
@@ -151,8 +152,8 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       'تفاصيل الإعلان',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    const Divider(height: 20),
-                    _buildRow(Icons.category, 'النوع', ann['type_display'] ?? ''),
+                    Divider(height: 20),
+                    _buildRow(Icons.category, context.l10n.gender, ann['type_display'] ?? ''),
                     _buildRow(Icons.schedule, 'تاريخ النشر', ann['publish_at'] ?? ''),
                     if (ann['expires_at'] != null)
                       _buildRow(Icons.event_busy, 'ينتهي في', ann['expires_at']),
@@ -163,7 +164,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Message
             Card(
@@ -174,7 +175,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.message, color: kPrimaryColor, size: 20),
                         SizedBox(width: 8),
@@ -184,7 +185,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 20),
+                    Divider(height: 20),
                     Text(
                       ann['message'] ?? '',
                       style: const TextStyle(fontSize: 15, height: 1.6),
@@ -194,7 +195,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Confirmation
             if (requiresConfirmation)
@@ -211,7 +212,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         color: _confirmed ? Colors.green : Colors.orange,
                         size: 32,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         _confirmed
                             ? 'تم تأكيد القراءة'
@@ -222,12 +223,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         ),
                       ),
                       if (!_confirmed) ...[
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () {
                             setState(() => _confirmed = true);
                           },
-                          icon: const Icon(Icons.check),
+                          icon: Icon(Icons.check),
                           label: const Text('تأكيد القراءة'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPrimaryColor,
@@ -240,7 +241,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                 ),
               ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
           ],
         ),
       ),
@@ -253,7 +254,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
       child: Row(
         children: [
           Icon(icon, size: 18, color: Colors.grey[600]),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 14)),
           Expanded(
             child: Text(

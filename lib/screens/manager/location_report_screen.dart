@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../services/location_tracking_service.dart';
 import '../../services/employee_management_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class LocationReportScreen extends StatefulWidget {
   const LocationReportScreen({super.key});
@@ -40,7 +41,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
   Future<void> _loadReport() async {
     if (_selectedEmployee == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('اختر موظفاً أولاً')),
+        SnackBar(content: Text('اختر موظفاً أولاً')),
       );
       return;
     }
@@ -113,7 +114,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             labelText: 'اختر الموظف',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10)),
-                            prefixIcon: const Icon(Icons.person),
+                            prefixIcon: Icon(Icons.person),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 12),
                           ),
@@ -130,7 +131,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           onChanged: (val) =>
                               setState(() => _selectedEmployee = val),
                         ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   // اختيار التاريخ
                   Row(
                     children: [
@@ -146,9 +147,9 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.calendar_today,
+                                Icon(Icons.calendar_today,
                                     size: 18, color: Color(0xFF4A148C)),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   _formatDate(_selectedDate),
                                   style: const TextStyle(fontSize: 14),
@@ -158,11 +159,11 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       ElevatedButton.icon(
                         onPressed: _loadingReport ? null : _loadReport,
-                        icon: const Icon(Icons.search, color: Colors.white),
-                        label: const Text('بحث',
+                        icon: Icon(Icons.search, color: Colors.white),
+                        label: Text(context.l10n.search,
                             style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A148C),
@@ -181,27 +182,27 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
             // النتائج
             Expanded(
               child: _loadingReport
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator())
                   : _error != null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline,
+                              Icon(Icons.error_outline,
                                   size: 64, color: Colors.red),
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16),
                               Text(_error!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.red)),
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16),
                               ElevatedButton(
                                   onPressed: _loadReport,
-                                  child: const Text('إعادة المحاولة')),
+                                  child: Text(context.l10n.retry)),
                             ],
                           ),
                         )
                       : _reportData == null
-                          ? const Center(
+                          ? Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -238,8 +239,8 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.person, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.person, color: Colors.white, size: 20),
+              SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +276,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
         // قائمة النقاط
         Expanded(
           child: points.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -326,7 +327,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           // التفاصيل
                           Expanded(
                             child: Column(
@@ -341,12 +342,12 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Icon(Icons.access_time,
+                                    Icon(Icons.access_time,
                                         size: 12, color: Colors.grey),
-                                    const SizedBox(width: 4),
+                                    SizedBox(width: 4),
                                     Text(
                                       point['recorded_at'] ?? '',
                                       style: TextStyle(
@@ -359,7 +360,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             ),
                           ),
                           // أيقونة موقع
-                          const Icon(Icons.location_on,
+                          Icon(Icons.location_on,
                               color: Color(0xFF4A148C), size: 20),
                         ],
                       ),

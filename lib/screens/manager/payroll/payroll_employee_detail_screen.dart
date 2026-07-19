@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/payroll_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class PayrollEmployeeDetailScreen extends StatefulWidget {
   final int employeeId;
@@ -31,9 +32,9 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
     return Scaffold(
       appBar: AppBar(title: Text(widget.employeeName)),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _data == null
-              ? const Center(child: Text('لا توجد بيانات'))
+              ? Center(child: Text(context.l10n.noData))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: [
@@ -45,19 +46,19 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('الملخص المالي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            const Divider(),
-                            _row('الراتب الأساسي', '${_data?['basic_salary'] ?? 0} ج'),
+                            Divider(),
+                            _row(context.l10n.basicSalary, '${_data?['basic_salary'] ?? 0} ج'),
                             _row('خصم التأخير', '${_data?['late_deduction'] ?? 0} ج', color: Colors.red),
                             _row('خصم الغياب', '${_data?['absence_deduction'] ?? 0} ج', color: Colors.red),
                             _row('إجمالي الخصومات', '${_data?['total_deductions'] ?? 0} ج', color: Colors.red),
                             _row('بونص Overtime', '${_data?['overtime_bonus'] ?? 0} ج', color: Colors.blue),
-                            const Divider(),
+                            Divider(),
                             _row('صافي الراتب', '${_data?['net_salary'] ?? 0} ج', color: Colors.green, bold: true),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(14),
@@ -65,7 +66,7 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('ملخص الحضور', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            const Divider(),
+                            Divider(),
                             _row('أيام الحضور', '${_data?['attended_days'] ?? 0}'),
                             _row('أيام الحاضر (present)', '${_data?['present_days'] ?? 0}'),
                             _row('أيام التأخير', '${_data?['late_days'] ?? 0}', color: Colors.orange),
@@ -79,7 +80,7 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
                       ),
                     ),
                     if (daily.isNotEmpty) ...[
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Text('التفاصيل اليومية', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),

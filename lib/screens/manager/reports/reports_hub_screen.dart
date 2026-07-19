@@ -6,6 +6,7 @@ import 'requests_report_screen.dart';
 import 'leaves_report_screen.dart';
 import 'work_hours_report_screen.dart';
 import '../location_report_screen.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 
 class ReportsHubScreen extends StatelessWidget {
@@ -14,18 +15,18 @@ class ReportsHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('التقارير')),
+      appBar: AppBar(title: Text(context.l10n.reports)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Card(
+          Card(
             child: ListTile(
               leading: Icon(Icons.info_outline),
               title: Text('تقارير المدير'),
               subtitle: Text('الحضور - التأخير - الغياب - الطلبات - الإجازات - ساعات العمل'),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _card(context, Icons.calendar_month, 'تقرير الحضور الشهري', 'عدد أيام الحضور لكل موظف', const AttendanceReportScreen()),
           _card(context, Icons.alarm, 'تقرير التأخير', 'تفاصيل أيام التأخير', const LateReportScreen()),
           _card(context, Icons.person_off, 'تقرير الغياب', 'أيام الغياب الشهرية', const AbsenceReportScreen()),
@@ -45,7 +46,7 @@ class ReportsHubScreen extends StatelessWidget {
         leading: CircleAvatar(child: Icon(icon)),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => screen)),
       ),
     );

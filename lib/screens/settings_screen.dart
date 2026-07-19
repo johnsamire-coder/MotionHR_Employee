@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -36,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text(isAr ? 'الإعدادات' : 'Settings'),
+        title: Text(isAr ? context.l10n.settings : 'Settings'),
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
@@ -64,18 +65,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           color: const Color(0xFF1976D2).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.language, color: Color(0xFF1976D2)),
+                        child: Icon(Icons.language, color: Color(0xFF1976D2)),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isAr ? 'اللغة' : 'Language',
+                              isAr ? context.l10n.language : 'Language',
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2),
                             Text(
                               isAr ? 'اختر لغة التطبيق' : 'Choose app language',
                               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
@@ -86,17 +87,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1),
                 RadioListTile<String>(
                   value: 'ar',
                   groupValue: _currentLang,
                   onChanged: (v) => _changeLang(v!),
                   activeColor: const Color(0xFF1976D2),
-                  title: const Row(
+                  title: Row(
                     children: [
                       Text('🇸🇦', style: TextStyle(fontSize: 20)),
                       SizedBox(width: 8),
-                      Text('العربية', style: TextStyle(fontSize: 15)),
+                      Text(context.l10n.arabic, style: TextStyle(fontSize: 15)),
                     ],
                   ),
                 ),
@@ -105,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   groupValue: _currentLang,
                   onChanged: (v) => _changeLang(v!),
                   activeColor: const Color(0xFF1976D2),
-                  title: const Row(
+                  title: Row(
                     children: [
                       Text('🇬🇧', style: TextStyle(fontSize: 20)),
                       SizedBox(width: 8),
@@ -117,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // ── معلومات التطبيق ──
           Container(
@@ -139,9 +140,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Colors.purple.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.info, color: Colors.purple),
+                      child: Icon(Icons.info, color: Colors.purple),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             isAr ? 'حول التطبيق' : 'About',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           const Text('MotionHR v1.0.0', style: TextStyle(fontSize: 13, color: Colors.grey)),
                         ],
                       ),

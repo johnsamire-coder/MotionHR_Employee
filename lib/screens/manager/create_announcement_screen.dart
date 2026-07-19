@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 const kPrimaryColor = Color(0xFF6C63FF);
 const kBaseUrl = 'https://jssolutions-eg.com';
@@ -98,7 +99,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('خطأ في الاتصال'),
           backgroundColor: Colors.red,
         ),
@@ -142,10 +143,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         'معلومات الإعلان',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       TextFormField(
                         controller: _titleCtrl,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'عنوان الإعلان *',
                           prefixIcon: Icon(Icons.title),
                           border: OutlineInputBorder(),
@@ -153,11 +154,11 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         validator: (v) =>
                             (v == null || v.trim().isEmpty) ? 'العنوان مطلوب' : null,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       TextFormField(
                         controller: _messageCtrl,
                         maxLines: 5,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'محتوى الإعلان *',
                           prefixIcon: Icon(Icons.message),
                           border: OutlineInputBorder(),
@@ -170,7 +171,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Card(
                 elevation: 1,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -183,10 +184,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         'إعدادات الإعلان',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         value: _type,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'نوع الإعلان',
                           prefixIcon: Icon(Icons.category),
                           border: OutlineInputBorder(),
@@ -197,10 +198,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         )).toList(),
                         onChanged: (v) => setState(() => _type = v!),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         value: _priority,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'الأولوية',
                           prefixIcon: Icon(Icons.flag),
                           border: OutlineInputBorder(),
@@ -211,10 +212,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         )).toList(),
                         onChanged: (v) => setState(() => _priority = v!),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         value: _targetType,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'المستهدفون',
                           prefixIcon: Icon(Icons.people),
                           border: OutlineInputBorder(),
@@ -229,7 +230,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Card(
                 elevation: 1,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -240,16 +241,16 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                       SwitchListTile(
                         title: const Text('إرسال إشعار Push'),
                         subtitle: const Text('إشعار فوري على جوال الموظفين'),
-                        secondary: const Icon(Icons.notifications_active),
+                        secondary: Icon(Icons.notifications_active),
                         value: _sendPush,
                         activeColor: kPrimaryColor,
                         onChanged: (v) => setState(() => _sendPush = v),
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1),
                       SwitchListTile(
                         title: const Text('يتطلب تأكيد القراءة'),
                         subtitle: const Text('الموظف لازم يضغط "تأكيد القراءة"'),
-                        secondary: const Icon(Icons.check_circle_outline),
+                        secondary: Icon(Icons.check_circle_outline),
                         value: _requiresConfirmation,
                         activeColor: kPrimaryColor,
                         onChanged: (v) => setState(() => _requiresConfirmation = v),
@@ -258,11 +259,11 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _loading ? null : _submit,
                 icon: _loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
@@ -270,7 +271,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.send),
+                    : Icon(Icons.send),
                 label: Text(_loading ? 'جاري النشر...' : 'نشر الإعلان'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimaryColor,
@@ -281,7 +282,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
           ),
         ),

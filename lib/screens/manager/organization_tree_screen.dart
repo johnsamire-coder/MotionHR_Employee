@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/employee_management_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class OrganizationTreeScreen extends StatefulWidget {
   const OrganizationTreeScreen({super.key});
@@ -38,23 +39,23 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF4A148C),
           foregroundColor: Colors.white,
-          title: const Text('الهيكل التنظيمي', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('الهيكل التنظيمي', style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
-            IconButton(onPressed: _loadTree, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _loadTree, icon: Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                        const SizedBox(height: 16),
+                        Icon(Icons.error_outline, size: 64, color: Colors.red),
+                        SizedBox(height: 16),
                         Text(_error!, textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        ElevatedButton(onPressed: _loadTree, child: const Text('إعادة المحاولة')),
+                        SizedBox(height: 16),
+                        ElevatedButton(onPressed: _loadTree, child: Text(context.l10n.retry)),
                       ],
                     ),
                   )
@@ -66,7 +67,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
   Widget _buildTree() {
     final branches = _treeData?['branches'] as List? ?? [];
     if (branches.isEmpty) {
-      return const Center(child: Text('لا توجد بيانات'));
+      return Center(child: Text(context.l10n.noData));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(12),
@@ -90,7 +91,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
               color: const Color(0xFF4A148C).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.business, color: Color(0xFF4A148C)),
+            child: Icon(Icons.business, color: Color(0xFF4A148C)),
           ),
           title: Text(
             branch['name'] ?? '',
@@ -126,7 +127,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
               color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.apartment, color: Colors.blue, size: 20),
+            child: Icon(Icons.apartment, color: Colors.blue, size: 20),
           ),
           title: Text(
             dept['name'] ?? '',
@@ -160,7 +161,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
           leading: CircleAvatar(
             radius: 18,
             backgroundColor: Colors.green.withValues(alpha: 0.15),
-            child: const Icon(Icons.manage_accounts, color: Colors.green, size: 18),
+            child: Icon(Icons.manage_accounts, color: Colors.green, size: 18),
           ),
           title: Text(
             manager['name'] ?? '',
@@ -174,7 +175,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
               ? [
                   Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Text('لا يوجد موظفون', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    child: Text(context.l10n.noEmployees, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                   )
                 ]
               : [
@@ -200,9 +201,9 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
           CircleAvatar(
             radius: 14,
             backgroundColor: Colors.orange.withValues(alpha: 0.15),
-            child: const Icon(Icons.person, color: Colors.orange, size: 16),
+            child: Icon(Icons.person, color: Colors.orange, size: 16),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +228,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              emp['status'] == 'active' ? 'نشط' : 'غير نشط',
+              emp['status'] == 'active' ? context.l10n.active : 'غير نشط',
               style: TextStyle(
                 fontSize: 10,
                 color: emp['status'] == 'active' ? Colors.green : Colors.grey,

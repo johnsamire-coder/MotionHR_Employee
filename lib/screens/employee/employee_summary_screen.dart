@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeSummaryScreen extends StatefulWidget {
   final int? employeeId;
@@ -68,12 +69,12 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
         children: [
           Row(children: [
             Icon(icon, size: 18, color: color),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Expanded(
               child: Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
           ]),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           FittedBox(fit: BoxFit.scaleDown, child: Text('$value', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color))),
         ],
       ),
@@ -104,7 +105,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
             ),
             child: Row(children: [
               Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
             ]),
           ),
@@ -134,7 +135,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -165,19 +166,19 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           actions: [
-            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: const Text('إعادة المحاولة')),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(onPressed: _load, icon: Icon(Icons.refresh), label: Text(context.l10n.retry)),
                     ]))
                 : RefreshIndicator(
                     onRefresh: _load,
@@ -191,13 +192,13 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(children: [
-                            const Icon(Icons.calendar_month, color: Colors.white),
-                            const SizedBox(width: 8),
+                            Icon(Icons.calendar_month, color: Colors.white),
+                            SizedBox(width: 8),
                             Text('شهر: ${_summary!['month'] ?? ''}',
                                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                           ]),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
 
                         // الحضور
                         _section('إحصائيات الحضور', Icons.event_available, const Color(0xFF388E3C),
@@ -216,9 +217,9 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                                 _statBox('إجازة', _summary!['attendance']['on_leave'], Icons.beach_access, const Color(0xFF1976D2)),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            const Divider(),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 8),
+                            Divider(),
+                            SizedBox(height: 4),
                             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                               Column(children: [
                                 Text('${_summary!['attendance']['total_work_hours']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -237,9 +238,9 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                         ),
 
                         // رصيد الإجازات
-                        _section('رصيد الإجازات', Icons.beach_access, const Color(0xFF1976D2),
+                        _section(context.l10n.leaveBalance, Icons.beach_access, const Color(0xFF1976D2),
                           ((_summary!['leave_balances'] as List?)?.isEmpty ?? true)
-                              ? const Padding(padding: EdgeInsets.all(8), child: Text('لا يوجد رصيد إجازات'))
+                              ? Padding(padding: EdgeInsets.all(8), child: Text('لا يوجد رصيد إجازات'))
                               : Column(children: [
                                   for (var b in (_summary!['leave_balances'] as List))
                                     _leaveBalanceRow(b as Map<String, dynamic>)
@@ -247,7 +248,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                         ),
 
                         // الطلبات
-                        _section('الطلبات', Icons.assignment, const Color(0xFFE65100),
+                        _section(context.l10n.requests, Icons.assignment, const Color(0xFFE65100),
                           GridView.count(
                             crossAxisCount: 4,
                             shrinkWrap: true,
@@ -259,7 +260,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                               _statBox('الكل', _summary!['requests']['total'], Icons.list, const Color(0xFF616161)),
                               _statBox('معلق', _summary!['requests']['pending'], Icons.schedule, const Color(0xFFFF9800)),
                               _statBox('موافق', _summary!['requests']['approved'], Icons.check, const Color(0xFF388E3C)),
-                              _statBox('مرفوض', _summary!['requests']['rejected'], Icons.close, const Color(0xFFD32F2F)),
+                              _statBox(context.l10n.rejected, _summary!['requests']['rejected'], Icons.close, const Color(0xFFD32F2F)),
                             ],
                           ),
                         ),
@@ -277,7 +278,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                               _statBox('الكل', _summary!['leaves']['total'], Icons.list, const Color(0xFF616161)),
                               _statBox('معلق', _summary!['leaves']['pending'], Icons.schedule, const Color(0xFFFF9800)),
                               _statBox('موافق', _summary!['leaves']['approved'], Icons.check, const Color(0xFF388E3C)),
-                              _statBox('مرفوض', _summary!['leaves']['rejected'], Icons.close, const Color(0xFFD32F2F)),
+                              _statBox(context.l10n.rejected, _summary!['leaves']['rejected'], Icons.close, const Color(0xFFD32F2F)),
                             ],
                           ),
                         ),

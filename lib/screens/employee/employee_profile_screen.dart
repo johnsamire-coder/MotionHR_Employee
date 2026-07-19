@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'employee_movements_screen.dart';
 import 'employee_documents_screen.dart';
 import 'employee_summary_screen.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
@@ -61,7 +62,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 18, color: Colors.grey[600]),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
           ],
           SizedBox(
             width: 120,
@@ -101,7 +102,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             ),
             child: Row(children: [
               Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
             ]),
           ),
@@ -138,17 +139,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               ? NetworkImage('https://jssolutions-eg.com$photo')
               : null,
           child: (photo == null || photo.toString().isEmpty)
-              ? const Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
+              ? Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
               : null,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(name,
           style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(jobTitle,
           style: const TextStyle(color: Colors.white70, fontSize: 14)),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
@@ -171,24 +172,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF1976D2),
           foregroundColor: Colors.white,
-          title: const Text('الملف الشخصي', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(context.l10n.profile, style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
-            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _load,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('إعادة المحاولة'),
+                        icon: Icon(Icons.refresh),
+                        label: Text(context.l10n.retry),
                       ),
                     ]))
                 : RefreshIndicator(
@@ -199,29 +200,29 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         padding: const EdgeInsets.all(12),
                         child: Column(children: [
                           _section('البيانات الشخصية', Icons.person, const Color(0xFF1976D2), [
-                            _infoRow('الرقم القومي', _profile!['national_id'], icon: Icons.badge),
-                            _infoRow('تاريخ الميلاد', _profile!['birth_date'], icon: Icons.cake),
-                            _infoRow('النوع', _profile!['gender']),
-                            _infoRow('الحالة', _profile!['marital_status']),
+                            _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
+                            _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
+                            _infoRow(context.l10n.gender, _profile!['gender']),
+                            _infoRow(context.l10n.status, _profile!['marital_status']),
                             _infoRow('الديانة', _profile!['religion']),
                             _infoRow('الجنسية', _profile!['nationality']),
                           ]),
                           _section('التواصل', Icons.phone, const Color(0xFF388E3C), [
-                            _infoRow('الموبايل', _profile!['phone'], icon: Icons.phone_android),
+                            _infoRow(context.l10n.phone, _profile!['phone'], icon: Icons.phone_android),
                             _infoRow('موبايل آخر', _profile!['phone2']),
                             _infoRow('البريد', _profile!['email'], icon: Icons.email),
-                            _infoRow('العنوان', _profile!['address'], icon: Icons.location_on),
+                            _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
                             _infoRow('المدينة', _profile!['city']),
                           ]),
                           _section('البيانات الوظيفية', Icons.work, const Color(0xFFE65100), [
-                            _infoRow('الفرع', _profile!['branch'], icon: Icons.business),
-                            _infoRow('الإدارة', _profile!['department']),
+                            _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
+                            _infoRow(context.l10n.department, _profile!['department']),
                             _infoRow('المسمى', _profile!['job_title']),
                             _infoRow('المدير', _profile!['direct_manager']?['name']),
-                            _infoRow('تاريخ التعيين', _profile!['hire_date'], icon: Icons.calendar_today),
+                            _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
                             _infoRow('نوع العقد', _profile!['contract_type']),
                             _infoRow('انتهاء العقد', _profile!['contract_end_date']),
-                            _infoRow('الحالة', _profile!['status']),
+                            _infoRow(context.l10n.status, _profile!['status']),
                           ]),
                           _section('البيانات البنكية', Icons.account_balance, const Color(0xFF6A1B9A), [
                             _infoRow('البنك', _profile!['bank_name']),
@@ -240,7 +241,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 context,
                                 MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen()),
                               ),
-                              icon: const Icon(Icons.analytics, color: Colors.white),
+                              icon: Icon(Icons.analytics, color: Colors.white),
                               label: const Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF6A1B9A),
@@ -249,7 +250,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
@@ -257,7 +258,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 context,
                                 MaterialPageRoute(builder: (_) => const EmployeeDocumentsScreen()),
                               ),
-                              icon: const Icon(Icons.folder_open, color: Colors.white),
+                              icon: Icon(Icons.folder_open, color: Colors.white),
                               label: const Text('المستندات', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF388E3C),
@@ -266,7 +267,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
@@ -274,7 +275,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 context,
                                 MaterialPageRoute(builder: (_) => const EmployeeMovementsScreen()),
                               ),
-                              icon: const Icon(Icons.history, color: Colors.white),
+                              icon: Icon(Icons.history, color: Colors.white),
                               label: const Text('تاريخ الموظف', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE65100),
@@ -285,7 +286,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           ),
                         ]),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                     ]),
                   ),
       ),

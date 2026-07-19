@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class LeavesReportScreen extends StatefulWidget {
   const LeavesReportScreen({super.key});
@@ -25,11 +26,11 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير الإجازات'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        title: Text('تقرير الإجازات'),
+        actions: [IconButton(onPressed: _load, icon: Icon(Icons.refresh))],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
@@ -39,13 +40,13 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                     child: Column(
                       children: [
                         Text('إجمالي الإجازات: ${_data?['total_leaves'] ?? 0}'),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text('موافق: ${_data?['approved'] ?? 0} | مرفوض: ${_data?['rejected'] ?? 0} | معلق: ${_data?['pending'] ?? 0}'),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ...employees.map<Widget>((e) {
                   final item = Map<String, dynamic>.from(e as Map);
                   final lvs = (item['leaves'] as List?) ?? const [];

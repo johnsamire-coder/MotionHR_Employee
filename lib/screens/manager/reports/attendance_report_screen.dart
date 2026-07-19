@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class AttendanceReportScreen extends StatefulWidget {
   const AttendanceReportScreen({super.key});
@@ -30,26 +31,26 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير الحضور'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        title: Text(context.l10n.attendanceReport),
+        actions: [IconButton(onPressed: _load, icon: Icon(Icons.refresh))],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
               child: employees.isEmpty
-                  ? ListView(children: const [SizedBox(height: 120), Center(child: Text('لا توجد بيانات'))])
+                  ? ListView(children: [SizedBox(height: 120), Center(child: Text(context.l10n.noData))])
                   : ListView(
                       padding: const EdgeInsets.all(12),
                       children: [
                         Card(
                           child: ListTile(
-                            leading: const Icon(Icons.calendar_month),
+                            leading: Icon(Icons.calendar_month),
                             title: Text('الشهر: ${_data?['month'] ?? '-'} / ${_data?['year'] ?? '-'}'),
                             subtitle: Text('عدد الموظفين: ${_data?['total_employees'] ?? 0}'),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         ...employees.map<Widget>((e) {
                           final item = Map<String, dynamic>.from(e as Map);
                           return Card(

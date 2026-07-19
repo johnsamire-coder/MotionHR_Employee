@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeDocumentsScreen extends StatefulWidget {
   const EmployeeDocumentsScreen({super.key});
@@ -60,7 +61,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر فتح الملف')),
+          SnackBar(content: Text('تعذر فتح الملف')),
         );
       }
     }
@@ -106,22 +107,22 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
           foregroundColor: Colors.white,
           title: const Text('المستندات', style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
-            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _load,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('إعادة المحاولة'),
+                        icon: Icon(Icons.refresh),
+                        label: Text(context.l10n.retry),
                       ),
                     ]))
                 : RefreshIndicator(
@@ -134,7 +135,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
                           color: Colors.amber[50],
                           child: Row(children: [
                             Icon(Icons.warning_amber, color: Colors.orange[800]),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 '$expiredCount منتهي • $soonCount ينتهي قريباً',
@@ -145,7 +146,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
                         ),
                       Expanded(
                         child: _documents.isEmpty
-                            ? const Center(child: Text('لا توجد مستندات'))
+                            ? Center(child: Text('لا توجد مستندات'))
                             : ListView.builder(
                                 padding: const EdgeInsets.all(12),
                                 itemCount: _documents.length,
@@ -180,19 +181,19 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
                                       subtitle: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 4),
+                                          SizedBox(height: 4),
                                           Text(doc['document_type'] ?? '', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
                                           if (doc['expiry_date'] != null) ...[
-                                            const SizedBox(height: 4),
+                                            SizedBox(height: 4),
                                             Row(children: [
                                               Icon(Icons.event, size: 12, color: Colors.grey[600]),
-                                              const SizedBox(width: 4),
+                                              SizedBox(width: 4),
                                               Text('ينتهي: ${doc['expiry_date']}',
                                                   style: TextStyle(fontSize: 11, color: Colors.grey[600])),
                                             ]),
                                           ],
                                           if (label != null) ...[
-                                            const SizedBox(height: 6),
+                                            SizedBox(height: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                               decoration: BoxDecoration(

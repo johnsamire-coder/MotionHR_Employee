@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final String title;
@@ -44,7 +45,7 @@ class EmptyStateWidget extends StatelessWidget {
                   color: color,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // العنوان
               Text(
@@ -56,7 +57,7 @@ class EmptyStateWidget extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
 
               // الوصف
               Text(
@@ -68,14 +69,14 @@ class EmptyStateWidget extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: 28),
 
               // زر التحديث
               if (onRefresh != null)
                 ElevatedButton.icon(
                   onPressed: onRefresh,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(buttonText ?? 'تحديث'),
+                  icon: Icon(Icons.refresh),
+                  label: Text(buttonText ?? context.l10n.refresh),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,

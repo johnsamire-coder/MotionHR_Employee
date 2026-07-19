@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:math';
 
+import 'l10n/generated/app_localizations.dart';
 import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
@@ -12,6 +14,7 @@ import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/create_announcement_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
+import 'screens/manager/manager_missions_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -20,6 +23,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'services/biometric_auth_service.dart';
+import 'services/app_strings.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -34,6 +39,7 @@ import 'screens/settings_screen.dart';
 import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
 import 'screens/manager/location_report_screen.dart';
+import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
@@ -234,7 +240,7 @@ class NotificationBellButton extends StatelessWidget {
           children: [
             IconButton(
               icon: Icon(Icons.notifications, color: color),
-              tooltip: 'الإشعارات',
+              tooltip: context.l10n.notifications,
               onPressed: () async {
                 await Navigator.push(
                   context,
@@ -324,22 +330,20 @@ class _MotionHRAppState extends State<MotionHRApp> {
           supportedLocales: const [
             Locale('ar'),
             Locale('en'),
-          ],
-          localizationsDelegates: const [
+          ],localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
           ],
           builder: (context, child) {
             return Directionality(
               textDirection: locale.languageCode == 'ar'
                   ? TextDirection.rtl
                   : TextDirection.ltr,
-              child: child ?? const SizedBox(),
+              child: child ?? SizedBox(),
             );
           },
           home: _checking
-              ? const Scaffold(
+              ? Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 )
               : _isFirstLaunch
@@ -445,7 +449,7 @@ class _SplashScreenState extends State<SplashScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -489,14 +493,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _loading = false;
   bool _obscurePass = true;
-  String? _error;
-  bool _rememberMe = false;
+  String? _error;bool _rememberMe = false;
   bool _stayLoggedIn = false;
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _loadSavedAuthData();
+    _checkBiometric();
   }
 
   @override
@@ -505,6 +511,64 @@ class _LoginScreenState extends State<LoginScreen> {
     _passCtrl.dispose();
     _passFocus.dispose();
     super.dispose();
+  }
+Future<void> _checkBiometric() async {
+    final available = await BiometricAuthService.isBiometricAvailable();
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('biometric_enabled') ?? false;
+    if (!mounted) return;
+    setState(() {
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
+    });
+    // لو البصمة مفعلة وفيه token محفوظ → جرب تسجل دخول بالبصمة تلقائياً
+    if (available && enabled) {
+      final token = await AuthStorageService.getSavedToken();
+      if (token != null && token.isNotEmpty) {
+        final auth = await BiometricAuthService.authenticate(
+          reason: 'سجّل دخولك بالبصمة',
+        );
+        if (auth && mounted) {
+          _navigateByToken(token);
+        }
+      }
+    }
+  }
+
+  Future<void> _navigateByToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    final appMode = prefs.getString('app_mode') ?? 'employee';
+    if (!mounted) return;
+    if (appMode == 'manager') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ManagerShell()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EmployeeShell()),
+      );
+    }
+  }
+
+  Future<void> _loginWithBiometric() async {
+    final token = await AuthStorageService.getSavedToken();
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('يرجى تسجيل الدخول مرة واحدة أولاً لتفعيل البصمة'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    final auth = await BiometricAuthService.authenticate(
+      reason: 'سجّل دخولك بالبصمة',
+    );
+    if (auth && mounted) {
+      _navigateByToken(token);
+    }
   }
 
   Future<void> _loadSavedAuthData() async {
@@ -586,6 +650,11 @@ class _LoginScreenState extends State<LoginScreen> {
           stayLoggedIn: _stayLoggedIn,
           token: data['token'],
         );
+// لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
+        if (_biometricAvailable) {
+          final prefs2 = await SharedPreferences.getInstance();
+          await prefs2.setBool('biometric_enabled', true);
+        }
 
         saveFCMTokenToServer();
         fetchUnreadCount();
@@ -656,14 +725,14 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Text('نسيت كلمة المرور'),
+          title: Text(context.l10n.forgotPassword),
           content: const Text(
             'من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('حسناً'),
+              child: Text(context.l10n.ok),
             ),
           ],
         ),
@@ -697,7 +766,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: PopupMenuButton<String>(
-                        icon: const Row(
+                        icon: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SizedBox(width: 10),
@@ -712,16 +781,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (context.mounted) setState(() {});
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'ar',
                             child: Row(
                               children: [
                                 Text('🇸🇦 ', style: TextStyle(fontSize: 18)),
-                                Text('العربية'),
+                                Text(context.l10n.arabic),
                               ],
                             ),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'en',
                             child: Row(
                               children: [
@@ -734,16 +803,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.location_on, size: 70, color: Colors.white),
+                    child: Icon(Icons.location_on, size: 70, color: Colors.white),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   const Text(
                     'MotionHR',
                     style: TextStyle(
@@ -753,12 +822,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   const Text(
                     'مرحباً بك، سجل دخولك للمتابعة',
                     style: TextStyle(fontSize: 14, color: Colors.white70),
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -779,12 +848,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.next,
                           onSubmitted: (_) => _passFocus.requestFocus(),
                           decoration: InputDecoration(
-                            labelText: 'اسم المستخدم',
+                            labelText: context.l10n.username,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: const Icon(Icons.person, color: kPrimaryColor),
+                            prefixIcon: Icon(Icons.person, color: kPrimaryColor),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         TextField(
                           controller: _passCtrl,
                           focusNode: _passFocus,
@@ -792,9 +861,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.done,
                           onSubmitted: (_) => _login(),
                           decoration: InputDecoration(
-                            labelText: 'كلمة المرور',
+                            labelText: context.l10n.password,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
+                            prefixIcon: Icon(Icons.lock, color: kPrimaryColor),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePass ? Icons.visibility_off : Icons.visibility,
@@ -804,7 +873,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
 
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -817,11 +886,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.check_circle_outline, color: kPrimaryColor),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
+                                  Icon(Icons.check_circle_outline, color: kPrimaryColor),
+                                  SizedBox(width: 8),
+                                  Expanded(
                                     child: Text(
-                                      'تذكرني',
+                                      context.l10n.rememberMe,
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
@@ -839,17 +908,62 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ],
                               ),
-                              const Divider(height: 12),
+                              if (_biometricAvailable)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.fingerprint,
+                                      color: kPrimaryColor,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'الدخول بالبصمة',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: _biometricEnabled,
+                                      activeColor: kPrimaryColor,
+                                      onChanged: (value) async {
+                                        if (value) {
+                                          final authenticated =
+                                              await BiometricAuthService.authenticate(
+                                            reason: 'تأكيد تفعيل الدخول بالبصمة',
+                                          );
+                                          if (!authenticated || !mounted) return;
+                                        }
+
+                                        final prefs =
+                                            await SharedPreferences.getInstance();
+                                        await prefs.setBool(
+                                          'biometric_enabled',
+                                          value,
+                                        );
+
+                                        if (mounted) {
+                                          setState(() {
+                                            _biometricEnabled = value;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              Divider(height: 12),
                               Row(
                                 children: [
-                                  const Icon(Icons.verified_user_outlined, color: kPrimaryColor),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
+                                  Icon(Icons.verified_user_outlined, color: kPrimaryColor),
+                                  SizedBox(width: 8),
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'البقاء مسجلاً',
+                                          context.l10n.stayLoggedIn,
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -857,7 +971,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                         SizedBox(height: 2),
                                         Text(
-                                          'يبقى الحساب مفتوحاً حتى 72 ساعة أو حتى تسجيل الخروج',
+                                          'يبقى الحساب مفتوحاً حتى 72 ساعة',
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
@@ -881,7 +995,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
 
                         if (_error != null)
                           Container(
@@ -895,7 +1009,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Row(
                               children: [
                                 Icon(Icons.error_outline, color: Colors.red[700], size: 20),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Expanded(
                                   child: Text(_error!, style: TextStyle(color: Colors.red[700])),
                                 ),
@@ -903,7 +1017,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
 
                         SizedBox(
                           width: double.infinity,
@@ -919,7 +1033,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: _loading
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Row(
+                                : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.login, color: Colors.white),
@@ -936,18 +1050,45 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
+// زر البصمة
+                        if (_biometricAvailable && _biometricEnabled)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: OutlinedButton.icon(
+                                onPressed: _loginWithBiometric,
+                                icon: Icon(Icons.fingerprint, size: 28, color: kPrimaryColor),
+                                label: const Text(
+                                  'دخول بالبصمة',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: kPrimaryColor, width: 2),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         TextButton(
                           onPressed: _showForgotPassword,
                           child: const Text(
-                            'نسيت كلمة المرور؟',
+                            'نسيت كلمة المرور?',
                             style: TextStyle(color: kPrimaryColor),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   const Text(
                     '© 2025 MotionHR',
                     style: TextStyle(color: Colors.white70, fontSize: 12),
@@ -982,11 +1123,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Future<void> _changePassword() async {
     if (_newCtrl.text != _confirmCtrl.text) {
-      setState(() => _error = 'كلمة المرور غير متطابقة');
+      setState(() => _error = context.l10n.passwordMismatch);
       return;
     }
     if (_newCtrl.text.length < 6) {
-      setState(() => _error = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      setState(() => _error = context.l10n.passwordTooShort);
       return;
     }
     setState(() {
@@ -1015,8 +1156,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         final appMode = prefs.getString('app_mode') ?? 'employee';
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم تغيير كلمة المرور بنجاح'),
+          SnackBar(
+            content: Text(context.l10n.passwordChanged),
             backgroundColor: Colors.green,
           ),
         );
@@ -1052,7 +1193,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
+        prefixIcon: Icon(Icons.lock, color: kPrimaryColor),
         suffixIcon: IconButton(
           icon: Icon(
             o ? Icons.visibility_off : Icons.visibility,
@@ -1070,7 +1211,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('تغيير كلمة المرور'),
+          title: Text(context.l10n.changePassword),
           backgroundColor: kPrimaryColor,
           foregroundColor: Colors.white,
           automaticallyImplyLeading: !widget.forced,
@@ -1090,8 +1231,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.warning, color: Colors.orange[700]),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Text(
                           'يجب تغيير كلمة المرور قبل استخدام التطبيق',
                           style: TextStyle(color: Colors.orange),
@@ -1100,28 +1241,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ],
                   ),
                 ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               _pf(
                 _currentCtrl,
-                'كلمة المرور الحالية',
+                context.l10n.currentPassword,
                 _obscure1,
                 () => setState(() => _obscure1 = !_obscure1),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _pf(
                 _newCtrl,
-                'كلمة المرور الجديدة',
+                context.l10n.newPassword,
                 _obscure2,
                 () => setState(() => _obscure2 = !_obscure2),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _pf(
                 _confirmCtrl,
-                'تأكيد كلمة المرور',
+                context.l10n.confirmPassword,
                 _obscure3,
                 () => setState(() => _obscure3 = !_obscure3),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               if (_error != null)
                 Container(
                   width: double.infinity,
@@ -1132,7 +1273,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -1186,6 +1327,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
         const EmployeeHomeScreen(),
         const LeavesScreen(),
         const RequestsScreen(),
+  const EmployeeMissionsScreen(),
         const MyItemsScreen(),
       ];
 Future<void> _logout() async {
@@ -1212,27 +1354,27 @@ Future<void> _logout() async {
           actions: [
             const NotificationBellButton(),
             IconButton(
-            icon: const Icon(Icons.campaign),
-            tooltip: 'الإعلانات',
+            icon: Icon(Icons.campaign),
+            tooltip: context.l10n.announcements,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementsScreen())),
           ),
           IconButton(
-              icon: const Icon(Icons.person),
-              tooltip: 'الملف الشخصي',
+              icon: Icon(Icons.person),
+              tooltip: context.l10n.profile,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
             ),            IconButton(
-              icon: const Icon(Icons.lock),
-              tooltip: 'تغيير كلمة المرور',
+              icon: Icon(Icons.lock),
+              tooltip: context.l10n.changePassword,
               onPressed: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
             ),
             IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'الإعدادات',
+              icon: Icon(Icons.settings),
+              tooltip: context.l10n.settings,
               onPressed: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
             ),
-            IconButton(icon: const Icon(Icons.logout), tooltip: 'تسجيل الخروج', onPressed: _logout),
+            IconButton(icon: Icon(Icons.logout), tooltip: context.l10n.logout, onPressed: _logout),
           ],
         ),
         body: _pages[_index],
@@ -1241,11 +1383,12 @@ Future<void> _logout() async {
           onTap: (i) => setState(() => _index = i),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: kPrimaryColor,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'إجازات'),
-            BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'طلبات'),
-            BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'طلباتي'),
+          items: [  BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.home),
+  BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: 'إجازات'),
+  BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'طلبات'),
+  BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: context.l10n.myMissions),
+  BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: context.l10n.myRequests),
+
           ],
         ),
       ),
@@ -1380,12 +1523,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             children: [
               Icon(_isEveningMessage ? Icons.nightlight_round : Icons.wb_sunny,
                   size: 60, color: _isEveningMessage ? Colors.indigo : Colors.orange),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(_isEveningMessage ? 'مع السلامة' : 'أهلاً بيك',
                   style: TextStyle(
                       fontSize: 22, fontWeight: FontWeight.bold,
                       color: _isEveningMessage ? Colors.indigo : Colors.orange)),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(_motivationMessage!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.5)),
             ],
           ),
@@ -1472,38 +1615,38 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               children: [
                 Row(children: [
                   const CircleAvatar(radius: 24, backgroundColor: Colors.white, child: Icon(Icons.person, color: kPrimaryColor, size: 30)),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text('أهلاً يا $displayName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                     if (_companyName.isNotEmpty) Text(_companyName, style: const TextStyle(color: Colors.white70, fontSize: 14)),
                   ])),
                 ]),
-                const Divider(color: Colors.white24, height: 24),
+                Divider(color: Colors.white24, height: 24),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('التاريخ', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                    Text(context.l10n.date, style: TextStyle(color: Colors.white60, fontSize: 12)),
                     Text(_formattedDate, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                   ]),
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    const Text('الوقت', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                    Text(context.l10n.time, style: TextStyle(color: Colors.white60, fontSize: 12)),
                     Text(_formattedTime, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   ]),
                 ]),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (shiftName.toString().isNotEmpty)
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-                const Icon(Icons.schedule, color: kPrimaryColor),
-                const SizedBox(width: 8),
+                Icon(Icons.schedule, color: kPrimaryColor),
+                SizedBox(width: 8),
                 Expanded(child: Text('شيفت: $shiftName ($shiftStart - $shiftEnd)', style: const TextStyle(fontWeight: FontWeight.bold))),
               ])),
             ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (checkedIn && !checkedOut)
             Container(
               padding: const EdgeInsets.all(16),
@@ -1515,27 +1658,27 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               child: Column(children: [
                 Row(children: [
                   Icon(canCheckOut ? Icons.check_circle : Icons.timer, color: canCheckOut ? Colors.green : kPrimaryColor),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(canCheckOut ? 'الشيفت خلص، تقدر تنصرف' : 'باقي على الانصراف',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: canCheckOut ? Colors.green : kPrimaryColor)),
                 ]),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text(_formatCountdown(remainingSecs),
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: canCheckOut ? Colors.green : kPrimaryColor, letterSpacing: 2)),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: LinearProgressIndicator(value: _progressValue(), minHeight: 12, backgroundColor: Colors.grey[300],
                       valueColor: AlwaysStoppedAnimation(canCheckOut ? Colors.green : kPrimaryColor)),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text('${(_progressValue() * 100).toInt()}% من الشيفت', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                 if (hasEarlyLeave) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(color: Colors.orange[100], borderRadius: BorderRadius.circular(20)),
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.info, size: 16, color: Colors.orange),
                       SizedBox(width: 4),
                       Text('عندك إذن خروج مبكر 🕐', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
@@ -1544,12 +1687,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 ],
               ]),
             ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           if (checkedOut)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.green[200]!)),
-              child: const Column(children: [
+              child: Column(children: [
                 Icon(Icons.check_circle, color: Colors.green, size: 60),
                 SizedBox(height: 10),
                 Text('تم تسجيل الحضور والانصراف', style: TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
@@ -1567,11 +1710,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   elevation: checkedIn ? 0 : 4, disabledBackgroundColor: Colors.grey[400], disabledForegroundColor: Colors.white),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Icon(checkedIn ? Icons.check_circle : Icons.login, size: 40),
-                  const SizedBox(height: 6),
-                  Text(checkedIn ? 'تم الحضور 🕐' : 'تسجيل الحضور', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 6),
+                  Text(checkedIn ? 'تم الحضور 🕐' : context.l10n.checkIn, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ]),
               ))),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(child: SizedBox(height: 110, child: ElevatedButton(
                 onPressed: (_loading || !checkedIn || (!canCheckOut && !hasEarlyLeave)) ? null : () => _attendanceAction('check_out'),
                 style: ElevatedButton.styleFrom(
@@ -1582,34 +1725,34 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   disabledBackgroundColor: Colors.grey[400], disabledForegroundColor: Colors.white),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Icon((!checkedIn || (!canCheckOut && !hasEarlyLeave)) ? Icons.lock : Icons.logout, size: 40),
-                  const SizedBox(height: 6),
-                  Text(!checkedIn ? 'تسجيل الانصراف' : (canCheckOut || hasEarlyLeave ? 'تسجيل الانصراف' : 'مقفول'),
+                  SizedBox(height: 6),
+                  Text(!checkedIn ? context.l10n.checkOut : (canCheckOut || hasEarlyLeave ? context.l10n.checkOut : 'مقفول'),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ]),
               ))),
             ]),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           if (_status?['check_in_time'] != null && (_status?['check_in_time'] ?? '').toString().isNotEmpty)
             Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.login, color: Colors.green)),
-                title: const Text('وقت الحضور'),
+                    child: Icon(Icons.login, color: Colors.green)),
+                title: Text(context.l10n.checkInTime),
                 subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
               )),
           if (_status?['check_out_time'] != null && (_status?['check_out_time'] ?? '').toString().isNotEmpty)
             Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.logout, color: Colors.orange)),
-                title: const Text('وقت الانصراف'),
+                    child: Icon(Icons.logout, color: Colors.orange)),
+                title: Text(context.l10n.checkOutTime),
                 subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
               )),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           SizedBox(height: 50, child: ElevatedButton.icon(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
-            icon: const Icon(Icons.history),
-            label: const Text('سجل الأيام السابقة', style: TextStyle(fontSize: 16)),
+            icon: Icon(Icons.history),
+            label: Text('سجل الأيام السابقة', style: TextStyle(fontSize: 16)),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: kPrimaryColor,
                 side: const BorderSide(color: kPrimaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           )),
@@ -1646,11 +1789,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
       appBar: AppBar(title: const Text('سجل الأيام'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-      body: _loading ? const Center(child: CircularProgressIndicator())
-          : _items.isEmpty ? const Center(child: Text('لا يوجد سجل'))
+      body: _loading ? Center(child: CircularProgressIndicator())
+          : _items.isEmpty ? Center(child: Text('لا يوجد سجل'))
           : ListView.builder(padding: const EdgeInsets.all(8), itemCount: _items.length, itemBuilder: (_, i) {
               final item = _items[i];
-              return Card(child: ListTile(leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
+              return Card(child: ListTile(leading: Icon(Icons.calendar_today, color: kPrimaryColor),
                   title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}')));
             }),
     ));
@@ -1697,18 +1840,18 @@ class _LeavesScreenState extends State<LeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return Center(child: CircularProgressIndicator());
     return ListView(padding: const EdgeInsets.all(16), children: [
       const Text('أنواع الإجازات والأرصدة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 10),
+      SizedBox(height: 10),
       ..._types.map((t) {
         final balance = t['balance'] is Map ? (t['balance']['remaining'] ?? 0) : (t['balance'] ?? 0);
-        return Card(child: ListTile(leading: const Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+        return Card(child: ListTile(leading: Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
       }),
-      const SizedBox(height: 20),
+      SizedBox(height: 20),
       SizedBox(height: 52, child: ElevatedButton.icon(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LeaveRequestScreen(types: _types))),
-        icon: const Icon(Icons.add), label: const Text('تقديم طلب إجازة', style: TextStyle(fontSize: 16)),
+        icon: Icon(Icons.add), label: const Text('تقديم طلب إجازة', style: TextStyle(fontSize: 16)),
         style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       )),
     ]);
@@ -1739,7 +1882,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
   Future<void> _submit() async {
     if (_selectedValue == null || _startCtrl.text.isEmpty || _endCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى ملء جميع الحقول'))); return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى ملء جميع الحقول'))); return;
     }
     setState(() => _loading = true);
     try {
@@ -1751,7 +1894,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم'))); if (data['success'] == true) Navigator.pop(context); }
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done))); if (data['success'] == true) Navigator.pop(context); }
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'))); }
     finally { setState(() => _loading = false); }
   }
@@ -1759,22 +1902,22 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('طلب إجازة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
+      appBar: AppBar(title: Text('طلب إجازة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         DropdownButtonFormField<String>(
-          decoration: const InputDecoration(labelText: 'نوع الإجازة', border: OutlineInputBorder()), value: _selectedValue,
+          decoration: InputDecoration(labelText: context.l10n.leaveType, border: OutlineInputBorder()), value: _selectedValue,
           items: [...widget.types.where((t) { final c = (t['category'] ?? '').toString().toLowerCase(); final n = (t['name'] ?? '').toString(); return c != 'paternity' && !n.contains('أبوة'); })
               .map((t) => DropdownMenuItem<String>(value: t['id'].toString(), child: Text(t['name'] ?? ''))),
             const DropdownMenuItem<String>(value: 'other', child: Text('أخرى'))],
           onChanged: (v) => setState(() => _selectedValue = v)),
-        if (_isOther) ...[const SizedBox(height: 16), TextField(controller: _otherCtrl, decoration: const InputDecoration(labelText: 'اذكر نوع الإجازة', border: OutlineInputBorder()))],
-        const SizedBox(height: 16),
-        TextField(controller: _startCtrl, readOnly: true, onTap: () => _pickDate(_startCtrl), decoration: const InputDecoration(labelText: 'من تاريخ', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        const SizedBox(height: 16),
-        TextField(controller: _endCtrl, readOnly: true, onTap: () => _pickDate(_endCtrl), decoration: const InputDecoration(labelText: 'إلى تاريخ', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        const SizedBox(height: 16),
-        TextField(controller: _reasonCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'السبب', border: OutlineInputBorder())),
-        const SizedBox(height: 20),
+        if (_isOther) ...[SizedBox(height: 16), TextField(controller: _otherCtrl, decoration: InputDecoration(labelText: 'اذكر نوع الإجازة', border: OutlineInputBorder()))],
+        SizedBox(height: 16),
+        TextField(controller: _startCtrl, readOnly: true, onTap: () => _pickDate(_startCtrl), decoration: InputDecoration(labelText: context.l10n.fromDate, border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+        SizedBox(height: 16),
+        TextField(controller: _endCtrl, readOnly: true, onTap: () => _pickDate(_endCtrl), decoration: InputDecoration(labelText: context.l10n.toDate, border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+        SizedBox(height: 16),
+        TextField(controller: _reasonCtrl, maxLines: 3, decoration: InputDecoration(labelText: 'السبب', border: OutlineInputBorder())),
+        SizedBox(height: 20),
         SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _loading ? null : _submit,
             style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
             child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text('إرسال الطلب', style: TextStyle(fontSize: 18)))),
@@ -1850,10 +1993,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
   }
 
   Future<void> _submit() async {
-    if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار النوع وكتابة العنوان'))); return; }
-    if (_isLoan && _amountCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى إدخال مبلغ السلفة'))); return; }
+    if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى اختيار النوع وكتابة العنوان'))); return; }
+    if (_isLoan && _amountCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى إدخال مبلغ السلفة'))); return; }
     if (_isPermissionRequest && (_permissionDateCtrl.text.trim().isEmpty || _permissionTimeCtrl.text.trim().isEmpty || _durationHoursCtrl.text.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى إدخال تاريخ ووقت ومدة الإذن'))); return; }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى إدخال تاريخ ووقت ومدة الإذن'))); return; }
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -1866,7 +2009,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
       final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم')));
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done)));
         if (data['success'] == true) { _titleCtrl.clear(); _descCtrl.clear(); _otherCtrl.clear(); _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); setState(() => _selectedValue = null); } }
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
     finally { setState(() => _submitting = false); }
@@ -1874,39 +2017,39 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return Center(child: CircularProgressIndicator());
     return SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-      const Text('تقديم طلب', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 20),
-      DropdownButtonFormField<String>(decoration: const InputDecoration(labelText: 'نوع الطلب', border: OutlineInputBorder()), value: _selectedValue,
+      Text('تقديم طلب', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      SizedBox(height: 20),
+      DropdownButtonFormField<String>(decoration: InputDecoration(labelText: context.l10n.requestType, border: OutlineInputBorder()), value: _selectedValue,
         items: [..._types.map((t) => DropdownMenuItem<String>(value: t['id'].toString(), child: Text(t['name'] ?? ''))),
           const DropdownMenuItem<String>(value: 'other', child: Text('أخرى'))],
         onChanged: (v) { setState(() { _selectedValue = v; _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); }); }),
       if (_isPermissionRequest) ...[
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Container(width: double.infinity, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.orange.shade200)),
           child: Text(_permissionKind == 'late_arrival' ? 'هذا الطلب سيعامل كإذن تأخير ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.' : 'هذا الطلب سيعامل كإذن خروج مبكر ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.', style: TextStyle(color: Colors.orange[900]))),
-        const SizedBox(height: 16),
-        TextField(controller: _permissionDateCtrl, readOnly: true, onTap: () => _pickDate(_permissionDateCtrl), decoration: const InputDecoration(labelText: 'تاريخ الإذن', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
+        TextField(controller: _permissionDateCtrl, readOnly: true, onTap: () => _pickDate(_permissionDateCtrl), decoration: InputDecoration(labelText: 'تاريخ الإذن', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
+        SizedBox(height: 16),
         TextField(controller: _permissionTimeCtrl, readOnly: true, onTap: _pickTime,
-            decoration: InputDecoration(labelText: _permissionKind == 'late_arrival' ? 'وقت الحضور المتوقع' : 'وقت الخروج المطلوب', border: const OutlineInputBorder(), suffixIcon: const Icon(Icons.access_time))),
-        const SizedBox(height: 16),
+            decoration: InputDecoration(labelText: _permissionKind == 'late_arrival' ? 'وقت الحضور المتوقع' : 'وقت الخروج المطلوب', border: const OutlineInputBorder(), suffixIcon: Icon(Icons.access_time))),
+        SizedBox(height: 16),
         TextField(controller: _durationHoursCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'عدد الساعات', border: OutlineInputBorder(), suffixText: 'ساعة')),
+            decoration: InputDecoration(labelText: 'عدد الساعات', border: OutlineInputBorder(), suffixText: 'ساعة')),
       ],
-      if (_isLoan) ...[const SizedBox(height: 16),
-        TextField(controller: _amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'المبلغ المطلوب', border: OutlineInputBorder(), suffixText: 'جنيه'))],
-      if (_isOther) ...[const SizedBox(height: 16),
-        TextField(controller: _otherCtrl, decoration: const InputDecoration(labelText: 'اذكر نوع الطلب', border: OutlineInputBorder()))],
-      const SizedBox(height: 16),
-      TextField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'عنوان الطلب', border: OutlineInputBorder())),
-      const SizedBox(height: 16),
-      TextField(controller: _descCtrl, maxLines: 4, decoration: const InputDecoration(labelText: 'التفاصيل / السبب', border: OutlineInputBorder())),
-      const SizedBox(height: 20),
+      if (_isLoan) ...[SizedBox(height: 16),
+        TextField(controller: _amountCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'المبلغ المطلوب', border: OutlineInputBorder(), suffixText: 'جنيه'))],
+      if (_isOther) ...[SizedBox(height: 16),
+        TextField(controller: _otherCtrl, decoration: InputDecoration(labelText: 'اذكر نوع الطلب', border: OutlineInputBorder()))],
+      SizedBox(height: 16),
+      TextField(controller: _titleCtrl, decoration: InputDecoration(labelText: 'عنوان الطلب', border: OutlineInputBorder())),
+      SizedBox(height: 16),
+      TextField(controller: _descCtrl, maxLines: 4, decoration: InputDecoration(labelText: 'التفاصيل / السبب', border: OutlineInputBorder())),
+      SizedBox(height: 20),
       SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _submitting ? null : _submit,
           style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-          child: _submitting ? const CircularProgressIndicator(color: Colors.white) : const Text('إرسال', style: TextStyle(fontSize: 18)))),
+          child: _submitting ? const CircularProgressIndicator(color: Colors.white) : Text(context.l10n.send, style: TextStyle(fontSize: 18)))),
     ]));
   }
 }
@@ -1916,7 +2059,7 @@ class MyItemsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(length: 2, child: Column(children: [
-      const TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: 'طلباتي'), Tab(text: 'إجازاتي')]),
+      TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: 'طلباتي'), Tab(text: 'إجازاتي')]),
       Expanded(child: TabBarView(children: [_MyList(endpoint: 'my-requests', keyName: 'requests'), _MyList(endpoint: 'my-leaves', keyName: 'leaves')])),
     ]));
   }
@@ -1946,38 +2089,165 @@ class _MyListState extends State<_MyList> {
     } catch (_) {}
     setState(() => _loading = false);
   }
-
   Color _statusColor(String s) {
     if (s.contains('موافق') || s.toLowerCase().contains('approved')) return Colors.green;
-    if (s.contains('رفض') || s.toLowerCase().contains('reject')) return Colors.red;
+    if (s.contains(context.l10n.rejectMission) || s.toLowerCase().contains('reject')) return Colors.red;
+    if (s.contains(context.l10n.cancelled) || s.toLowerCase().contains('cancel')) return Colors.grey;
     return Colors.orange;
+  }
+
+  bool _canCancel(dynamic item) {
+    final status = (item['status'] ?? '').toString();
+    return status == 'pending' || status == 'manager_approved';
+  }
+
+  Future<void> _cancelItem(dynamic item) async {
+    final reasonCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: Text('إلغاء الطلب'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('هل أنت متأكد من إلغاء هذا الطلب؟'),
+              SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: InputDecoration(
+                  labelText: 'سبب الإلغاء',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('تراجع'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('إلغاء الطلب', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final id = item['id'];
+    final isLeave = widget.keyName == 'leaves';
+    final url = isLeave
+        ? '$kBaseUrl/attendance/api/mobile/my-leaves/$id/cancel/'
+        : '$kBaseUrl/attendance/api/mobile/my-requests/$id/cancel/';
+    try {
+      final res = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+        body: jsonEncode({'reason': reasonCtrl.text.trim()}),
+      );
+      final data = jsonDecode(res.body);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message'] ?? (data['success'] == true ? 'تم الإلغاء' : 'حدث خطأ')),
+          backgroundColor: data['success'] == true ? Colors.green : Colors.red,
+        ),
+      );
+      if (data['success'] == true) _load();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_items.isEmpty) return const Center(child: Text('لا يوجد طلبات'));
-    return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
-      final item = _items[i];
-      final status = (item['status_display'] ?? item['status'] ?? '').toString();
-      final isLeaveTab = widget.keyName == 'leaves';
-      return Card(margin: const EdgeInsets.all(8), child: ListTile(
-        title: Text(item['title'] ?? item['leave_type'] ?? item['type'] ?? '-'),
-        subtitle: Text(item['date'] ?? item['created_at'] ?? ''),
-        trailing: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-            child: Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold))),
-        onTap: () async {
-          await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => ItemDetailScreen(
-              item: Map<String, dynamic>.from(item),
-              itemType: isLeaveTab ? 'leave_request' : 'request',
+    if (_loading) return Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) return Center(child: Text(context.l10n.noRequests));
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (_, i) {
+          final item = _items[i];
+          final status = (item['status_display'] ?? item['status'] ?? '').toString();
+          final isLeaveTab = widget.keyName == 'leaves';
+          final canCancel = _canCancel(item);
+          return Card(
+            margin: const EdgeInsets.all(8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                await Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => ItemDetailScreen(
+                    item: Map<String, dynamic>.from(item),
+                    itemType: isLeaveTab ? 'leave_request' : 'request',
+                  ),
+                ));
+                _load();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item['title'] ?? item['leave_type'] ?? item['type'] ?? '-',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _statusColor(status).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold, fontSize: 11)),
+                        ),
+                      ],
+                    ),
+                    if ((item['date'] ?? item['created_at'] ?? '').toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(item['date'] ?? item['created_at'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      ),
+                    if (canCancel) ...[
+                      SizedBox(height: 8),
+                      Divider(height: 1),
+                      SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _cancelItem(item),
+                            icon: Icon(Icons.cancel_outlined, size: 16, color: Colors.red),
+                            label: Text('إلغاء الطلب', style: TextStyle(color: Colors.red, fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              minimumSize: Size.zero,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ));
-          _load();
+          );
         },
-      ));
-    }));
+      ),
+    );
   }
 }
 class NotificationsScreen extends StatefulWidget {
@@ -2083,12 +2353,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
         title: Text('الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
         backgroundColor: kPrimaryColor, foregroundColor: Colors.white,
-        actions: [if (_unreadCount > 0) IconButton(icon: const Icon(Icons.done_all), tooltip: 'تعليم الكل كمقروءة', onPressed: _markAllRead)],
+        actions: [if (_unreadCount > 0) IconButton(icon: Icon(Icons.done_all), tooltip: 'تعليم الكل كمقروءة', onPressed: _markAllRead)],
       ),
-      body: _loading ? const Center(child: CircularProgressIndicator())
+      body: _loading ? Center(child: CircularProgressIndicator())
           : _notifications.isEmpty ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.notifications_off, size: 80, color: Colors.grey[300]), const SizedBox(height: 16),
-              const Text('لا توجد إشعارات', style: TextStyle(fontSize: 18, color: Colors.grey))]))
+              Icon(Icons.notifications_off, size: 80, color: Colors.grey[300]), SizedBox(height: 16),
+              Text('لا توجد إشعارات', style: TextStyle(fontSize: 18, color: Colors.grey))]))
           : RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _notifications.length, itemBuilder: (_, i) {
               final n = _notifications[i]; final isRead = n['is_read'] == true; final type = n['notification_type'] ?? 'general';
               return Card(margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), color: isRead ? Colors.white : Colors.blue[50], elevation: isRead ? 1 : 3,
@@ -2096,7 +2366,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   leading: CircleAvatar(backgroundColor: _typeColor(type).withOpacity(0.15), child: Icon(_typeIcon(type), color: _typeColor(type))),
                   title: Text(n['title'] ?? '', style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
                   subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const SizedBox(height: 4), Text(n['body'] ?? ''), const SizedBox(height: 4),
+                    SizedBox(height: 4), Text(n['body'] ?? ''), SizedBox(height: 4),
                     Text(_formatTime(n['created_at'] ?? ''), style: TextStyle(fontSize: 12, color: Colors.grey[500]))]),
                   isThreeLine: true, onTap: () => _openNotification(n)));
             })),
@@ -2134,12 +2404,12 @@ class _CharterScreenState extends State<CharterScreen> {
     final url = _charter?['attachment_url'] ?? '';
     if (url.isEmpty) return;
     try { final uri = Uri.parse(url); if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication); }
-    catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذر فتح الملف'))); }
+    catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر فتح الملف'))); }
   }
 
   Future<void> _accept() async {
     if (!_agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى الموافقة على اللائحة أولاً'), backgroundColor: Colors.orange));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى الموافقة على اللائحة أولاً'), backgroundColor: Colors.orange));
       return;
     }
     setState(() => _submitting = true);
@@ -2151,13 +2421,13 @@ class _CharterScreenState extends State<CharterScreen> {
       final data = jsonDecode(res.body);
       if (data['success'] == true) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تسجيل موافقتك بنجاح ✅'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم تسجيل موافقتك بنجاح ✅'), backgroundColor: Colors.green));
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => widget.appMode == 'manager' ? const ManagerShell() : const EmployeeShell()));
       } else {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? data['error'] ?? 'حدث خطأ')));
       }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('خطأ في الاتصال')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الاتصال')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -2168,51 +2438,51 @@ class _CharterScreenState extends State<CharterScreen> {
     final attachmentUrl = _charter?['attachment_url'] ?? '';
     final attachmentName = _charter?['attachment_name'] ?? 'الملف المرفق';
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('لائحة الشركة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white, automaticallyImplyLeading: false),
-      body: _loading ? const Center(child: CircularProgressIndicator())
-          : _charter == null ? const Center(child: Text('لا توجد لائحة حالياً'))
+      appBar: AppBar(title: Text('لائحة الشركة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white, automaticallyImplyLeading: false),
+      body: _loading ? Center(child: CircularProgressIndicator())
+          : _charter == null ? Center(child: Text('لا توجد لائحة حالياً'))
           : Column(children: [
               Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Container(width: double.infinity, padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(gradient: const LinearGradient(colors: [kPrimaryDark, kPrimaryColor]), borderRadius: BorderRadius.circular(12)),
                   child: Column(children: [
-                    const Icon(Icons.description, color: Colors.white, size: 48), const SizedBox(height: 8),
+                    Icon(Icons.description, color: Colors.white, size: 48), SizedBox(height: 8),
                     Text(_charter!['title'] ?? 'لائحة الشركة', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                     Text('الإصدار ${_charter!['version'] ?? 1}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
                   ])),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 if (attachmentUrl.isNotEmpty) ...[
                   InkWell(onTap: _openAttachment, child: Container(width: double.infinity, padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(color: Colors.purple[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.purple[200]!)),
                     child: Row(children: [
-                      Icon(Icons.attach_file, color: Colors.purple[700]), const SizedBox(width: 10),
+                      Icon(Icons.attach_file, color: Colors.purple[700]), SizedBox(width: 10),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text('الملف المرفق', style: TextStyle(color: Colors.purple[700], fontWeight: FontWeight.bold)),
                         Text(attachmentName, style: TextStyle(color: Colors.purple[500], fontSize: 12), overflow: TextOverflow.ellipsis)])),
                       Icon(Icons.open_in_new, color: Colors.purple[700], size: 20)]))),
-                  const SizedBox(height: 16)],
+                  SizedBox(height: 16)],
                 if ((_charter!['introduction'] ?? '').toString().isNotEmpty) ...[
                   Container(width: double.infinity, padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.blue[200]!)),
                     child: Text(_charter!['introduction'], style: const TextStyle(fontSize: 15, height: 1.6))),
-                  const SizedBox(height: 16)],
+                  SizedBox(height: 16)],
                 Container(width: double.infinity, padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey[300]!),
                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)]),
                   child: Text(_charter!['content'] ?? '', style: const TextStyle(fontSize: 15, height: 1.8))),
-                const SizedBox(height: 20)]))),
+                SizedBox(height: 20)]))),
               Container(padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -4))]),
                 child: Column(children: [
                   CheckboxListTile(value: _agreed, onChanged: (v) => setState(() => _agreed = v ?? false),
                     title: const Text('أقر بأنني قرأت واطلعت على لائحة الشركة وأوافق على جميع بنودها', style: TextStyle(fontSize: 14)),
                     activeColor: kPrimaryColor, controlAffinity: ListTileControlAffinity.leading),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   SizedBox(width: double.infinity, height: 52, child: ElevatedButton(
                     onPressed: (_submitting || !_agreed) ? null : _accept,
                     style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                     child: _submitting ? const CircularProgressIndicator(color: Colors.white)
-                        : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.check_circle), SizedBox(width: 8),
+                        : Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.check_circle), SizedBox(width: 8),
                             Text('أوافق على اللائحة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))])))]))]),
     ));
   }
@@ -2314,7 +2584,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       if (file.path == null || file.path!.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تعذر قراءة الملف المختار')),
+            SnackBar(content: Text('تعذر قراءة الملف المختار')),
           );
         }
         return;
@@ -2343,7 +2613,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر فتح الملف')),
+          SnackBar(content: Text('تعذر فتح الملف')),
         );
       }
     }
@@ -2352,7 +2622,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _contentCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('العنوان والمحتوى مطلوبان'),
           backgroundColor: Colors.orange,
         ),
@@ -2459,7 +2729,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       child: Column(
         children: [
           Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '$count',
             style: TextStyle(
@@ -2501,8 +2771,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.description, color: Colors.white, size: 40),
-                  const SizedBox(height: 8),
+                  Icon(Icons.description, color: Colors.white, size: 40),
+                  SizedBox(height: 8),
                   Text(
                     _charter!['title'] ?? '',
                     style: const TextStyle(
@@ -2518,7 +2788,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             if (_attachmentUrl.isNotEmpty) ...[
               InkWell(
                 onTap: _openAttachment,
@@ -2532,7 +2802,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.attach_file, color: Colors.purple[700]),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _attachmentName.isNotEmpty
@@ -2548,14 +2818,14 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
             ],
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => setState(() => _showEdit = true),
-                    icon: const Icon(Icons.edit),
+                    icon: Icon(Icons.edit),
                     label: const Text('تعديل اللائحة'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kManagerColor,
@@ -2567,11 +2837,11 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _showReport,
-                    icon: const Icon(Icons.print),
+                    icon: Icon(Icons.print),
                     label: const Text('تقرير الموافقات'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
@@ -2593,7 +2863,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.orange[200]!),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Icon(Icons.warning, color: Colors.orange, size: 40),
                   SizedBox(height: 8),
@@ -2609,10 +2879,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () => setState(() => _showEdit = true),
-              icon: const Icon(Icons.add),
+              icon: Icon(Icons.add),
               label: const Text('إنشاء لائحة جديدة'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: kManagerColor,
@@ -2624,7 +2894,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -2635,7 +2905,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   Icons.check_circle,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _statCard(
                   'لم يوافقوا',
@@ -2646,7 +2916,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (_accepted.isNotEmpty) ...[
             const Text(
               '✅ وافقوا على اللائحة',
@@ -2656,7 +2926,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 color: Colors.green,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ..._accepted.map(
               (emp) => Card(
                 color: Colors.green[50],
@@ -2673,7 +2943,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
           if (_pending.isNotEmpty) ...[
             const Text(
@@ -2684,7 +2954,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 color: Colors.orange,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ..._pending.map(
               (emp) => Card(
                 color: Colors.orange[50],
@@ -2703,7 +2973,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
             ),
           ],
           if (_accepted.isEmpty && _pending.isEmpty)
-            const Center(
+            Center(
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Text(
@@ -2749,7 +3019,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 Icons.attach_file,
                 color: _removeCurrentAttachment ? Colors.red : Colors.purple,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   _attachmentName.isNotEmpty ? _attachmentName : 'الملف الحالي',
@@ -2765,7 +3035,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
               IconButton(
                 onPressed: _openAttachment,
-                icon: const Icon(Icons.open_in_new),
+                icon: Icon(Icons.open_in_new),
                 tooltip: 'فتح الملف',
               ),
             ],
@@ -2813,8 +3083,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.insert_drive_file, color: Colors.green),
-          const SizedBox(width: 8),
+          Icon(Icons.insert_drive_file, color: Colors.green),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               _pickedAttachment!.name,
@@ -2824,7 +3094,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           ),
           IconButton(
             onPressed: () => setState(() => _pickedAttachment = null),
-            icon: const Icon(Icons.close, color: Colors.red),
+            icon: Icon(Icons.close, color: Colors.red),
             tooltip: 'إلغاء الملف المختار',
           ),
         ],
@@ -2844,7 +3114,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.blue[200]!),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.info, color: Colors.blue),
                 SizedBox(width: 8),
@@ -2857,37 +3127,37 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _titleCtrl,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'عنوان اللائحة *',
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.title),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _introCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'المقدمة (اختياري)',
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.short_text),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _contentCtrl,
             maxLines: 12,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'محتوى اللائحة *',
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.article),
               hintText: '1- البند الأول\n2- البند الثاني\n3- البند الثالث',
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           Align(
             alignment: Alignment.centerRight,
@@ -2900,10 +3170,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _buildCurrentAttachmentCard(),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           Align(
             alignment: Alignment.centerRight,
@@ -2916,20 +3186,20 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _buildPickedAttachmentCard(),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _pickAttachment,
-              icon: const Icon(Icons.upload_file),
+              icon: Icon(Icons.upload_file),
               label: const Text('اختيار ملف PDF / Word / صورة'),
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -2938,10 +3208,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 50),
                   ),
-                  child: const Text('إلغاء'),
+                  child: Text(context.l10n.cancel),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
                   onPressed: _saving ? null : _save,
@@ -2983,13 +3253,13 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           actions: [
             IconButton(
               icon: Icon(_showEdit ? Icons.visibility : Icons.edit),
-              tooltip: _showEdit ? 'عرض' : 'تعديل',
+              tooltip: _showEdit ? 'عرض' : context.l10n.edit,
               onPressed: () => setState(() => _showEdit = !_showEdit),
             ),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _showEdit
                 ? _buildEditView()
                 : _buildInfoView(),
@@ -3014,28 +3284,28 @@ class CharterReportScreen extends StatelessWidget {
       body: ListView(padding: const EdgeInsets.all(16), children: [
         Container(width: double.infinity, padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(gradient: const LinearGradient(colors: [Colors.teal, kPrimaryColor]), borderRadius: BorderRadius.circular(12)),
-          child: Column(children: [const Icon(Icons.description, color: Colors.white, size: 40), const SizedBox(height: 8),
+          child: Column(children: [Icon(Icons.description, color: Colors.white, size: 40), SizedBox(height: 8),
             Text(charterTitle, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             Text('الإصدار $charterVersion', style: const TextStyle(color: Colors.white70)),
-            const SizedBox(height: 4), Text('تاريخ التقرير: ${_formatNow()}', style: const TextStyle(color: Colors.white60, fontSize: 12))])),
-        const SizedBox(height: 16),
+            SizedBox(height: 4), Text('تاريخ التقرير: ${_formatNow()}', style: const TextStyle(color: Colors.white60, fontSize: 12))])),
+        SizedBox(height: 16),
         Row(children: [
           Expanded(child: Container(padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green[200]!)),
-            child: Column(children: [const Icon(Icons.check_circle, color: Colors.green, size: 32), const SizedBox(height: 8),
+            child: Column(children: [Icon(Icons.check_circle, color: Colors.green, size: 32), SizedBox(height: 8),
               Text('${accepted.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
               const Text('وافقوا', style: TextStyle(color: Colors.green))]))),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(child: Container(padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange[200]!)),
-            child: Column(children: [const Icon(Icons.pending, color: Colors.orange, size: 32), const SizedBox(height: 8),
+            child: Column(children: [Icon(Icons.pending, color: Colors.orange, size: 32), SizedBox(height: 8),
               Text('${pending.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orange)),
               const Text('لم يوافقوا', style: TextStyle(color: Colors.orange))])))]),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         if (accepted.isNotEmpty) ...[
           Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green[700],
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-            child: Row(children: [const Icon(Icons.check_circle, color: Colors.white), const SizedBox(width: 8),
+            child: Row(children: [Icon(Icons.check_circle, color: Colors.white), SizedBox(width: 8),
               Text('وافقوا على اللائحة (${accepted.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
           Container(decoration: BoxDecoration(border: Border.all(color: Colors.green[200]!),
               borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10))),
@@ -3047,18 +3317,18 @@ class CharterReportScreen extends StatelessWidget {
                 child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
                   CircleAvatar(radius: 16, backgroundColor: Colors.green[100],
                     child: Text('${i + 1}', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12))),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(emp['name'] ?? emp['username'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
                     if ((emp['accepted_at'] ?? '').isNotEmpty) Text('وافق في: ${_formatDate(emp['accepted_at'])}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                     if ((emp['ip_address'] ?? '').isNotEmpty) Text('IP: ${emp['ip_address']}', style: TextStyle(color: Colors.grey[500], fontSize: 11))])),
-                  const Icon(Icons.verified, color: Colors.green, size: 20)])));
+                  Icon(Icons.verified, color: Colors.green, size: 20)])));
             }).toList())),
-          const SizedBox(height: 20)],
+          SizedBox(height: 20)],
         if (pending.isNotEmpty) ...[
           Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[700],
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-            child: Row(children: [const Icon(Icons.pending, color: Colors.white), const SizedBox(width: 8),
+            child: Row(children: [Icon(Icons.pending, color: Colors.white), SizedBox(width: 8),
               Text('لم يوافقوا بعد (${pending.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
           Container(decoration: BoxDecoration(border: Border.all(color: Colors.orange[200]!),
               borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10))),
@@ -3070,14 +3340,14 @@ class CharterReportScreen extends StatelessWidget {
                 child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
                   CircleAvatar(radius: 16, backgroundColor: Colors.orange[100],
                     child: Text('${i + 1}', style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold, fontSize: 12))),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(child: Text(emp['name'] ?? emp['username'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold))),
-                  const Icon(Icons.schedule, color: Colors.orange, size: 20)])));
+                  Icon(Icons.schedule, color: Colors.orange, size: 20)])));
             }).toList()))],
-        const SizedBox(height: 30),
+        SizedBox(height: 30),
         Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey[300]!)),
           child: Text('تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}', style: TextStyle(color: Colors.grey[600], fontSize: 12), textAlign: TextAlign.center)),
-        const SizedBox(height: 20)])));
+        SizedBox(height: 20)])));
   }
 }
 
@@ -3118,15 +3388,15 @@ class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
       await requestLocationPermissionsForTracking();
       final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       setState(() { _currentLat = position.latitude; _currentLng = position.longitude; });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديد موقعك الحالي 🕐'), backgroundColor: Colors.green));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم تحديد موقعك الحالي 🕐'), backgroundColor: Colors.green));
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
     finally { setState(() => _saving = false); }
   }
 
   Future<void> _saveGeofence() async {
-    if (_currentLat == null || _currentLng == null) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى تحديد الموقع أولاً'), backgroundColor: Colors.orange)); return; }
+    if (_currentLat == null || _currentLng == null) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى تحديد الموقع أولاً'), backgroundColor: Colors.orange)); return; }
     final radius = int.tryParse(_radiusCtrl.text) ?? 100;
-    if (radius < 10 || radius > 5000) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('النطاق يجب أن يكون بين 10 و 5000 متر'), backgroundColor: Colors.orange)); return; }
+    if (radius < 10 || radius > 5000) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('النطاق يجب أن يكون بين 10 و 5000 متر'), backgroundColor: Colors.orange)); return; }
     setState(() => _saving = true);
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -3135,7 +3405,7 @@ class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
           body: jsonEncode({'latitude': _currentLat, 'longitude': _currentLng, 'radius': radius, 'enabled': _enabled}));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم'),
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done),
           backgroundColor: data['success'] == true ? Colors.green : Colors.red)); if (data['success'] == true) _loadGeofence(); }
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
     finally { setState(() => _saving = false); }
@@ -3143,50 +3413,50 @@ class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return Center(child: CircularProgressIndicator());
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
       appBar: AppBar(title: const Text('نطاق موقع الشركة'), backgroundColor: kManagerColor, foregroundColor: Colors.white),
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.blue[200]!)),
-          child: const Row(children: [Icon(Icons.info_outline, color: Colors.blue), SizedBox(width: 8),
+          child: Row(children: [Icon(Icons.info_outline, color: Colors.blue), SizedBox(width: 8),
             Expanded(child: Text('حدد موقع الشركة عشان الموظفين ما يقدروش يسجلوا حضور من برة النطاق ده. الموظف الميداني مستثنى.', style: TextStyle(fontSize: 13)))])),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [Icon(Icons.location_on, color: kManagerColor), SizedBox(width: 8),
+            Row(children: [Icon(Icons.location_on, color: kManagerColor), SizedBox(width: 8),
               Text('موقع الشركة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             if (_currentLat != null && _currentLng != null)
               Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [const Icon(Icons.check_circle, color: Colors.green, size: 20), const SizedBox(width: 6),
+                  Row(children: [Icon(Icons.check_circle, color: Colors.green, size: 20), SizedBox(width: 6),
                     Text('محدد', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold))]),
-                  const SizedBox(height: 6), Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'), Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}')]))
+                  SizedBox(height: 6), Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'), Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}')]))
             else Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8)),
-                child: const Row(children: [Icon(Icons.warning, color: Colors.orange, size: 20), SizedBox(width: 6),
+                child: Row(children: [Icon(Icons.warning, color: Colors.orange, size: 20), SizedBox(width: 6),
                   Text('لم يحدد موقع بعد', style: TextStyle(color: Colors.orange))])),
-            const SizedBox(height: 12),
-            SizedBox(height: 50, child: ElevatedButton.icon(onPressed: _saving ? null : _getCurrentLocation, icon: const Icon(Icons.my_location),
+            SizedBox(height: 12),
+            SizedBox(height: 50, child: ElevatedButton.icon(onPressed: _saving ? null : _getCurrentLocation, icon: Icon(Icons.my_location),
                 label: const Text('استخدم موقعي الحالي', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(backgroundColor: kManagerColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))))),
-            const SizedBox(height: 8), const Text('💡 قف في مكان الشركة واضغط الزر ده', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
-        const SizedBox(height: 16),
+            SizedBox(height: 8), const Text('💡 قف في مكان الشركة واضغط الزر ده', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
+        SizedBox(height: 16),
         Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [Icon(Icons.radio_button_checked, color: kManagerColor), SizedBox(width: 8),
+            Row(children: [Icon(Icons.radio_button_checked, color: kManagerColor), SizedBox(width: 8),
               Text('نصف قطر النطاق', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             TextField(controller: _radiusCtrl, keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'المسافة بالمتر', border: OutlineInputBorder(), suffixText: 'متر', hintText: '100')),
-            const SizedBox(height: 8), const Text('💡 مثال: 100 متر = الموظف لازم يكون قريب من الشركة في نطاق 100 متر', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
-        const SizedBox(height: 16),
+                decoration: InputDecoration(labelText: 'المسافة بالمتر', border: OutlineInputBorder(), suffixText: 'متر', hintText: '100')),
+            SizedBox(height: 8), const Text('💡 مثال: 100 متر = الموظف لازم يكون قريب من الشركة في نطاق 100 متر', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
+        SizedBox(height: 16),
         Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: SwitchListTile(title: const Text('تفعيل النطاق الجغرافي', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(_enabled ? 'مفعل - سيتم رفض الحضور من خارج النطاق' : 'معطل - سيتم قبول الحضور من أي مكان'),
             value: _enabled, activeColor: kManagerColor, onChanged: (v) => setState(() => _enabled = v))),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         SizedBox(height: 56, child: ElevatedButton.icon(onPressed: _saving ? null : _saveGeofence,
-            icon: _saving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.save),
+            icon: _saving ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Icon(Icons.save),
             label: const Text('حفظ الإعدادات', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))))]))));
   }
@@ -3221,20 +3491,20 @@ class _ManagerShellState extends State<ManagerShell> {
     return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
       appBar: AppBar(title: const Text('MotionHR - المدير'), backgroundColor: kManagerColor, foregroundColor: Colors.white,
         actions: [
-          IconButton(icon: const Icon(Icons.description), tooltip: 'لائحة الشركة',
+          IconButton(icon: Icon(Icons.description), tooltip: 'لائحة الشركة',
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
           const NotificationBellButton(),
           IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'الإعدادات',
+              icon: Icon(Icons.settings),
+              tooltip: context.l10n.settings,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
-          IconButton(icon: const Icon(Icons.logout), onPressed: _logout)]),
+          IconButton(icon: Icon(Icons.logout), onPressed: _logout)]),
       body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(currentIndex: _index, onTap: (i) => setState(() => _index = i),
         type: BottomNavigationBarType.fixed, selectedItemColor: kManagerColor,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.pending_actions), label: 'الطلبات'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: context.l10n.home),
+          BottomNavigationBarItem(icon: Icon(Icons.pending_actions), label: context.l10n.requests),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'الحضور'),
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'المواقع')])));
   }
@@ -3344,9 +3614,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.dashboard, color: Colors.white, size: 28),
+                      child: Icon(Icons.dashboard, color: Colors.white, size: 28),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3372,7 +3642,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -3382,8 +3652,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.calendar_today, color: Colors.white70, size: 16),
-                      const SizedBox(width: 8),
+                      Icon(Icons.calendar_today, color: Colors.white70, size: 16),
+                      SizedBox(width: 8),
                       Text(
                         dateStr,
                         style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -3391,16 +3661,16 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 // ── 3 كروت إحصائيات ──
                 _loading
-                    ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                    ? Center(child: CircularProgressIndicator(color: Colors.white))
                     : Row(
                         children: [
                           _statCard('معلقة', '$_pending', Icons.pending_actions, Colors.orangeAccent),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           _statCard('حاضر اليوم', '$_present', Icons.how_to_reg, Colors.greenAccent),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           _statCard('ميداني', '$_fieldWorkers', Icons.location_on, Colors.lightBlueAccent),
                         ],
                       ),
@@ -3408,10 +3678,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // ── قسم: الإدارة السريعة ──
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
               'الإدارة السريعة',
@@ -3422,7 +3692,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: GridView.count(
@@ -3442,18 +3712,20 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
                 _gridCard('الموظفين', Icons.people, Colors.indigo, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
-                _gridCard('إضافة موظف', Icons.person_add, Colors.deepOrange, () =>
+                _gridCard(context.l10n.addEmployee, Icons.person_add, Colors.deepOrange, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateEmployeeScreen()))),
-                _gridCard('الإعلانات', Icons.campaign, Colors.deepPurple, () =>
+_gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerMissionsScreen()))),
+                _gridCard(context.l10n.announcements, Icons.campaign, Colors.deepPurple, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()))),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // ── قسم: الأدوات ──
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
               'الأدوات',
@@ -3464,7 +3736,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: GridView.count(
@@ -3475,24 +3747,24 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               mainAxisSpacing: 12,
               childAspectRatio: 1.4,
               children: [
-                _gridCard('التقارير', Icons.analytics, Colors.teal, () =>
+                _gridCard(context.l10n.reports, Icons.analytics, Colors.teal, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
-                _gridCard('الرواتب', Icons.account_balance_wallet, Colors.green, () =>
+                _gridCard(context.l10n.payroll, Icons.account_balance_wallet, Colors.green, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
-                _gridCard('التذكيرات', Icons.notifications_active, Colors.blueGrey, () =>
+                _gridCard(context.l10n.reminders, Icons.notifications_active, Colors.blueGrey, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
                 _gridCard('نطاق الجيو', Icons.fence, Colors.cyan, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),                _gridCard('لائحة الشركة', Icons.description, Colors.brown, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
                 _gridCard('الهيكل التنظيمي', Icons.account_tree, const Color(0xFF00695C), () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const OrganizationTreeScreen()))),
-                _gridCard('بيانات الشركة', Icons.business, Colors.pink, () =>
+                _gridCard(context.l10n.companyInfo, Icons.business, Colors.pink, () =>
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyInfoScreen()))),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),        ],
+          SizedBox(height: 24),        ],
       ),
     );
   }
@@ -3509,7 +3781,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         child: Column(
           children: [
             Icon(icon, color: color, size: 22),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               value,
               style: const TextStyle(
@@ -3552,7 +3824,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     ),
                     child: Icon(icon, color: color, size: 28),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     title,
                     style: TextStyle(
@@ -3635,7 +3907,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Row(children: [
+          title: Row(children: [
             Icon(Icons.cancel, color: Colors.red),
             SizedBox(width: 8),
             Text('سبب الرفض'),
@@ -3644,11 +3916,11 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('يرجى كتابة سبب الرفض (إجباري)'),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
                 maxLines: 3,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'اكتب السبب هنا...',
                   border: OutlineInputBorder(),
                 ),
@@ -3658,7 +3930,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء'),
+              child: Text(context.l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -3688,14 +3960,14 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
           headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
           body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'تم'))); fetchUnreadCount(); }
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done))); fetchUnreadCount(); }
       _load();
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
+    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
       return const EmptyStateWidget(
         title: 'لا توجد طلبات معلقة',
         description: 'ممتاز! كل الطلبات تمت مراجعتها.\nستظهر هنا أي طلبات جديدة تحتاج موافقتك.',
@@ -3707,15 +3979,15 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
       final item = _items[i];
       return Card(margin: const EdgeInsets.all(8), child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(item['employee_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(item['subject'] ?? item['type_name'] ?? item['leave_type'] ?? item['title'] ?? ''),
         Text(item['details'] ?? item['description'] ?? item['reason'] ?? '', style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Row(children: [
-          Expanded(child: ElevatedButton.icon(onPressed: () => _action(item, 'approve'), icon: const Icon(Icons.check), label: const Text('موافقة'),
+          Expanded(child: ElevatedButton.icon(onPressed: () => _action(item, 'approve'), icon: Icon(Icons.check), label: const Text('موافقة'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white))),
-          const SizedBox(width: 8),
-          Expanded(child: ElevatedButton.icon(onPressed: () => _showRejectDialog(item), icon: const Icon(Icons.close), label: const Text('رفض'),
+          SizedBox(width: 8),
+          Expanded(child: ElevatedButton.icon(onPressed: () => _showRejectDialog(item), icon: Icon(Icons.close), label: Text(context.l10n.rejectMission),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white)))])])));
     }));
   }
@@ -3746,7 +4018,7 @@ class _ManagerAttendanceScreenState extends State<ManagerAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
+    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
       return const EmptyStateWidget(
         title: 'لا يوجد سجلات حضور',
         description: 'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.',
@@ -3756,7 +4028,7 @@ class _ManagerAttendanceScreenState extends State<ManagerAttendanceScreen> {
     }
     return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i];
-      return Card(child: ListTile(leading: const Icon(Icons.person, color: kManagerColor),
+      return Card(child: ListTile(leading: Icon(Icons.person, color: kManagerColor),
           title: Text(item['employee_name'] ?? item['name'] ?? ''),
           subtitle: Text('حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}')));
     }));
@@ -3797,7 +4069,7 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
+    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
       return EmptyStateWidget(
         title: 'لا توجد مواقع لحظية',
         description: 'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم',
@@ -3808,10 +4080,10 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
     }
     return Column(children: [
       Padding(padding: const EdgeInsets.all(8), child: Row(children: [
-        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = true), icon: const Icon(Icons.map), label: const Text('خريطة'),
+        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = true), icon: Icon(Icons.map), label: const Text('خريطة'),
             style: ElevatedButton.styleFrom(backgroundColor: _showMap ? kManagerColor : Colors.grey, foregroundColor: Colors.white))),
-        const SizedBox(width: 8),
-        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = false), icon: const Icon(Icons.list), label: const Text('قائمة'),
+        SizedBox(width: 8),
+        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = false), icon: Icon(Icons.list), label: const Text('قائمة'),
             style: ElevatedButton.styleFrom(backgroundColor: !_showMap ? kManagerColor : Colors.grey, foregroundColor: Colors.white)))])),
       Expanded(child: _showMap ? _buildMap() : _buildList())]);
   }
@@ -3821,7 +4093,7 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
     for (final item in _items) {
       final lat = (item['latitude'] as num?)?.toDouble(); final lng = (item['longitude'] as num?)?.toDouble();
       if (lat == null || lng == null) continue;
-      markers.add(Marker(point: LatLng(lat, lng), width: 40, height: 40, child: const Icon(Icons.location_on, color: Colors.red, size: 40)));
+      markers.add(Marker(point: LatLng(lat, lng), width: 40, height: 40, child: Icon(Icons.location_on, color: Colors.red, size: 40)));
     }
     final center = markers.isNotEmpty ? markers.first.point : const LatLng(30.0444, 31.2357);
     return FlutterMap(options: MapOptions(initialCenter: center, initialZoom: 13), children: [
@@ -3832,9 +4104,9 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
   Widget _buildList() {
     return ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
       final item = _items[i]; final lat = (item['latitude'] as num?)?.toDouble() ?? 0; final lng = (item['longitude'] as num?)?.toDouble() ?? 0;
-      return Card(child: ListTile(leading: const Icon(Icons.person_pin_circle, color: Colors.red),
+      return Card(child: ListTile(leading: Icon(Icons.person_pin_circle, color: Colors.red),
           title: Text(item['employee_name'] ?? ''), subtitle: Text(item['address'] ?? '$lat, $lng'),
-          trailing: IconButton(icon: const Icon(Icons.map, color: kPrimaryColor), onPressed: () => _openMap(lat, lng))));
+          trailing: IconButton(icon: Icon(Icons.map, color: kPrimaryColor), onPressed: () => _openMap(lat, lng))));
     });
   }
 }

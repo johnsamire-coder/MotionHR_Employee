@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class WorkHoursReportScreen extends StatefulWidget {
   const WorkHoursReportScreen({super.key});
@@ -25,13 +26,13 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير ساعات العمل'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        title: Text('تقرير ساعات العمل'),
+        actions: [IconButton(onPressed: _load, icon: Icon(Icons.refresh))],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
-              ? const Center(child: Text('لا توجد بيانات'))
+              ? Center(child: Text(context.l10n.noData))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: employees.map<Widget>((e) {

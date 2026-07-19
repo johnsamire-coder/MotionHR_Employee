@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeMovementsScreen extends StatefulWidget {
   const EmployeeMovementsScreen({super.key});
@@ -113,26 +114,26 @@ class _EmployeeMovementsScreenState extends State<EmployeeMovementsScreen> {
           foregroundColor: Colors.white,
           title: const Text('تاريخ الموظف', style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
-            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _load,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('إعادة المحاولة'),
+                        icon: Icon(Icons.refresh),
+                        label: Text(context.l10n.retry),
                       ),
                     ]))
                 : _movements.isEmpty
-                    ? const Center(child: Text('لا توجد حركات'))
+                    ? Center(child: Text('لا توجد حركات'))
                     : RefreshIndicator(
                         onRefresh: _load,
                         child: ListView.builder(
@@ -165,22 +166,22 @@ class _EmployeeMovementsScreenState extends State<EmployeeMovementsScreen> {
                                     ),
                                     child: Icon(icon, color: color),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(mv['type'] ?? '',
                                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
-                                        const SizedBox(height: 4),
+                                        SizedBox(height: 4),
                                         Row(children: [
                                           Icon(Icons.event, size: 12, color: Colors.grey[600]),
-                                          const SizedBox(width: 4),
+                                          SizedBox(width: 4),
                                           Text(_formatDate(mv['date']),
                                               style: TextStyle(fontSize: 11, color: Colors.grey[600])),
                                         ]),
                                         if ((mv['notes'] ?? '').toString().isNotEmpty) ...[
-                                          const SizedBox(height: 6),
+                                          SizedBox(height: 6),
                                           Text(mv['notes'],
                                               style: const TextStyle(fontSize: 12, color: Colors.black87)),
                                         ],

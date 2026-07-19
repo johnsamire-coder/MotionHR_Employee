@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../services/attachment_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class AttachmentsWidget extends StatefulWidget {
   final String model;
@@ -91,7 +92,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16),
               child: Text(
                 'اختر مصدر الملف',
@@ -116,7 +117,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
               title: 'اختيار ملف (PDF/Word/Excel)',
               onTap: () => _pickAndUpload('file'),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
           ],
         ),
       ),
@@ -175,7 +176,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
       if (widget.objectId == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('احفظ الطلب أولاً قبل رفع المرفقات'),
               backgroundColor: Colors.orange,
             ),
@@ -202,7 +203,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('تم رفع الملف بنجاح'),
               backgroundColor: Colors.green,
             ),
@@ -240,12 +241,12 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء'),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('حذف'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -263,7 +264,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('تم حذف المرفق'),
             backgroundColor: Colors.green,
           ),
@@ -272,7 +273,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('فشل حذف المرفق'),
             backgroundColor: Colors.red,
           ),
@@ -283,7 +284,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
 
   Future<void> _openAttachment(AttachmentModel attachment) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('جاري فتح الملف...'),
         duration: Duration(seconds: 1),
       ),
@@ -293,7 +294,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
 
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('لا يمكن فتح الملف'),
           backgroundColor: Colors.red,
         ),
@@ -338,8 +339,8 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.attach_file, size: 20, color: Colors.blue),
-                  const SizedBox(width: 6),
+                  Icon(Icons.attach_file, size: 20, color: Colors.blue),
+                  SizedBox(width: 6),
                   const Text(
                     'المرفقات',
                     style: TextStyle(
@@ -347,7 +348,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
                       fontSize: 15,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
@@ -372,16 +373,16 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
                     _uploading ? Icons.hourglass_empty : Icons.add_circle,
                     size: 20,
                   ),
-                  label: Text(_uploading ? 'جاري الرفع...' : 'إضافة'),
+                  label: Text(_uploading ? 'جاري الرفع...' : context.l10n.add),
                 ),
             ],
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
 
           // List
           if (_loading)
-            const Center(
+            Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: CircularProgressIndicator(),
@@ -394,13 +395,13 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
                 child: Column(
                   children: [
                     Icon(Icons.folder_open, size: 40, color: Colors.grey.shade400),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       'لا توجد مرفقات',
                       style: TextStyle(color: Colors.grey.shade600),
                     ),
                     if (widget.canEdit) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         'اضغط "إضافة" لرفع ملف',
                         style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
@@ -436,7 +437,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
             ),
             child: Icon(_getFileIcon(a), color: _getFileColor(a), size: 20),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,14 +456,14 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.download, size: 20, color: Colors.blue),
+            icon: Icon(Icons.download, size: 20, color: Colors.blue),
             onPressed: () => _openAttachment(a),
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(),
           ),
           if (widget.canEdit)
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+              icon: Icon(Icons.delete_outline, size: 20, color: Colors.red),
               onPressed: () => _deleteAttachment(a),
               padding: const EdgeInsets.all(4),
               constraints: const BoxConstraints(),

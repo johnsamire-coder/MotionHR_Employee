@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/language_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class FirstLaunchLanguageScreen extends StatefulWidget {
   final VoidCallback onDone;
@@ -38,7 +39,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
 
                 // ── لوجو ──
                 Container(
@@ -47,9 +48,9 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.language, size: 70, color: Colors.white),
+                  child: Icon(Icons.language, size: 70, color: Colors.white),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 // ── عناوين مزدوجة ──
                 const Text(
@@ -60,7 +61,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 const Text(
                   'Choose your language',
                   style: TextStyle(
@@ -70,16 +71,16 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 50),
+                SizedBox(height: 50),
 
                 // ── العربية ──
                 _langCard(
                   code: 'ar',
                   flag: '🇸🇦',
-                  name: 'العربية',
+                  name: context.l10n.arabic,
                   subtitle: 'Arabic',
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // ── الإنجليزية ──
                 _langCard(
@@ -111,16 +112,16 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _selected == 'en' ? 'Continue' : 'متابعة',
+                          _selected == 'en' ? 'Continue' : context.l10n.continueBtn,
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, size: 20),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward, size: 20),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
               ],
             ),
           ),
@@ -162,7 +163,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
         child: Row(
           children: [
             Text(flag, style: const TextStyle(fontSize: 40)),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +195,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                   color: Color(0xFF0D47A1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check, color: Colors.white, size: 22),
+                child: Icon(Icons.check, color: Colors.white, size: 22),
               ),
           ],
         ),

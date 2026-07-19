@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/attachments_widget.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class ItemDetailScreen extends StatelessWidget {
   final Map<String, dynamic> item;
@@ -11,7 +12,7 @@ class ItemDetailScreen extends StatelessWidget {
     required this.itemType,
   });
 
-  Color _statusColor(String status) {
+  Color statusColor(String status) {
     switch (status) {
       case 'approved':
         return Colors.green;
@@ -24,41 +25,41 @@ class ItemDetailScreen extends StatelessWidget {
     }
   }
 
-  String _statusLabel(String status) {
+  String statusLabel(BuildContext context, String status) {
     switch (status) {
       case 'approved':
-        return 'موافق عليه';
+        return context.l10n.approved;
       case 'rejected':
-        return 'مرفوض';
+        return context.l10n.rejected;
       case 'pending':
-        return 'قيد الانتظار';
+        return context.l10n.pending;
       default:
         return status;
     }
   }
 
-  String _value(dynamic v) {
+  String value(dynamic v) {
     if (v == null) return '';
     return v.toString();
   }
 
   @override
   Widget build(BuildContext context) {
-    final status = _value(item['status']).isEmpty ? 'pending' : _value(item['status']);
-    final id = item['id'] is int ? item['id'] as int : int.tryParse(_value(item['id'])) ?? 0;
+    final status = value(item['status']).isEmpty ? 'pending' : value(item['status']);
+    final id = item['id'] is int ? item['id'] as int : int.tryParse(value(item['id'])) ?? 0;
 
-    final notes = _value(item['notes']).isNotEmpty
-        ? _value(item['notes'])
-        : _value(item['reason']);
+    final notes = value(item['notes']).isNotEmpty
+        ? value(item['notes'])
+        : value(item['reason']);
 
-    final rejectReason = _value(item['reject_reason']);
-    final createdAt = _value(item['created_at']);
-    final startDate = _value(item['start_date']);
-    final endDate = _value(item['end_date']);
-    final days = _value(item['days']).isNotEmpty
-        ? _value(item['days'])
-        : _value(item['duration_days']);
-    final amount = _value(item['amount']);
+    final rejectReason = value(item['reject_reason']);
+    final createdAt = value(item['created_at']);
+    final startDate = value(item['start_date']);
+    final endDate = value(item['end_date']);
+    final days = value(item['days']).isNotEmpty
+        ? value(item['days'])
+        : value(item['duration_days']);
+    final amount = value(item['amount']);
 
     final title = itemType == 'leave_request' ? 'تفاصيل الإجازة' : 'تفاصيل الطلب';
 
@@ -90,14 +91,14 @@ class ItemDetailScreen extends StatelessWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor(status).withOpacity(0.15),
+                          color: statusColor(status).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: _statusColor(status)),
+                          border: Border.all(color: statusColor(status)),
                         ),
                         child: Text(
-                          _statusLabel(status),
+                          statusLabel(context, status),
                           style: TextStyle(
-                            color: _statusColor(status),
+                            color: statusColor(status),
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -115,7 +116,7 @@ class ItemDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               Card(
                 elevation: 2,
@@ -127,31 +128,31 @@ class ItemDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'التفاصيل',
+                      Text(
+                        context.l10n.requestDetails,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Divider(height: 20),
+                      Divider(height: 20),
 
                       if (itemType == 'leave_request') ...[
-                        _infoRow('النوع', _value(item['leave_type_name'])),
-                        if (startDate.isNotEmpty) _infoRow('من', startDate),
-                        if (endDate.isNotEmpty) _infoRow('إلى', endDate),
-                        if (days.isNotEmpty) _infoRow('عدد الأيام', '$days يوم'),
+                        infoRow(context.l10n.gender, value(item['leave_type_name'])),
+                        if (startDate.isNotEmpty) infoRow('من', startDate),
+                        if (endDate.isNotEmpty) infoRow('إلى', endDate),
+                        if (days.isNotEmpty) infoRow('عدد الأيام', '$days يوم'),
                       ] else ...[
-                        _infoRow('النوع', _value(item['request_type_name'])),
-                        if (amount.isNotEmpty) _infoRow('المبلغ', '$amount جنيه'),
-                        if (days.isNotEmpty) _infoRow('المدة', days),
+                        infoRow(context.l10n.gender, value(item['request_type_name'])),
+                        if (amount.isNotEmpty) infoRow('المبلغ', '$amount جنيه'),
+                        if (days.isNotEmpty) infoRow('المدة', days),
                       ],
 
                       if (createdAt.isNotEmpty)
-                        _infoRow('تاريخ الطلب', createdAt.split('T').first),
+                        infoRow('تاريخ الطلب', createdAt.split('T').first),
 
                       if (notes.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         const Text(
                           'السبب / الملاحظات',
                           style: TextStyle(
@@ -159,7 +160,7 @@ class ItemDetailScreen extends StatelessWidget {
                             color: Colors.grey,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -175,7 +176,7 @@ class ItemDetailScreen extends StatelessWidget {
                       ],
 
                       if (rejectReason.isNotEmpty) ...[
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -194,7 +195,7 @@ class ItemDetailScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               Text(
                                 rejectReason,
                                 style: TextStyle(color: Colors.red.shade800),
@@ -207,13 +208,13 @@ class ItemDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               if (id > 0)
                 AttachmentsWidget(
                   model: itemType == 'leave_request'
-                    ? 'leaves.LeaveRequest'
-                    : 'requests_app.EmployeeRequest',
+                      ? 'leaves.LeaveRequest'
+                      : 'requests_app.EmployeeRequest',
                   objectId: id,
                   canEdit: status == 'pending',
                 ),
@@ -224,7 +225,7 @@ class ItemDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
+import 'package:motionhr_employee/l10n/l10n.dart';
 
 class AbsenceReportScreen extends StatefulWidget {
   const AbsenceReportScreen({super.key});
@@ -25,13 +26,13 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير الغياب'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        title: Text('تقرير الغياب'),
+        actions: [IconButton(onPressed: _load, icon: Icon(Icons.refresh))],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
-              ? const Center(child: Text('لا توجد حالات غياب'))
+              ? Center(child: Text('لا توجد حالات غياب'))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: employees.map<Widget>((e) {
