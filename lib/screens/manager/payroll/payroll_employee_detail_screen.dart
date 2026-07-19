@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/payroll_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
@@ -12,6 +12,8 @@ class PayrollEmployeeDetailScreen extends StatefulWidget {
 }
 
 class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = PayrollService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -28,6 +30,7 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final daily = (_data?['daily_details'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(title: Text(widget.employeeName)),
@@ -45,11 +48,11 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('الملخص المالي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text(isAr ? 'الملخص المالي' : 'Financial Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             Divider(),
                             _row(context.l10n.basicSalary, '${_data?['basic_salary'] ?? 0} ج'),
-                            _row('خصم التأخير', '${_data?['late_deduction'] ?? 0} ج', color: Colors.red),
-                            _row('خصم الغياب', '${_data?['absence_deduction'] ?? 0} ج', color: Colors.red),
+                            _row(isAr ? 'خصم التأخير' : 'Late Deduction', '${_data?['late_deduction'] ?? 0} ج', color: Colors.red),
+                            _row(isAr ? 'خصم الغياب' : 'Absence Deduction', '${_data?['absence_deduction'] ?? 0} ج', color: Colors.red),
                             _row('إجمالي الخصومات', '${_data?['total_deductions'] ?? 0} ج', color: Colors.red),
                             _row('بونص Overtime', '${_data?['overtime_bonus'] ?? 0} ج', color: Colors.blue),
                             Divider(),
@@ -65,7 +68,7 @@ class _PayrollEmployeeDetailScreenState extends State<PayrollEmployeeDetailScree
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('ملخص الحضور', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('ملخص الحضور', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             Divider(),
                             _row('أيام الحضور', '${_data?['attended_days'] ?? 0}'),
                             _row('أيام الحاضر (present)', '${_data?['present_days'] ?? 0}'),

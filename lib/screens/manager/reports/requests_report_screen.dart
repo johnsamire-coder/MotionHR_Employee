@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -10,6 +10,8 @@ class RequestsReportScreen extends StatefulWidget {
 }
 
 class _RequestsReportScreenState extends State<RequestsReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -40,7 +42,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
       }).toList();
 
       await ReportPdfService.printReport(
-        title: 'تقرير الطلبات',
+        title: isAr ? 'تقرير الطلبات' : 'Requests Report',
         subtitle: 'إجمالي: ${_data!['total_requests']} (موافق: ${_data!['approved']} - معلق: ${_data!['pending']})',
         headers: ['اسم الموظف', 'الفئة', 'الموضوع', 'الحالة'],
         rows: rows,
@@ -53,20 +55,21 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final details = (_data?['details'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير الطلبات'),
+        title: Text(isAr ? 'تقرير الطلبات' : 'Requests Report'),
         actions: [
           if (!_loading && _data != null)
             _printing
-                ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh))
+                ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                : IconButton(onPressed: _print, icon: Icon(Icons.print)),
+          IconButton(onPressed: _load, icon: Icon(Icons.refresh))
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
@@ -76,13 +79,13 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                     child: Column(
                       children: [
                         Text('إجمالي الطلبات: ${_data?['total_requests'] ?? 0}'),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text('موافق: ${_data?['approved'] ?? 0} | مرفوض: ${_data?['rejected'] ?? 0} | معلق: ${_data?['pending'] ?? 0}'),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ...details.map<Widget>((r) {
                   final item = Map<String, dynamic>.from(r as Map);
                   return Card(

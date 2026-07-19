@@ -11,6 +11,8 @@ class CreateMissionScreen extends StatefulWidget {
 }
 
 class _CreateMissionScreenState extends State<CreateMissionScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
   bool _loadingEmployees = true;
@@ -114,7 +116,7 @@ Future<void> _loadEmployees() async {
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Text('إضافة مشارك'),
+          title: Text('إضافة مشارك'),
           content: StatefulBuilder(
             builder: (ctx, setDialogState) => Column(
               mainAxisSize: MainAxisSize.min,
@@ -233,7 +235,7 @@ Future<void> _loadEmployees() async {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? 'حدث خطأ')),
+          SnackBar(content: Text(result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred')),
         );
       }
     } catch (e) {
@@ -249,13 +251,14 @@ Future<void> _loadEmployees() async {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: const Text(
-            'إنشاء مهمة جديدة',
+          title: Text(
+            isAr ? 'إنشاء مهمة جديدة' : 'Create New Mission',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
@@ -409,7 +412,7 @@ Future<void> _loadEmployees() async {
                     SizedBox(height: 12),
 
                     _sectionCard(
-                      title: 'المشاركون',
+                      title: isAr ? 'المشاركون' : 'Participants',
                       icon: Icons.group,
                       children: [
                         if (_loadingEmployees)
@@ -444,7 +447,7 @@ Future<void> _loadEmployees() async {
                                 ? _showAddAssigneeDialog
                                 : null,
                             icon: Icon(Icons.add, color: Color(0xFF6C3FC5)),
-                            label: const Text(
+                            label: Text(
                               'إضافة مشارك',
                               style: TextStyle(color: Color(0xFF6C3FC5)),
                             ),
@@ -464,7 +467,7 @@ Future<void> _loadEmployees() async {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'إنشاء المهمة',
                         style: TextStyle(
                           fontSize: 16,

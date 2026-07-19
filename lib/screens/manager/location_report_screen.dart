@@ -13,6 +13,8 @@ class LocationReportScreen extends StatefulWidget {
 }
 
 class _LocationReportScreenState extends State<LocationReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   List<Map<String, dynamic>> _employees = [];
   Map<String, dynamic>? _selectedEmployee;
   DateTime _selectedDate = DateTime.now();
@@ -87,7 +89,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
       }).toList();
 
       await ReportPdfService.printReport(
-        title: 'تقرير المواقع اليومي',
+        title: isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
         subtitle: 'الموظف: ${_reportData!['employee']?['name'] ?? ''} | التاريخ: ${_formatDate(_selectedDate)}',
         headers: ['#', 'العنوان / الموقع', 'الوقت'],
         rows: rows,
@@ -117,6 +119,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -124,13 +127,13 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF4A148C),
           foregroundColor: Colors.white,
-          title: const Text('تقرير المواقع اليومي',
+          title: Text(isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
               style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             if (_reportData != null)
               _printing
-                  ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                  : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+                  ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                  : IconButton(onPressed: _print, icon: Icon(Icons.print)),
           ],
         ),
         body: Column(
@@ -148,7 +151,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             labelText: 'اختر الموظف',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10)),
-                            prefixIcon: const Icon(Icons.person),
+                            prefixIcon: Icon(Icons.person),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 12),
                           ),
@@ -165,7 +168,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           onChanged: (val) =>
                               setState(() => _selectedEmployee = val),
                         ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
@@ -180,9 +183,9 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.calendar_today,
+                                Icon(Icons.calendar_today,
                                     size: 18, color: Color(0xFF4A148C)),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   _formatDate(_selectedDate),
                                   style: const TextStyle(fontSize: 14),
@@ -192,10 +195,10 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       ElevatedButton.icon(
                         onPressed: _loadingReport ? null : _loadReport,
-                        icon: const Icon(Icons.search, color: Colors.white),
+                        icon: Icon(Icons.search, color: Colors.white),
                         label: Text(context.l10n.search,
                             style: const TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
@@ -214,19 +217,19 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
 
             Expanded(
               child: _loadingReport
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator())
                   : _error != null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline,
+                              Icon(Icons.error_outline,
                                   size: 64, color: Colors.red),
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16),
                               Text(_error!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.red)),
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16),
                               ElevatedButton(
                                   onPressed: _loadReport,
                                   child: Text(context.l10n.retry)),
@@ -234,7 +237,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           ),
                         )
                       : _reportData == null
-                          ? const Center(
+                          ? Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -270,8 +273,8 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.person, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.person, color: Colors.white, size: 20),
+              SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +309,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
 
         Expanded(
           child: points.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -356,7 +359,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,12 +373,12 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Icon(Icons.access_time,
+                                    Icon(Icons.access_time,
                                         size: 12, color: Colors.grey),
-                                    const SizedBox(width: 4),
+                                    SizedBox(width: 4),
                                     Text(
                                       point['recorded_at'] ?? '',
                                       style: TextStyle(
@@ -387,7 +390,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.location_on,
+                          Icon(Icons.location_on,
                               color: Color(0xFF4A148C), size: 20),
                         ],
                       ),

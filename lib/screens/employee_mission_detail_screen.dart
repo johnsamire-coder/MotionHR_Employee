@@ -19,6 +19,8 @@ class EmployeeMissionDetailScreen extends StatefulWidget {
 
 class _EmployeeMissionDetailScreenState
     extends State<EmployeeMissionDetailScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   bool _loading = true;
   Map<String, dynamic>? _mission;
   Map<String, dynamic>? _myAssignment;
@@ -58,6 +60,7 @@ class _EmployeeMissionDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -157,7 +160,7 @@ class _EmployeeMissionDetailScreenState
             child: OutlinedButton.icon(
               onPressed: _showWithdrawDialog,
               icon: Icon(Icons.exit_to_app, color: Colors.orange),
-              label: Text('طلب الانسحاب',
+              label: Text(isAr ? 'طلب الانسحاب' : 'Withdraw Request',
                   style: TextStyle(color: Colors.orange)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.orange),
@@ -280,7 +283,7 @@ class _EmployeeMissionDetailScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('الرد على المهمة',
+            Text('الرد على المهمة',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF6C3FC5))),
@@ -333,12 +336,12 @@ class _EmployeeMissionDetailScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ابدأ المهمة',
+            Text('ابدأ المهمة',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF6C3FC5))),
             SizedBox(height: 8),
-            const Text(
+            Text(
               'عند الوصول للموقع، اضغط "بدء المهمة" لتسجيل حضورك تلقائياً',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
@@ -409,7 +412,7 @@ class _EmployeeMissionDetailScreenState
                       onPressed: _showUpdateLocationDialog,
                       icon: Icon(Icons.my_location,
                           color: Color(0xFF6C3FC5)),
-                      label: const Text('تحديث موقعي الحالي',
+                      label: Text('تحديث موقعي الحالي',
                           style: TextStyle(color: Color(0xFF6C3FC5))),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF6C3FC5)),
@@ -463,7 +466,7 @@ class _EmployeeMissionDetailScreenState
           children: [
             Icon(Icons.feedback, color: Color(0xFF6C3FC5), size: 40),
             SizedBox(height: 8),
-            const Text(
+            Text(
               'المهمة مكتملة! أضف فيدباك الزيارة',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: Color(0xFF6C3FC5)),
@@ -588,7 +591,7 @@ class _EmployeeMissionDetailScreenState
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Text('سبب الرفض'),
+          title: Text('سبب الرفض'),
           content: TextField(
             controller: ctrl,
             decoration: InputDecoration(hintText: 'اكتب السبب...'),
@@ -645,15 +648,15 @@ class _EmployeeMissionDetailScreenState
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           title: Text(context.l10n.endMission),
-          content: const Text('هل أنت متأكد من إنهاء المهمة؟'),
+          content: Text('هل أنت متأكد من إنهاء المهمة؟'),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('تراجع')),
+                child: Text('تراجع')),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('إنهاء', style: TextStyle(color: Colors.white)),
+              child: Text('إنهاء', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -686,7 +689,7 @@ class _EmployeeMissionDetailScreenState
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('وصف الموقع الحالي:'),
+              Text('وصف الموقع الحالي:'),
               SizedBox(height: 8),
               TextField(
                 controller: labelCtrl,
@@ -736,11 +739,11 @@ class _EmployeeMissionDetailScreenState
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: Text('طلب الانسحاب'),
+          title: Text(isAr ? 'طلب الانسحاب' : 'Withdraw Request'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('سيتم إرسال طلب الانسحاب للمدير للموافقة'),
+              Text('سيتم إرسال طلب الانسحاب للمدير للموافقة'),
               SizedBox(height: 12),
               TextField(
                 controller: ctrl,
@@ -760,7 +763,7 @@ class _EmployeeMissionDetailScreenState
               onPressed: () => Navigator.pop(context, true),
               style:
                   ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text('إرسال الطلب',
+              child: Text('إرسال الطلب',
                   style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -814,7 +817,7 @@ class _EmployeeMissionDetailScreenState
                 SizedBox(height: 16),
 
                 // حالة العميل
-                const Text('حالة العميل:',
+                Text('حالة العميل:',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8),
                 DropdownButtonFormField<String>(
@@ -832,7 +835,7 @@ class _EmployeeMissionDetailScreenState
                 SizedBox(height: 16),
 
                 // تقييم الاهتمام
-                const Text('تقييم اهتمام العميل:',
+                Text('تقييم اهتمام العميل:',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -847,7 +850,7 @@ class _EmployeeMissionDetailScreenState
                 ),
 
                 // احتمال الصفقة
-                const Text('احتمال الصفقة:',
+                Text('احتمال الصفقة:',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -883,7 +886,7 @@ class _EmployeeMissionDetailScreenState
 
                 // متابعة
                 CheckboxListTile(
-                  title: const Text('يحتاج متابعة'),
+                  title: Text('يحتاج متابعة'),
                   value: needsFollowup,
                   onChanged: (v) => setSheetState(() => needsFollowup = v!),
                   activeColor: const Color(0xFF6C3FC5),
@@ -921,7 +924,7 @@ class _EmployeeMissionDetailScreenState
                       SnackBar(
                         content: Text(result['success'] == true
                             ? '✅ تم حفظ الفيدباك'
-                            : result['error'] ?? 'حدث خطأ'),
+                            : result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred'),
                         backgroundColor: result['success'] == true
                             ? Colors.green
                             : Colors.red,
@@ -935,7 +938,7 @@ class _EmployeeMissionDetailScreenState
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('حفظ الفيدباك',
+                  child: Text('حفظ الفيدباك',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,

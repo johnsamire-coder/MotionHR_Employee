@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -10,6 +10,8 @@ class WorkHoursReportScreen extends StatefulWidget {
 }
 
 class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -39,7 +41,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
       }).toList();
 
       await ReportPdfService.printReport(
-        title: 'تقرير ساعات العمل',
+        title: isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
         subtitle: 'الشهر: ${_data!['month'] ?? '-'} / ${_data!['year'] ?? '-'}',
         headers: ['اسم الموظف', 'إجمالي الساعات', 'أيام العمل'],
         rows: rows,
@@ -52,20 +54,21 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير ساعات العمل'),
+        title: Text(isAr ? 'تقرير ساعات العمل' : 'Work Hours Report'),
         actions: [
           if (!_loading && _data != null)
             _printing
-                ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh))
+                ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                : IconButton(onPressed: _print, icon: Icon(Icons.print)),
+          IconButton(onPressed: _load, icon: Icon(Icons.refresh))
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
               ? Center(child: Text(context.l10n.noData))
               : ListView(

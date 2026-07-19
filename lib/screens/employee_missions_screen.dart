@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -36,8 +36,8 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
   List<Map<String, String>> _getFilters(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return [
-      {'key': 'all', 'label': isAr ? 'الكل' : 'All'},
-      {'key': 'active', 'label': isAr ? 'جارية' : context.l10n.active},
+      {'key': 'all', 'label': isAr ? isAr ? 'الكل' : 'All' : 'All'},
+      {'key': 'active', 'label': isAr ? isAr ? 'جارية' : 'In Progress' : context.l10n.active},
       {'key': 'today', 'label': isAr ? 'اليوم' : 'Today'},
       {'key': 'upcoming', 'label': isAr ? 'القادمة' : 'Upcoming'},
       {'key': 'completed', 'label': isAr ? 'المكتملة' : 'Completed'},

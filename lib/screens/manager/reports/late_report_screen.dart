@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 
@@ -9,6 +9,8 @@ class LateReportScreen extends StatefulWidget {
 }
 
 class _LateReportScreenState extends State<LateReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -55,7 +57,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
       }
 
       await ReportPdfService.printReport(
-        title: 'تقرير التأخير',
+        title: isAr ? 'تقرير التأخير' : 'Late Report',
         subtitle: 'الشهر: ${_data!['month'] ?? '-'} / ${_data!['year'] ?? '-'}',
         headers: ['الموظف / التاريخ', 'الأيام / الساعة', 'المدة', 'الحالة'],
         rows: rows,
@@ -68,22 +70,23 @@ class _LateReportScreenState extends State<LateReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير التأخير'),
+        title: Text(isAr ? 'تقرير التأخير' : 'Late Report'),
         actions: [
           if (!_loading && _data != null)
             _printing
-                ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh))
+                ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                : IconButton(onPressed: _print, icon: Icon(Icons.print)),
+          IconButton(onPressed: _load, icon: Icon(Icons.refresh))
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
-              ? const Center(child: Text('لا توجد حالات تأخير'))
+              ? Center(child: Text('لا توجد حالات تأخير'))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: employees.map<Widget>((e) {

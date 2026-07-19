@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -10,6 +10,8 @@ class AttendanceReportScreen extends StatefulWidget {
 }
 
 class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -44,7 +46,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       }).toList();
 
       await ReportPdfService.printReport(
-        title: 'تقرير الحضور الشهري',
+        title: isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
         subtitle: 'الشهر: ${_data!['month'] ?? '-'} / ${_data!['year'] ?? '-'}',
         headers: ['اسم الموظف', 'أيام الحضور', 'أيام الغياب', 'أيام التأخير'],
         rows: rows,
@@ -57,42 +59,43 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: Text('تقرير الحضور الشهري'),
+        title: Text(isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report'),
         actions: [
           if (!_loading && _data != null)
             _printing
-                ? const Padding(
+                ? Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
                   )
                 : IconButton(
                     onPressed: _print,
-                    icon: const Icon(Icons.print),
+                    icon: Icon(Icons.print),
                     tooltip: 'طباعة التقرير',
                   ),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
               child: employees.isEmpty
-                  ? ListView(children: [const SizedBox(height: 120), Center(child: Text(context.l10n.noData))])
+                  ? ListView(children: [SizedBox(height: 120), Center(child: Text(context.l10n.noData))])
                   : ListView(
                       padding: const EdgeInsets.all(12),
                       children: [
                         Card(
                           child: ListTile(
-                            leading: const Icon(Icons.calendar_month),
+                            leading: Icon(Icons.calendar_month),
                             title: Text('الشهر: ${_data?['month'] ?? '-'} / ${_data?['year'] ?? '-'}'),
                             subtitle: Text('عدد الموظفين: ${_data?['total_employees'] ?? 0}'),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         ...employees.map<Widget>((e) {
                           final item = Map<String, dynamic>.from(e as Map);
                           return Card(

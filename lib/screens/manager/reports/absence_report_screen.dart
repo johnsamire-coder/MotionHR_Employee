@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -10,6 +10,8 @@ class AbsenceReportScreen extends StatefulWidget {
 }
 
 class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -43,7 +45,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
       }
 
       await ReportPdfService.printReport(
-        title: 'تقرير الغياب',
+        title: isAr ? 'تقرير الغياب' : 'Absence Report',
         subtitle: 'الشهر: ${_data!['month'] ?? '-'} / ${_data!['year'] ?? '-'}',
         headers: ['اسم الموظف', 'أيام الغياب', 'تواريخ الغياب'],
         rows: rows,
@@ -56,22 +58,23 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير الغياب'),
+        title: Text(isAr ? 'تقرير الغياب' : 'Absence Report'),
         actions: [
           if (!_loading && _data != null)
             _printing
-                ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh))
+                ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
+                : IconButton(onPressed: _print, icon: Icon(Icons.print)),
+          IconButton(onPressed: _load, icon: Icon(Icons.refresh))
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
-              ? const Center(child: Text('لا توجد حالات غياب'))
+              ? Center(child: Text('لا توجد حالات غياب'))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: employees.map<Widget>((e) {

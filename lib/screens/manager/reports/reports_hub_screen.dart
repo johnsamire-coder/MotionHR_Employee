@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'attendance_report_screen.dart';
 import 'late_report_screen.dart';
 import 'absence_report_screen.dart';
@@ -29,7 +29,7 @@ class ReportsHubScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: Text(isAr ? 'تقارير المدير' : 'Manager Reports'),
+                title: Text(isAr ? isAr ? 'تقارير المدير' : 'Manager Reports' : 'Manager Reports'),
                 subtitle: Text(
                   isAr
                       ? 'الحضور - التأخير - الغياب - الطلبات - الإجازات - ساعات العمل'
@@ -42,7 +42,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.calendar_month,
               Colors.blue,
-              isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
+              isAr ? isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report' : 'Monthly Attendance Report',
               isAr ? 'عدد أيام الحضور لكل موظف' : 'Attendance days per employee',
               const AttendanceReportScreen(),
             ),
@@ -50,7 +50,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.alarm,
               Colors.orange,
-              isAr ? 'تقرير التأخير' : 'Late Report',
+              isAr ? isAr ? 'تقرير التأخير' : 'Late Report' : 'Late Report',
               isAr ? 'تفاصيل أيام التأخير' : 'Details of late days',
               const LateReportScreen(),
             ),
@@ -58,7 +58,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.person_off,
               Colors.red,
-              isAr ? 'تقرير الغياب' : 'Absence Report',
+              isAr ? isAr ? 'تقرير الغياب' : 'Absence Report' : 'Absence Report',
               isAr ? 'أيام الغياب الشهرية' : 'Monthly absence days',
               const AbsenceReportScreen(),
             ),
@@ -66,7 +66,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.request_page,
               Colors.purple,
-              isAr ? 'تقرير الطلبات' : 'Requests Report',
+              isAr ? isAr ? 'تقرير الطلبات' : 'Requests Report' : 'Requests Report',
               isAr ? 'كل الطلبات والحالات' : 'All requests and statuses',
               const RequestsReportScreen(),
             ),
@@ -74,7 +74,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.beach_access,
               Colors.teal,
-              isAr ? 'تقرير الإجازات' : 'Leaves Report',
+              isAr ? isAr ? 'تقرير الإجازات' : 'Leaves Report' : 'Leaves Report',
               isAr ? 'ملخص إجازات الموظفين' : 'Employee leaves summary',
               const LeavesReportScreen(),
             ),
@@ -82,7 +82,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.access_time,
               Colors.indigo,
-              isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
+              isAr ? isAr ? 'تقرير ساعات العمل' : 'Work Hours Report' : 'Work Hours Report',
               isAr ? 'ساعات العمل الفعلية' : 'Actual work hours',
               const WorkHoursReportScreen(),
             ),
@@ -90,7 +90,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.location_on,
               Colors.green,
-              isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
+              isAr ? isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report' : 'Daily Location Report',
               isAr ? 'أماكن تواجد الموظف خلال اليوم' : 'Employee locations during the day',
               const LocationReportScreen(),
             ),

@@ -15,6 +15,8 @@ class CreateAnnouncementScreen extends StatefulWidget {
 }
 
 class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
@@ -91,7 +93,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
         final data = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['error'] ?? 'حدث خطأ'),
+            content: Text(data['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred'),
             backgroundColor: Colors.red,
           ),
         );
@@ -118,9 +120,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إنشاء إعلان جديد'),
+        title: Text('إنشاء إعلان جديد'),
         backgroundColor: kPrimaryColor,
         foregroundColor: Colors.white,
       ),
@@ -139,7 +142,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'معلومات الإعلان',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -180,7 +183,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'إعدادات الإعلان',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -239,8 +242,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   child: Column(
                     children: [
                       SwitchListTile(
-                        title: const Text('إرسال إشعار Push'),
-                        subtitle: const Text('إشعار فوري على جوال الموظفين'),
+                        title: Text('إرسال إشعار Push'),
+                        subtitle: Text('إشعار فوري على جوال الموظفين'),
                         secondary: Icon(Icons.notifications_active),
                         value: _sendPush,
                         activeColor: kPrimaryColor,
@@ -248,8 +251,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                       ),
                       Divider(height: 1),
                       SwitchListTile(
-                        title: const Text('يتطلب تأكيد القراءة'),
-                        subtitle: const Text('الموظف لازم يضغط "تأكيد القراءة"'),
+                        title: Text('يتطلب تأكيد القراءة'),
+                        subtitle: Text('الموظف لازم يضغط "تأكيد القراءة"'),
                         secondary: Icon(Icons.check_circle_outline),
                         value: _requiresConfirmation,
                         activeColor: kPrimaryColor,

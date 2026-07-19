@@ -41,10 +41,10 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   Map<String, String> _getStatusLabels(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return {
-      '': isAr ? 'الكل' : 'All',
+      '': isAr ? isAr ? 'الكل' : 'All' : 'All',
       'approved': context.l10n.approved,
-      'in_progress': isAr ? 'جارية' : 'In Progress',
-      'completed': isAr ? 'مكتملة' : 'Completed',
+      'in_progress': isAr ? isAr ? 'جارية' : 'In Progress' : 'In Progress',
+      'completed': isAr ? isAr ? 'مكتملة' : 'Completed' : 'Completed',
       'cancelled': context.l10n.cancelled,
       'pending_approval': isAr ? 'انتظار موافقة' : 'Pending Approval',
     };
@@ -93,7 +93,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
-            isAr ? 'إدارة المهمات' : 'Missions Management',
+            isAr ? isAr ? 'إدارة المهمات' : 'Missions Management' : 'Missions Management',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),

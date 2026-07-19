@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'payroll_summary_screen.dart';
 import 'payroll_settings_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -24,7 +24,7 @@ class PayrollHubScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: Text(isAr ? 'نظام الرواتب' : 'Payroll System'),
+                title: Text(isAr ? isAr ? 'نظام الرواتب' : 'Payroll System' : 'Payroll System'),
                 subtitle: Text(
                   isAr
                       ? 'ملخص الرواتب - تفاصيل الموظف - الإعدادات'
@@ -37,7 +37,7 @@ class PayrollHubScreen extends StatelessWidget {
               context,
               Icons.receipt_long,
               Colors.green,
-              isAr ? 'ملخص الرواتب الشهري' : 'Monthly Payroll Summary',
+              isAr ? isAr ? 'ملخص الرواتب الشهري' : 'Monthly Payroll Summary' : 'Monthly Payroll Summary',
               isAr ? 'كل الموظفين مع الخصومات والبونص' : 'All employees with deductions and bonuses',
               const PayrollSummaryScreen(),
             ),
@@ -45,7 +45,7 @@ class PayrollHubScreen extends StatelessWidget {
               context,
               Icons.settings,
               Colors.blueGrey,
-              isAr ? 'إعدادات حساب الرواتب' : 'Payroll Calculation Settings',
+              isAr ? isAr ? 'إعدادات حساب الرواتب' : 'Payroll Settings' : 'Payroll Calculation Settings',
               isAr ? 'قواعد الخصومات والبونص' : 'Deduction and bonus rules',
               const PayrollSettingsScreen(),
             ),

@@ -165,6 +165,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -199,7 +200,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(children: [
-                          _section('البيانات الشخصية', Icons.person, const Color(0xFF1976D2), [
+                          _section(isAr ? 'البيانات الشخصية' : 'Personal Info', Icons.person, const Color(0xFF1976D2), [
                             _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
                             _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
                             _infoRow(context.l10n.gender, _profile!['gender']),
@@ -214,7 +215,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
                             _infoRow('المدينة', _profile!['city']),
                           ]),
-                          _section('البيانات الوظيفية', Icons.work, const Color(0xFFE65100), [
+                          _section(isAr ? 'البيانات الوظيفية' : 'Job Info', Icons.work, const Color(0xFFE65100), [
                             _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
                             _infoRow(context.l10n.department, _profile!['department']),
                             _infoRow('المسمى', _profile!['job_title']),
@@ -224,7 +225,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             _infoRow('انتهاء العقد', _profile!['contract_end_date']),
                             _infoRow(context.l10n.status, _profile!['status']),
                           ]),
-                          _section('البيانات البنكية', Icons.account_balance, const Color(0xFF6A1B9A), [
+                          _section(isAr ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF6A1B9A), [
                             _infoRow('البنك', _profile!['bank_name']),
                             _infoRow('رقم الحساب', _profile!['bank_account']),
                             _infoRow('IBAN', _profile!['iban']),
