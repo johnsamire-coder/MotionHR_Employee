@@ -62,10 +62,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 18, color: Colors.grey[600]),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
           ],
           SizedBox(
-            width: 120,
+            width: 130,
             child: Text(label,
               style: TextStyle(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w500)),
           ),
@@ -102,7 +102,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             ),
             child: Row(children: [
               Icon(icon, color: color, size: 20),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
             ]),
           ),
@@ -139,17 +139,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               ? NetworkImage('https://jssolutions-eg.com$photo')
               : null,
           child: (photo == null || photo.toString().isEmpty)
-              ? Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
+              ? const Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
               : null,
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Text(name,
           style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(jobTitle,
           style: const TextStyle(color: Colors.white70, fontSize: 14)),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
@@ -173,23 +173,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF1976D2),
           foregroundColor: Colors.white,
-          title: Text(context.l10n.profile, style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(context.l10n.profile,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           actions: [
-            IconButton(onPressed: _load, icon: Icon(Icons.refresh)),
+            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           ],
         ),
         body: _loading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(
                     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _load,
-                        icon: Icon(Icons.refresh),
+                        icon: const Icon(Icons.refresh),
                         label: Text(context.l10n.retry),
                       ),
                     ]))
@@ -200,50 +201,86 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(children: [
-                          _section(isAr ? 'البيانات الشخصية' : 'Personal Info', Icons.person, const Color(0xFF1976D2), [
-                            _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
-                            _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
-                            _infoRow(context.l10n.gender, _profile!['gender']),
-                            _infoRow(context.l10n.status, _profile!['marital_status']),
-                            _infoRow('الديانة', _profile!['religion']),
-                            _infoRow('الجنسية', _profile!['nationality']),
-                          ]),
-                          _section('التواصل', Icons.phone, const Color(0xFF388E3C), [
-                            _infoRow(context.l10n.phone, _profile!['phone'], icon: Icons.phone_android),
-                            _infoRow('موبايل آخر', _profile!['phone2']),
-                            _infoRow('البريد', _profile!['email'], icon: Icons.email),
-                            _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
-                            _infoRow('المدينة', _profile!['city']),
-                          ]),
-                          _section(isAr ? 'البيانات الوظيفية' : 'Job Info', Icons.work, const Color(0xFFE65100), [
-                            _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
-                            _infoRow(context.l10n.department, _profile!['department']),
-                            _infoRow('المسمى', _profile!['job_title']),
-                            _infoRow('المدير', _profile!['direct_manager']?['name']),
-                            _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
-                            _infoRow('نوع العقد', _profile!['contract_type']),
-                            _infoRow('انتهاء العقد', _profile!['contract_end_date']),
-                            _infoRow(context.l10n.status, _profile!['status']),
-                          ]),
-                          _section(isAr ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF6A1B9A), [
-                            _infoRow('البنك', _profile!['bank_name']),
-                            _infoRow('رقم الحساب', _profile!['bank_account']),
-                            _infoRow('IBAN', _profile!['iban']),
-                          ]),
+                          // ── البيانات الشخصية ──
+                          _section(
+                            isAr ? 'البيانات الشخصية' : 'Personal Info',
+                            Icons.person,
+                            const Color(0xFF1976D2),
+                            [
+                              _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
+                              _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
+                              _infoRow(context.l10n.gender, _profile!['gender']),
+                              _infoRow(context.l10n.status, _profile!['marital_status']),
+                              _infoRow(isAr ? 'الديانة' : 'Religion', _profile!['religion']),
+                              _infoRow(isAr ? 'الجنسية' : 'Nationality', _profile!['nationality']),
+                            ],
+                          ),
+                          // ── التواصل ──
+                          _section(
+                            isAr ? 'التواصل' : 'Contact',
+                            Icons.phone,
+                            const Color(0xFF388E3C),
+                            [
+                              _infoRow(context.l10n.phone, _profile!['phone'], icon: Icons.phone_android),
+                              _infoRow(isAr ? 'موبايل آخر' : 'Other Mobile', _profile!['phone2']),
+                              _infoRow(isAr ? 'البريد الإلكتروني' : 'Email', _profile!['email'], icon: Icons.email),
+                              _infoRow(context.l10n.address, _profile!['address'], icon: Icons.location_on),
+                              _infoRow(isAr ? 'المدينة' : 'City', _profile!['city']),
+                            ],
+                          ),
+                          // ── البيانات الوظيفية ──
+                          _section(
+                            isAr ? 'البيانات الوظيفية' : 'Job Info',
+                            Icons.work,
+                            const Color(0xFFE65100),
+                            [
+                              _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
+                              _infoRow(context.l10n.department, _profile!['department']),
+                              _infoRow(isAr ? 'المسمى الوظيفي' : 'Job Title', _profile!['job_title']),
+                              _infoRow(isAr ? 'المدير المباشر' : 'Direct Manager', _profile!['direct_manager']?['name']),
+                              _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
+                              _infoRow(isAr ? 'نوع العقد' : 'Contract Type', _profile!['contract_type']),
+                              _infoRow(isAr ? 'انتهاء العقد' : 'Contract End', _profile!['contract_end_date']),
+                              _infoRow(context.l10n.status, _profile!['status']),
+                            ],
+                          ),
+                          // ── البيانات البنكية ──
+                          _section(
+                            isAr ? 'البيانات البنكية' : 'Bank Info',
+                            Icons.account_balance,
+                            const Color(0xFF6A1B9A),
+                            [
+                              _infoRow(isAr ? 'البنك' : 'Bank', _profile!['bank_name']),
+                              _infoRow(isAr ? 'رقم الحساب' : 'Account Number', _profile!['bank_account']),
+                              _infoRow('IBAN', _profile!['iban']),
+                              _infoRow(
+                                isAr ? 'رقم هاتف إنستاباي' : 'InstaPay Phone',
+                                _profile!['instapay_phone'],
+                                icon: Icons.mobile_friendly,
+                              ),
+                              _infoRow(
+                                isAr ? 'رقم المحفظة الإلكترونية' : 'E-Wallet Phone',
+                                _profile!['wallet_phone'],
+                                icon: Icons.account_balance_wallet,
+                              ),
+                            ],
+                          ),
                         ]),
                       ),
+                      // ── أزرار الشاشات الفرعية ──
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Column(children: [
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen()),
+                              onPressed: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen())),
+                              icon: const Icon(Icons.analytics, color: Colors.white),
+                              label: Text(
+                                isAr ? 'الملخص' : 'Summary',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              icon: Icon(Icons.analytics, color: Colors.white),
-                              label: const Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF6A1B9A),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -251,16 +288,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const EmployeeDocumentsScreen()),
+                              onPressed: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) => const EmployeeDocumentsScreen())),
+                              icon: const Icon(Icons.folder_open, color: Colors.white),
+                              label: Text(
+                                isAr ? 'المستندات' : 'Documents',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              icon: Icon(Icons.folder_open, color: Colors.white),
-                              label: const Text('المستندات', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF388E3C),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -268,16 +306,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const EmployeeMovementsScreen()),
+                              onPressed: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) => const EmployeeMovementsScreen())),
+                              icon: const Icon(Icons.history, color: Colors.white),
+                              label: Text(
+                                isAr ? 'تاريخ الموظف' : 'Employee History',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              icon: Icon(Icons.history, color: Colors.white),
-                              label: const Text('تاريخ الموظف', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE65100),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -287,7 +326,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           ),
                         ]),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                     ]),
                   ),
       ),
