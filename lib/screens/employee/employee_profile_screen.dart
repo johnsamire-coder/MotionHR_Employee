@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'employee_movements_screen.dart';
 import 'employee_documents_screen.dart';
 import 'employee_summary_screen.dart';
+import 'employee_payslip_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
@@ -163,6 +164,35 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
+  Widget _actionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: onTap,
+          icon: Icon(icon, color: Colors.white),
+          label: Text(
+            label,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -201,7 +231,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(children: [
-                          // ── البيانات الشخصية ──
                           _section(
                             isAr ? 'البيانات الشخصية' : 'Personal Info',
                             Icons.person,
@@ -215,7 +244,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               _infoRow(isAr ? 'الجنسية' : 'Nationality', _profile!['nationality']),
                             ],
                           ),
-                          // ── التواصل ──
                           _section(
                             isAr ? 'التواصل' : 'Contact',
                             Icons.phone,
@@ -228,7 +256,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               _infoRow(isAr ? 'المدينة' : 'City', _profile!['city']),
                             ],
                           ),
-                          // ── البيانات الوظيفية ──
                           _section(
                             isAr ? 'البيانات الوظيفية' : 'Job Info',
                             Icons.work,
@@ -244,7 +271,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               _infoRow(context.l10n.status, _profile!['status']),
                             ],
                           ),
-                          // ── البيانات البنكية ──
                           _section(
                             isAr ? 'البيانات البنكية' : 'Bank Info',
                             Icons.account_balance,
@@ -267,62 +293,36 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           ),
                         ]),
                       ),
-                      // ── أزرار الشاشات الفرعية ──
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Column(children: [
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(context,
-                                MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen())),
-                              icon: const Icon(Icons.analytics, color: Colors.white),
-                              label: Text(
-                                isAr ? 'الملخص' : 'Summary',
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6A1B9A),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
+                          _actionButton(
+                            label: isAr ? 'الملخص' : 'Summary',
+                            icon: Icons.analytics,
+                            color: const Color(0xFF6A1B9A),
+                            onTap: () => Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen())),
                           ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(context,
-                                MaterialPageRoute(builder: (_) => const EmployeeDocumentsScreen())),
-                              icon: const Icon(Icons.folder_open, color: Colors.white),
-                              label: Text(
-                                isAr ? 'المستندات' : 'Documents',
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF388E3C),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
+                          _actionButton(
+                            label: isAr ? 'كشف راتبي' : 'My Payslip',
+                            icon: Icons.receipt_long,
+                            color: const Color(0xFF1B5E20),
+                            onTap: () => Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const EmployeePayslipScreen())),
                           ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () => Navigator.push(context,
-                                MaterialPageRoute(builder: (_) => const EmployeeMovementsScreen())),
-                              icon: const Icon(Icons.history, color: Colors.white),
-                              label: Text(
-                                isAr ? 'تاريخ الموظف' : 'Employee History',
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE65100),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
+                          _actionButton(
+                            label: isAr ? 'المستندات' : 'Documents',
+                            icon: Icons.folder_open,
+                            color: const Color(0xFF388E3C),
+                            onTap: () => Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const EmployeeDocumentsScreen())),
+                          ),
+                          _actionButton(
+                            label: isAr ? 'تاريخ الموظف' : 'Employee History',
+                            icon: Icons.history,
+                            color: const Color(0xFFE65100),
+                            onTap: () => Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const EmployeeMovementsScreen())),
                           ),
                         ]),
                       ),

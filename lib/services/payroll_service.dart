@@ -1,5 +1,4 @@
-﻿// lib/services/payroll_service.dart
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,5 +44,12 @@ class PayrollService {
 
   Future<Map<String, dynamic>> getSettings() async {
     return _get('$_base/api/mobile/manager/payroll/settings/');
+  }
+
+  Future<Map<String, dynamic>> getMyPayslip({int? year, int? month}) async {
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    return _get('$_base/api/mobile/employee/payslip/?year=$y&month=$m');
   }
 }
