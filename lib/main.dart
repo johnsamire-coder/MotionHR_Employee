@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'l10n/generated/app_localizations.dart';
+import 'package:geocoding/geocoding.dart';
 import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
@@ -5151,66 +5152,128 @@ class _ManagerGeofenceScreenState
   double? _currentLng;
   final _radiusCtrl = TextEditingController(text: '100');
   bool _enabled = true;
+  String? _locationName;
+
 
   @override
   void initState() {
     super.initState();
     _loadGeofence();
   }
+Future<void> _loadGeofence() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
 
-  Future<void> _loadGeofence() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    try {
-      final res = await http.get(
-          Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
-          headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        if (data['success'] == true && data['geofence'] != null)
-          setState(() {
-            _geofence = data['geofence'];
-            _currentLat =
-                (data['geofence']['latitude'] as num?)?.toDouble();
-            _currentLng =
-                (data['geofence']['longitude'] as num?)?.toDouble();
-            _radiusCtrl.text =
-                (data['geofence']['radius'] ?? 100).toString();
-            _enabled = data['geofence']['enabled'] ?? false;
-          });
+  try {
+    final res = await http.get(
+      Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
+      headers: {'Authorization': 'Token $token'},
+    );
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+
+      if (data['success'] == true && data['geofence'] != null) {
+        final geofence = data['geofence'];
+        final lat = (geofence['latitude'] as num?)?.toDouble();
+        final lng = (geofence['longitude'] as num?)?.toDouble();
+        String? locationName = geofence['location_name']?.toString();
+
+        if ((locationName == null || locationName.isEmpty) &&
+            lat != null &&
+            lng != null) {
+          try {
+            final placemarks = await placemarkFromCoordinates(lat, lng);
+            if (placemarks.isNotEmpty) {
+              final p = placemarks.first;
+              final parts = <String>[
+                if ((p.street ?? '').trim().isNotEmpty) p.street!.trim(),
+                if ((p.subLocality ?? '').trim().isNotEmpty)
+                  p.subLocality!.trim(),
+                if ((p.locality ?? '').trim().isNotEmpty) p.locality!.trim(),
+              ];
+              locationName = parts.join(', ');
+            }
+          } catch (_) {}
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _geofence = geofence;
+          _currentLat = lat;
+          _currentLng = lng;
+          _radiusCtrl.text = (geofence['radius'] ?? 100).toString();
+          _enabled = geofence['enabled'] ?? false;
+          _locationName = locationName;
+        });
       }
-    } catch (_) {}
+    }
+  } catch (_) {}
+
+  if (mounted) {
     setState(() => _loading = false);
   }
+}Future<void> _getCurrentLocation() async {
+  final isAr = Localizations.localeOf(context).languageCode == 'ar';
+  setState(() => _saving = true);
 
-  Future<void> _getCurrentLocation() async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    setState(() => _saving = true);
+  try {
+    await requestLocationPermissionsForTracking();
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    String? locationName;
     try {
-      await requestLocationPermissionsForTracking();
-      final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        _currentLat = position.latitude;
-        _currentLng = position.longitude;
-      });
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(isAr
-                ? 'تم تحديد موقعك الحالي 🕐'
-                : 'Current location set 🕐'),
-            backgroundColor: Colors.green));
-    } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text('${isAr ? 'خطأ' : 'Error'}: $e'),
-            backgroundColor: Colors.red));
-    } finally {
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final p = placemarks.first;
+        final parts = <String>[
+          if ((p.street ?? '').trim().isNotEmpty) p.street!.trim(),
+          if ((p.subLocality ?? '').trim().isNotEmpty)
+            p.subLocality!.trim(),
+          if ((p.locality ?? '').trim().isNotEmpty) p.locality!.trim(),
+        ];
+        locationName = parts.join(', ');
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    setState(() {
+      _currentLat = position.latitude;
+      _currentLng = position.longitude;
+      _locationName = locationName;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isAr ? 'تم تحديد موقعك الحالي 🕐' : 'Current location set 🕐',
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${isAr ? 'خطأ' : 'Error'}: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
       setState(() => _saving = false);
     }
   }
-
+}
   Future<void> _saveGeofence() async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_currentLat == null || _currentLng == null) {
@@ -5367,11 +5430,11 @@ class _ManagerGeofenceScreenState
                                               ]),
                                               const SizedBox(height: 6),
                                               Text(
-                                                '${isAr ? 'خط العرض' : 'Latitude'}: ${_currentLat!.toStringAsFixed(6)}',
-                                              ),
-                                              Text(
-                                                '${isAr ? 'خط الطول' : 'Longitude'}: ${_currentLng!.toStringAsFixed(6)}',
-                                              ),
+  _locationName != null && _locationName!.isNotEmpty
+      ? _locationName!
+      : '${isAr ? 'خط العرض' : 'Lat'}: ${_currentLat!.toStringAsFixed(4)}, ${isAr ? 'خط الطول' : 'Lng'}: ${_currentLng!.toStringAsFixed(4)}',
+  style: const TextStyle(fontSize: 13),
+),
                                             ]))
                                   else
                                     Container(
