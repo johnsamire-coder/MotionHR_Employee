@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -22,7 +22,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     'accepted': Colors.blue,
     'in_progress': Colors.orange,
     'completed': Colors.green,
-    'rejected': Colors.red,
+    'rejected': Colors.red, 'pending_approval': Colors.purple,
   };
 
   final Map<String, Color> _priorityColors = {
@@ -184,7 +184,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     final statusColor = _statusColors[status] ?? Colors.grey;
     final priorityColor = _priorityColors[priority] ?? Colors.blue;
     final isActive = status == 'in_progress';
-    final isPending = status == 'pending';
+    final isPending = status == 'pending'; final isPendingApproval = status == 'pending_approval';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -197,8 +197,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final result = await Navigator.push(
+        onTap: () async { if (isPendingApproval) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'الطلب في انتظار موافقة المدير' : 'Request pending manager approval'), backgroundColor: Colors.purple)); return; } final assignmentId = m['assignment_id']; if (assignmentId == null) return; final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => EmployeeMissionDetailScreen(

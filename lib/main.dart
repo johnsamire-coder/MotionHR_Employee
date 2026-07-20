@@ -1785,7 +1785,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final token = prefs.getString('token') ?? '';
     try {
       final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['history'] ?? []); }
+      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['items'] ?? data['history'] ?? []); }
     } catch (_) {}
     setState(() => _loading = false);
   }
@@ -1954,10 +1954,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
   bool get _isOther => _selectedValue == 'other';
 
   Map<String, dynamic>? get _selectedType { try { return _types.cast<Map<String, dynamic>>().firstWhere((t) => t['id'].toString() == _selectedValue); } catch (_) { return null; } }
-bool get _isLoan {
-  final t = _selectedType;
-  return t?['requires_amount'] == true;
-}
+bool get _isStudentCertificate { final t = _selectedType; final s = ((t?['name'] ?? '') + ' ' + (t?['name_ar'] ?? '')).toString().toLowerCase(); return s.contains('student') || s.contains('طالب') || s.contains('قيد'); }
+bool get _isLoan { final t = _selectedType; if (_isStudentCertificate) return false; return t?['requires_amount'] == true; }
 
 String get _permissionKind {
   final t = _selectedType;
@@ -2017,10 +2015,7 @@ bool get _requiresDocument {
   }
 
   Future<void> _submit() async {
-    if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى اختيار النوع وكتابة العنوان'))); return; }
-    if (_isLoan && _amountCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى إدخال مبلغ السلفة'))); return; }
-    if (_isPermissionRequest && (_permissionDateCtrl.text.trim().isEmpty || _permissionTimeCtrl.text.trim().isEmpty || _durationHoursCtrl.text.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى إدخال تاريخ ووقت ومدة الإذن'))); return; }
+    final isAr = Localizations.localeOf(context).languageCode == 'ar'; if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى اختيار النوع وكتابة العنوان' : 'Please choose type and enter title'))); return; } if (_requiresDateRange && (_startDateCtrl.text.trim().isEmpty || _endDateCtrl.text.trim().isEmpty)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال تاريخ البداية والنهاية' : 'Please enter start and end dates'))); return; } if (_requiresDateRange) { final start = DateTime.tryParse(_startDateCtrl.text.trim()); final end = DateTime.tryParse(_endDateCtrl.text.trim()); if (start != null && end != null && end.isBefore(start)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'تاريخ النهاية يجب أن يكون بعد البداية' : 'End date must be after start date'))); return; } } if (_isLoan && _amountCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال المبلغ المطلوب' : 'Please enter the requested amount'))); return; } if (_isPermissionRequest && (_permissionDateCtrl.text.trim().isEmpty || _permissionTimeCtrl.text.trim().isEmpty || _durationHoursCtrl.text.trim().isEmpty)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال تاريخ ووقت ومدة الإذن' : 'Please enter permission date, time and duration'))); return; }
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -2119,7 +2114,7 @@ class MyItemsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(length: 2, child: Column(children: [
-      TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: 'طلباتي'), Tab(text: 'إجازاتي')]),
+      Builder(builder: (context) { final isAr = Localizations.localeOf(context).languageCode == 'ar'; return TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: isAr ? 'طلباتي' : 'My Requests'), Tab(text: isAr ? 'إجازاتي' : 'My Leaves')]); }),
       Expanded(child: TabBarView(children: [_MyList(endpoint: 'my-requests', keyName: 'requests'), _MyList(endpoint: 'my-leaves', keyName: 'leaves')])),
     ]));
   }
@@ -4170,3 +4165,4 @@ class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen>
     });
   }
 }
+
