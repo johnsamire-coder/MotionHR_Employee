@@ -1,3 +1,4 @@
+// lib/screens/manager/reports/late_report_screen.dart
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
@@ -9,20 +10,117 @@ class LateReportScreen extends StatefulWidget {
 }
 
 class _LateReportScreenState extends State<LateReportScreen> {
-  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
-
   final _service = ReportsService();
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
 
+  int _selectedYear = DateTime.now().year;
+  int _selectedMonth = DateTime.now().month;
+
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     setState(() => _loading = true);
-    try { _data = await _service.getLateReport(); } catch (e) {}
+    try {
+      _data = await _service.getLateReport(
+        year: _selectedYear,
+        month: _selectedMonth,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('خطأ: $e')));
+      }
+    }
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _pickMonth() async {
+    final now = DateTime.now();
+    int tempYear = _selectedYear;
+    int tempMonth = _selectedMonth;
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () => setS(() => tempYear--)),
+                  Text('$tempYear',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: tempYear < now.year
+                          ? () => setS(() => tempYear++)
+                          : null),
+                ],
+              ),
+              const SizedBox(height: 8),
+              GridView.builder(
+                shrinkWrap: true,
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4, childAspectRatio: 1.4),
+                itemCount: 12,
+                itemBuilder: (_, i) {
+                  final m = i + 1;
+                  return GestureDetector(
+                    onTap: () => setS(() => tempMonth = m),
+                    child: Container(
+                      margin: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: tempMonth == m
+                            ? const Color(0xFF6A1B9A)
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(_monthName(m, isAr),
+                          style: TextStyle(
+                              color: tempMonth == m
+                                  ? Colors.white
+                                  : Colors.black87,
+                              fontSize: 11)),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(isAr ? 'إلغاء' : 'Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _selectedYear = tempYear;
+                  _selectedMonth = tempMonth;
+                });
+                Navigator.pop(ctx);
+                _load();
+              },
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _print() async {
@@ -30,85 +128,182 @@ class _LateReportScreenState extends State<LateReportScreen> {
     setState(() => _printing = true);
     try {
       final employees = (_data!['employees'] as List?) ?? [];
-      final rows = <List<String>>[];
-      
-      for (var e in employees) {
+      final rows = employees.map<List<String>>((e) {
         final item = Map<String, dynamic>.from(e as Map);
-        final details = (item['details'] as List?) ?? [];
-        
-        // سطر الموظف الرئيسي
-        rows.add([
+        return [
           item['employee_name']?.toString() ?? '-',
-          item['total_late_days']?.toString() ?? '0',
-          '${item['total_late_hours'] ?? 0} س',
-          'إجمالي'
-        ]);
-
-        // تفاصيل كل يوم تأخير
-        for (var d in details) {
-          final detail = Map<String, dynamic>.from(d as Map);
-          rows.add([
-            '',
-            detail['date']?.toString() ?? '-',
-            '${detail['minutes_late']} د',
-            'تأخير يومي'
-          ]);
-        }
-      }
+          '${item['total_late_days'] ?? 0}',
+          '${item['total_late_minutes'] ?? 0}',
+          '${item['total_late_hours'] ?? 0}',
+        ];
+      }).toList();
 
       await ReportPdfService.printReport(
         title: isAr ? 'تقرير التأخير' : 'Late Report',
-        subtitle: 'الشهر: ${_data!['month'] ?? '-'} / ${_data!['year'] ?? '-'}',
-        headers: ['الموظف / التاريخ', 'الأيام / الساعة', 'المدة', 'الحالة'],
+        subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
+        headers: isAr
+            ? ['اسم الموظف', 'أيام التأخير', 'دقائق', 'ساعات']
+            : ['Employee', 'Late Days', 'Minutes', 'Hours'],
         rows: rows,
       );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e')));
+      }
     }
     if (mounted) setState(() => _printing = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final employees = (_data?['employees'] as List?) ?? const [];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'تقرير التأخير' : 'Late Report'),
+        backgroundColor: const Color(0xFF6A1B9A),
+        foregroundColor: Colors.white,
         actions: [
+          TextButton.icon(
+            onPressed: _pickMonth,
+            icon: const Icon(Icons.calendar_month, color: Colors.white),
+            label: Text(
+              '${_monthName(_selectedMonth, isAr)} $_selectedYear',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
           if (!_loading && _data != null)
             _printing
-                ? Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)))
-                : IconButton(onPressed: _print, icon: Icon(Icons.print)),
-          IconButton(onPressed: _load, icon: Icon(Icons.refresh))
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
-          : employees.isEmpty
-              ? Center(child: Text('لا توجد حالات تأخير'))
-              : ListView(
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // Summary
+                Container(
+                  margin: const EdgeInsets.all(12),
                   padding: const EdgeInsets.all(12),
-                  children: employees.map<Widget>((e) {
-                    final item = Map<String, dynamic>.from(e as Map);
-                    final details = (item['details'] as List?) ?? const [];
-                    return Card(
-                      child: ExpansionTile(
-                        leading: const CircleAvatar(child: Icon(Icons.person)),
-                        title: Text(item['employee_name']?.toString() ?? '-'),
-                        subtitle: Text('أيام التأخير: ${item['total_late_days'] ?? 0} - ${item['total_late_hours'] ?? 0} س'),
-                        children: details.map<Widget>((d) {
-                          final detail = Map<String, dynamic>.from(d as Map);
-                          return ListTile(
-                            dense: true,
-                            title: Text('${detail['date']} - ${detail['time']}'),
-                            trailing: Text('${detail['minutes_late']} دقيقة'),
-                          );
-                        }).toList(),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _stat(
+                        isAr ? 'موظفين متأخرين' : 'Late Employees',
+                        '${_data?['total_employees_with_late'] ?? 0}',
+                        Colors.orange,
                       ),
-                    );
-                  }).toList(),
+                    ],
+                  ),
                 ),
+                Expanded(
+                  child: employees.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle_outline,
+                                  color: Colors.green, size: 64),
+                              const SizedBox(height: 16),
+                              Text(
+                                isAr
+                                    ? 'لا يوجد تأخير في هذا الشهر ✅'
+                                    : 'No late records this month ✅',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(12),
+                          itemCount: employees.length,
+                          itemBuilder: (_, idx) {
+                            final item = Map<String, dynamic>.from(
+                                employees[idx] as Map);
+                            final details =
+                                (item['details'] as List?) ?? const [];
+                            return Card(
+                              child: ExpansionTile(
+                                leading: const CircleAvatar(
+                                  backgroundColor: Colors.orange,
+                                  child: Icon(Icons.alarm,
+                                      color: Colors.white),
+                                ),
+                                title: Text(
+                                    item['employee_name']?.toString() ?? '-'),
+                                subtitle: Text(
+                                  isAr
+                                      ? 'تأخير: ${item['total_late_days'] ?? 0} يوم | ${item['total_late_minutes'] ?? 0} دقيقة'
+                                      : 'Late: ${item['total_late_days'] ?? 0} days | ${item['total_late_minutes'] ?? 0} min',
+                                ),
+                                children: details
+                                    .map<Widget>((d) {
+                                  final day =
+                                      Map<String, dynamic>.from(d as Map);
+                                  return ListTile(
+                                    dense: true,
+                                    leading: const Icon(Icons.circle,
+                                        color: Colors.orange, size: 10),
+                                    title: Text(
+                                        day['date']?.toString() ?? '-'),
+                                    subtitle: Text(
+                                        'وقت الحضور: ${day['time'] ?? '-'}'),
+                                    trailing: Text(
+                                      '${day['minutes_late'] ?? 0} د',
+                                      style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  );
+                                })
+                                    .toList(),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
+
+  Widget _stat(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value,
+            style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color)),
+        Text(label, style: const TextStyle(fontSize: 11)),
+      ],
+    );
+  }
+}
+
+String _monthName(int month, bool isAr) {
+  const ar = [
+    '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+  ];
+  const en = [
+    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  return isAr ? ar[month] : en[month];
 }

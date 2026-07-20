@@ -1,34 +1,34 @@
-﻿import 'dart:convert';
+﻿// lib/services/payroll_service.dart
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String kBaseUrlPayroll = 'https://jssolutions-eg.com';
-
 class PayrollService {
-  Future<Map<String, dynamic>> _get(String url) async {
+  static const String _base = 'https://jssolutions-eg.com/attendance';
+
+  Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
+    final token = prefs.getString('auth_token') ?? '';
+    return {
+      'Authorization': 'Token $token',
+      'Content-Type': 'application/json',
+    };
+  }
 
-    final response = await http.get(
-      Uri.parse('$kBaseUrlPayroll$url'),
-      headers: {'Authorization': 'Token $token'},
-    );
-
+  Future<Map<String, dynamic>> _get(String url) async {
+    final headers = await _headers();
+    final response = await http.get(Uri.parse(url), headers: headers);
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-      return Map<String, dynamic>.from(decoded as Map);
-    } else {
-      throw Exception('Failed: ${response.statusCode}');
+      return json.decode(utf8.decode(response.bodyBytes));
     }
+    throw Exception('Error ${response.statusCode}');
   }
 
   Future<Map<String, dynamic>> getSummary({int? year, int? month}) async {
-    final y = year ?? DateTime.now().year;
-    final m = month ?? DateTime.now().month;
-    return _get('/attendance/api/mobile/manager/payroll/summary/?year=$y&month=$m');
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    return _get('$_base/api/mobile/manager/payroll/summary/?year=$y&month=$m');
   }
 
   Future<Map<String, dynamic>> getEmployeeDetail({
@@ -36,12 +36,14 @@ class PayrollService {
     int? year,
     int? month,
   }) async {
-    final y = year ?? DateTime.now().year;
-    final m = month ?? DateTime.now().month;
-    return _get('/attendance/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m');
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    return _get(
+        '$_base/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m');
   }
 
   Future<Map<String, dynamic>> getSettings() async {
-    return _get('/attendance/api/mobile/manager/payroll/settings/');
+    return _get('$_base/api/mobile/manager/payroll/settings/');
   }
 }
