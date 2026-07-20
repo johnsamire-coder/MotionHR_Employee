@@ -33,7 +33,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
 
-
 import 'screens/employee/item_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/manager/company_info_screen.dart';
@@ -43,6 +42,7 @@ import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
+
 const String kBaseUrl = 'https://jssolutions-eg.com';
 const Color kPrimaryColor = Color(0xFF1976D2);
 const Color kPrimaryDark = Color(0xFF0D47A1);
@@ -105,68 +105,136 @@ Future<void> showLocalNotification(String title, String body) async {
   );
 }
 
-Map<String, List<String>> kMorningMessages = {
-  'male': [
-    'صباح الخير يا {name} 🌅 يومك جميل بإذن الله',
-    'يومك سعيد يا {name} 😊 يارب يومك طاقة إيجابية',
-    'أهلاً يا {name}، جاهز نبدع النهاردة! 🚀',
-    'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدع',
-    'شغلك النهاردة هيكون سبب في نجاحك يا {name} 💪',
-    'أنت جزء مهم من الفريق يا {name}، يوم موفق 🎯',
-    'صباح الورد يا {name} 🌹 اعمل يومك أحلى ما يكون',
-    'كل خطوة بتاخدها بتقربك من هدفك يا {name} 🏆',
-    'صباح الفل يا {name}، نجاح قادم في انتظارك 💼',
-    'اجعل يومك مليئًا بالإنجازات يا {name} 🌟',
-  ],
-  'female': [
-    'صباح الخير يا {name} 🌅 يومك جميل بإذن الله',
-    'يومك سعيد يا {name} 😊 يارب يومك طاقة إيجابية',
-    'أهلاً يا {name}، جاهزة نبدعي النهاردة! 🚀',
-    'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدعة',
-    'شغلك النهاردة هيكون سبب في نجاحك يا {name} 💪',
-    'أنتِ جزء مهم من الفريق يا {name}، يوم موفق 🎯',
-    'صباح الورد يا {name} 🌹 اعملي يومك أحلى ما يكون',
-    'كل خطوة بتاخديها بتقربك من هدفك يا {name} 🏆',
-    'صباح الفل يا {name}، نجاح قادم في انتظارك 💼',
-    'اجعلي يومك مليئًا بالإنجازات يا {name} 🌟',
-  ],
+// ═══════════════════════════════════════════════
+// رسائل الصباح - عربي وإنجليزي
+// ═══════════════════════════════════════════════
+Map<String, Map<String, List<String>>> kMorningMessages = {
+  'ar': {
+    'male': [
+      'صباح الخير يا {name} 🌅 يومك جميل بإذن الله',
+      'يومك سعيد يا {name} 😊 يارب يومك طاقة إيجابية',
+      'أهلاً يا {name}، جاهز نبدع النهاردة! 🚀',
+      'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدع',
+      'شغلك النهاردة هيكون سبب في نجاحك يا {name} 💪',
+      'أنت جزء مهم من الفريق يا {name}، يوم موفق 🎯',
+      'صباح الورد يا {name} 🌹 اعمل يومك أحلى ما يكون',
+      'كل خطوة بتاخدها بتقربك من هدفك يا {name} 🏆',
+      'صباح الفل يا {name}، نجاح قادم في انتظارك 💼',
+      'اجعل يومك مليئًا بالإنجازات يا {name} 🌟',
+    ],
+    'female': [
+      'صباح الخير يا {name} 🌅 يومك جميل بإذن الله',
+      'يومك سعيد يا {name} 😊 يارب يومك طاقة إيجابية',
+      'أهلاً يا {name}، جاهزة نبدعي النهاردة! 🚀',
+      'صباح النور يا {name} 🌞 ثقتك مميزة يا مبدعة',
+      'شغلك النهاردة هيكون سبب في نجاحك يا {name} 💪',
+      'أنتِ جزء مهم من الفريق يا {name}، يوم موفق 🎯',
+      'صباح الورد يا {name} 🌹 اعملي يومك أحلى ما يكون',
+      'كل خطوة بتاخديها بتقربك من هدفك يا {name} 🏆',
+      'صباح الفل يا {name}، نجاح قادم في انتظارك 💼',
+      'اجعلي يومك مليئًا بالإنجازات يا {name} 🌟',
+    ],
+  },
+  'en': {
+    'male': [
+      'Good morning {name} 🌅 Have a wonderful day!',
+      'Happy day {name} 😊 Wishing you positive energy!',
+      'Hello {name}, ready to be creative today! 🚀',
+      'Good morning {name} 🌞 Your confidence is unique!',
+      'Your work today will be the reason for your success {name} 💪',
+      'You are an important part of the team {name}, have a great day 🎯',
+      'Good morning {name} 🌹 Make your day the best it can be!',
+      'Every step you take brings you closer to your goal {name} 🏆',
+      'Good morning {name}, success is waiting for you 💼',
+      'Make your day full of achievements {name} 🌟',
+    ],
+    'female': [
+      'Good morning {name} 🌅 Have a wonderful day!',
+      'Happy day {name} 😊 Wishing you positive energy!',
+      'Hello {name}, ready to be creative today! 🚀',
+      'Good morning {name} 🌞 Your confidence is unique!',
+      'Your work today will be the reason for your success {name} 💪',
+      'You are an important part of the team {name}, have a great day 🎯',
+      'Good morning {name} 🌹 Make your day the best it can be!',
+      'Every step you take brings you closer to your goal {name} 🏆',
+      'Good morning {name}, success is waiting for you 💼',
+      'Make your day full of achievements {name} 🌟',
+    ],
+  },
 };
 
-Map<String, List<String>> kEveningMessages = {
-  'male': [
-    'شكراً على مجهودك النهاردة يا {name} 🌙 استريح كويس',
-    'يوم عمل جميل يا {name}، تستاهل راحة ممتعة 😴',
-    'أحسنت يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟',
-    'شغل رائع النهاردة يا {name}، مساء الخير والراحة 🎉',
-    'انتهيت من يوم منتج يا {name}، وقت العافية والراحة 🛌',
-    'أنت تستحق الراحة يا {name}، مساءك أحلى 💤',
-    'يوم موفق انتهى يا {name}، وقت الاستجمام 🏖',
-    'الله يبارك في مجهودك يا {name}، خد قسط من الراحة 🌟',
-    'يوم رائع يا {name}، استمر 🎯',
-    'مساء الخير يا {name}، تستاهل كل خير 🌞',
-  ],
-  'female': [
-    'شكراً على مجهودك النهاردة يا {name} 🌙 استريحي كويس',
-    'يوم عمل جميل يا {name}، تستاهلي راحة ممتعة 😴',
-    'أحسنتِ يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟',
-    'شغل رائع النهاردة يا {name}، مساء الخير والراحة 🎉',
-    'انتهيتي من يوم منتج يا {name}، وقت العافية والراحة 🛌',
-    'أنتِ تستحقي الراحة يا {name}، مساءك أحلى 💤',
-    'يوم موفق انتهى يا {name}، وقت الاستجمام 🏖',
-    'الله يبارك في مجهودك يا {name}، خدي قسط من الراحة 🌟',
-    'يوم رائع يا {name}، استمري 🎯',
-    'مساء الخير يا {name}، تستاهلي كل خير 🌞',
-  ],
+// ═══════════════════════════════════════════════
+// رسائل المساء - عربي وإنجليزي
+// ═══════════════════════════════════════════════
+Map<String, Map<String, List<String>>> kEveningMessages = {
+  'ar': {
+    'male': [
+      'شكراً على مجهودك النهاردة يا {name} 🌙 استريح كويس',
+      'يوم عمل جميل يا {name}، تستاهل راحة ممتعة 😴',
+      'أحسنت يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟',
+      'شغل رائع النهاردة يا {name}، مساء الخير والراحة 🎉',
+      'انتهيت من يوم منتج يا {name}، وقت العافية والراحة 🛌',
+      'أنت تستحق الراحة يا {name}، مساءك أحلى 💤',
+      'يوم موفق انتهى يا {name}، وقت الاستجمام 🏖',
+      'الله يبارك في مجهودك يا {name}، خد قسط من الراحة 🌟',
+      'يوم رائع يا {name}، استمر 🎯',
+      'مساء الخير يا {name}، تستاهل كل خير 🌞',
+    ],
+    'female': [
+      'شكراً على مجهودك النهاردة يا {name} 🌙 استريحي كويس',
+      'يوم عمل جميل يا {name}، تستاهلي راحة ممتعة 😴',
+      'أحسنتِ يا {name}! اليوم ده كان فيه إنجاز، مساءك سعيد 🌟',
+      'شغل رائع النهاردة يا {name}، مساء الخير والراحة 🎉',
+      'انتهيتي من يوم منتج يا {name}، وقت العافية والراحة 🛌',
+      'أنتِ تستحقي الراحة يا {name}، مساءك أحلى 💤',
+      'يوم موفق انتهى يا {name}، وقت الاستجمام 🏖',
+      'الله يبارك في مجهودك يا {name}، خدي قسط من الراحة 🌟',
+      'يوم رائع يا {name}، استمري 🎯',
+      'مساء الخير يا {name}، تستاهلي كل خير 🌞',
+    ],
+  },
+  'en': {
+    'male': [
+      'Thank you for your effort today {name} 🌙 Rest well!',
+      'Great work day {name}, you deserve a pleasant rest 😴',
+      'Well done {name}! Today was full of achievements, good evening 🌟',
+      'Great work today {name}, good evening and rest well 🎉',
+      'You finished a productive day {name}, time to relax 🛌',
+      'You deserve the rest {name}, have a great evening 💤',
+      'A successful day ended {name}, time to unwind 🏖',
+      'God bless your effort {name}, take some rest 🌟',
+      'Great day {name}, keep it up 🎯',
+      'Good evening {name}, you deserve all the best 🌞',
+    ],
+    'female': [
+      'Thank you for your effort today {name} 🌙 Rest well!',
+      'Great work day {name}, you deserve a pleasant rest 😴',
+      'Well done {name}! Today was full of achievements, good evening 🌟',
+      'Great work today {name}, good evening and rest well 🎉',
+      'You finished a productive day {name}, time to relax 🛌',
+      'You deserve the rest {name}, have a great evening 💤',
+      'A successful day ended {name}, time to unwind 🏖',
+      'God bless your effort {name}, take some rest 🌟',
+      'Great day {name}, keep it up 🎯',
+      'Good evening {name}, you deserve all the best 🌞',
+    ],
+  },
 };
 
+// ═══════════════════════════════════════════════
+// getRandomMessage - يقرأ اللغة ويختار الرسائل المناسبة
+// ═══════════════════════════════════════════════
 String getRandomMessage(
-  Map<String, List<String>> messages,
+  Map<String, Map<String, List<String>>> messages,
   String gender,
-  String name,
-) {
-  final list = messages[gender] ?? messages['male']!;
+  String name, {
+  String lang = 'ar',
+}) {
+  final langMap = messages[lang] ?? messages['ar']!;
+  final list = langMap[gender] ?? langMap['male']!;
   final msg = list[Random().nextInt(list.length)];
-  return msg.replaceAll('{name}', name.isEmpty ? 'صديقنا' : name);
+  final fallback = lang == 'ar' ? 'صديقنا' : 'Friend';
+  return msg.replaceAll('{name}', name.isEmpty ? fallback : name);
 }
 
 @pragma('vm:entry-point')
@@ -215,10 +283,11 @@ Future<void> saveFCMTokenToServer() async {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Token $token',
-      },body: jsonEncode({
-  'fcm_token': fcmToken,
-  'preferred_language': LanguageService.currentLocale.value.languageCode,
-}),
+      },
+      body: jsonEncode({
+        'fcm_token': fcmToken,
+        'preferred_language': LanguageService.currentLocale.value.languageCode,
+      }),
     );
 
     if (res.statusCode == 200) {
@@ -244,7 +313,8 @@ class NotificationBellButton extends StatelessWidget {
               onPressed: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen()),
                 );
                 fetchUnreadCount();
               },
@@ -259,7 +329,8 @@ class NotificationBellButton extends StatelessWidget {
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  constraints:
+                      const BoxConstraints(minWidth: 18, minHeight: 18),
                   child: Text(
                     count > 99 ? '99+' : '$count',
                     style: const TextStyle(
@@ -326,27 +397,27 @@ class _MotionHRAppState extends State<MotionHRApp> {
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
-          locale: locale,supportedLocales: const [
-  Locale('ar'),
-  Locale('en'),
-],
-localizationsDelegates: const [
-  AppLocalizations.delegate,
-  GlobalMaterialLocalizations.delegate,
-  GlobalWidgetsLocalizations.delegate,
-  GlobalCupertinoLocalizations.delegate,
-],
-
+          locale: locale,
+          supportedLocales: const [
+            Locale('ar'),
+            Locale('en'),
+          ],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           builder: (context, child) {
             return Directionality(
               textDirection: locale.languageCode == 'ar'
                   ? TextDirection.rtl
                   : TextDirection.ltr,
-              child: child ?? SizedBox(),
+              child: child ?? const SizedBox(),
             );
           },
           home: _checking
-              ? Scaffold(
+              ? const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 )
               : _isFirstLaunch
@@ -375,6 +446,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _checkAuth();
   }
+
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
 
@@ -443,6 +515,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -456,9 +529,9 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.location_on, size: 100, color: Colors.white),
-              SizedBox(height: 20),
-              Text(
+              const Icon(Icons.location_on, size: 100, color: Colors.white),
+              const SizedBox(height: 20),
+              const Text(
                 'MotionHR',
                 style: TextStyle(
                   color: Colors.white,
@@ -467,13 +540,16 @@ class _SplashScreenState extends State<SplashScreen> {
                   letterSpacing: 2,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'نظام إدارة الموارد البشرية',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                isAr
+                    ? 'نظام إدارة الموارد البشرية'
+                    : 'Human Resources Management System',
+                style:
+                    const TextStyle(color: Colors.white70, fontSize: 14),
               ),
-              SizedBox(height: 30),
-              CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 30),
+              const CircularProgressIndicator(color: Colors.white),
             ],
           ),
         ),
@@ -496,7 +572,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _loading = false;
   bool _obscurePass = true;
-  String? _error;bool _rememberMe = false;
+  String? _error;
+  bool _rememberMe = false;
   bool _stayLoggedIn = false;
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
@@ -515,7 +592,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _passFocus.dispose();
     super.dispose();
   }
-Future<void> _checkBiometric() async {
+
+  Future<void> _checkBiometric() async {
     final available = await BiometricAuthService.isBiometricAvailable();
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('biometric_enabled') ?? false;
@@ -528,9 +606,12 @@ Future<void> _checkBiometric() async {
     if (available && enabled) {
       final token = await AuthStorageService.getSavedToken();
       if (token != null && token.isNotEmpty) {
-        final auth = await BiometricAuthService.authenticate(
-          reason: 'سجّل دخولك بالبصمة',
-        );
+        // نستخدم اللغة المحفوظة بدلاً من context (لأننا في initState)
+        final lang = LanguageService.currentLocale.value.languageCode;
+        final reason = lang == 'ar'
+            ? 'سجّل دخولك بالبصمة'
+            : 'Log in with biometrics';
+        final auth = await BiometricAuthService.authenticate(reason: reason);
         if (auth && mounted) {
           _navigateByToken(token);
         }
@@ -556,19 +637,23 @@ Future<void> _checkBiometric() async {
   }
 
   Future<void> _loginWithBiometric() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final token = await AuthStorageService.getSavedToken();
     if (token == null || token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('يرجى تسجيل الدخول مرة واحدة أولاً لتفعيل البصمة'),
+          content: Text(
+            isAr
+                ? 'يرجى تسجيل الدخول مرة واحدة أولاً لتفعيل البصمة'
+                : 'Please log in once first to enable biometric login',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
-    final auth = await BiometricAuthService.authenticate(
-      reason: 'سجّل دخولك بالبصمة',
-    );
+    final reason = isAr ? 'سجّل دخولك بالبصمة' : 'Log in with biometrics';
+    final auth = await BiometricAuthService.authenticate(reason: reason);
     if (auth && mounted) {
       _navigateByToken(token);
     }
@@ -589,8 +674,11 @@ Future<void> _checkBiometric() async {
   }
 
   Future<void> _login() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_userCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
-      setState(() => _error = 'من فضلك ادخل اسم المستخدم وكلمة المرور');
+      setState(() => _error = isAr
+          ? 'من فضلك ادخل اسم المستخدم وكلمة المرور'
+          : 'Please enter username and password');
       return;
     }
 
@@ -615,7 +703,7 @@ Future<void> _checkBiometric() async {
         final prefs = await SharedPreferences.getInstance();
 
         await prefs.setString('token', data['token']);
-await prefs.setString('auth_token', data['token']); // للبصمة
+        await prefs.setString('auth_token', data['token']); // للبصمة
 
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
@@ -624,9 +712,15 @@ await prefs.setString('auth_token', data['token']); // للبصمة
         String gender = data['gender'] ?? 'male';
 
         if (data['employee'] is Map) {
-          fullName = fullName.isEmpty ? (data['employee']['name'] ?? '') : fullName;
-          companyName = companyName.isEmpty ? (data['employee']['company'] ?? '') : companyName;
-          firstName = firstName.isEmpty ? (data['employee']['first_name'] ?? '') : firstName;
+          fullName = fullName.isEmpty
+              ? (data['employee']['name'] ?? '')
+              : fullName;
+          companyName = companyName.isEmpty
+              ? (data['employee']['company'] ?? '')
+              : companyName;
+          firstName = firstName.isEmpty
+              ? (data['employee']['first_name'] ?? '')
+              : firstName;
           gender = gender == 'male' && data['employee']['gender'] != null
               ? data['employee']['gender']
               : gender;
@@ -655,7 +749,7 @@ await prefs.setString('auth_token', data['token']); // للبصمة
           token: data['token'],
         );
         await AuthStorageService.saveToken(data['token']);
-// لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
+        // لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
         if (_biometricAvailable) {
           final prefs2 = await SharedPreferences.getInstance();
           await prefs2.setBool('biometric_enabled', true);
@@ -713,10 +807,13 @@ await prefs.setString('auth_token', data['token']); // للبصمة
           );
         }
       } else {
-        setState(() => _error = data['message'] ?? 'بيانات الدخول غير صحيحة');
+        final isAr = Localizations.localeOf(context).languageCode == 'ar';
+        setState(() => _error = data['message'] ??
+            (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid login credentials'));
       }
     } catch (e) {
-      setState(() => _error = 'خطأ في الاتصال بالخادم');
+      final isAr = Localizations.localeOf(context).languageCode == 'ar';
+      setState(() => _error = isAr ? 'خطأ في الاتصال بالخادم' : 'Server connection error');
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -725,14 +822,17 @@ await prefs.setString('auth_token', data['token']); // للبصمة
   }
 
   void _showForgotPassword() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
           title: Text(context.l10n.forgotPassword),
-          content: const Text(
-            'من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.',
+          content: Text(
+            isAr
+                ? 'من فضلك تواصل مع مسئول الموارد البشرية لإعادة تعيين كلمة المرور الخاصة بك.'
+                : 'Please contact your HR manager to reset your password.',
           ),
           actions: [
             TextButton(
@@ -747,8 +847,10 @@ await prefs.setString('auth_token', data['token']); // للبصمة
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,      child: Scaffold(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -764,7 +866,9 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                 children: [
                   // ── زر تغيير اللغة ──
                   Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: isAr
+                        ? Alignment.centerLeft
+                        : Alignment.centerRight,
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
@@ -774,11 +878,13 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                         icon: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(width: 10),
-                            Icon(Icons.language, color: Colors.white, size: 20),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
-                            SizedBox(width: 6),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.language,
+                                color: Colors.white, size: 20),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_drop_down,
+                                color: Colors.white, size: 20),
+                            const SizedBox(width: 6),
                           ],
                         ),
                         onSelected: (value) async {
@@ -790,7 +896,8 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                             value: 'ar',
                             child: Row(
                               children: [
-                                Text('🇸🇦 ', style: TextStyle(fontSize: 18)),
+                                const Text('🇸🇦 ',
+                                    style: TextStyle(fontSize: 18)),
                                 Text(context.l10n.arabic),
                               ],
                             ),
@@ -799,8 +906,9 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                             value: 'en',
                             child: Row(
                               children: [
-                                Text('🇬🇧 ', style: TextStyle(fontSize: 18)),
-                                Text('English'),
+                                const Text('🇬🇧 ',
+                                    style: TextStyle(fontSize: 18)),
+                                const Text('English'),
                               ],
                             ),
                           ),
@@ -808,16 +916,17 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.location_on, size: 70, color: Colors.white),
+                    child: const Icon(Icons.location_on,
+                        size: 70, color: Colors.white),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   const Text(
                     'MotionHR',
                     style: TextStyle(
@@ -827,12 +936,15 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                       letterSpacing: 2,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  const Text(
-                    'مرحباً بك، سجل دخولك للمتابعة',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  const SizedBox(height: 8),
+                  Text(
+                    isAr
+                        ? 'مرحباً بك، سجل دخولك للمتابعة'
+                        : 'Welcome, please log in to continue',
+                    style: const TextStyle(
+                        fontSize: 14, color: Colors.white70),
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -854,11 +966,13 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                           onSubmitted: (_) => _passFocus.requestFocus(),
                           decoration: InputDecoration(
                             labelText: context.l10n.username,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: Icon(Icons.person, color: kPrimaryColor),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: const Icon(Icons.person,
+                                color: kPrimaryColor),
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         TextField(
                           controller: _passCtrl,
                           focusNode: _passFocus,
@@ -867,36 +981,43 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                           onSubmitted: (_) => _login(),
                           decoration: InputDecoration(
                             labelText: context.l10n.password,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: Icon(Icons.lock, color: kPrimaryColor),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: const Icon(Icons.lock,
+                                color: kPrimaryColor),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePass ? Icons.visibility_off : Icons.visibility,
+                                _obscurePass
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.grey,
                               ),
-                              onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                              onPressed: () => setState(
+                                  () => _obscurePass = !_obscurePass),
                             ),
                           ),
                         ),
-                        SizedBox(height: 16),
-
+                        const SizedBox(height: 16),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border:
+                                Border.all(color: Colors.grey.shade200),
                           ),
                           child: Column(
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.check_circle_outline, color: kPrimaryColor),
-                                  SizedBox(width: 8),
+                                  const Icon(Icons.check_circle_outline,
+                                      color: kPrimaryColor),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       context.l10n.rememberMe,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -916,15 +1037,15 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                               if (_biometricAvailable)
                                 Row(
                                   children: [
-                                    Icon(
-                                      Icons.fingerprint,
-                                      color: kPrimaryColor,
-                                    ),
-                                    SizedBox(width: 8),
+                                    const Icon(Icons.fingerprint,
+                                        color: kPrimaryColor),
+                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'الدخول بالبصمة',
-                                        style: TextStyle(
+                                        isAr
+                                            ? 'الدخول بالبصمة'
+                                            : 'Biometric Login',
+                                        style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -935,20 +1056,25 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                                       activeColor: kPrimaryColor,
                                       onChanged: (value) async {
                                         if (value) {
+                                          final lang = LanguageService
+                                              .currentLocale
+                                              .value
+                                              .languageCode;
+                                          final reason = lang == 'ar'
+                                              ? 'تأكيد تفعيل الدخول بالبصمة'
+                                              : 'Confirm biometric login activation';
                                           final authenticated =
-                                              await BiometricAuthService.authenticate(
-                                            reason: 'تأكيد تفعيل الدخول بالبصمة',
-                                          );
-                                          if (!authenticated || !mounted) return;
+                                              await BiometricAuthService
+                                                  .authenticate(
+                                                      reason: reason);
+                                          if (!authenticated ||
+                                              !mounted) return;
                                         }
-
                                         final prefs =
-                                            await SharedPreferences.getInstance();
+                                            await SharedPreferences
+                                                .getInstance();
                                         await prefs.setBool(
-                                          'biometric_enabled',
-                                          value,
-                                        );
-
+                                            'biometric_enabled', value);
                                         if (mounted) {
                                           setState(() {
                                             _biometricEnabled = value;
@@ -958,26 +1084,31 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                                     ),
                                   ],
                                 ),
-                              Divider(height: 12),
+                              const Divider(height: 12),
                               Row(
                                 children: [
-                                  Icon(Icons.verified_user_outlined, color: kPrimaryColor),
-                                  SizedBox(width: 8),
+                                  const Icon(
+                                      Icons.verified_user_outlined,
+                                      color: kPrimaryColor),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           context.l10n.stayLoggedIn,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        SizedBox(height: 2),
+                                        const SizedBox(height: 2),
                                         Text(
-                                          'يبقى الحساب مفتوحاً حتى 72 ساعة',
-                                          style: TextStyle(
+                                          isAr
+                                              ? 'يبقى الحساب مفتوحاً حتى 72 ساعة'
+                                              : 'Account stays open for up to 72 hours',
+                                          style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
                                           ),
@@ -999,9 +1130,7 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                             ],
                           ),
                         ),
-
-                        SizedBox(height: 12),
-
+                        const SizedBox(height: 12),
                         if (_error != null)
                           Container(
                             width: double.infinity,
@@ -1009,21 +1138,23 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                             decoration: BoxDecoration(
                               color: Colors.red[50],
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red[200]!),
+                              border:
+                                  Border.all(color: Colors.red[200]!),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.error_outline, color: Colors.red[700], size: 20),
-                                SizedBox(width: 8),
+                                Icon(Icons.error_outline,
+                                    color: Colors.red[700], size: 20),
+                                const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(_error!, style: TextStyle(color: Colors.red[700])),
+                                  child: Text(_error!,
+                                      style: TextStyle(
+                                          color: Colors.red[700])),
                                 ),
                               ],
                             ),
                           ),
-
-                        SizedBox(height: 20),
-
+                        const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -1037,15 +1168,18 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                               elevation: 3,
                             ),
                             child: _loading
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
                                 : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.login, color: Colors.white),
-                                      SizedBox(width: 8),
+                                      const Icon(Icons.login,
+                                          color: Colors.white),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        'دخول',
-                                        style: TextStyle(
+                                        isAr ? 'دخول' : 'Login',
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -1055,8 +1189,8 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                                   ),
                           ),
                         ),
-                        SizedBox(height: 12),
-// زر البصمة
+                        const SizedBox(height: 12),
+                        // زر البصمة
                         if (_biometricAvailable && _biometricEnabled)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
@@ -1065,19 +1199,24 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                               height: 52,
                               child: OutlinedButton.icon(
                                 onPressed: _loginWithBiometric,
-                                icon: Icon(Icons.fingerprint, size: 28, color: kPrimaryColor),
-                                label: const Text(
-                                  'دخول بالبصمة',
-                                  style: TextStyle(
+                                icon: const Icon(Icons.fingerprint,
+                                    size: 28, color: kPrimaryColor),
+                                label: Text(
+                                  isAr
+                                      ? 'دخول بالبصمة'
+                                      : 'Biometric Login',
+                                  style: const TextStyle(
                                     color: kPrimaryColor,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: kPrimaryColor, width: 2),
+                                  side: const BorderSide(
+                                      color: kPrimaryColor, width: 2),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius:
+                                        BorderRadius.circular(12),
                                   ),
                                 ),
                               ),
@@ -1085,18 +1224,22 @@ await prefs.setString('auth_token', data['token']); // للبصمة
                           ),
                         TextButton(
                           onPressed: _showForgotPassword,
-                          child: const Text(
-                            'نسيت كلمة المرور?',
-                            style: TextStyle(color: kPrimaryColor),
+                          child: Text(
+                            isAr
+                                ? 'نسيت كلمة المرور؟'
+                                : 'Forgot password?',
+                            style:
+                                const TextStyle(color: kPrimaryColor),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   const Text(
                     '© 2025 MotionHR',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                    style:
+                        TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
@@ -1127,6 +1270,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   String? _error;
 
   Future<void> _changePassword() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_newCtrl.text != _confirmCtrl.text) {
       setState(() => _error = context.l10n.passwordMismatch);
       return;
@@ -1178,10 +1322,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           );
         }
       } else {
-        setState(() => _error = data['message'] ?? 'فشل تغيير كلمة المرور');
+        setState(() => _error = data['message'] ??
+            (isAr ? 'فشل تغيير كلمة المرور' : 'Failed to change password'));
       }
     } catch (e) {
-      setState(() => _error = 'خطأ في الاتصال');
+      final isAr = Localizations.localeOf(context).languageCode == 'ar';
+      setState(() =>
+          _error = isAr ? 'خطأ في الاتصال' : 'Connection error');
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -1189,7 +1336,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
   }
 
-  Widget _pf(TextEditingController c, String l, bool o, VoidCallback t) {
+  Widget _pf(
+      TextEditingController c, String l, bool o, VoidCallback t) {
     return TextField(
       controller: c,
       obscureText: o,
@@ -1198,7 +1346,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        prefixIcon: Icon(Icons.lock, color: kPrimaryColor),
+        prefixIcon: const Icon(Icons.lock, color: kPrimaryColor),
         suffixIcon: IconButton(
           icon: Icon(
             o ? Icons.visibility_off : Icons.visibility,
@@ -1212,8 +1360,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
           title: Text(context.l10n.changePassword),
@@ -1236,38 +1385,40 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.warning, color: Colors.orange[700]),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'يجب تغيير كلمة المرور قبل استخدام التطبيق',
-                          style: TextStyle(color: Colors.orange),
+                          isAr
+                              ? 'يجب تغيير كلمة المرور قبل استخدام التطبيق'
+                              : 'You must change your password before using the app',
+                          style: TextStyle(color: Colors.orange[700]),
                         ),
                       ),
                     ],
                   ),
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _pf(
                 _currentCtrl,
                 context.l10n.currentPassword,
                 _obscure1,
                 () => setState(() => _obscure1 = !_obscure1),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _pf(
                 _newCtrl,
                 context.l10n.newPassword,
                 _obscure2,
                 () => setState(() => _obscure2 = !_obscure2),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _pf(
                 _confirmCtrl,
                 context.l10n.confirmPassword,
                 _obscure3,
                 () => setState(() => _obscure3 = !_obscure3),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (_error != null)
                 Container(
                   width: double.infinity,
@@ -1278,7 +1429,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -1291,10 +1442,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ),
                   child: _loading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'حفظ',
-                          style: TextStyle(
+                      ? const CircularProgressIndicator(
+                          color: Colors.white)
+                      : Text(
+                          isAr ? 'حفظ' : 'Save',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -1332,10 +1484,11 @@ class _EmployeeShellState extends State<EmployeeShell> {
         const EmployeeHomeScreen(),
         const LeavesScreen(),
         const RequestsScreen(),
-  const EmployeeMissionsScreen(),
+        const EmployeeMissionsScreen(),
         const MyItemsScreen(),
       ];
-Future<void> _logout() async {
+
+  Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await AuthStorageService.clearAll();
     await stopBackgroundTracking();
@@ -1349,8 +1502,9 @@ Future<void> _logout() async {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('MotionHR'),
@@ -1359,27 +1513,34 @@ Future<void> _logout() async {
           actions: [
             const NotificationBellButton(),
             IconButton(
-            icon: Icon(Icons.campaign),
-            tooltip: context.l10n.announcements,
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementsScreen())),
-          ),
-          IconButton(
-              icon: Icon(Icons.person),
-              tooltip: context.l10n.profile,
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
-            ),            IconButton(
-              icon: Icon(Icons.lock),
-              tooltip: context.l10n.changePassword,
-              onPressed: () => Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
+              icon: const Icon(Icons.campaign),
+              tooltip: context.l10n.announcements,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AnnouncementsScreen())),
             ),
             IconButton(
-              icon: Icon(Icons.settings),
-              tooltip: context.l10n.settings,
-              onPressed: () => Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+              icon: const Icon(Icons.person),
+              tooltip: context.l10n.profile,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
             ),
-            IconButton(icon: Icon(Icons.logout), tooltip: context.l10n.logout, onPressed: _logout),
+            IconButton(
+              icon: const Icon(Icons.lock),
+              tooltip: context.l10n.changePassword,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: context.l10n.settings,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: context.l10n.logout,
+              onPressed: _logout,
+            ),
           ],
         ),
         body: _pages[_index],
@@ -1388,18 +1549,28 @@ Future<void> _logout() async {
           onTap: (i) => setState(() => _index = i),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: kPrimaryColor,
-          items: [  BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.home),
-BottomNavigationBarItem(icon: Icon(Icons.beach_access), label: context.l10n.leaves),
-BottomNavigationBarItem(icon: Icon(Icons.assignment), label: context.l10n.requests),
-  BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: context.l10n.myMissions),
-  BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: context.l10n.myRequests),
-
+          items: [
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.home), label: context.l10n.home),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.beach_access),
+                label: context.l10n.leaves),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.assignment),
+                label: context.l10n.requests),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.task_alt),
+                label: context.l10n.myMissions),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.list_alt),
+                label: context.l10n.myRequests),
           ],
         ),
       ),
     );
   }
 }
+
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({super.key});
 
@@ -1424,9 +1595,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     'الجمعة', 'السبت', 'الأحد',
   ];
 
+  final List<String> _englishDays = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+    'Friday', 'Saturday', 'Sunday',
+  ];
+
   final List<String> _arabicMonths = [
     '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
     'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  ];
+
+  final List<String> _englishMonths = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
   @override
@@ -1464,15 +1645,20 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   }
 
   Future<void> _attendanceAction(String action) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     setState(() => _loading = true);
     try {
       await requestLocationPermissionsForTracking();
-      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
       final res = await http.post(
         Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
         body: jsonEncode({
           'action': action,
           'latitude': position.latitude,
@@ -1483,32 +1669,44 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       final success = data['success'] == true;
       if (mounted) {
         if (success) {
-          fetchUnreadCount();          if (action == 'check_in') {
+          fetchUnreadCount();
+          final lang =
+              LanguageService.currentLocale.value.languageCode;
+          if (action == 'check_in') {
             setState(() {
-              _motivationMessage = getRandomMessage(kMorningMessages, _gender, _firstName);
+              _motivationMessage = getRandomMessage(
+                  kMorningMessages, _gender, _firstName,
+                  lang: lang);
               _isEveningMessage = false;
             });
-            // ✅ ابدأ التتبع الخفي
             LocationTrackingService.startTracking();
           } else if (action == 'check_out') {
             setState(() {
-              _motivationMessage = getRandomMessage(kEveningMessages, _gender, _firstName);
+              _motivationMessage = getRandomMessage(
+                  kEveningMessages, _gender, _firstName,
+                  lang: lang);
               _isEveningMessage = true;
             });
-            // ✅ وقف التتبع الخفي
             LocationTrackingService.stopTracking();
           }
           _showMotivationDialog();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'حدث خطأ'), backgroundColor: Colors.orange, duration: const Duration(seconds: 5)),
+            SnackBar(
+              content: Text(data['message'] ??
+                  (isAr ? 'حدث خطأ' : 'An error occurred')),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
           );
         }
       }
       await _loadData();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('${isAr ? 'خطأ' : 'Error'}: $e'),
+            backgroundColor: Colors.red));
       }
     } finally {
       setState(() => _loading = false);
@@ -1517,30 +1715,53 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
   void _showMotivationDialog() {
     if (_motivationMessage == null) return;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(_isEveningMessage ? Icons.nightlight_round : Icons.wb_sunny,
-                  size: 60, color: _isEveningMessage ? Colors.indigo : Colors.orange),
-              SizedBox(height: 16),
-              Text(_isEveningMessage ? 'مع السلامة' : 'أهلاً بيك',
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold,
-                      color: _isEveningMessage ? Colors.indigo : Colors.orange)),
-              SizedBox(height: 12),
-              Text(_motivationMessage!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.5)),
+              Icon(
+                  _isEveningMessage
+                      ? Icons.nightlight_round
+                      : Icons.wb_sunny,
+                  size: 60,
+                  color:
+                      _isEveningMessage ? Colors.indigo : Colors.orange),
+              const SizedBox(height: 16),
+              Text(
+                _isEveningMessage
+                    ? (isAr ? 'مع السلامة' : 'Goodbye')
+                    : (isAr ? 'أهلاً بيك' : 'Welcome'),
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: _isEveningMessage
+                        ? Colors.indigo
+                        : Colors.orange),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _motivationMessage!,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 16, height: 1.5),
+              ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('شكراً', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(
+                isAr ? 'شكراً' : 'Thanks',
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -1548,10 +1769,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     );
   }
 
-  String get _formattedDate {
-    final dayName = _arabicDays[_now.weekday - 1];
-    final monthName = _arabicMonths[_now.month];
-    return '$dayName، ${_now.day} $monthName ${_now.year}';
+  String _formattedDate(bool isAr) {
+    if (isAr) {
+      final dayName = _arabicDays[_now.weekday - 1];
+      final monthName = _arabicMonths[_now.month];
+      return '$dayName، ${_now.day} $monthName ${_now.year}';
+    } else {
+      final dayName = _englishDays[_now.weekday - 1];
+      final monthName = _englishMonths[_now.month];
+      return '$dayName, ${_now.day} $monthName ${_now.year}';
+    }
   }
 
   String get _formattedTime {
@@ -1593,6 +1820,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final checkedIn = _status?['checked_in'] == true;
     final checkedOut = _status?['checked_out'] == true;
     final canCheckOut = _status?['can_check_out'] == true;
@@ -1601,7 +1829,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     final shiftStart = _status?['shift_start'] ?? '';
     final shiftEnd = _status?['shift_end'] ?? '';
     final remainingSecs = _calculateRemainingSeconds();
-    final displayName = _firstName.isNotEmpty ? _firstName : (_fullName.isEmpty ? 'بك' : _fullName);
+    final displayName = _firstName.isNotEmpty
+        ? _firstName
+        : (_fullName.isEmpty ? (isAr ? 'بك' : 'there') : _fullName);
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -1611,156 +1841,354 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [kPrimaryDark, kPrimaryColor], begin: Alignment.topRight, end: Alignment.bottomLeft),
+              gradient: const LinearGradient(
+                  colors: [kPrimaryDark, kPrimaryColor],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                    color: kPrimaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  const CircleAvatar(radius: 24, backgroundColor: Colors.white, child: Icon(Icons.person, color: kPrimaryColor, size: 30)),
-                  SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('أهلاً يا $displayName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    if (_companyName.isNotEmpty) Text(_companyName, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-                  ])),
+                  const CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person,
+                          color: kPrimaryColor, size: 30)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(
+                          isAr
+                              ? 'أهلاً يا $displayName'
+                              : 'Hello, $displayName',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        if (_companyName.isNotEmpty)
+                          Text(_companyName,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 14)),
+                      ])),
                 ]),
-                Divider(color: Colors.white24, height: 24),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(context.l10n.date, style: TextStyle(color: Colors.white60, fontSize: 12)),
-                    Text(_formattedDate, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                  ]),
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text(context.l10n.time, style: TextStyle(color: Colors.white60, fontSize: 12)),
-                    Text(_formattedTime, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                  ]),
-                ]),
+                const Divider(color: Colors.white24, height: 24),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(context.l10n.date,
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 12)),
+                            Text(_formattedDate(isAr),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold)),
+                          ]),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(context.l10n.time,
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 12)),
+                            Text(_formattedTime,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1)),
+                          ]),
+                    ]),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           if (shiftName.toString().isNotEmpty)
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-                Icon(Icons.schedule, color: kPrimaryColor),
-                SizedBox(width: 8),
-                Expanded(child: Text('شيفت: $shiftName ($shiftStart - $shiftEnd)', style: const TextStyle(fontWeight: FontWeight.bold))),
-              ])),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(children: [
+                    const Icon(Icons.schedule, color: kPrimaryColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(
+                      '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ])),
             ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           if (checkedIn && !checkedOut)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: canCheckOut ? Colors.green[50] : Colors.blue[50],
+                color:
+                    canCheckOut ? Colors.green[50] : Colors.blue[50],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: canCheckOut ? Colors.green[200]! : Colors.blue[200]!),
+                border: Border.all(
+                    color: canCheckOut
+                        ? Colors.green[200]!
+                        : Colors.blue[200]!),
               ),
               child: Column(children: [
                 Row(children: [
-                  Icon(canCheckOut ? Icons.check_circle : Icons.timer, color: canCheckOut ? Colors.green : kPrimaryColor),
-                  SizedBox(width: 8),
-                  Text(canCheckOut ? 'الشيفت خلص، تقدر تنصرف' : 'باقي على الانصراف',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: canCheckOut ? Colors.green : kPrimaryColor)),
+                  Icon(
+                      canCheckOut ? Icons.check_circle : Icons.timer,
+                      color:
+                          canCheckOut ? Colors.green : kPrimaryColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    canCheckOut
+                        ? (isAr
+                            ? 'الشيفت خلص، تقدر تنصرف'
+                            : 'Shift ended, you can check out')
+                        : (isAr
+                            ? 'باقي على الانصراف'
+                            : 'Remaining until check-out'),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: canCheckOut
+                            ? Colors.green
+                            : kPrimaryColor),
+                  ),
                 ]),
-                SizedBox(height: 12),
-                Text(_formatCountdown(remainingSecs),
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: canCheckOut ? Colors.green : kPrimaryColor, letterSpacing: 2)),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
+                Text(
+                  _formatCountdown(remainingSecs),
+                  style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          canCheckOut ? Colors.green : kPrimaryColor,
+                      letterSpacing: 2),
+                ),
+                const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(value: _progressValue(), minHeight: 12, backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation(canCheckOut ? Colors.green : kPrimaryColor)),
+                  child: LinearProgressIndicator(
+                      value: _progressValue(),
+                      minHeight: 12,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation(
+                          canCheckOut ? Colors.green : kPrimaryColor)),
                 ),
-                SizedBox(height: 6),
-                Text('${(_progressValue() * 100).toInt()}% من الشيفت', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                const SizedBox(height: 6),
+                Text(
+                  '${(_progressValue() * 100).toInt()}%'
+                  ' ${isAr ? 'من الشيفت' : 'of shift'}',
+                  style: TextStyle(
+                      color: Colors.grey[600], fontSize: 12),
+                ),
                 if (hasEarlyLeave) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.orange[100], borderRadius: BorderRadius.circular(20)),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.info, size: 16, color: Colors.orange),
-                      SizedBox(width: 4),
-                      Text('عندك إذن خروج مبكر 🕐', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                    ]),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.info,
+                              size: 16, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text(
+                            isAr
+                                ? 'عندك إذن خروج مبكر 🕐'
+                                : 'You have an early leave permission 🕐',
+                            style: const TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ]),
                   ),
                 ],
               ]),
             ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           if (checkedOut)
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.green[200]!)),
+              decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.green[200]!)),
               child: Column(children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 60),
-                SizedBox(height: 10),
-                Text('تم تسجيل الحضور والانصراف', style: TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
-                Text('أحسنت العمل اليوم 👏', style: TextStyle(color: Colors.green)),
+                const Icon(Icons.check_circle,
+                    color: Colors.green, size: 60),
+                const SizedBox(height: 10),
+                Text(
+                  isAr
+                      ? 'تم تسجيل الحضور والانصراف'
+                      : 'Attendance and check-out recorded',
+                  style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isAr ? 'أحسنت العمل اليوم 👏' : 'Great work today 👏',
+                  style: const TextStyle(color: Colors.green),
+                ),
               ]),
             )
           else
             Row(children: [
-              Expanded(child: SizedBox(height: 110, child: ElevatedButton(
-                onPressed: (_loading || checkedIn) ? null : () => _attendanceAction('check_in'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: checkedIn ? Colors.grey[400] : Colors.green, foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: checkedIn ? 0 : 4, disabledBackgroundColor: Colors.grey[400], disabledForegroundColor: Colors.white),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(checkedIn ? Icons.check_circle : Icons.login, size: 40),
-                  SizedBox(height: 6),
-                  Text(checkedIn ? 'تم الحضور 🕐' : context.l10n.checkIn, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                ]),
-              ))),
-              SizedBox(width: 12),
-              Expanded(child: SizedBox(height: 110, child: ElevatedButton(
-                onPressed: (_loading || !checkedIn || (!canCheckOut && !hasEarlyLeave)) ? null : () => _attendanceAction('check_out'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: (!checkedIn || (!canCheckOut && !hasEarlyLeave)) ? Colors.grey[400] : Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: (!checkedIn || (!canCheckOut && !hasEarlyLeave)) ? 0 : 4,
-                  disabledBackgroundColor: Colors.grey[400], disabledForegroundColor: Colors.white),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon((!checkedIn || (!canCheckOut && !hasEarlyLeave)) ? Icons.lock : Icons.logout, size: 40),
-                  SizedBox(height: 6),
-                  Text(!checkedIn ? context.l10n.checkOut : (canCheckOut || hasEarlyLeave ? context.l10n.checkOut : 'مقفول'),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                ]),
-              ))),
+              Expanded(
+                  child: SizedBox(
+                      height: 110,
+                      child: ElevatedButton(
+                        onPressed: (_loading || checkedIn)
+                            ? null
+                            : () => _attendanceAction('check_in'),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: checkedIn
+                                ? Colors.grey[400]
+                                : Colors.green,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            elevation: checkedIn ? 0 : 4,
+                            disabledBackgroundColor: Colors.grey[400],
+                            disabledForegroundColor: Colors.white),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(checkedIn
+                                  ? Icons.check_circle
+                                  : Icons.login,
+                                  size: 40),
+                              const SizedBox(height: 6),
+                              Text(
+                                checkedIn
+                                    ? (isAr ? 'تم الحضور 🕐' : 'Checked In 🕐')
+                                    : context.l10n.checkIn,
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ]),
+                      ))),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: SizedBox(
+                      height: 110,
+                      child: ElevatedButton(
+                        onPressed: (_loading ||
+                                !checkedIn ||
+                                (!canCheckOut && !hasEarlyLeave))
+                            ? null
+                            : () => _attendanceAction('check_out'),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                (!checkedIn || (!canCheckOut && !hasEarlyLeave))
+                                    ? Colors.grey[400]
+                                    : Colors.orange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            elevation:
+                                (!checkedIn || (!canCheckOut && !hasEarlyLeave))
+                                    ? 0
+                                    : 4,
+                            disabledBackgroundColor: Colors.grey[400],
+                            disabledForegroundColor: Colors.white),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                  (!checkedIn ||
+                                          (!canCheckOut && !hasEarlyLeave))
+                                      ? Icons.lock
+                                      : Icons.logout,
+                                  size: 40),
+                              const SizedBox(height: 6),
+                              Text(
+                                !checkedIn
+                                    ? context.l10n.checkOut
+                                    : (canCheckOut || hasEarlyLeave
+                                        ? context.l10n.checkOut
+                                        : (isAr ? 'مقفول' : 'Locked')),
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ]),
+                      ))),
             ]),
-          SizedBox(height: 20),
-          if (_status?['check_in_time'] != null && (_status?['check_in_time'] ?? '').toString().isNotEmpty)
-            Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
-                    child: Icon(Icons.login, color: Colors.green)),
-                title: Text(context.l10n.checkInTime),
-                subtitle: Text('${_status?['check_in_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          if (_status?['check_in_time'] != null &&
+              (_status?['check_in_time'] ?? '').toString().isNotEmpty)
+            Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.login, color: Colors.green)),
+                  title: Text(context.l10n.checkInTime),
+                  subtitle: Text('${_status?['check_in_time']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                )),
+          if (_status?['check_out_time'] != null &&
+              (_status?['check_out_time'] ?? '').toString().isNotEmpty)
+            Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          color: Colors.orange[50],
+                          borderRadius: BorderRadius.circular(8)),
+                      child:
+                          const Icon(Icons.logout, color: Colors.orange)),
+                  title: Text(context.l10n.checkOutTime),
+                  subtitle: Text('${_status?['check_out_time']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                )),
+          const SizedBox(height: 20),
+          SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const HistoryScreen())),
+                icon: const Icon(Icons.history),
+                label: Text(
+                  isAr ? 'سجل الأيام السابقة' : 'Previous Days History',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: kPrimaryColor,
+                    side: const BorderSide(color: kPrimaryColor),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
               )),
-          if (_status?['check_out_time'] != null && (_status?['check_out_time'] ?? '').toString().isNotEmpty)
-            Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8)),
-                    child: Icon(Icons.logout, color: Colors.orange)),
-                title: Text(context.l10n.checkOutTime),
-                subtitle: Text('${_status?['check_out_time']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              )),
-          SizedBox(height: 20),
-          SizedBox(height: 50, child: ElevatedButton.icon(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
-            icon: Icon(Icons.history),
-            label: Text('سجل الأيام السابقة', style: TextStyle(fontSize: 16)),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: kPrimaryColor,
-                side: const BorderSide(color: kPrimaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          )),
         ],
       ),
     );
@@ -1778,30 +2206,59 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/history/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['items'] ?? data['history'] ?? []); }
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/history/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() =>
+            _items = data['items'] ?? data['history'] ?? []);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('سجل الأيام'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-      body: _loading ? Center(child: CircularProgressIndicator())
-          : _items.isEmpty ? Center(child: Text('لا يوجد سجل'))
-          : ListView.builder(padding: const EdgeInsets.all(8), itemCount: _items.length, itemBuilder: (_, i) {
-              final item = _items[i];
-              return Card(child: ListTile(leading: Icon(Icons.calendar_today, color: kPrimaryColor),
-                  title: Text(item['date'] ?? ''), subtitle: Text('حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}')));
-            }),
-    ));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(isAr ? 'سجل الأيام' : 'Days History'),
+              backgroundColor: kPrimaryColor,
+              foregroundColor: Colors.white),
+          body: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _items.isEmpty
+                  ? Center(
+                      child: Text(isAr ? 'لا يوجد سجل' : 'No history found'))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _items.length,
+                      itemBuilder: (_, i) {
+                        final item = _items[i];
+                        return Card(
+                            child: ListTile(
+                                leading: const Icon(Icons.calendar_today,
+                                    color: kPrimaryColor),
+                                title: Text(item['date'] ?? ''),
+                                subtitle: Text(
+                                  isAr
+                                      ? 'حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}'
+                                      : 'Check-in: ${item['check_in'] ?? '-'}  |  Check-out: ${item['check_out'] ?? '-'}',
+                                )));
+                      }),
+        ));
   }
 }
 
@@ -1816,14 +2273,22 @@ class _LeavesScreenState extends State<LeavesScreen> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   int _orderKey(Map t) {
     final category = (t['category'] ?? '').toString().toLowerCase();
     final name = (t['name'] ?? '').toString();
     if (category == 'annual' || name.contains('سنوية')) return 1;
-    if (category == 'casual' || category == 'emergency' || name.contains('عارضة') || name.contains('طارئة')) return 2;
-    if (category == 'sick' || name.contains('مرضية') || name.contains('مرضي')) return 3;
+    if (category == 'casual' ||
+        category == 'emergency' ||
+        name.contains('عارضة') ||
+        name.contains('طارئة')) return 2;
+    if (category == 'sick' ||
+        name.contains('مرضية') ||
+        name.contains('مرضي')) return 3;
     return 4;
   }
 
@@ -1831,11 +2296,18 @@ class _LeavesScreenState extends State<LeavesScreen> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'), headers: {'Authorization': 'Token $token'});
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'),
+          headers: {'Authorization': 'Token $token'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        List<dynamic> list = data['leave_types'] ?? data['types'] ?? [];
-        list = list.where((t) { final c = (t['category'] ?? '').toString().toLowerCase(); final n = (t['name'] ?? '').toString(); return c != 'paternity' && !n.contains('أبوة'); }).toList();
+        List<dynamic> list =
+            data['leave_types'] ?? data['types'] ?? [];
+        list = list.where((t) {
+          final c = (t['category'] ?? '').toString().toLowerCase();
+          final n = (t['name'] ?? '').toString();
+          return c != 'paternity' && !n.contains('أبوة');
+        }).toList();
         list.sort((a, b) => _orderKey(a).compareTo(_orderKey(b)));
         setState(() => _types = list);
       }
@@ -1845,20 +2317,49 @@ class _LeavesScreenState extends State<LeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
     return ListView(padding: const EdgeInsets.all(16), children: [
-      const Text('أنواع الإجازات والأرصدة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      SizedBox(height: 10),
+      Text(
+        isAr ? 'أنواع الإجازات والأرصدة' : 'Leave Types and Balances',
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 10),
       ..._types.map((t) {
-        final balance = t['balance'] is Map ? (t['balance']['remaining'] ?? 0) : (t['balance'] ?? 0);
-        return Card(child: ListTile(leading: Icon(Icons.beach_access, color: kPrimaryColor), title: Text(t['name'] ?? ''), subtitle: Text('الرصيد المتبقي: $balance يوم')));
+        final balance = t['balance'] is Map
+            ? (t['balance']['remaining'] ?? 0)
+            : (t['balance'] ?? 0);
+        return Card(
+            child: ListTile(
+                leading:
+                    const Icon(Icons.beach_access, color: kPrimaryColor),
+                title: Text(t['name'] ?? ''),
+                subtitle: Text(
+                  isAr
+                      ? 'الرصيد المتبقي: $balance يوم'
+                      : 'Remaining balance: $balance day(s)',
+                )));
       }),
-      SizedBox(height: 20),
-      SizedBox(height: 52, child: ElevatedButton.icon(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LeaveRequestScreen(types: _types))),
-        icon: Icon(Icons.add), label: const Text('تقديم طلب إجازة', style: TextStyle(fontSize: 16)),
-        style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-      )),
+      const SizedBox(height: 20),
+      SizedBox(
+          height: 52,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        LeaveRequestScreen(types: _types))),
+            icon: const Icon(Icons.add),
+            label: Text(
+              isAr ? 'تقديم طلب إجازة' : 'Submit Leave Request',
+              style: const TextStyle(fontSize: 16),
+            ),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: kPrimaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
+          )),
     ]);
   }
 }
@@ -1880,54 +2381,156 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   bool get _isOther => _selectedValue == 'other';
 
   Future<void> _pickDate(TextEditingController c) async {
-    final d = await showDatePicker(context: context, initialDate: DateTime.now(),
-        firstDate: DateTime.now().subtract(const Duration(days: 30)), lastDate: DateTime.now().add(const Duration(days: 365)));
-    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final d = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate:
+            DateTime.now().subtract(const Duration(days: 30)),
+        lastDate: DateTime.now().add(const Duration(days: 365)));
+    if (d != null)
+      c.text =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> _submit() async {
-    if (_selectedValue == null || _startCtrl.text.isEmpty || _endCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى ملء جميع الحقول'))); return;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_selectedValue == null ||
+        _startCtrl.text.isEmpty ||
+        _endCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى ملء جميع الحقول'
+              : 'Please fill all fields')));
+      return;
     }
     setState(() => _loading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final body = <String, dynamic>{'start_date': _startCtrl.text, 'end_date': _endCtrl.text,
-        'reason': _isOther ? 'نوع آخر: ${_otherCtrl.text}\n${_reasonCtrl.text}' : _reasonCtrl.text};
+      final body = <String, dynamic>{
+        'start_date': _startCtrl.text,
+        'end_date': _endCtrl.text,
+        'reason': _isOther
+            ? '${isAr ? 'نوع آخر' : 'Other type'}: ${_otherCtrl.text}\n${_reasonCtrl.text}'
+            : _reasonCtrl.text
+      };
       if (!_isOther) body['leave_type_id'] = _selectedValue;
-      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
-          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+      final res = await http.post(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done))); if (data['success'] == true) Navigator.pop(context); }
-    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'))); }
-    finally { setState(() => _loading = false); }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? context.l10n.done)));
+        if (data['success'] == true) Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')));
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: Text('طلب إجازة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(labelText: context.l10n.leaveType, border: OutlineInputBorder()), value: _selectedValue,
-          items: [...widget.types.where((t) { final c = (t['category'] ?? '').toString().toLowerCase(); final n = (t['name'] ?? '').toString(); return c != 'paternity' && !n.contains('أبوة'); })
-              .map((t) => DropdownMenuItem<String>(value: t['id'].toString(), child: Text(t['name'] ?? ''))),
-            const DropdownMenuItem<String>(value: 'other', child: Text('أخرى'))],
-          onChanged: (v) => setState(() => _selectedValue = v)),
-        if (_isOther) ...[SizedBox(height: 16), TextField(controller: _otherCtrl, decoration: InputDecoration(labelText: 'اذكر نوع الإجازة', border: OutlineInputBorder()))],
-        SizedBox(height: 16),
-        TextField(controller: _startCtrl, readOnly: true, onTap: () => _pickDate(_startCtrl), decoration: InputDecoration(labelText: context.l10n.fromDate, border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        SizedBox(height: 16),
-        TextField(controller: _endCtrl, readOnly: true, onTap: () => _pickDate(_endCtrl), decoration: InputDecoration(labelText: context.l10n.toDate, border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        SizedBox(height: 16),
-        TextField(controller: _reasonCtrl, maxLines: 3, decoration: InputDecoration(labelText: 'السبب', border: OutlineInputBorder())),
-        SizedBox(height: 20),
-        SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _loading ? null : _submit,
-            style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-            child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text('إرسال الطلب', style: TextStyle(fontSize: 18)))),
-      ])),
-    ));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(isAr ? 'طلب إجازة' : 'Leave Request'),
+              backgroundColor: kPrimaryColor,
+              foregroundColor: Colors.white),
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(children: [
+                DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                        labelText: context.l10n.leaveType,
+                        border: const OutlineInputBorder()),
+                    value: _selectedValue,
+                    items: [
+                      ...widget.types
+                          .where((t) {
+                            final c = (t['category'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            final n = (t['name'] ?? '').toString();
+                            return c != 'paternity' &&
+                                !n.contains('أبوة');
+                          })
+                          .map((t) => DropdownMenuItem<String>(
+                              value: t['id'].toString(),
+                              child: Text(t['name'] ?? ''))),
+                      DropdownMenuItem<String>(
+                          value: 'other',
+                          child: Text(isAr ? 'أخرى' : 'Other')),
+                    ],
+                    onChanged: (v) =>
+                        setState(() => _selectedValue = v)),
+                if (_isOther) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                      controller: _otherCtrl,
+                      decoration: InputDecoration(
+                          labelText: isAr
+                              ? 'اذكر نوع الإجازة'
+                              : 'Specify leave type',
+                          border: const OutlineInputBorder()))
+                ],
+                const SizedBox(height: 16),
+                TextField(
+                    controller: _startCtrl,
+                    readOnly: true,
+                    onTap: () => _pickDate(_startCtrl),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.fromDate,
+                        border: const OutlineInputBorder(),
+                        suffixIcon:
+                            const Icon(Icons.calendar_today))),
+                const SizedBox(height: 16),
+                TextField(
+                    controller: _endCtrl,
+                    readOnly: true,
+                    onTap: () => _pickDate(_endCtrl),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.toDate,
+                        border: const OutlineInputBorder(),
+                        suffixIcon:
+                            const Icon(Icons.calendar_today))),
+                const SizedBox(height: 16),
+                TextField(
+                    controller: _reasonCtrl,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                        labelText: isAr ? 'السبب' : 'Reason',
+                        border: const OutlineInputBorder())),
+                const SizedBox(height: 20),
+                SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                        onPressed: _loading ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: kPrimaryColor,
+                            foregroundColor: Colors.white),
+                        child: _loading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : Text(
+                                isAr
+                                    ? 'إرسال الطلب'
+                                    : 'Submit Request',
+                                style: const TextStyle(fontSize: 18),
+                              ))),
+              ])),
+        ));
   }
 }
 
@@ -1953,50 +2556,97 @@ class _RequestsScreenState extends State<RequestsScreen> {
   bool _submitting = false;
   bool get _isOther => _selectedValue == 'other';
 
-  Map<String, dynamic>? get _selectedType { try { return _types.cast<Map<String, dynamic>>().firstWhere((t) => t['id'].toString() == _selectedValue); } catch (_) { return null; } }
-bool get _isStudentCertificate { final t = _selectedType; final s = ((t?['name'] ?? '') + ' ' + (t?['name_ar'] ?? '')).toString().toLowerCase(); return s.contains('student') || s.contains('طالب') || s.contains('قيد'); }
-bool get _isLoan { final t = _selectedType; if (_isStudentCertificate) return false; return t?['requires_amount'] == true; }
-
-String get _permissionKind {
-  final t = _selectedType;
-  final explicit = (t?['permission_kind'] ?? '').toString().trim();
-
-  if (explicit == 'late' || explicit == 'late_arrival') {
-    return 'late_arrival';
+  Map<String, dynamic>? get _selectedType {
+    try {
+      return _types
+          .cast<Map<String, dynamic>>()
+          .firstWhere((t) => t['id'].toString() == _selectedValue);
+    } catch (_) {
+      return null;
+    }
   }
 
-  if (explicit == 'early_leave' || explicit == 'exit') {
-    return 'early_leave';
+  bool get _isStudentCertificate {
+    final t = _selectedType;
+    final s = ((t?['name'] ?? '') + ' ' + (t?['name_ar'] ?? ''))
+        .toString()
+        .toLowerCase();
+    return s.contains('student') ||
+        s.contains('طالب') ||
+        s.contains('قيد');
   }
 
-  return 'none';
-}
+  bool get _isLoan {
+    final t = _selectedType;
+    if (_isStudentCertificate) return false;
+    return t?['requires_amount'] == true;
+  }
 
-bool get _isPermissionRequest => _permissionKind != 'none';
-bool get _requiresDateRange {
-  final t = _selectedType;
-  return t?['requires_date_range'] == true;
-}
+  String get _permissionKind {
+    final t = _selectedType;
+    final explicit = (t?['permission_kind'] ?? '').toString().trim();
+    if (explicit == 'late' || explicit == 'late_arrival') return 'late_arrival';
+    if (explicit == 'early_leave' || explicit == 'exit') return 'early_leave';
+    return 'none';
+  }
 
-bool get _requiresDocument {
-  final t = _selectedType;
-  return t?['requires_document'] == true;
-}
+  bool get _isPermissionRequest => _permissionKind != 'none';
+
+  bool get _requiresDateRange {
+    final t = _selectedType;
+    return t?['requires_date_range'] == true;
+  }
+
+  bool get _requiresDocument {
+    final t = _selectedType;
+    return t?['requires_document'] == true;
+  }
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'), headers: {'Authorization': 'Token $token'});
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
+          headers: {'Authorization': 'Token $token'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         List<dynamic> flatTypes = [];
-        if (data['categories'] is List) { for (final cat in data['categories']) { if (cat['types'] is List) { for (final t in cat['types']) {
-                    flatTypes.add({'id': t['id'], 'name': t['name'], 'category': cat['name'], 'permission_kind': t['permission_kind'] ?? 'none', 'requires_amount': t['requires_amount'] ?? false, 'requires_date_range': t['requires_date_range'] ?? false, 'requires_document': t['requires_document'] ?? false}); } } }
-        } else if (data['types'] is List) { flatTypes = (data['types'] as List).map((t) => {'id': t['id'], 'name': t['name'], 'category': t['category'] ?? '', 'permission_kind': t['permission_kind'] ?? 'none', 'requires_amount': t['requires_amount'] ?? false, 'requires_date_range': t['requires_date_range'] ?? false, 'requires_document': t['requires_document'] ?? false}).toList(); }
+        if (data['categories'] is List) {
+          for (final cat in data['categories']) {
+            if (cat['types'] is List) {
+              for (final t in cat['types']) {
+                flatTypes.add({
+                  'id': t['id'],
+                  'name': t['name'],
+                  'category': cat['name'],
+                  'permission_kind': t['permission_kind'] ?? 'none',
+                  'requires_amount': t['requires_amount'] ?? false,
+                  'requires_date_range': t['requires_date_range'] ?? false,
+                  'requires_document': t['requires_document'] ?? false,
+                });
+              }
+            }
+          }
+        } else if (data['types'] is List) {
+          flatTypes = (data['types'] as List)
+              .map((t) => {
+                    'id': t['id'],
+                    'name': t['name'],
+                    'category': t['category'] ?? '',
+                    'permission_kind': t['permission_kind'] ?? 'none',
+                    'requires_amount': t['requires_amount'] ?? false,
+                    'requires_date_range': t['requires_date_range'] ?? false,
+                    'requires_document': t['requires_document'] ?? false,
+                  })
+              .toList();
+        }
         setState(() => _types = flatTypes);
       }
     } catch (_) {}
@@ -2004,108 +2654,292 @@ bool get _requiresDocument {
   }
 
   Future<void> _pickDate(TextEditingController c) async {
-    final d = await showDatePicker(context: context, initialDate: DateTime.now(),
-        firstDate: DateTime.now().subtract(const Duration(days: 30)), lastDate: DateTime.now().add(const Duration(days: 365)));
-    if (d != null) c.text = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final d = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now().subtract(const Duration(days: 30)),
+        lastDate: DateTime.now().add(const Duration(days: 365)));
+    if (d != null)
+      c.text =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> _pickTime() async {
-    final t = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    if (t != null) { _permissionTimeCtrl.text = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'; setState(() {}); }
+    final t = await showTimePicker(
+        context: context, initialTime: TimeOfDay.now());
+    if (t != null) {
+      _permissionTimeCtrl.text =
+          '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+      setState(() {});
+    }
   }
 
   Future<void> _submit() async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar'; if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى اختيار النوع وكتابة العنوان' : 'Please choose type and enter title'))); return; } if (_requiresDateRange && (_startDateCtrl.text.trim().isEmpty || _endDateCtrl.text.trim().isEmpty)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال تاريخ البداية والنهاية' : 'Please enter start and end dates'))); return; } if (_requiresDateRange) { final start = DateTime.tryParse(_startDateCtrl.text.trim()); final end = DateTime.tryParse(_endDateCtrl.text.trim()); if (start != null && end != null && end.isBefore(start)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'تاريخ النهاية يجب أن يكون بعد البداية' : 'End date must be after start date'))); return; } } if (_isLoan && _amountCtrl.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال المبلغ المطلوب' : 'Please enter the requested amount'))); return; } if (_isPermissionRequest && (_permissionDateCtrl.text.trim().isEmpty || _permissionTimeCtrl.text.trim().isEmpty || _durationHoursCtrl.text.trim().isEmpty)) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'يرجى إدخال تاريخ ووقت ومدة الإذن' : 'Please enter permission date, time and duration'))); return; }
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_selectedValue == null || _titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى اختيار النوع وكتابة العنوان'
+              : 'Please choose type and enter title')));
+      return;
+    }
+    if (_requiresDateRange &&
+        (_startDateCtrl.text.trim().isEmpty ||
+            _endDateCtrl.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى إدخال تاريخ البداية والنهاية'
+              : 'Please enter start and end dates')));
+      return;
+    }
+    if (_requiresDateRange) {
+      final start = DateTime.tryParse(_startDateCtrl.text.trim());
+      final end = DateTime.tryParse(_endDateCtrl.text.trim());
+      if (start != null && end != null && end.isBefore(start)) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAr
+                ? 'تاريخ النهاية يجب أن يكون بعد البداية'
+                : 'End date must be after start date')));
+        return;
+      }
+    }
+    if (_isLoan && _amountCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى إدخال المبلغ المطلوب'
+              : 'Please enter the requested amount')));
+      return;
+    }
+    if (_isPermissionRequest &&
+        (_permissionDateCtrl.text.trim().isEmpty ||
+            _permissionTimeCtrl.text.trim().isEmpty ||
+            _durationHoursCtrl.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى إدخال تاريخ ووقت ومدة الإذن'
+              : 'Please enter permission date, time and duration')));
+      return;
+    }
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final body = <String, dynamic>{'title': _titleCtrl.text.trim(),
-        'description': _isOther ? 'نوع آخر: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}' : _descCtrl.text.trim()};
+      final body = <String, dynamic>{
+        'title': _titleCtrl.text.trim(),
+        'description': _isOther
+            ? '${isAr ? 'نوع آخر' : 'Other type'}: ${_otherCtrl.text.trim()}\n${_descCtrl.text.trim()}'
+            : _descCtrl.text.trim(),
+      };
       if (!_isOther) body['request_type_id'] = _selectedValue;
       if (_isLoan && _amountCtrl.text.trim().isNotEmpty) {
         body['amount'] = _amountCtrl.text.trim();
       }
-
       if (_requiresDateRange) {
         body['start_date'] = _startDateCtrl.text.trim();
         body['end_date'] = _endDateCtrl.text.trim();
       }
-
       if (_isPermissionRequest) {
         body['permission_date'] = _permissionDateCtrl.text.trim();
         body['permission_time'] = _permissionTimeCtrl.text.trim();
         body['duration_hours'] = _durationHoursCtrl.text.trim();
       }
-      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/submit-request/'),
-          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode(body));
+      final res = await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/submit-request/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done)));
-        if (data['success'] == true) { _titleCtrl.clear(); _descCtrl.clear(); _otherCtrl.clear(); _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); setState(() => _selectedValue = null); } }
-    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
-    finally { setState(() => _submitting = false); }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? context.l10n.done)));
+        if (data['success'] == true) {
+          _titleCtrl.clear();
+          _descCtrl.clear();
+          _otherCtrl.clear();
+          _amountCtrl.clear();
+          _permissionDateCtrl.clear();
+          _permissionTimeCtrl.clear();
+          _durationHoursCtrl.clear();
+          setState(() => _selectedValue = null);
+        }
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                '${isAr ? 'حدث خطأ' : 'An error occurred'}: $e')));
+    } finally {
+      setState(() => _submitting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());
-    return SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
-      Text('تقديم طلب', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      SizedBox(height: 20),
-      DropdownButtonFormField<String>(decoration: InputDecoration(labelText: context.l10n.requestType, border: OutlineInputBorder()), value: _selectedValue,
-        items: [..._types.map((t) => DropdownMenuItem<String>(value: t['id'].toString(), child: Text(t['name'] ?? ''))),
-          const DropdownMenuItem<String>(value: 'other', child: Text('أخرى'))],
-        onChanged: (v) { setState(() { _selectedValue = v; _amountCtrl.clear(); _permissionDateCtrl.clear(); _permissionTimeCtrl.clear(); _durationHoursCtrl.clear(); }); }),
-      if (_requiresDateRange) ...[
-        SizedBox(height: 16),
-        TextField(
-          controller: _startDateCtrl,
-          readOnly: true,
-          onTap: () => _pickDate(_startDateCtrl),
-          decoration: InputDecoration(
-            labelText: 'من تاريخ',
-            border: OutlineInputBorder(),
-            suffixIcon: Icon(Icons.calendar_today),
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          Text(
+            isAr ? 'تقديم طلب' : 'Submit Request',
+            style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold),
           ),
-        ),
-        SizedBox(height: 16),
-        TextField(
-          controller: _endDateCtrl,
-          readOnly: true,
-          onTap: () => _pickDate(_endDateCtrl),
-          decoration: InputDecoration(
-            labelText: 'إلى تاريخ',
-            border: OutlineInputBorder(),
-            suffixIcon: Icon(Icons.calendar_today),
-          ),
-        ),
-      ],
-      if (_isPermissionRequest) ...[
-        SizedBox(height: 16),
-        Container(width: double.infinity, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.orange.shade200)),
-          child: Text(_permissionKind == 'late_arrival' ? 'هذا الطلب سيعامل كإذن تأخير ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.' : 'هذا الطلب سيعامل كإذن خروج مبكر ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.', style: TextStyle(color: Colors.orange[900]))),
-        SizedBox(height: 16),
-        TextField(controller: _permissionDateCtrl, readOnly: true, onTap: () => _pickDate(_permissionDateCtrl), decoration: InputDecoration(labelText: 'تاريخ الإذن', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today))),
-        SizedBox(height: 16),
-        TextField(controller: _permissionTimeCtrl, readOnly: true, onTap: _pickTime,
-            decoration: InputDecoration(labelText: _permissionKind == 'late_arrival' ? 'وقت الحضور المتوقع' : 'وقت الخروج المطلوب', border: const OutlineInputBorder(), suffixIcon: Icon(Icons.access_time))),
-        SizedBox(height: 16),
-        TextField(controller: _durationHoursCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(labelText: 'عدد الساعات', border: OutlineInputBorder(), suffixText: 'ساعة')),
-      ],
-      if (_isLoan) ...[SizedBox(height: 16),
-        TextField(controller: _amountCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'المبلغ المطلوب', border: OutlineInputBorder(), suffixText: 'جنيه'))],
-      if (_isOther) ...[SizedBox(height: 16),
-        TextField(controller: _otherCtrl, decoration: InputDecoration(labelText: 'اذكر نوع الطلب', border: OutlineInputBorder()))],
-      SizedBox(height: 16),
-      TextField(controller: _titleCtrl, decoration: InputDecoration(labelText: 'عنوان الطلب', border: OutlineInputBorder())),
-      SizedBox(height: 16),
-      TextField(controller: _descCtrl, maxLines: 4, decoration: InputDecoration(labelText: 'التفاصيل / السبب', border: OutlineInputBorder())),
-      SizedBox(height: 20),
-      SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _submitting ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white),
-          child: _submitting ? const CircularProgressIndicator(color: Colors.white) : Text(context.l10n.send, style: TextStyle(fontSize: 18)))),
-    ]));
+          const SizedBox(height: 20),
+          DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                  labelText: context.l10n.requestType,
+                  border: const OutlineInputBorder()),
+              value: _selectedValue,
+              items: [
+                ..._types.map((t) => DropdownMenuItem<String>(
+                    value: t['id'].toString(),
+                    child: Text(t['name'] ?? ''))),
+                DropdownMenuItem<String>(
+                    value: 'other',
+                    child: Text(isAr ? 'أخرى' : 'Other')),
+              ],
+              onChanged: (v) {
+                setState(() {
+                  _selectedValue = v;
+                  _amountCtrl.clear();
+                  _permissionDateCtrl.clear();
+                  _permissionTimeCtrl.clear();
+                  _durationHoursCtrl.clear();
+                });
+              }),
+          if (_requiresDateRange) ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: _startDateCtrl,
+              readOnly: true,
+              onTap: () => _pickDate(_startDateCtrl),
+              decoration: InputDecoration(
+                labelText: isAr ? 'من تاريخ' : 'From date',
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _endDateCtrl,
+              readOnly: true,
+              onTap: () => _pickDate(_endDateCtrl),
+              decoration: InputDecoration(
+                labelText: isAr ? 'إلى تاريخ' : 'To date',
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+            ),
+          ],
+          if (_isPermissionRequest) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.orange.shade200)),
+              child: Text(
+                _permissionKind == 'late_arrival'
+                    ? (isAr
+                        ? 'هذا الطلب سيعامل كإذن تأخير ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.'
+                        : 'This request will be treated as a late arrival permission and deducted after approval and use.')
+                    : (isAr
+                        ? 'هذا الطلب سيعامل كإذن خروج مبكر ويخصم من رصيد الأذونات بعد الموافقة والاستخدام.'
+                        : 'This request will be treated as an early leave permission and deducted after approval and use.'),
+                style: TextStyle(color: Colors.orange[900]),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+                controller: _permissionDateCtrl,
+                readOnly: true,
+                onTap: () => _pickDate(_permissionDateCtrl),
+                decoration: InputDecoration(
+                    labelText: isAr ? 'تاريخ الإذن' : 'Permission date',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: const Icon(Icons.calendar_today))),
+            const SizedBox(height: 16),
+            TextField(
+                controller: _permissionTimeCtrl,
+                readOnly: true,
+                onTap: _pickTime,
+                decoration: InputDecoration(
+                    labelText: _permissionKind == 'late_arrival'
+                        ? (isAr
+                            ? 'وقت الحضور المتوقع'
+                            : 'Expected arrival time')
+                        : (isAr
+                            ? 'وقت الخروج المطلوب'
+                            : 'Requested departure time'),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: const Icon(Icons.access_time))),
+            const SizedBox(height: 16),
+            TextField(
+                controller: _durationHoursCtrl,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                    labelText: isAr ? 'عدد الساعات' : 'Number of hours',
+                    border: const OutlineInputBorder(),
+                    suffixText: isAr ? 'ساعة' : 'hr')),
+          ],
+          if (_isLoan) ...[
+            const SizedBox(height: 16),
+            TextField(
+                controller: _amountCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                    labelText:
+                        isAr ? 'المبلغ المطلوب' : 'Requested amount',
+                    border: const OutlineInputBorder(),
+                    suffixText: isAr ? 'جنيه' : 'EGP')),
+          ],
+          if (_isOther) ...[
+            const SizedBox(height: 16),
+            TextField(
+                controller: _otherCtrl,
+                decoration: InputDecoration(
+                    labelText:
+                        isAr ? 'اذكر نوع الطلب' : 'Specify request type',
+                    border: const OutlineInputBorder())),
+          ],
+          const SizedBox(height: 16),
+          TextField(
+              controller: _titleCtrl,
+              decoration: InputDecoration(
+                  labelText:
+                      isAr ? 'عنوان الطلب' : 'Request title',
+                  border: const OutlineInputBorder())),
+          const SizedBox(height: 16),
+          TextField(
+              controller: _descCtrl,
+              maxLines: 4,
+              decoration: InputDecoration(
+                  labelText: isAr
+                      ? 'التفاصيل / السبب'
+                      : 'Details / Reason',
+                  border: const OutlineInputBorder())),
+          const SizedBox(height: 20),
+          SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                  onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryColor,
+                      foregroundColor: Colors.white),
+                  child: _submitting
+                      ? const CircularProgressIndicator(
+                          color: Colors.white)
+                      : Text(context.l10n.send,
+                          style: const TextStyle(fontSize: 18)))),
+        ]));
   }
 }
 
@@ -2113,10 +2947,26 @@ class MyItemsScreen extends StatelessWidget {
   const MyItemsScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(length: 2, child: Column(children: [
-      Builder(builder: (context) { final isAr = Localizations.localeOf(context).languageCode == 'ar'; return TabBar(labelColor: kPrimaryColor, indicatorColor: kPrimaryColor, tabs: [Tab(text: isAr ? 'طلباتي' : 'My Requests'), Tab(text: isAr ? 'إجازاتي' : 'My Leaves')]); }),
-      Expanded(child: TabBarView(children: [_MyList(endpoint: 'my-requests', keyName: 'requests'), _MyList(endpoint: 'my-leaves', keyName: 'leaves')])),
-    ]));
+    return DefaultTabController(
+        length: 2,
+        child: Column(children: [
+          Builder(builder: (context) {
+            final isAr =
+                Localizations.localeOf(context).languageCode == 'ar';
+            return TabBar(
+                labelColor: kPrimaryColor,
+                indicatorColor: kPrimaryColor,
+                tabs: [
+                  Tab(text: isAr ? 'طلباتي' : 'My Requests'),
+                  Tab(text: isAr ? 'إجازاتي' : 'My Leaves'),
+                ]);
+          }),
+          Expanded(
+              child: TabBarView(children: [
+            _MyList(endpoint: 'my-requests', keyName: 'requests'),
+            _MyList(endpoint: 'my-leaves', keyName: 'leaves'),
+          ])),
+        ]));
   }
 }
 
@@ -2133,21 +2983,34 @@ class _MyListState extends State<_MyList> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data[widget.keyName] ?? []); }
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = data[widget.keyName] ?? []);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
+
   Color _statusColor(String s) {
-    if (s.contains('موافق') || s.toLowerCase().contains('approved')) return Colors.green;
-    if (s.contains(context.l10n.rejectMission) || s.toLowerCase().contains('reject')) return Colors.red;
-    if (s.contains(context.l10n.cancelled) || s.toLowerCase().contains('cancel')) return Colors.grey;
+    if (s.contains('موافق') || s.toLowerCase().contains('approved'))
+      return Colors.green;
+    if (s.contains(context.l10n.rejectMission) ||
+        s.toLowerCase().contains('reject')) return Colors.red;
+    if (s.contains(context.l10n.cancelled) ||
+        s.toLowerCase().contains('cancel')) return Colors.grey;
     return Colors.orange;
   }
 
@@ -2157,23 +3020,27 @@ class _MyListState extends State<_MyList> {
   }
 
   Future<void> _cancelItem(dynamic item) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final reasonCtrl = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
-          title: Text('إلغاء الطلب'),
+          title: Text(isAr ? 'إلغاء الطلب' : 'Cancel Request'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('هل أنت متأكد من إلغاء هذا الطلب؟'),
-              SizedBox(height: 12),
+              Text(isAr
+                  ? 'هل أنت متأكد من إلغاء هذا الطلب؟'
+                  : 'Are you sure you want to cancel this request?'),
+              const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
                 decoration: InputDecoration(
-                  labelText: 'سبب الإلغاء',
-                  border: OutlineInputBorder(),
+                  labelText:
+                      isAr ? 'سبب الإلغاء' : 'Cancellation reason',
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -2181,12 +3048,16 @@ class _MyListState extends State<_MyList> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('تراجع'),
+              child: Text(isAr ? 'تراجع' : 'Back'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('إلغاء الطلب', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red),
+              child: Text(
+                isAr ? 'إلغاء الطلب' : 'Cancel Request',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -2203,48 +3074,65 @@ class _MyListState extends State<_MyList> {
     try {
       final res = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token'
+        },
         body: jsonEncode({'reason': reasonCtrl.text.trim()}),
       );
       final data = jsonDecode(res.body);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(data['message'] ?? (data['success'] == true ? 'تم الإلغاء' : 'حدث خطأ')),
-          backgroundColor: data['success'] == true ? Colors.green : Colors.red,
+          content: Text(data['message'] ??
+              (data['success'] == true
+                  ? (isAr ? 'تم الإلغاء' : 'Cancelled successfully')
+                  : (isAr ? 'حدث خطأ' : 'An error occurred'))),
+          backgroundColor:
+              data['success'] == true ? Colors.green : Colors.red,
         ),
       );
       if (data['success'] == true) _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                '${isAr ? 'خطأ' : 'Error'}: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());
-    if (_items.isEmpty) return Center(child: Text(context.l10n.noRequests));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty)
+      return Center(child: Text(context.l10n.noRequests));
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
         itemCount: _items.length,
         itemBuilder: (_, i) {
           final item = _items[i];
-          final status = (item['status_display'] ?? item['status'] ?? '').toString();
+          final status =
+              (item['status_display'] ?? item['status'] ?? '').toString();
           final isLeaveTab = widget.keyName == 'leaves';
           final canCancel = _canCancel(item);
           return Card(
             margin: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () async {
-                await Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => ItemDetailScreen(
-                    item: Map<String, dynamic>.from(item),
-                    itemType: isLeaveTab ? 'leave_request' : 'request',
-                  ),
-                ));
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ItemDetailScreen(
+                        item: Map<String, dynamic>.from(item),
+                        itemType:
+                            isLeaveTab ? 'leave_request' : 'request',
+                      ),
+                    ));
                 _load();
               },
               child: Padding(
@@ -2256,39 +3144,64 @@ class _MyListState extends State<_MyList> {
                       children: [
                         Expanded(
                           child: Text(
-                            item['title'] ?? item['leave_type'] ?? item['type'] ?? '-',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            item['title'] ??
+                                item['leave_type'] ??
+                                item['type'] ??
+                                '-',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: _statusColor(status).withOpacity(0.15),
+                            color:
+                                _statusColor(status).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold, fontSize: 11)),
+                          child: Text(status,
+                              style: TextStyle(
+                                  color: _statusColor(status),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11)),
                         ),
                       ],
                     ),
-                    if ((item['date'] ?? item['created_at'] ?? '').toString().isNotEmpty)
+                    if ((item['date'] ?? item['created_at'] ?? '')
+                        .toString()
+                        .isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(item['date'] ?? item['created_at'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        child: Text(
+                            item['date'] ?? item['created_at'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12)),
                       ),
                     if (canCancel) ...[
-                      SizedBox(height: 8),
-                      Divider(height: 1),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           OutlinedButton.icon(
                             onPressed: () => _cancelItem(item),
-                            icon: Icon(Icons.cancel_outlined, size: 16, color: Colors.red),
-                            label: Text('إلغاء الطلب', style: TextStyle(color: Colors.red, fontSize: 12)),
+                            icon: const Icon(Icons.cancel_outlined,
+                                size: 16, color: Colors.red),
+                            label: Text(
+                              isAr
+                                  ? 'إلغاء الطلب'
+                                  : 'Cancel Request',
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 12),
+                            ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              side:
+                                  const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               minimumSize: Size.zero,
                             ),
                           ),
@@ -2305,10 +3218,12 @@ class _MyListState extends State<_MyList> {
     );
   }
 }
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  State<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
@@ -2317,16 +3232,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'), headers: {'Authorization': 'Token $token'});
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/notifications/'),
+          headers: {'Authorization': 'Token $token'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        setState(() { _notifications = data['notifications'] ?? []; _unreadCount = data['unread_count'] ?? 0; });
+        setState(() {
+          _notifications = data['notifications'] ?? [];
+          _unreadCount = data['unread_count'] ?? 0;
+        });
         unreadNotificationsCount.value = _unreadCount;
       }
     } catch (_) {}
@@ -2336,47 +3260,97 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _markAllRead() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}); _load(); } catch (_) {}
+    try {
+      await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          });
+      _load();
+    } catch (_) {}
   }
 
   Future<void> _markOneRead(int id) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-    try { await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'}, body: jsonEncode({'id': id})); _load(); } catch (_) {}
+    try {
+      await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode({'id': id}));
+      _load();
+    } catch (_) {}
   }
 
   Future<void> _openNotification(dynamic raw) async {
     final n = Map<String, dynamic>.from(raw as Map);
-    if (n['id'] != null && n['is_read'] != true) await _markOneRead(n['id']);
+    if (n['id'] != null && n['is_read'] != true)
+      await _markOneRead(n['id']);
     final type = (n['notification_type'] ?? '').toString();
     final prefs = await SharedPreferences.getInstance();
     final appMode = prefs.getString('app_mode') ?? 'employee';
     Widget page;
     switch (type) {
-      case 'new_request': case 'new_leave': case 'new_permission': page = const ManagerShell(initialIndex: 1); break;
-      case 'attendance': case 'check_in': case 'check_out': case 'manager_attendance': page = const ManagerShell(initialIndex: 2); break;
-      case 'request_approved': case 'request_rejected': case 'leave_approved': case 'leave_rejected':
-        page = appMode == 'manager' ? const ManagerShell(initialIndex: 1) : const EmployeeShell(initialIndex: 3); break;
-      case 'charter_acceptance': page = const ManagerCharterScreen(); break;
-      default: page = appMode == 'manager' ? const ManagerShell(initialIndex: 0) : const EmployeeShell(initialIndex: 0);
+      case 'new_request':
+      case 'new_leave':
+      case 'new_permission':
+        page = const ManagerShell(initialIndex: 1);
+        break;
+      case 'attendance':
+      case 'check_in':
+      case 'check_out':
+      case 'manager_attendance':
+        page = const ManagerShell(initialIndex: 2);
+        break;
+      case 'request_approved':
+      case 'request_rejected':
+      case 'leave_approved':
+      case 'leave_rejected':
+        page = appMode == 'manager'
+            ? const ManagerShell(initialIndex: 1)
+            : const EmployeeShell(initialIndex: 3);
+        break;
+      case 'charter_acceptance':
+        page = const ManagerCharterScreen();
+        break;
+      default:
+        page = appMode == 'manager'
+            ? const ManagerShell(initialIndex: 0)
+            : const EmployeeShell(initialIndex: 0);
     }
     if (!mounted) return;
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    await Navigator.push(
+        context, MaterialPageRoute(builder: (_) => page));
     if (mounted) _load();
   }
 
   IconData _typeIcon(String type) {
     switch (type) {
-      case 'new_request': return Icons.assignment;
-      case 'new_leave': return Icons.beach_access;
-      case 'request_approved': case 'leave_approved': return Icons.check_circle;
-      case 'request_rejected': case 'leave_rejected': return Icons.cancel;
-      case 'geofence_violation': return Icons.warning;
-      case 'attendance': case 'manager_attendance': return Icons.access_time;
-      case 'charter_acceptance': return Icons.description;
-      default: return Icons.notifications;
+      case 'new_request':
+        return Icons.assignment;
+      case 'new_leave':
+        return Icons.beach_access;
+      case 'request_approved':
+      case 'leave_approved':
+        return Icons.check_circle;
+      case 'request_rejected':
+      case 'leave_rejected':
+        return Icons.cancel;
+      case 'geofence_violation':
+        return Icons.warning;
+      case 'attendance':
+      case 'manager_attendance':
+        return Icons.access_time;
+      case 'charter_acceptance':
+        return Icons.description;
+      default:
+        return Icons.notifications;
     }
   }
 
@@ -2390,42 +3364,122 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Colors.grey;
   }
 
-  String _formatTime(String iso) {
+  String _formatTime(String iso, bool isAr) {
     try {
       final dt = DateTime.parse(iso).toLocal();
       final diff = DateTime.now().difference(dt);
-      if (diff.inMinutes < 1) return 'الآن';
-      if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
-      if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
-      if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+      if (diff.inMinutes < 1) return isAr ? 'الآن' : 'Just now';
+      if (diff.inMinutes < 60)
+        return isAr
+            ? 'منذ ${diff.inMinutes} دقيقة'
+            : '${diff.inMinutes} min ago';
+      if (diff.inHours < 24)
+        return isAr
+            ? 'منذ ${diff.inHours} ساعة'
+            : '${diff.inHours} hr ago';
+      if (diff.inDays < 7)
+        return isAr
+            ? 'منذ ${diff.inDays} يوم'
+            : '${diff.inDays} day(s) ago';
       return '${dt.day}/${dt.month}/${dt.year}';
-    } catch (_) { return ''; }
+    } catch (_) {
+      return '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(
-        title: Text('الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'),
-        backgroundColor: kPrimaryColor, foregroundColor: Colors.white,
-        actions: [if (_unreadCount > 0) IconButton(icon: Icon(Icons.done_all), tooltip: 'تعليم الكل كمقروءة', onPressed: _markAllRead)],
-      ),
-      body: _loading ? Center(child: CircularProgressIndicator())
-          : _notifications.isEmpty ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.notifications_off, size: 80, color: Colors.grey[300]), SizedBox(height: 16),
-              Text('لا توجد إشعارات', style: TextStyle(fontSize: 18, color: Colors.grey))]))
-          : RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _notifications.length, itemBuilder: (_, i) {
-              final n = _notifications[i]; final isRead = n['is_read'] == true; final type = n['notification_type'] ?? 'general';
-              return Card(margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), color: isRead ? Colors.white : Colors.blue[50], elevation: isRead ? 1 : 3,
-                child: ListTile(
-                  leading: CircleAvatar(backgroundColor: _typeColor(type).withOpacity(0.15), child: Icon(_typeIcon(type), color: _typeColor(type))),
-                  title: Text(n['title'] ?? '', style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
-                  subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    SizedBox(height: 4), Text(n['body'] ?? ''), SizedBox(height: 4),
-                    Text(_formatTime(n['created_at'] ?? ''), style: TextStyle(fontSize: 12, color: Colors.grey[500]))]),
-                  isThreeLine: true, onTap: () => _openNotification(n)));
-            })),
-    ));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              isAr
+                  ? 'الإشعارات${_unreadCount > 0 ? " ($_unreadCount)" : ""}'
+                  : 'Notifications${_unreadCount > 0 ? " ($_unreadCount)" : ""}',
+            ),
+            backgroundColor: kPrimaryColor,
+            foregroundColor: Colors.white,
+            actions: [
+              if (_unreadCount > 0)
+                IconButton(
+                  icon: const Icon(Icons.done_all),
+                  tooltip: isAr
+                      ? 'تعليم الكل كمقروءة'
+                      : 'Mark all as read',
+                  onPressed: _markAllRead,
+                )
+            ],
+          ),
+          body: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _notifications.isEmpty
+                  ? Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                          Icon(Icons.notifications_off,
+                              size: 80, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          Text(
+                            isAr
+                                ? 'لا توجد إشعارات'
+                                : 'No notifications',
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.grey),
+                          ),
+                        ]))
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                          itemCount: _notifications.length,
+                          itemBuilder: (_, i) {
+                            final n = _notifications[i];
+                            final isRead = n['is_read'] == true;
+                            final type =
+                                n['notification_type'] ?? 'general';
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              color: isRead
+                                  ? Colors.white
+                                  : Colors.blue[50],
+                              elevation: isRead ? 1 : 3,
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: _typeColor(type)
+                                      .withOpacity(0.15),
+                                  child: Icon(_typeIcon(type),
+                                      color: _typeColor(type)),
+                                ),
+                                title: Text(n['title'] ?? '',
+                                    style: TextStyle(
+                                        fontWeight: isRead
+                                            ? FontWeight.normal
+                                            : FontWeight.bold)),
+                                subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 4),
+                                      Text(n['body'] ?? ''),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatTime(
+                                            n['created_at'] ?? '',
+                                            isAr),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[500]),
+                                      ),
+                                    ]),
+                                isThreeLine: true,
+                                onTap: () => _openNotification(n),
+                              ),
+                            );
+                          })),
+        ));
   }
 }
 
@@ -2443,46 +3497,89 @@ class _CharterScreenState extends State<CharterScreen> {
   bool _agreed = false;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); if (data['success'] == true && data['has_charter'] == true) setState(() => _charter = data['charter']); }
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['success'] == true && data['has_charter'] == true)
+          setState(() => _charter = data['charter']);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
   Future<void> _openAttachment() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final url = _charter?['attachment_url'] ?? '';
     if (url.isEmpty) return;
-    try { final uri = Uri.parse(url); if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication); }
-    catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر فتح الملف'))); }
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri))
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                isAr ? 'تعذر فتح الملف' : 'Could not open file')));
+    }
   }
 
   Future<void> _accept() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (!_agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى الموافقة على اللائحة أولاً'), backgroundColor: Colors.orange));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى الموافقة على اللائحة أولاً'
+              : 'Please agree to the charter first'),
+          backgroundColor: Colors.orange));
       return;
     }
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
-          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'});
+      final res = await http.post(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          });
       final data = jsonDecode(res.body);
       if (data['success'] == true) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم تسجيل موافقتك بنجاح ✅'), backgroundColor: Colors.green));
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => widget.appMode == 'manager' ? const ManagerShell() : const EmployeeShell()));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAr
+                ? 'تم تسجيل موافقتك بنجاح ✅'
+                : 'Your agreement has been recorded ✅'),
+            backgroundColor: Colors.green));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (_) => widget.appMode == 'manager'
+                    ? const ManagerShell()
+                    : const EmployeeShell()));
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? data['error'] ?? 'حدث خطأ')));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(data['message'] ??
+                  data['error'] ??
+                  (isAr ? 'حدث خطأ' : 'An error occurred'))));
       }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الاتصال')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                isAr ? 'خطأ في الاتصال' : 'Connection error')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -2490,56 +3587,243 @@ class _CharterScreenState extends State<CharterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final attachmentUrl = _charter?['attachment_url'] ?? '';
-    final attachmentName = _charter?['attachment_name'] ?? 'الملف المرفق';
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: Text('لائحة الشركة'), backgroundColor: kPrimaryColor, foregroundColor: Colors.white, automaticallyImplyLeading: false),
-      body: _loading ? Center(child: CircularProgressIndicator())
-          : _charter == null ? Center(child: Text('لا توجد لائحة حالياً'))
-          : Column(children: [
-              Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(width: double.infinity, padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(gradient: const LinearGradient(colors: [kPrimaryDark, kPrimaryColor]), borderRadius: BorderRadius.circular(12)),
-                  child: Column(children: [
-                    Icon(Icons.description, color: Colors.white, size: 48), SizedBox(height: 8),
-                    Text(_charter!['title'] ?? 'لائحة الشركة', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text('الإصدار ${_charter!['version'] ?? 1}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                  ])),
-                SizedBox(height: 16),
-                if (attachmentUrl.isNotEmpty) ...[
-                  InkWell(onTap: _openAttachment, child: Container(width: double.infinity, padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: Colors.purple[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.purple[200]!)),
-                    child: Row(children: [
-                      Icon(Icons.attach_file, color: Colors.purple[700]), SizedBox(width: 10),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('الملف المرفق', style: TextStyle(color: Colors.purple[700], fontWeight: FontWeight.bold)),
-                        Text(attachmentName, style: TextStyle(color: Colors.purple[500], fontSize: 12), overflow: TextOverflow.ellipsis)])),
-                      Icon(Icons.open_in_new, color: Colors.purple[700], size: 20)]))),
-                  SizedBox(height: 16)],
-                if ((_charter!['introduction'] ?? '').toString().isNotEmpty) ...[
-                  Container(width: double.infinity, padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.blue[200]!)),
-                    child: Text(_charter!['introduction'], style: const TextStyle(fontSize: 15, height: 1.6))),
-                  SizedBox(height: 16)],
-                Container(width: double.infinity, padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey[300]!),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)]),
-                  child: Text(_charter!['content'] ?? '', style: const TextStyle(fontSize: 15, height: 1.8))),
-                SizedBox(height: 20)]))),
-              Container(padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -4))]),
-                child: Column(children: [
-                  CheckboxListTile(value: _agreed, onChanged: (v) => setState(() => _agreed = v ?? false),
-                    title: const Text('أقر بأنني قرأت واطلعت على لائحة الشركة وأوافق على جميع بنودها', style: TextStyle(fontSize: 14)),
-                    activeColor: kPrimaryColor, controlAffinity: ListTileControlAffinity.leading),
-                  SizedBox(height: 8),
-                  SizedBox(width: double.infinity, height: 52, child: ElevatedButton(
-                    onPressed: (_submitting || !_agreed) ? null : _accept,
-                    style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: _submitting ? const CircularProgressIndicator(color: Colors.white)
-                        : Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.check_circle), SizedBox(width: 8),
-                            Text('أوافق على اللائحة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))])))]))]),
-    ));
+    final attachmentName =
+        _charter?['attachment_name'] ?? (isAr ? 'الملف المرفق' : 'Attached file');
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(isAr ? 'لائحة الشركة' : 'Company Charter'),
+              backgroundColor: kPrimaryColor,
+              foregroundColor: Colors.white,
+              automaticallyImplyLeading: false),
+          body: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _charter == null
+                  ? Center(
+                      child: Text(isAr
+                          ? 'لا توجد لائحة حالياً'
+                          : 'No charter available'))
+                  : Column(children: [
+                      Expanded(
+                          child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                        width: double.infinity,
+                                        padding:
+                                            const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                            gradient:
+                                                const LinearGradient(
+                                                    colors: [
+                                                  kPrimaryDark,
+                                                  kPrimaryColor
+                                                ]),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    12)),
+                                        child: Column(children: [
+                                          const Icon(Icons.description,
+                                              color: Colors.white,
+                                              size: 48),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _charter!['title'] ??
+                                                (isAr
+                                                    ? 'لائحة الشركة'
+                                                    : 'Company Charter'),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight:
+                                                    FontWeight.bold),
+                                          ),
+                                          Text(
+                                            '${isAr ? 'الإصدار' : 'Version'} ${_charter!['version'] ?? 1}',
+                                            style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 13),
+                                          ),
+                                        ])),
+                                    const SizedBox(height: 16),
+                                    if (attachmentUrl.isNotEmpty) ...[
+                                      InkWell(
+                                          onTap: _openAttachment,
+                                          child: Container(
+                                              width: double.infinity,
+                                              padding:
+                                                  const EdgeInsets.all(
+                                                      14),
+                                              decoration: BoxDecoration(
+                                                  color: Colors
+                                                      .purple[50],
+                                                  borderRadius:
+                                                      BorderRadius
+                                                          .circular(10),
+                                                  border: Border.all(
+                                                      color: Colors
+                                                          .purple[200]!)),
+                                              child: Row(children: [
+                                                Icon(Icons.attach_file,
+                                                    color: Colors
+                                                        .purple[700]),
+                                                const SizedBox(
+                                                    width: 10),
+                                                Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                      Text(
+                                                        isAr
+                                                            ? 'الملف المرفق'
+                                                            : 'Attached File',
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .purple[
+                                                                    700],
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                          attachmentName,
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .purple[
+                                                                      500],
+                                                              fontSize:
+                                                                  12),
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis),
+                                                    ])),
+                                                Icon(Icons.open_in_new,
+                                                    color: Colors
+                                                        .purple[700],
+                                                    size: 20),
+                                              ]))),
+                                      const SizedBox(height: 16),
+                                    ],
+                                    if ((_charter!['introduction'] ??
+                                            '')
+                                        .toString()
+                                        .isNotEmpty) ...[
+                                      Container(
+                                          width: double.infinity,
+                                          padding:
+                                              const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                              color: Colors.blue[50],
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      10),
+                                              border: Border.all(
+                                                  color:
+                                                      Colors.blue[200]!)),
+                                          child: Text(
+                                              _charter!['introduction'],
+                                              style: const TextStyle(
+                                                  fontSize: 15,
+                                                  height: 1.6))),
+                                      const SizedBox(height: 16),
+                                    ],
+                                    Container(
+                                        width: double.infinity,
+                                        padding:
+                                            const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    10),
+                                            border: Border.all(
+                                                color:
+                                                    Colors.grey[300]!),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.05),
+                                                  blurRadius: 8)
+                                            ]),
+                                        child: Text(
+                                            _charter!['content'] ?? '',
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                height: 1.8))),
+                                    const SizedBox(height: 20),
+                                  ]))),
+                      Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                    color:
+                                        Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, -4))
+                              ]),
+                          child: Column(children: [
+                            CheckboxListTile(
+                                value: _agreed,
+                                onChanged: (v) =>
+                                    setState(() => _agreed = v ?? false),
+                                title: Text(
+                                  isAr
+                                      ? 'أقر بأنني قرأت واطلعت على لائحة الشركة وأوافق على جميع بنودها'
+                                      : 'I acknowledge that I have read the company charter and agree to all its terms',
+                                  style:
+                                      const TextStyle(fontSize: 14),
+                                ),
+                                activeColor: kPrimaryColor,
+                                controlAffinity:
+                                    ListTileControlAffinity.leading),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                    onPressed: (_submitting || !_agreed)
+                                        ? null
+                                        : _accept,
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    12))),
+                                    child: _submitting
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white)
+                                        : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                  Icons.check_circle),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                isAr
+                                                    ? 'أوافق على اللائحة'
+                                                    : 'I Agree to the Charter',
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ])))
+                          ])),
+                    ]),
+        ));
   }
 }
 
@@ -2547,7 +3831,8 @@ class ManagerCharterScreen extends StatefulWidget {
   const ManagerCharterScreen({super.key});
 
   @override
-  State<ManagerCharterScreen> createState() => _ManagerCharterScreenState();
+  State<ManagerCharterScreen> createState() =>
+      _ManagerCharterScreenState();
 }
 
 class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
@@ -2605,7 +3890,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       }
 
       final r2 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
         headers: {'Authorization': 'Token $token'},
       );
 
@@ -2626,6 +3912,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   Future<void> _pickAttachment() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -2639,7 +3926,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       if (file.path == null || file.path!.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('تعذر قراءة الملف المختار')),
+            SnackBar(
+                content: Text(isAr
+                    ? 'تعذر قراءة الملف المختار'
+                    : 'Could not read the selected file')),
           );
         }
         return;
@@ -2652,13 +3942,17 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ في اختيار الملف: $e')),
+          SnackBar(
+              content: Text(isAr
+                  ? 'خطأ في اختيار الملف: $e'
+                  : 'Error selecting file: $e')),
         );
       }
     }
   }
 
   Future<void> _openAttachment() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_attachmentUrl.isEmpty) return;
     try {
       final uri = Uri.parse(_attachmentUrl);
@@ -2668,17 +3962,23 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تعذر فتح الملف')),
+          SnackBar(
+              content: Text(
+                  isAr ? 'تعذر فتح الملف' : 'Could not open file')),
         );
       }
     }
   }
 
   Future<void> _save() async {
-    if (_titleCtrl.text.trim().isEmpty || _contentCtrl.text.trim().isEmpty) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_titleCtrl.text.trim().isEmpty ||
+        _contentCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('العنوان والمحتوى مطلوبان'),
+          content: Text(isAr
+              ? 'العنوان والمحتوى مطلوبان'
+              : 'Title and content are required'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -2693,7 +3993,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
 
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
       );
 
       request.headers['Authorization'] = 'Token $token';
@@ -2729,7 +4030,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              data['message'] ?? data['error'] ?? 'تمت العملية',
+              data['message'] ??
+                  data['error'] ??
+                  (isAr ? 'تمت العملية' : 'Operation completed'),
             ),
             backgroundColor:
                 data['success'] == true ? Colors.green : Colors.red,
@@ -2749,7 +4052,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('خطأ في الاتصال: $e'),
+            content: Text(isAr
+                ? 'خطأ في الاتصال: $e'
+                : 'Connection error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -2760,20 +4065,23 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   void _showReport() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CharterReportScreen(
           accepted: _accepted,
           pending: _pending,
-          charterTitle: _charter?['title'] ?? 'لائحة الشركة',
+          charterTitle: _charter?['title'] ??
+              (isAr ? 'لائحة الشركة' : 'Company Charter'),
           charterVersion: _charter?['version'] ?? 1,
         ),
       ),
     );
   }
 
-  Widget _statCard(String label, int count, Color color, IconData icon) {
+  Widget _statCard(
+      String label, int count, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -2784,7 +4092,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       child: Column(
         children: [
           Icon(icon, color: color, size: 32),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             '$count',
             style: TextStyle(
@@ -2793,7 +4101,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               color: color,
             ),
           ),
-          Text(label, style: TextStyle(color: color, fontSize: 13)),
+          Text(label,
+              style: TextStyle(color: color, fontSize: 13)),
         ],
       ),
     );
@@ -2809,6 +4118,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   Widget _buildInfoView() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -2826,8 +4136,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.description, color: Colors.white, size: 40),
-                  SizedBox(height: 8),
+                  const Icon(Icons.description,
+                      color: Colors.white, size: 40),
+                  const SizedBox(height: 8),
                   Text(
                     _charter!['title'] ?? '',
                     style: const TextStyle(
@@ -2837,13 +4148,14 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                     ),
                   ),
                   Text(
-                    'الإصدار ${_charter!['version'] ?? 1}',
-                    style: const TextStyle(color: Colors.white70),
+                    '${isAr ? 'الإصدار' : 'Version'} ${_charter!['version'] ?? 1}',
+                    style:
+                        const TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             if (_attachmentUrl.isNotEmpty) ...[
               InkWell(
                 onTap: _openAttachment,
@@ -2852,18 +4164,23 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   decoration: BoxDecoration(
                     color: Colors.purple[50],
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.purple[200]!),
+                    border:
+                        Border.all(color: Colors.purple[200]!),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.attach_file, color: Colors.purple[700]),
-                      SizedBox(width: 10),
+                      Icon(Icons.attach_file,
+                          color: Colors.purple[700]),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _attachmentName.isNotEmpty
                               ? _attachmentName
-                              : 'الملف المرفق',
-                          style: TextStyle(color: Colors.purple[700]),
+                              : (isAr
+                                  ? 'الملف المرفق'
+                                  : 'Attached file'),
+                          style: TextStyle(
+                              color: Colors.purple[700]),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -2873,15 +4190,18 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
             ],
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => setState(() => _showEdit = true),
-                    icon: Icon(Icons.edit),
-                    label: const Text('تعديل اللائحة'),
+                    onPressed: () =>
+                        setState(() => _showEdit = true),
+                    icon: const Icon(Icons.edit),
+                    label: Text(isAr
+                        ? 'تعديل اللائحة'
+                        : 'Edit Charter'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kManagerColor,
                       foregroundColor: Colors.white,
@@ -2892,12 +4212,14 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _showReport,
-                    icon: Icon(Icons.print),
-                    label: const Text('تقرير الموافقات'),
+                    icon: const Icon(Icons.print),
+                    label: Text(isAr
+                        ? 'تقرير الموافقات'
+                        : 'Approvals Report'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
@@ -2916,29 +4238,38 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               decoration: BoxDecoration(
                 color: Colors.orange[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange[200]!),
+                border:
+                    Border.all(color: Colors.orange[200]!),
               ),
               child: Column(
                 children: [
-                  Icon(Icons.warning, color: Colors.orange, size: 40),
-                  SizedBox(height: 8),
+                  const Icon(Icons.warning,
+                      color: Colors.orange, size: 40),
+                  const SizedBox(height: 8),
                   Text(
-                    'لا توجد لائحة بعد',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    isAr ? 'لا توجد لائحة بعد' : 'No charter yet',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    'اضغط تعديل لإنشاء لائحة جديدة',
-                    style: TextStyle(color: Colors.grey),
+                    isAr
+                        ? 'اضغط تعديل لإنشاء لائحة جديدة'
+                        : 'Press edit to create a new charter',
+                    style:
+                        const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () => setState(() => _showEdit = true),
-              icon: Icon(Icons.add),
-              label: const Text('إنشاء لائحة جديدة'),
+              icon: const Icon(Icons.add),
+              label: Text(isAr
+                  ? 'إنشاء لائحة جديدة'
+                  : 'Create New Charter'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: kManagerColor,
                 foregroundColor: Colors.white,
@@ -2949,21 +4280,21 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ],
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: _statCard(
-                  'وافقوا',
+                  isAr ? 'وافقوا' : 'Agreed',
                   _accepted.length,
                   Colors.green,
                   Icons.check_circle,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _statCard(
-                  'لم يوافقوا',
+                  isAr ? 'لم يوافقوا' : 'Not Agreed',
                   _pending.length,
                   Colors.orange,
                   Icons.pending,
@@ -2971,24 +4302,25 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           if (_accepted.isNotEmpty) ...[
-            const Text(
-              '✅ وافقوا على اللائحة',
-              style: TextStyle(
+            Text(
+              isAr ? '✅ وافقوا على اللائحة' : '✅ Agreed to Charter',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ..._accepted.map(
               (emp) => Card(
                 color: Colors.green[50],
                 child: ListTile(
                   leading: const CircleAvatar(
                     backgroundColor: Colors.green,
-                    child: Icon(Icons.check, color: Colors.white, size: 18),
+                    child: Icon(Icons.check,
+                        color: Colors.white, size: 18),
                   ),
                   title: Text(emp['name'] ?? emp['username'] ?? ''),
                   subtitle: Text(
@@ -2998,30 +4330,33 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
           ],
           if (_pending.isNotEmpty) ...[
-            const Text(
-              '⏳ لم يوافقوا بعد',
-              style: TextStyle(
+            Text(
+              isAr ? '⏳ لم يوافقوا بعد' : '⏳ Not Agreed Yet',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.orange,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ..._pending.map(
               (emp) => Card(
                 color: Colors.orange[50],
                 child: ListTile(
                   leading: const CircleAvatar(
                     backgroundColor: Colors.orange,
-                    child: Icon(Icons.schedule, color: Colors.white, size: 18),
+                    child: Icon(Icons.schedule,
+                        color: Colors.white, size: 18),
                   ),
                   title: Text(emp['name'] ?? emp['username'] ?? ''),
-                  subtitle: const Text(
-                    'في انتظار الموافقة',
-                    style: TextStyle(fontSize: 12),
+                  subtitle: Text(
+                    isAr
+                        ? 'في انتظار الموافقة'
+                        : 'Waiting for approval',
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),
@@ -3030,10 +4365,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           if (_accepted.isEmpty && _pending.isEmpty)
             Center(
               child: Padding(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Text(
-                  'لا يوجد موظفين بعد',
-                  style: TextStyle(color: Colors.grey),
+                  isAr ? 'لا يوجد موظفين بعد' : 'No employees yet',
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
             ),
@@ -3043,6 +4378,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   Widget _buildCurrentAttachmentCard() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_attachmentUrl.isEmpty) {
       return Container(
         width: double.infinity,
@@ -3052,7 +4388,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.grey[300]!),
         ),
-        child: const Text('لا يوجد ملف مرفق حاليًا'),
+        child: Text(isAr
+            ? 'لا يوجد ملف مرفق حاليًا'
+            : 'No attachment currently'),
       );
     }
 
@@ -3060,10 +4398,14 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _removeCurrentAttachment ? Colors.red[50] : Colors.purple[50],
+        color: _removeCurrentAttachment
+            ? Colors.red[50]
+            : Colors.purple[50],
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: _removeCurrentAttachment ? Colors.red[200]! : Colors.purple[200]!,
+          color: _removeCurrentAttachment
+              ? Colors.red[200]!
+              : Colors.purple[200]!,
         ),
       ),
       child: Column(
@@ -3072,16 +4414,22 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
             children: [
               Icon(
                 Icons.attach_file,
-                color: _removeCurrentAttachment ? Colors.red : Colors.purple,
+                color: _removeCurrentAttachment
+                    ? Colors.red
+                    : Colors.purple,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _attachmentName.isNotEmpty ? _attachmentName : 'الملف الحالي',
+                  _attachmentName.isNotEmpty
+                      ? _attachmentName
+                      : (isAr ? 'الملف الحالي' : 'Current file'),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: _removeCurrentAttachment ? Colors.red : Colors.purple[700],
+                    color: _removeCurrentAttachment
+                        ? Colors.red
+                        : Colors.purple[700],
                     decoration: _removeCurrentAttachment
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
@@ -3090,8 +4438,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
               IconButton(
                 onPressed: _openAttachment,
-                icon: Icon(Icons.open_in_new),
-                tooltip: 'فتح الملف',
+                icon: const Icon(Icons.open_in_new),
+                tooltip: isAr ? 'فتح الملف' : 'Open file',
               ),
             ],
           ),
@@ -3102,7 +4450,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 _removeCurrentAttachment = v ?? false;
               });
             },
-            title: const Text('حذف الملف الحالي عند الحفظ'),
+            title: Text(isAr
+                ? 'حذف الملف الحالي عند الحفظ'
+                : 'Delete current file on save'),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
           ),
@@ -3112,6 +4462,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   Widget _buildPickedAttachmentCard() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_pickedAttachment == null) {
       return Container(
         width: double.infinity,
@@ -3121,9 +4472,11 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.blue[200]!),
         ),
-        child: const Text(
-          'لم يتم اختيار ملف جديد بعد\nالمسموح: PDF / Word / PNG / JPG — الحد الأقصى 10 MB',
-          style: TextStyle(height: 1.5),
+        child: Text(
+          isAr
+              ? 'لم يتم اختيار ملف جديد بعد\nالمسموح: PDF / Word / PNG / JPG — الحد الأقصى 10 MB'
+              : 'No new file selected yet\nAllowed: PDF / Word / PNG / JPG — Max 10 MB',
+          style: const TextStyle(height: 1.5),
         ),
       );
     }
@@ -3138,8 +4491,8 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.insert_drive_file, color: Colors.green),
-          SizedBox(width: 8),
+          const Icon(Icons.insert_drive_file, color: Colors.green),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               _pickedAttachment!.name,
@@ -3148,9 +4501,11 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
             ),
           ),
           IconButton(
-            onPressed: () => setState(() => _pickedAttachment = null),
-            icon: Icon(Icons.close, color: Colors.red),
-            tooltip: 'إلغاء الملف المختار',
+            onPressed: () =>
+                setState(() => _pickedAttachment = null),
+            icon: const Icon(Icons.close, color: Colors.red),
+            tooltip:
+                isAr ? 'إلغاء الملف المختار' : 'Cancel selected file',
           ),
         ],
       ),
@@ -3158,6 +4513,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   }
 
   Widget _buildEditView() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -3171,53 +4527,61 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info, color: Colors.blue),
-                SizedBox(width: 8),
+                const Icon(Icons.info, color: Colors.blue),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'أي تعديل في المحتوى أو الملف المرفق سيطلب من الموظفين الموافقة مجددًا',
-                    style: TextStyle(fontSize: 13),
+                    isAr
+                        ? 'أي تعديل في المحتوى أو الملف المرفق سيطلب من الموظفين الموافقة مجددًا'
+                        : 'Any change in content or attachment will require employees to agree again',
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextField(
             controller: _titleCtrl,
             decoration: InputDecoration(
-              labelText: 'عنوان اللائحة *',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.title),
+              labelText:
+                  isAr ? 'عنوان اللائحة *' : 'Charter title *',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.title),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextField(
             controller: _introCtrl,
             maxLines: 3,
             decoration: InputDecoration(
-              labelText: 'المقدمة (اختياري)',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.short_text),
+              labelText: isAr
+                  ? 'المقدمة (اختياري)'
+                  : 'Introduction (optional)',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.short_text),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextField(
             controller: _contentCtrl,
             maxLines: 12,
             decoration: InputDecoration(
-              labelText: 'محتوى اللائحة *',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.article),
-              hintText: '1- البند الأول\n2- البند الثاني\n3- البند الثالث',
+              labelText:
+                  isAr ? 'محتوى اللائحة *' : 'Charter content *',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.article),
+              hintText: isAr
+                  ? '1- البند الأول\n2- البند الثاني\n3- البند الثالث'
+                  : '1- First clause\n2- Second clause\n3- Third clause',
             ),
           ),
-          SizedBox(height: 16),
-
+          const SizedBox(height: 16),
           Align(
-            alignment: Alignment.centerRight,
+            alignment:
+                isAr ? Alignment.centerRight : Alignment.centerLeft,
             child: Text(
-              'الملف الحالي',
+              isAr ? 'الملف الحالي' : 'Current File',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -3225,15 +4589,14 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           _buildCurrentAttachmentCard(),
-
-          SizedBox(height: 16),
-
+          const SizedBox(height: 16),
           Align(
-            alignment: Alignment.centerRight,
+            alignment:
+                isAr ? Alignment.centerRight : Alignment.centerLeft,
             child: Text(
-              'ملف جديد',
+              isAr ? 'ملف جديد' : 'New File',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -3241,20 +4604,22 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           _buildPickedAttachmentCard(),
-
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _pickAttachment,
-              icon: Icon(Icons.upload_file),
-              label: const Text('اختيار ملف PDF / Word / صورة'),
+              icon: const Icon(Icons.upload_file),
+              label: Text(
+                Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'اختيار ملف PDF / Word / صورة'
+                    : 'Choose PDF / Word / Image file',
+              ),
             ),
           ),
-
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -3266,7 +4631,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                   child: Text(context.l10n.cancel),
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
                   onPressed: _saving ? null : _save,
@@ -3279,10 +4644,15 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                     ),
                   ),
                   child: _saving
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'حفظ اللائحة',
-                          style: TextStyle(
+                      ? const CircularProgressIndicator(
+                          color: Colors.white)
+                      : Text(
+                          Localizations.localeOf(context)
+                                      .languageCode ==
+                                  'ar'
+                              ? 'حفظ اللائحة'
+                              : 'Save Charter',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -3298,23 +4668,29 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('إدارة لائحة الشركة'),
+          title: Text(isAr
+              ? 'إدارة لائحة الشركة'
+              : 'Company Charter Management'),
           backgroundColor: kManagerColor,
           foregroundColor: Colors.white,
           actions: [
             IconButton(
               icon: Icon(_showEdit ? Icons.visibility : Icons.edit),
-              tooltip: _showEdit ? 'عرض' : context.l10n.edit,
-              onPressed: () => setState(() => _showEdit = !_showEdit),
+              tooltip: _showEdit
+                  ? (isAr ? 'عرض' : 'View')
+                  : context.l10n.edit,
+              onPressed: () =>
+                  setState(() => _showEdit = !_showEdit),
             ),
           ],
         ),
         body: _loading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : _showEdit
                 ? _buildEditView()
                 : _buildInfoView(),
@@ -3322,97 +4698,314 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
     );
   }
 }
+
 class CharterReportScreen extends StatelessWidget {
   final List<dynamic> accepted;
   final List<dynamic> pending;
   final String charterTitle;
   final int charterVersion;
-  const CharterReportScreen({super.key, required this.accepted, required this.pending, required this.charterTitle, required this.charterVersion});
+  const CharterReportScreen({
+    super.key,
+    required this.accepted,
+    required this.pending,
+    required this.charterTitle,
+    required this.charterVersion,
+  });
 
-  String _formatDate(String iso) { try { final dt = DateTime.parse(iso).toLocal(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; } catch (_) { return ''; } }
-  String _formatNow() { final dt = DateTime.now(); return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}'; }
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String _formatNow() {
+    final dt = DateTime.now();
+    return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('تقرير الموافقات'), backgroundColor: Colors.teal, foregroundColor: Colors.white),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
-        Container(width: double.infinity, padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(gradient: const LinearGradient(colors: [Colors.teal, kPrimaryColor]), borderRadius: BorderRadius.circular(12)),
-          child: Column(children: [Icon(Icons.description, color: Colors.white, size: 40), SizedBox(height: 8),
-            Text(charterTitle, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-            Text('الإصدار $charterVersion', style: const TextStyle(color: Colors.white70)),
-            SizedBox(height: 4), Text('تاريخ التقرير: ${_formatNow()}', style: const TextStyle(color: Colors.white60, fontSize: 12))])),
-        SizedBox(height: 16),
-        Row(children: [
-          Expanded(child: Container(padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green[200]!)),
-            child: Column(children: [Icon(Icons.check_circle, color: Colors.green, size: 32), SizedBox(height: 8),
-              Text('${accepted.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
-              const Text('وافقوا', style: TextStyle(color: Colors.green))]))),
-          SizedBox(width: 12),
-          Expanded(child: Container(padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange[200]!)),
-            child: Column(children: [Icon(Icons.pending, color: Colors.orange, size: 32), SizedBox(height: 8),
-              Text('${pending.length}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orange)),
-              const Text('لم يوافقوا', style: TextStyle(color: Colors.orange))])))]),
-        SizedBox(height: 20),
-        if (accepted.isNotEmpty) ...[
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green[700],
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-            child: Row(children: [Icon(Icons.check_circle, color: Colors.white), SizedBox(width: 8),
-              Text('وافقوا على اللائحة (${accepted.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
-          Container(decoration: BoxDecoration(border: Border.all(color: Colors.green[200]!),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10))),
-            child: Column(children: accepted.asMap().entries.map((entry) {
-              final i = entry.key; final emp = entry.value;
-              return Container(
-                decoration: BoxDecoration(color: i.isEven ? Colors.green[50] : Colors.white,
-                    border: i < accepted.length - 1 ? Border(bottom: BorderSide(color: Colors.green[100]!)) : null),
-                child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-                  CircleAvatar(radius: 16, backgroundColor: Colors.green[100],
-                    child: Text('${i + 1}', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12))),
-                  SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(emp['name'] ?? emp['username'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    if ((emp['accepted_at'] ?? '').isNotEmpty) Text('وافق في: ${_formatDate(emp['accepted_at'])}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                    if ((emp['ip_address'] ?? '').isNotEmpty) Text('IP: ${emp['ip_address']}', style: TextStyle(color: Colors.grey[500], fontSize: 11))])),
-                  Icon(Icons.verified, color: Colors.green, size: 20)])));
-            }).toList())),
-          SizedBox(height: 20)],
-        if (pending.isNotEmpty) ...[
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[700],
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-            child: Row(children: [Icon(Icons.pending, color: Colors.white), SizedBox(width: 8),
-              Text('لم يوافقوا بعد (${pending.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
-          Container(decoration: BoxDecoration(border: Border.all(color: Colors.orange[200]!),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10))),
-            child: Column(children: pending.asMap().entries.map((entry) {
-              final i = entry.key; final emp = entry.value;
-              return Container(
-                decoration: BoxDecoration(color: i.isEven ? Colors.orange[50] : Colors.white,
-                    border: i < pending.length - 1 ? Border(bottom: BorderSide(color: Colors.orange[100]!)) : null),
-                child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-                  CircleAvatar(radius: 16, backgroundColor: Colors.orange[100],
-                    child: Text('${i + 1}', style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold, fontSize: 12))),
-                  SizedBox(width: 12),
-                  Expanded(child: Text(emp['name'] ?? emp['username'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold))),
-                  Icon(Icons.schedule, color: Colors.orange, size: 20)])));
-            }).toList()))],
-        SizedBox(height: 30),
-        Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey[300]!)),
-          child: Text('تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}', style: TextStyle(color: Colors.grey[600], fontSize: 12), textAlign: TextAlign.center)),
-        SizedBox(height: 20)])));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(
+                  isAr ? 'تقرير الموافقات' : 'Approvals Report'),
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white),
+          body: ListView(padding: const EdgeInsets.all(16), children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [Colors.teal, kPrimaryColor]),
+                  borderRadius: BorderRadius.circular(12)),
+              child: Column(children: [
+                const Icon(Icons.description,
+                    color: Colors.white, size: 40),
+                const SizedBox(height: 8),
+                Text(charterTitle,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center),
+                Text(
+                  '${isAr ? 'الإصدار' : 'Version'} $charterVersion',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${isAr ? 'تاريخ التقرير' : 'Report date'}: ${_formatNow()}',
+                  style: const TextStyle(
+                      color: Colors.white60, fontSize: 12),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(
+                  child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border:
+                              Border.all(color: Colors.green[200]!)),
+                      child: Column(children: [
+                        const Icon(Icons.check_circle,
+                            color: Colors.green, size: 32),
+                        const SizedBox(height: 8),
+                        Text('${accepted.length}',
+                            style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green)),
+                        Text(
+                          isAr ? 'وافقوا' : 'Agreed',
+                          style:
+                              const TextStyle(color: Colors.green),
+                        ),
+                      ]))),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                          color: Colors.orange[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: Colors.orange[200]!)),
+                      child: Column(children: [
+                        const Icon(Icons.pending,
+                            color: Colors.orange, size: 32),
+                        const SizedBox(height: 8),
+                        Text('${pending.length}',
+                            style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange)),
+                        Text(
+                          isAr ? 'لم يوافقوا' : 'Not Agreed',
+                          style: const TextStyle(
+                              color: Colors.orange),
+                        ),
+                      ]))),
+            ]),
+            const SizedBox(height: 20),
+            if (accepted.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: Colors.green[700],
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10))),
+                child: Row(children: [
+                  const Icon(Icons.check_circle,
+                      color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${isAr ? 'وافقوا على اللائحة' : 'Agreed to Charter'} (${accepted.length})',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
+                  ),
+                ]),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                    border:
+                        Border.all(color: Colors.green[200]!),
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10))),
+                child: Column(
+                    children: accepted.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final emp = entry.value;
+                  return Container(
+                    decoration: BoxDecoration(
+                        color: i.isEven
+                            ? Colors.green[50]
+                            : Colors.white,
+                        border: i < accepted.length - 1
+                            ? Border(
+                                bottom: BorderSide(
+                                    color: Colors.green[100]!))
+                            : null),
+                    child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(children: [
+                          CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.green[100],
+                              child: Text('${i + 1}',
+                                  style: TextStyle(
+                                      color: Colors.green[700],
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12))),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                Text(
+                                    emp['name'] ??
+                                        emp['username'] ??
+                                        '',
+                                    style: const TextStyle(
+                                        fontWeight:
+                                            FontWeight.bold)),
+                                if ((emp['accepted_at'] ?? '')
+                                    .isNotEmpty)
+                                  Text(
+                                    '${isAr ? 'وافق في' : 'Agreed on'}: ${_formatDate(emp['accepted_at'])}',
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12),
+                                  ),
+                                if ((emp['ip_address'] ?? '')
+                                    .isNotEmpty)
+                                  Text('IP: ${emp['ip_address']}',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 11)),
+                              ])),
+                          const Icon(Icons.verified,
+                              color: Colors.green, size: 20),
+                        ])),
+                  );
+                }).toList()),
+              ),
+              const SizedBox(height: 20),
+            ],
+            if (pending.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: Colors.orange[700],
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10))),
+                child: Row(children: [
+                  const Icon(Icons.pending, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${isAr ? 'لم يوافقوا بعد' : 'Not Agreed Yet'} (${pending.length})',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
+                  ),
+                ]),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                    border:
+                        Border.all(color: Colors.orange[200]!),
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10))),
+                child: Column(
+                    children: pending.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final emp = entry.value;
+                  return Container(
+                    decoration: BoxDecoration(
+                        color: i.isEven
+                            ? Colors.orange[50]
+                            : Colors.white,
+                        border: i < pending.length - 1
+                            ? Border(
+                                bottom: BorderSide(
+                                    color: Colors.orange[100]!))
+                            : null),
+                    child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(children: [
+                          CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.orange[100],
+                              child: Text('${i + 1}',
+                                  style: TextStyle(
+                                      color: Colors.orange[700],
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12))),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: Text(
+                                  emp['name'] ??
+                                      emp['username'] ??
+                                      '',
+                                  style: const TextStyle(
+                                      fontWeight:
+                                          FontWeight.bold))),
+                          const Icon(Icons.schedule,
+                              color: Colors.orange, size: 20),
+                        ])),
+                  );
+                }).toList()),
+              ),
+            ],
+            const SizedBox(height: 30),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!)),
+              child: Text(
+                isAr
+                    ? 'تم إنشاء هذا التقرير بواسطة نظام MotionHR\nتاريخ الطباعة: ${_formatNow()}'
+                    : 'This report was generated by MotionHR System\nPrint date: ${_formatNow()}',
+                style: TextStyle(
+                    color: Colors.grey[600], fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ]),
+        ));
   }
 }
 
 class ManagerGeofenceScreen extends StatefulWidget {
   const ManagerGeofenceScreen({super.key});
   @override
-  State<ManagerGeofenceScreen> createState() => _ManagerGeofenceScreenState();
+  State<ManagerGeofenceScreen> createState() =>
+      _ManagerGeofenceScreenState();
 }
 
-class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
+class _ManagerGeofenceScreenState
+    extends State<ManagerGeofenceScreen> {
   Map<String, dynamic>? _geofence;
   bool _loading = true;
   bool _saving = false;
@@ -3422,98 +5015,387 @@ class _ManagerGeofenceScreenState extends State<ManagerGeofenceScreen> {
   bool _enabled = true;
 
   @override
-  void initState() { super.initState(); _loadGeofence(); }
+  void initState() {
+    super.initState();
+    _loadGeofence();
+  }
 
   Future<void> _loadGeofence() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body);
-        if (data['success'] == true && data['geofence'] != null) setState(() {
-          _geofence = data['geofence']; _currentLat = (data['geofence']['latitude'] as num?)?.toDouble();
-          _currentLng = (data['geofence']['longitude'] as num?)?.toDouble(); _radiusCtrl.text = (data['geofence']['radius'] ?? 100).toString(); _enabled = data['geofence']['enabled'] ?? false; }); }
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['success'] == true && data['geofence'] != null)
+          setState(() {
+            _geofence = data['geofence'];
+            _currentLat =
+                (data['geofence']['latitude'] as num?)?.toDouble();
+            _currentLng =
+                (data['geofence']['longitude'] as num?)?.toDouble();
+            _radiusCtrl.text =
+                (data['geofence']['radius'] ?? 100).toString();
+            _enabled = data['geofence']['enabled'] ?? false;
+          });
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
   Future<void> _getCurrentLocation() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     setState(() => _saving = true);
     try {
       await requestLocationPermissionsForTracking();
-      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      setState(() { _currentLat = position.latitude; _currentLng = position.longitude; });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم تحديد موقعك الحالي 🕐'), backgroundColor: Colors.green));
-    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
-    finally { setState(() => _saving = false); }
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLat = position.latitude;
+        _currentLng = position.longitude;
+      });
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAr
+                ? 'تم تحديد موقعك الحالي 🕐'
+                : 'Current location set 🕐'),
+            backgroundColor: Colors.green));
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text('${isAr ? 'خطأ' : 'Error'}: $e'),
+            backgroundColor: Colors.red));
+    } finally {
+      setState(() => _saving = false);
+    }
   }
 
   Future<void> _saveGeofence() async {
-    if (_currentLat == null || _currentLng == null) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يرجى تحديد الموقع أولاً'), backgroundColor: Colors.orange)); return; }
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_currentLat == null || _currentLng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'يرجى تحديد الموقع أولاً'
+              : 'Please set location first'),
+          backgroundColor: Colors.orange));
+      return;
+    }
     final radius = int.tryParse(_radiusCtrl.text) ?? 100;
-    if (radius < 10 || radius > 5000) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('النطاق يجب أن يكون بين 10 و 5000 متر'), backgroundColor: Colors.orange)); return; }
+    if (radius < 10 || radius > 5000) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'النطاق يجب أن يكون بين 10 و 5000 متر'
+              : 'Radius must be between 10 and 5000 meters'),
+          backgroundColor: Colors.orange));
+      return;
+    }
     setState(() => _saving = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/set/'),
-          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
-          body: jsonEncode({'latitude': _currentLat, 'longitude': _currentLng, 'radius': radius, 'enabled': _enabled}));
+      final res = await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/geofence/set/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode({
+            'latitude': _currentLat,
+            'longitude': _currentLng,
+            'radius': radius,
+            'enabled': _enabled,
+          }));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done),
-          backgroundColor: data['success'] == true ? Colors.green : Colors.red)); if (data['success'] == true) _loadGeofence(); }
-    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red)); }
-    finally { setState(() => _saving = false); }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(data['message'] ?? context.l10n.done),
+            backgroundColor: data['success'] == true
+                ? Colors.green
+                : Colors.red));
+        if (data['success'] == true) _loadGeofence();
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text('${isAr ? 'خطأ' : 'Error'}: $e'),
+            backgroundColor: Colors.red));
+    } finally {
+      setState(() => _saving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('نطاق موقع الشركة'), backgroundColor: kManagerColor, foregroundColor: Colors.white),
-      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.blue[200]!)),
-          child: Row(children: [Icon(Icons.info_outline, color: Colors.blue), SizedBox(width: 8),
-            Expanded(child: Text('حدد موقع الشركة عشان الموظفين ما يقدروش يسجلوا حضور من برة النطاق ده. الموظف الميداني مستثنى.', style: TextStyle(fontSize: 13)))])),
-        SizedBox(height: 20),
-        Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [Icon(Icons.location_on, color: kManagerColor), SizedBox(width: 8),
-              Text('موقع الشركة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
-            SizedBox(height: 12),
-            if (_currentLat != null && _currentLng != null)
-              Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [Icon(Icons.check_circle, color: Colors.green, size: 20), SizedBox(width: 6),
-                    Text('محدد', style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold))]),
-                  SizedBox(height: 6), Text('خط العرض: ${_currentLat!.toStringAsFixed(6)}'), Text('خط الطول: ${_currentLng!.toStringAsFixed(6)}')]))
-            else Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8)),
-                child: Row(children: [Icon(Icons.warning, color: Colors.orange, size: 20), SizedBox(width: 6),
-                  Text('لم يحدد موقع بعد', style: TextStyle(color: Colors.orange))])),
-            SizedBox(height: 12),
-            SizedBox(height: 50, child: ElevatedButton.icon(onPressed: _saving ? null : _getCurrentLocation, icon: Icon(Icons.my_location),
-                label: const Text('استخدم موقعي الحالي', style: TextStyle(fontSize: 16)),
-                style: ElevatedButton.styleFrom(backgroundColor: kManagerColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))))),
-            SizedBox(height: 8), const Text('💡 قف في مكان الشركة واضغط الزر ده', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
-        SizedBox(height: 16),
-        Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [Icon(Icons.radio_button_checked, color: kManagerColor), SizedBox(width: 8),
-              Text('نصف قطر النطاق', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
-            SizedBox(height: 12),
-            TextField(controller: _radiusCtrl, keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'المسافة بالمتر', border: OutlineInputBorder(), suffixText: 'متر', hintText: '100')),
-            SizedBox(height: 8), const Text('💡 مثال: 100 متر = الموظف لازم يكون قريب من الشركة في نطاق 100 متر', style: TextStyle(fontSize: 12, color: Colors.grey))]))),
-        SizedBox(height: 16),
-        Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: SwitchListTile(title: const Text('تفعيل النطاق الجغرافي', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(_enabled ? 'مفعل - سيتم رفض الحضور من خارج النطاق' : 'معطل - سيتم قبول الحضور من أي مكان'),
-            value: _enabled, activeColor: kManagerColor, onChanged: (v) => setState(() => _enabled = v))),
-        SizedBox(height: 20),
-        SizedBox(height: 56, child: ElevatedButton.icon(onPressed: _saving ? null : _saveGeofence,
-            icon: _saving ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Icon(Icons.save),
-            label: const Text('حفظ الإعدادات', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))))]))));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading)
+      return const Center(child: CircularProgressIndicator());
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(isAr
+                  ? 'نطاق موقع الشركة'
+                  : 'Company Geofence'),
+              backgroundColor: kManagerColor,
+              foregroundColor: Colors.white),
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: Colors.blue[200]!)),
+                        child: Row(children: [
+                          const Icon(Icons.info_outline,
+                              color: Colors.blue),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: Text(
+                            isAr
+                                ? 'حدد موقع الشركة عشان الموظفين ما يقدروش يسجلوا حضور من برة النطاق ده. الموظف الميداني مستثنى.'
+                                : 'Set the company location so employees cannot check in from outside this area. Field workers are excluded.',
+                            style: const TextStyle(fontSize: 13),
+                          )),
+                        ])),
+                    const SizedBox(height: 20),
+                    Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [
+                                    const Icon(Icons.location_on,
+                                        color: kManagerColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isAr
+                                          ? 'موقع الشركة'
+                                          : 'Company Location',
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight:
+                                              FontWeight.bold),
+                                    ),
+                                  ]),
+                                  const SizedBox(height: 12),
+                                  if (_currentLat != null &&
+                                      _currentLng != null)
+                                    Container(
+                                        padding:
+                                            const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                            color: Colors.green[50],
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    8)),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment
+                                                    .start,
+                                            children: [
+                                              Row(children: [
+                                                const Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.green,
+                                                    size: 20),
+                                                const SizedBox(
+                                                    width: 6),
+                                                Text(
+                                                  isAr
+                                                      ? 'محدد'
+                                                      : 'Set',
+                                                  style: TextStyle(
+                                                      color: Colors
+                                                          .green[700],
+                                                      fontWeight:
+                                                          FontWeight
+                                                              .bold),
+                                                ),
+                                              ]),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                '${isAr ? 'خط العرض' : 'Latitude'}: ${_currentLat!.toStringAsFixed(6)}',
+                                              ),
+                                              Text(
+                                                '${isAr ? 'خط الطول' : 'Longitude'}: ${_currentLng!.toStringAsFixed(6)}',
+                                              ),
+                                            ]))
+                                  else
+                                    Container(
+                                        padding:
+                                            const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                            color: Colors.orange[50],
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    8)),
+                                        child: Row(children: [
+                                          const Icon(Icons.warning,
+                                              color: Colors.orange,
+                                              size: 20),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            isAr
+                                                ? 'لم يحدد موقع بعد'
+                                                : 'Location not set yet',
+                                            style: const TextStyle(
+                                                color: Colors.orange),
+                                          ),
+                                        ])),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                      height: 50,
+                                      child: ElevatedButton.icon(
+                                          onPressed: _saving
+                                              ? null
+                                              : _getCurrentLocation,
+                                          icon: const Icon(
+                                              Icons.my_location),
+                                          label: Text(
+                                            isAr
+                                                ? 'استخدم موقعي الحالي'
+                                                : 'Use my current location',
+                                            style: const TextStyle(
+                                                fontSize: 16),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  kManagerColor,
+                                              foregroundColor:
+                                                  Colors.white,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius
+                                                          .circular(
+                                                              12))))),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    isAr
+                                        ? '💡 قف في مكان الشركة واضغط الزر ده'
+                                        : '💡 Stand at the company location and press the button',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey),
+                                  ),
+                                ]))),
+                    const SizedBox(height: 16),
+                    Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [
+                                    const Icon(
+                                        Icons.radio_button_checked,
+                                        color: kManagerColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isAr
+                                          ? 'نصف قطر النطاق'
+                                          : 'Geofence Radius',
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight:
+                                              FontWeight.bold),
+                                    ),
+                                  ]),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                      controller: _radiusCtrl,
+                                      keyboardType:
+                                          TextInputType.number,
+                                      decoration: InputDecoration(
+                                          labelText: isAr
+                                              ? 'المسافة بالمتر'
+                                              : 'Distance in meters',
+                                          border:
+                                              const OutlineInputBorder(),
+                                          suffixText:
+                                              isAr ? 'متر' : 'm',
+                                          hintText: '100')),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    isAr
+                                        ? '💡 مثال: 100 متر = الموظف لازم يكون قريب من الشركة في نطاق 100 متر'
+                                        : '💡 Example: 100m = employee must be within 100 meters of the company',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey),
+                                  ),
+                                ]))),
+                    const SizedBox(height: 16),
+                    Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        child: SwitchListTile(
+                            title: Text(
+                              isAr
+                                  ? 'تفعيل النطاق الجغرافي'
+                                  : 'Enable Geofence',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(_enabled
+                                ? (isAr
+                                    ? 'مفعل - سيتم رفض الحضور من خارج النطاق'
+                                    : 'Enabled - attendance outside area will be rejected')
+                                : (isAr
+                                    ? 'معطل - سيتم قبول الحضور من أي مكان'
+                                    : 'Disabled - attendance accepted from anywhere')),
+                            value: _enabled,
+                            activeColor: kManagerColor,
+                            onChanged: (v) =>
+                                setState(() => _enabled = v))),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                            onPressed: _saving ? null : _saveGeofence,
+                            icon: _saving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2))
+                                : const Icon(Icons.save),
+                            label: Text(
+                              isAr
+                                  ? 'حفظ الإعدادات'
+                                  : 'Save Settings',
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(12))))),
+                  ])),
+        ));
   }
 }
 
@@ -3526,10 +5408,21 @@ class ManagerShell extends StatefulWidget {
 
 class _ManagerShellState extends State<ManagerShell> {
   int _index = 0;
-  @override
-  void initState() { super.initState(); _index = widget.initialIndex; fetchUnreadCount(); }
 
-  List<Widget> get _pages => [const ManagerDashboard(), const ManagerPendingScreen(), const ManagerAttendanceScreen(), const ManagerLiveLocationsScreen()];
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+    fetchUnreadCount();
+  }
+
+  List<Widget> get _pages => [
+        const ManagerDashboard(),
+        const ManagerPendingScreen(),
+        const ManagerAttendanceScreen(),
+        const ManagerLiveLocationsScreen(),
+      ];
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await AuthStorageService.clearAll();
@@ -3543,25 +5436,60 @@ class _ManagerShellState extends State<ManagerShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(
-      appBar: AppBar(title: const Text('MotionHR - المدير'), backgroundColor: kManagerColor, foregroundColor: Colors.white,
-        actions: [
-          IconButton(icon: Icon(Icons.description), tooltip: 'لائحة الشركة',
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
-          const NotificationBellButton(),
-          IconButton(
-              icon: Icon(Icons.settings),
-              tooltip: context.l10n.settings,
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
-          IconButton(icon: Icon(Icons.logout), onPressed: _logout)]),
-      body: _pages[_index],
-      bottomNavigationBar: BottomNavigationBar(currentIndex: _index, onTap: (i) => setState(() => _index = i),
-        type: BottomNavigationBarType.fixed, selectedItemColor: kManagerColor,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: context.l10n.home),
-          BottomNavigationBarItem(icon: Icon(Icons.pending_actions), label: context.l10n.requests),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'الحضور'),
-          BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'المواقع')])));
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          appBar: AppBar(
+              title: Text(isAr
+                  ? 'MotionHR - المدير'
+                  : 'MotionHR - Manager'),
+              backgroundColor: kManagerColor,
+              foregroundColor: Colors.white,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.description),
+                  tooltip:
+                      isAr ? 'لائحة الشركة' : 'Company Charter',
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              const ManagerCharterScreen())),
+                ),
+                const NotificationBellButton(),
+                IconButton(
+                    icon: const Icon(Icons.settings),
+                    tooltip: context.l10n.settings,
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()))),
+                IconButton(
+                    icon: const Icon(Icons.logout),
+                    onPressed: _logout),
+              ]),
+          body: _pages[_index],
+          bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _index,
+              onTap: (i) => setState(() => _index = i),
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: kManagerColor,
+              items: [
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.dashboard),
+                    label: context.l10n.home),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.pending_actions),
+                    label: context.l10n.requests),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.people),
+                    label: isAr ? 'الحضور' : 'Attendance'),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.location_on),
+                    label: isAr ? 'المواقع' : 'Locations'),
+              ]),
+        ));
   }
 }
 
@@ -3588,7 +5516,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
-      _firstName = prefs.getString('first_name') ?? prefs.getString('full_name') ?? 'المدير';
+      _firstName = prefs.getString('first_name') ??
+          prefs.getString('full_name') ??
+          '';
       _companyName = prefs.getString('company_name') ?? '';
     });
   }
@@ -3599,34 +5529,44 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     final token = prefs.getString('token') ?? '';
     try {
       final r1 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/pending/'),
         headers: {'Authorization': 'Token $token'},
       );
       if (r1.statusCode == 200) {
         final d = jsonDecode(r1.body);
-        final pr = ((d['pending_requests'] as List?) ?? []).length;
-        final pl = ((d['pending_leaves'] as List?) ?? []).length;
+        final pr =
+            ((d['pending_requests'] as List?) ?? []).length;
+        final pl =
+            ((d['pending_leaves'] as List?) ?? []).length;
         final pg = ((d['pending'] as List?) ?? []).length;
         final tp = d['total_pending'];
-        _pending = tp is num ? tp.toInt() : pr + pl + pg;
+        _pending =
+            tp is num ? tp.toInt() : pr + pl + pg;
       }
       final r2 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
         headers: {'Authorization': 'Token $token'},
       );
       if (r2.statusCode == 200) {
         final d = jsonDecode(r2.body);
-        final items = ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []);
+        final items = ((d['items'] as List?) ??
+            (d['attendance'] as List?) ??
+            []);
         final total = d['total'];
-        _present = total is num ? total.toInt() : items.length;
+        _present =
+            total is num ? total.toInt() : items.length;
       }
       final r3 = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+        Uri.parse(
+            '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
         headers: {'Authorization': 'Token $token'},
       );
       if (r3.statusCode == 200) {
         final d = jsonDecode(r3.body);
-        _fieldWorkers = ((d['locations'] as List?) ?? []).length;
+        _fieldWorkers =
+            ((d['locations'] as List?) ?? []).length;
       }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
@@ -3634,21 +5574,34 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final now = DateTime.now();
-    final days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    final months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-    final dateStr = '${days[now.weekday % 7]}، ${now.day} ${months[now.month - 1]} ${now.year}';
+    final days = isAr
+        ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+        : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    final months = isAr
+        ? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+        : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    final dateStr = isAr
+        ? '${days[now.weekday % 7]}، ${now.day} ${months[now.month - 1]} ${now.year}'
+        : '${days[now.weekday % 7]}, ${now.day} ${months[now.month - 1]} ${now.year}';
+    final displayName = _firstName.isNotEmpty
+        ? _firstName
+        : (isAr ? 'المدير' : 'Manager');
 
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // ── Header بنفسجي ──
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2), Color(0xFF9C27B0)],
+                colors: [
+                  Color(0xFF4A148C),
+                  Color(0xFF7B1FA2),
+                  Color(0xFF9C27B0)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -3657,7 +5610,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 bottomRight: Radius.circular(28),
               ),
             ),
-            padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
+            padding:
+                const EdgeInsets.fromLTRB(20, 48, 20, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3669,15 +5623,19 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.dashboard, color: Colors.white, size: 28),
+                      child: const Icon(Icons.dashboard,
+                          color: Colors.white, size: 28),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'أهلاً يا $_firstName 👋',
+                            isAr
+                                ? 'أهلاً يا $displayName 👋'
+                                : 'Hello, $displayName 👋',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -3697,103 +5655,77 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color:
+                        Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.calendar_today, color: Colors.white70, size: 16),
-                      SizedBox(width: 8),
+                      const Icon(Icons.calendar_today,
+                          color: Colors.white70, size: 16),
+                      const SizedBox(width: 8),
                       Text(
                         dateStr,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 13),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                // ── 3 كروت إحصائيات ──
+                const SizedBox(height: 20),
                 _loading
-                    ? Center(child: CircularProgressIndicator(color: Colors.white))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: Colors.white))
                     : Row(
                         children: [
-                          _statCard('معلقة', '$_pending', Icons.pending_actions, Colors.orangeAccent),
-                          SizedBox(width: 10),
-                          _statCard('حاضر اليوم', '$_present', Icons.how_to_reg, Colors.greenAccent),
-                          SizedBox(width: 10),
-                          _statCard('ميداني', '$_fieldWorkers', Icons.location_on, Colors.lightBlueAccent),
+                          _statCard(
+                              isAr ? 'معلقة' : 'Pending',
+                              '$_pending',
+                              Icons.pending_actions,
+                              Colors.orangeAccent),
+                          const SizedBox(width: 10),
+                          _statCard(
+                              isAr
+                                  ? 'حاضر اليوم'
+                                  : 'Present Today',
+                              '$_present',
+                              Icons.how_to_reg,
+                              Colors.greenAccent),
+                          const SizedBox(width: 10),
+                          _statCard(
+                              isAr ? 'ميداني' : 'Field',
+                              '$_fieldWorkers',
+                              Icons.location_on,
+                              Colors.lightBlueAccent),
                         ],
                       ),
               ],
             ),
           ),
-
-          SizedBox(height: 20),
-
-          // ── قسم: الإدارة السريعة ──
+          const SizedBox(height: 20),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 4),
             child: Text(
-              'الإدارة السريعة',
-              style: TextStyle(
+              isAr ? 'الإدارة السريعة' : 'Quick Management',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF4A148C),
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.4,
-              children: [                
-		_gridCard('الطلبات المعلقة', Icons.pending_actions, Colors.orange, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerPendingScreen())),
-                    badge: _pending),
-                _gridCard('الحضور اليوم', Icons.how_to_reg, Colors.green, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerAttendanceScreen()))),
-                _gridCard('المواقع المباشرة', Icons.location_on, Color(0xFF7B1FA2), () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerLiveLocationsScreen()))),
-                _gridCard('الموظفين', Icons.people, Colors.indigo, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerEmployeesListScreen()))),
-                _gridCard(context.l10n.addEmployee, Icons.person_add, Colors.deepOrange, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateEmployeeScreen()))),
-_gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerMissionsScreen()))),
-                _gridCard(context.l10n.announcements, Icons.campaign, Colors.deepPurple, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()))),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 16),
-
-          // ── قسم: الأدوات ──
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              'الأدوات',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4A148C),
-              ),
-            ),
-          ),
-          SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12),
             child: GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -3802,41 +5734,186 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
               mainAxisSpacing: 12,
               childAspectRatio: 1.4,
               children: [
-                _gridCard(context.l10n.reports, Icons.analytics, Colors.teal, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsHubScreen()))),
-                _gridCard(context.l10n.payroll, Icons.account_balance_wallet, Colors.green, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollHubScreen()))),
-                _gridCard(context.l10n.reminders, Icons.notifications_active, Colors.blueGrey, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderSettingsScreen()))),
-                _gridCard('نطاق الجيو', Icons.fence, Colors.cyan, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerGeofenceScreen()))),                _gridCard('لائحة الشركة', Icons.description, Colors.brown, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagerCharterScreen()))),
-                _gridCard(context.l10n.organizationTree, Icons.account_tree, const Color(0xFF00695C), () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const OrganizationTreeScreen()))),
-                _gridCard(context.l10n.companyInfo, Icons.business, Colors.pink, () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyInfoScreen()))),
+                _gridCard(
+                    isAr ? 'الطلبات المعلقة' : 'Pending Requests',
+                    Icons.pending_actions,
+                    Colors.orange,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerPendingScreen())),
+                    badge: _pending),
+                _gridCard(
+                    isAr ? 'الحضور اليوم' : "Today's Attendance",
+                    Icons.how_to_reg,
+                    Colors.green,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerAttendanceScreen()))),
+                _gridCard(
+                    isAr ? 'المواقع المباشرة' : 'Live Locations',
+                    Icons.location_on,
+                    const Color(0xFF7B1FA2),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerLiveLocationsScreen()))),
+                _gridCard(
+                    isAr ? 'الموظفين' : 'Employees',
+                    Icons.people,
+                    Colors.indigo,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerEmployeesListScreen()))),
+                _gridCard(
+                    context.l10n.addEmployee,
+                    Icons.person_add,
+                    Colors.deepOrange,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CreateEmployeeScreen()))),
+                _gridCard(
+                    context.l10n.missions,
+                    Icons.assignment,
+                    const Color(0xFF6C3FC5),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerMissionsScreen()))),
+                _gridCard(
+                    context.l10n.announcements,
+                    Icons.campaign,
+                    Colors.deepPurple,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CreateAnnouncementScreen()))),
               ],
             ),
           ),
-
-          SizedBox(height: 24),        ],
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 4),
+            child: Text(
+              isAr ? 'الأدوات' : 'Tools',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4A148C),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12),
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.4,
+              children: [
+                _gridCard(
+                    context.l10n.reports,
+                    Icons.analytics,
+                    Colors.teal,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ReportsHubScreen()))),
+                _gridCard(
+                    context.l10n.payroll,
+                    Icons.account_balance_wallet,
+                    Colors.green,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PayrollHubScreen()))),
+                _gridCard(
+                    context.l10n.reminders,
+                    Icons.notifications_active,
+                    Colors.blueGrey,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ReminderSettingsScreen()))),
+                _gridCard(
+                    isAr ? 'نطاق الجيو' : 'Geofence',
+                    Icons.fence,
+                    Colors.cyan,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerGeofenceScreen()))),
+                _gridCard(
+                    isAr ? 'لائحة الشركة' : 'Company Charter',
+                    Icons.description,
+                    Colors.brown,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ManagerCharterScreen()))),
+                _gridCard(
+                    context.l10n.organizationTree,
+                    Icons.account_tree,
+                    const Color(0xFF00695C),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const OrganizationTreeScreen()))),
+                _gridCard(
+                    context.l10n.companyInfo,
+                    Icons.business,
+                    Colors.pink,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const CompanyInfoScreen()))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }
 
-  Widget _statCard(String title, String value, IconData icon, Color color) {
+  Widget _statCard(
+      String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 22),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               value,
               style: const TextStyle(
@@ -3847,7 +5924,8 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
             ),
             Text(
               title,
-              style: const TextStyle(color: Colors.white70, fontSize: 11),
+              style: const TextStyle(
+                  color: Colors.white70, fontSize: 11),
               textAlign: TextAlign.center,
             ),
           ],
@@ -3855,7 +5933,10 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
       ),
     );
   }
-  Widget _gridCard(String title, IconData icon, Color color, VoidCallback onTap, {int? badge}) {
+
+  Widget _gridCard(String title, IconData icon, Color color,
+      VoidCallback onTap,
+      {int? badge}) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -3879,7 +5960,7 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
                     ),
                     child: Icon(icon, color: color, size: 28),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     title,
                     style: TextStyle(
@@ -3897,8 +5978,8 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),                  decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
@@ -3909,7 +5990,8 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
                       ),
                     ],
                   ),
-                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  constraints: const BoxConstraints(
+                      minWidth: 24, minHeight: 24),
                   child: Text(
                     badge > 99 ? '99+' : '$badge',
                     style: const TextStyle(
@@ -3928,11 +6010,11 @@ _gridCard(context.l10n.missions, Icons.assignment, Color(0xFF6C3FC5), () =>
   }
 }
 
-
 class ManagerPendingScreen extends StatefulWidget {
   const ManagerPendingScreen({super.key});
   @override
-  State<ManagerPendingScreen> createState() => _ManagerPendingScreenState();
+  State<ManagerPendingScreen> createState() =>
+      _ManagerPendingScreenState();
 }
 
 class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
@@ -3940,44 +6022,59 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body);
-        setState(() => _items = [...List.from(data['pending_requests'] ?? []), ...List.from(data['pending_leaves'] ?? []), ...List.from(data['pending'] ?? [])]); }
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/pending/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = [
+              ...List.from(data['pending_requests'] ?? []),
+              ...List.from(data['pending_leaves'] ?? []),
+              ...List.from(data['pending'] ?? []),
+            ]);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
-
   Future<void> _showRejectDialog(dynamic item) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final reasonCtrl = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
           title: Row(children: [
-            Icon(Icons.cancel, color: Colors.red),
-            SizedBox(width: 8),
-            Text('سبب الرفض'),
+            const Icon(Icons.cancel, color: Colors.red),
+            const SizedBox(width: 8),
+            Text(isAr ? 'سبب الرفض' : 'Rejection Reason'),
           ]),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('يرجى كتابة سبب الرفض (إجباري)'),
-              SizedBox(height: 12),
+              Text(isAr
+                  ? 'يرجى كتابة سبب الرفض (إجباري)'
+                  : 'Please enter the rejection reason (required)'),
+              const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'اكتب السبب هنا...',
-                  border: OutlineInputBorder(),
+                  hintText:
+                      isAr ? 'اكتب السبب هنا...' : 'Write reason here...',
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -3992,8 +6089,11 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
                 if (reasonCtrl.text.trim().isEmpty) return;
                 Navigator.pop(context, true);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-              child: const Text('تأكيد الرفض'),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white),
+              child: Text(
+                  isAr ? 'تأكيد الرفض' : 'Confirm Rejection'),
             ),
           ],
         ),
@@ -4005,164 +6105,329 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
     reasonCtrl.dispose();
   }
 
-  Future<void> _action(dynamic item, String action, {String notes = ''}) async {
+  Future<void> _action(dynamic item, String action,
+      {String notes = ''}) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final body = {'id': item['id'], 'type': item['type'], 'action': action};
+      final body = {
+        'id': item['id'],
+        'type': item['type'],
+        'action': action,
+      };
       if (notes.isNotEmpty) body['notes'] = notes;
-      final res = await http.post(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/action/'),
-          headers: {'Content-Type': 'application/json', 'Authorization': 'Token $token'},
+      final res = await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/action/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
           body: jsonEncode(body));
       final data = jsonDecode(res.body);
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? context.l10n.done))); fetchUnreadCount(); }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? context.l10n.done)));
+        fetchUnreadCount();
+      }
       _load();
-    } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث: $e'))); }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                '${isAr ? 'حدث خطأ' : 'An error occurred'}: $e')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
-      return const EmptyStateWidget(
-        title: 'لا توجد طلبات معلقة',
-        description: 'ممتاز! كل الطلبات تمت مراجعتها.\nستظهر هنا أي طلبات جديدة تحتاج موافقتك.',
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
+      return EmptyStateWidget(
+        title: isAr ? 'لا توجد طلبات معلقة' : 'No Pending Requests',
+        description: isAr
+            ? 'ممتاز! كل الطلبات تمت مراجعتها.\nستظهر هنا أي طلبات جديدة تحتاج موافقتك.'
+            : 'Great! All requests have been reviewed.\nNew requests requiring your approval will appear here.',
         icon: Icons.check_circle_outline,
         iconColor: Colors.green,
       );
     }
-    return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
-      final item = _items[i];
-      return Card(margin: const EdgeInsets.all(8), child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(item['employee_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 4),
-        Text(item['subject'] ?? item['type_name'] ?? item['leave_type'] ?? item['title'] ?? ''),
-        Text(item['details'] ?? item['description'] ?? item['reason'] ?? '', style: const TextStyle(color: Colors.grey)),
-        SizedBox(height: 8),
-        Row(children: [
-          Expanded(child: ElevatedButton.icon(onPressed: () => _action(item, 'approve'), icon: Icon(Icons.check), label: const Text('موافقة'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white))),
-          SizedBox(width: 8),
-          Expanded(child: ElevatedButton.icon(onPressed: () => _showRejectDialog(item), icon: Icon(Icons.close), label: Text(context.l10n.rejectMission),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white)))])])));
-    }));
+    return RefreshIndicator(
+        onRefresh: _load,
+        child: ListView.builder(
+            itemCount: _items.length,
+            itemBuilder: (_, i) {
+              final item = _items[i];
+              return Card(
+                  margin: const EdgeInsets.all(8),
+                  child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item['employee_name'] ?? '',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text(item['subject'] ??
+                                item['type_name'] ??
+                                item['leave_type'] ??
+                                item['title'] ??
+                                ''),
+                            Text(
+                                item['details'] ??
+                                    item['description'] ??
+                                    item['reason'] ??
+                                    '',
+                                style:
+                                    const TextStyle(color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            Row(children: [
+                              Expanded(
+                                  child: ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _action(item, 'approve'),
+                                      icon: const Icon(Icons.check),
+                                      label: Text(isAr
+                                          ? 'موافقة'
+                                          : 'Approve'),
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          foregroundColor:
+                                              Colors.white))),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                  child: ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _showRejectDialog(item),
+                                      icon: const Icon(Icons.close),
+                                      label: Text(
+                                          context.l10n.rejectMission),
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor:
+                                              Colors.white))),
+                            ])
+                          ])));
+            }));
   }
 }
 
 class ManagerAttendanceScreen extends StatefulWidget {
   const ManagerAttendanceScreen({super.key});
   @override
-  State<ManagerAttendanceScreen> createState() => _ManagerAttendanceScreenState();
+  State<ManagerAttendanceScreen> createState() =>
+      _ManagerAttendanceScreenState();
 }
 
-class _ManagerAttendanceScreenState extends State<ManagerAttendanceScreen> {
+class _ManagerAttendanceScreenState
+    extends State<ManagerAttendanceScreen> {
   List<dynamic> _items = [];
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['items'] ?? data['attendance'] ?? []); }
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() =>
+            _items = data['items'] ?? data['attendance'] ?? []);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
-      return const EmptyStateWidget(
-        title: 'لا يوجد سجلات حضور',
-        description: 'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.',
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
+      return EmptyStateWidget(
+        title: isAr ? 'لا يوجد سجلات حضور' : 'No Attendance Records',
+        description: isAr
+            ? 'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.'
+            : 'No employee has checked in today.\nRecords will appear here once attendance is registered.',
         icon: Icons.event_busy_outlined,
-        iconColor: Color(0xFF6A1B9A),
+        iconColor: const Color(0xFF6A1B9A),
       );
     }
-    return RefreshIndicator(onRefresh: _load, child: ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
-      final item = _items[i];
-      return Card(child: ListTile(leading: Icon(Icons.person, color: kManagerColor),
-          title: Text(item['employee_name'] ?? item['name'] ?? ''),
-          subtitle: Text('حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}')));
-    }));
+    return RefreshIndicator(
+        onRefresh: _load,
+        child: ListView.builder(
+            itemCount: _items.length,
+            itemBuilder: (_, i) {
+              final item = _items[i];
+              return Card(
+                  child: ListTile(
+                      leading: const Icon(Icons.person,
+                          color: kManagerColor),
+                      title: Text(item['employee_name'] ??
+                          item['name'] ??
+                          ''),
+                      subtitle: Text(
+                        isAr
+                            ? 'حضور: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  انصراف: ${item['check_out'] ?? item['check_out_time'] ?? '-'}'
+                            : 'Check-in: ${item['check_in'] ?? item['check_in_time'] ?? '-'}  |  Check-out: ${item['check_out'] ?? item['check_out_time'] ?? '-'}',
+                      )));
+            }));
   }
 }
 
 class ManagerLiveLocationsScreen extends StatefulWidget {
   const ManagerLiveLocationsScreen({super.key});
   @override
-  State<ManagerLiveLocationsScreen> createState() => _ManagerLiveLocationsScreenState();
+  State<ManagerLiveLocationsScreen> createState() =>
+      _ManagerLiveLocationsScreenState();
 }
 
-class _ManagerLiveLocationsScreenState extends State<ManagerLiveLocationsScreen> {
+class _ManagerLiveLocationsScreenState
+    extends State<ManagerLiveLocationsScreen> {
   List<dynamic> _items = [];
   bool _loading = true;
   bool _showMap = true;
   Timer? _timer;
 
   @override
-  void initState() { super.initState(); _load(); _timer = Timer.periodic(const Duration(minutes: 2), (_) => _load()); }
+  void initState() {
+    super.initState();
+    _load();
+    _timer = Timer.periodic(const Duration(minutes: 2), (_) => _load());
+  }
+
   @override
-  void dispose() { _timer?.cancel(); super.dispose(); }
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'), headers: {'Authorization': 'Token $token'});
-      if (res.statusCode == 200) { final data = jsonDecode(res.body); setState(() => _items = data['items'] ?? []); }
+      final res = await http.get(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() => _items = data['items'] ?? []);
+      }
     } catch (_) {}
     setState(() => _loading = false);
   }
 
   Future<void> _openMap(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
-    if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
+    final url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url))
+      await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Center(child: CircularProgressIndicator());    if (_items.isEmpty) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_items.isEmpty) {
       return EmptyStateWidget(
-        title: 'لا توجد مواقع لحظية',
-        description: 'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم',
+        title: isAr ? 'لا توجد مواقع لحظية' : 'No Live Locations',
+        description: isAr
+            ? 'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم'
+            : 'To view locations, make sure:\n• Field employees exist\n• Tracking is enabled\n• Their apps are running',
         icon: Icons.location_off_outlined,
         iconColor: Colors.orange,
         onRefresh: _load,
       );
     }
     return Column(children: [
-      Padding(padding: const EdgeInsets.all(8), child: Row(children: [
-        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = true), icon: Icon(Icons.map), label: const Text('خريطة'),
-            style: ElevatedButton.styleFrom(backgroundColor: _showMap ? kManagerColor : Colors.grey, foregroundColor: Colors.white))),
-        SizedBox(width: 8),
-        Expanded(child: ElevatedButton.icon(onPressed: () => setState(() => _showMap = false), icon: Icon(Icons.list), label: const Text('قائمة'),
-            style: ElevatedButton.styleFrom(backgroundColor: !_showMap ? kManagerColor : Colors.grey, foregroundColor: Colors.white)))])),
-      Expanded(child: _showMap ? _buildMap() : _buildList())]);
+      Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(children: [
+            Expanded(
+                child: ElevatedButton.icon(
+                    onPressed: () => setState(() => _showMap = true),
+                    icon: const Icon(Icons.map),
+                    label: Text(isAr ? 'خريطة' : 'Map'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _showMap ? kManagerColor : Colors.grey,
+                        foregroundColor: Colors.white))),
+            const SizedBox(width: 8),
+            Expanded(
+                child: ElevatedButton.icon(
+                    onPressed: () => setState(() => _showMap = false),
+                    icon: const Icon(Icons.list),
+                    label: Text(isAr ? 'قائمة' : 'List'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            !_showMap ? kManagerColor : Colors.grey,
+                        foregroundColor: Colors.white))),
+          ])),
+      Expanded(child: _showMap ? _buildMap() : _buildList()),
+    ]);
   }
 
   Widget _buildMap() {
     final markers = <Marker>[];
     for (final item in _items) {
-      final lat = (item['latitude'] as num?)?.toDouble(); final lng = (item['longitude'] as num?)?.toDouble();
+      final lat = (item['latitude'] as num?)?.toDouble();
+      final lng = (item['longitude'] as num?)?.toDouble();
       if (lat == null || lng == null) continue;
-      markers.add(Marker(point: LatLng(lat, lng), width: 40, height: 40, child: Icon(Icons.location_on, color: Colors.red, size: 40)));
+      markers.add(Marker(
+          point: LatLng(lat, lng),
+          width: 40,
+          height: 40,
+          child: const Icon(Icons.location_on,
+              color: Colors.red, size: 40)));
     }
-    final center = markers.isNotEmpty ? markers.first.point : const LatLng(30.0444, 31.2357);
-    return FlutterMap(options: MapOptions(initialCenter: center, initialZoom: 13), children: [
-      TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.motionhr.app'),
-      MarkerLayer(markers: markers)]);
+    final center = markers.isNotEmpty
+        ? markers.first.point
+        : const LatLng(30.0444, 31.2357);
+    return FlutterMap(
+        options: MapOptions(
+            initialCenter: center, initialZoom: 13),
+        children: [
+          TileLayer(
+              urlTemplate:
+                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.motionhr.app'),
+          MarkerLayer(markers: markers),
+        ]);
   }
 
   Widget _buildList() {
-    return ListView.builder(itemCount: _items.length, itemBuilder: (_, i) {
-      final item = _items[i]; final lat = (item['latitude'] as num?)?.toDouble() ?? 0; final lng = (item['longitude'] as num?)?.toDouble() ?? 0;
-      return Card(child: ListTile(leading: Icon(Icons.person_pin_circle, color: Colors.red),
-          title: Text(item['employee_name'] ?? ''), subtitle: Text(item['address'] ?? '$lat, $lng'),
-          trailing: IconButton(icon: Icon(Icons.map, color: kPrimaryColor), onPressed: () => _openMap(lat, lng))));
-    });
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (_, i) {
+          final item = _items[i];
+          final lat =
+              (item['latitude'] as num?)?.toDouble() ?? 0;
+          final lng =
+              (item['longitude'] as num?)?.toDouble() ?? 0;
+          return Card(
+              child: ListTile(
+                  leading: const Icon(Icons.person_pin_circle,
+                      color: Colors.red),
+                  title: Text(item['employee_name'] ?? ''),
+                  subtitle:
+                      Text(item['address'] ?? '$lat, $lng'),
+                  trailing: IconButton(
+                      icon: const Icon(Icons.map,
+                          color: kPrimaryColor),
+                      onPressed: () => _openMap(lat, lng))));
+        });
   }
 }
-
