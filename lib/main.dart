@@ -1665,6 +1665,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           'longitude': position.longitude,
         }),
       );
+      debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
+      debugPrint('ATTENDANCE BODY: ${res.body}');
       final data = jsonDecode(res.body);
       final success = data['success'] == true;
       if (mounted) {
@@ -1693,8 +1695,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(data['message'] ??
-                  (isAr ? 'حدث خطأ' : 'An error occurred')),
+              content: Text(
+                isAr
+                    ? (data['message_ar'] ??
+                        data['message'] ??
+                        data['detail'] ??
+                        'حدث خطأ')
+                    : (data['message_en'] ??
+                        data['message'] ??
+                        data['detail'] ??
+                        'An error occurred'),
+              ),
               backgroundColor: Colors.orange,
               duration: const Duration(seconds: 5),
             ),
@@ -2267,6 +2278,51 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ));
   }
 }
+String localizedTypeName(String name, bool isAr) {
+  final n = name.trim();
+
+  if (isAr) return n;
+
+  switch (n) {
+    case 'إجازة سنوية':
+      return 'Annual Leave';
+    case 'إجازة مرضية':
+      return 'Sick Leave';
+    case 'إجازة طارئة':
+      return 'Emergency Leave';
+    case 'إجازة بدون مرتب':
+    case 'إجازة بدون أجر':
+      return 'Unpaid Leave';
+    case 'أخرى':
+      return 'Other';
+    case 'إذن تأخير':
+      return 'Late Permission';
+    case 'إذن انصراف مبكر':
+      return 'Early Leave Permission';
+    case 'إذن خروج':
+      return 'Exit Permission';
+    case 'طلب إداري':
+      return 'Administrative Request';
+    case 'طلب شهادة':
+      return 'Certificate Request';
+    case 'شهادة راتب':
+      return 'Salary Certificate';
+    case 'خطاب رسمي':
+      return 'Official Letter';
+    case 'تعديل بيانات':
+      return 'Data Update';
+    case 'طلب مكافأة':
+      return 'Bonus Request';
+    case 'سلفة':
+      return 'Loan';
+    case 'بدل / مصروفات':
+      return 'Allowance / Expenses';
+    case 'طلب آخر':
+      return 'Other Request';
+    default:
+      return n;
+  }
+}
 
 class LeavesScreen extends StatefulWidget {
   const LeavesScreen({super.key});
@@ -2339,7 +2395,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
             child: ListTile(
                 leading:
                     const Icon(Icons.beach_access, color: kPrimaryColor),
-                title: Text(t['name'] ?? ''),
+                title: Text(localizedTypeName((t['name'] ?? '').toString(), isAr)),
                 subtitle: Text(
                   isAr
                       ? 'الرصيد المتبقي: $balance يوم'
@@ -2473,7 +2529,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                           })
                           .map((t) => DropdownMenuItem<String>(
                               value: t['id'].toString(),
-                              child: Text(t['name'] ?? ''))),
+                              child: Text(localizedTypeName((t['name'] ?? '').toString(), isAr)))),
                       DropdownMenuItem<String>(
                           value: 'other',
                           child: Text(isAr ? 'أخرى' : 'Other')),
@@ -2837,7 +2893,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
               items: [
                 ..._types.map((t) => DropdownMenuItem<String>(
                     value: t['id'].toString(),
-                    child: Text(t['name'] ?? ''))),
+                    child: Text(localizedTypeName((t['name'] ?? '').toString(), isAr)))),
                 DropdownMenuItem<String>(
                     value: 'other',
                     child: Text(isAr ? 'أخرى' : 'Other')),
