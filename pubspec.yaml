@@ -1,4 +1,4 @@
-name: motionhr_employee
+﻿name: motionhr_employee
 description: MotionHR Employee & Manager App
 publish_to: 'none'
 version: 1.0.0+1
@@ -43,3 +43,10 @@ flutter:
 
   assets:
     - lib/l10n/
+    - assets/fonts/
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700

@@ -29,7 +29,9 @@ class ReportsHubScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: Text(isAr ? isAr ? 'تقارير المدير' : 'Manager Reports' : 'Manager Reports'),
+                title: Text(
+                  isAr ? 'تقارير المدير' : 'Manager Reports',
+                ),
                 subtitle: Text(
                   isAr
                       ? 'الحضور - التأخير - الغياب - الطلبات - الإجازات - ساعات العمل'
@@ -42,7 +44,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.calendar_month,
               Colors.blue,
-              isAr ? isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report' : 'Monthly Attendance Report',
+              isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
               isAr ? 'عدد أيام الحضور لكل موظف' : 'Attendance days per employee',
               const AttendanceReportScreen(),
             ),
@@ -50,7 +52,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.alarm,
               Colors.orange,
-              isAr ? isAr ? 'تقرير التأخير' : 'Late Report' : 'Late Report',
+              isAr ? 'تقرير التأخير' : 'Late Report',
               isAr ? 'تفاصيل أيام التأخير' : 'Details of late days',
               const LateReportScreen(),
             ),
@@ -58,7 +60,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.person_off,
               Colors.red,
-              isAr ? isAr ? 'تقرير الغياب' : 'Absence Report' : 'Absence Report',
+              isAr ? 'تقرير الغياب' : 'Absence Report',
               isAr ? 'أيام الغياب الشهرية' : 'Monthly absence days',
               const AbsenceReportScreen(),
             ),
@@ -66,7 +68,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.request_page,
               Colors.purple,
-              isAr ? isAr ? 'تقرير الطلبات' : 'Requests Report' : 'Requests Report',
+              isAr ? 'تقرير الطلبات' : 'Requests Report',
               isAr ? 'كل الطلبات والحالات' : 'All requests and statuses',
               const RequestsReportScreen(),
             ),
@@ -74,7 +76,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.beach_access,
               Colors.teal,
-              isAr ? isAr ? 'تقرير الإجازات' : 'Leaves Report' : 'Leaves Report',
+              isAr ? 'تقرير الإجازات' : 'Leaves Report',
               isAr ? 'ملخص إجازات الموظفين' : 'Employee leaves summary',
               const LeavesReportScreen(),
             ),
@@ -82,7 +84,7 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.access_time,
               Colors.indigo,
-              isAr ? isAr ? 'تقرير ساعات العمل' : 'Work Hours Report' : 'Work Hours Report',
+              isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
               isAr ? 'ساعات العمل الفعلية' : 'Actual work hours',
               const WorkHoursReportScreen(),
             ),
@@ -90,8 +92,10 @@ class ReportsHubScreen extends StatelessWidget {
               context,
               Icons.location_on,
               Colors.green,
-              isAr ? isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report' : 'Daily Location Report',
-              isAr ? 'أماكن تواجد الموظف خلال اليوم' : 'Employee locations during the day',
+              isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
+              isAr
+                  ? 'أماكن تواجد الموظف خلال اليوم'
+                  : 'Employee locations during the day',
               const LocationReportScreen(),
             ),
           ],
@@ -112,7 +116,7 @@ class ReportsHubScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
+          backgroundColor: color.withOpacity(0.15),
           child: Icon(icon, color: color),
         ),
         title: Text(title),

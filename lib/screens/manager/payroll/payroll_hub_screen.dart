@@ -24,7 +24,9 @@ class PayrollHubScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: Text(isAr ? isAr ? 'نظام الرواتب' : 'Payroll System' : 'Payroll System'),
+                title: Text(
+                  isAr ? 'نظام الرواتب' : 'Payroll System',
+                ),
                 subtitle: Text(
                   isAr
                       ? 'ملخص الرواتب - تفاصيل الموظف - الإعدادات'
@@ -37,16 +39,24 @@ class PayrollHubScreen extends StatelessWidget {
               context,
               Icons.receipt_long,
               Colors.green,
-              isAr ? isAr ? 'ملخص الرواتب الشهري' : 'Monthly Payroll Summary' : 'Monthly Payroll Summary',
-              isAr ? 'كل الموظفين مع الخصومات والبونص' : 'All employees with deductions and bonuses',
+              isAr
+                  ? 'ملخص الرواتب الشهري'
+                  : 'Monthly Payroll Summary',
+              isAr
+                  ? 'كل الموظفين مع الخصومات والبونص'
+                  : 'All employees with deductions and bonuses',
               const PayrollSummaryScreen(),
             ),
             _card(
               context,
               Icons.settings,
               Colors.blueGrey,
-              isAr ? isAr ? 'إعدادات حساب الرواتب' : 'Payroll Settings' : 'Payroll Calculation Settings',
-              isAr ? 'قواعد الخصومات والبونص' : 'Deduction and bonus rules',
+              isAr
+                  ? 'إعدادات حساب الرواتب'
+                  : 'Payroll Settings',
+              isAr
+                  ? 'قواعد الخصومات والبونص'
+                  : 'Deduction and bonus rules',
               const PayrollSettingsScreen(),
             ),
           ],
@@ -67,7 +77,7 @@ class PayrollHubScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
+          backgroundColor: color.withOpacity(0.15),
           child: Icon(icon, color: color),
         ),
         title: Text(title),

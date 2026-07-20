@@ -1,4 +1,4 @@
-// lib/services/report_pdf_service.dart
+﻿// lib/services/report_pdf_service.dart
 import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -7,13 +7,13 @@ import 'package:printing/printing.dart';
 import 'branding_service.dart';
 
 class ReportPdfService {
-  /// طباعة / مشاركة تقرير عام مع Branding كامل
   static Future<void> printReport({
     required String title,
     required List<List<String>> rows,
     List<String>? headers,
     String? subtitle,
   }) async {
+    await BrandingService.ensureFontsLoaded();
     final company = await BrandingService.getCompany();
     final logo = await BrandingService.getLogo();
 
@@ -36,24 +36,19 @@ class ReportPdfService {
         build: (ctx) {
           final widgets = <pw.Widget>[];
 
-          // عنوان التقرير
           widgets.add(
             pw.Container(
               width: double.infinity,
               padding: const pw.EdgeInsets.symmetric(vertical: 8),
               child: pw.Text(
                 title,
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                style: BrandingService.arabicStyle(fontSize: 16, bold: true),
                 textAlign: pw.TextAlign.center,
               ),
             ),
           );
           widgets.add(pw.SizedBox(height: 8));
 
-          // الجدول
           if (headers != null && rows.isNotEmpty) {
             widgets.add(
               pw.TableHelper.fromTextArray(
@@ -62,6 +57,7 @@ class ReportPdfService {
                 cellAlignment: pw.Alignment.centerRight,
                 headerAlignment: pw.Alignment.centerRight,
                 headerStyle: pw.TextStyle(
+                  font: BrandingService.boldFont,
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 10,
                   color: PdfColors.white,
@@ -69,8 +65,14 @@ class ReportPdfService {
                 headerDecoration: const pw.BoxDecoration(
                   color: PdfColor.fromInt(0xFF4A148C),
                 ),
-                cellStyle: const pw.TextStyle(fontSize: 9),
-                oddCellStyle: const pw.TextStyle(fontSize: 9),
+                cellStyle: pw.TextStyle(
+                  font: BrandingService.regularFont,
+                  fontSize: 9,
+                ),
+                oddCellStyle: pw.TextStyle(
+                  font: BrandingService.regularFont,
+                  fontSize: 9,
+                ),
                 cellDecoration: (index, data, rowNum) => pw.BoxDecoration(
                   color: rowNum % 2 == 0
                       ? PdfColors.white
@@ -81,7 +83,6 @@ class ReportPdfService {
               ),
             );
           } else if (rows.isNotEmpty) {
-            // بدون headers - كل صف كـ text
             for (final row in rows) {
               widgets.add(
                 pw.Container(
@@ -90,13 +91,13 @@ class ReportPdfService {
                       vertical: 4, horizontal: 8),
                   decoration: pw.BoxDecoration(
                     border: pw.Border(
-                      bottom:
-                          pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      bottom: pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
                     ),
                   ),
                   child: pw.Text(
                     row.join(' | '),
-                    style: const pw.TextStyle(fontSize: 10),
+                    style: BrandingService.arabicStyle(fontSize: 10),
                     textDirection: pw.TextDirection.rtl,
                   ),
                 ),
@@ -107,18 +108,18 @@ class ReportPdfService {
               pw.Center(
                 child: pw.Text(
                   'لا توجد بيانات',
-                  style: const pw.TextStyle(fontSize: 12),
+                  style: BrandingService.arabicStyle(fontSize: 12),
                 ),
               ),
             );
           }
 
-          // التاريخ والوقت
           widgets.add(pw.SizedBox(height: 16));
           widgets.add(
             pw.Text(
               'تاريخ التقرير: ${DateTime.now().toString().split('.')[0]}',
-              style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+              style: BrandingService.arabicStyle(
+                  fontSize: 8, color: PdfColors.grey600),
             ),
           );
 
@@ -127,7 +128,6 @@ class ReportPdfService {
       ),
     );
 
-    // عرض نافذة الطباعة / المشاركة
     await Printing.layoutPdf(
       onLayout: (format) async => pdf.save(),
       name: title,

@@ -1,6 +1,5 @@
 // lib/services/branding_service.dart
-// خدمة موحدة لإضافة Branding الشركة على جميع ملفات PDF/Excel
-
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:http/http.dart' as http;
@@ -9,8 +8,42 @@ import 'employee_management_service.dart';
 class BrandingService {
   static Map<String, dynamic>? cachedCompany;
   static pw.MemoryImage? cachedLogo;
+  static pw.Font? _regularFont;
+  static pw.Font? _boldFont;
 
-  /// جلب بيانات الشركة (مع cache)
+  /// Load Arabic fonts
+  static Future<void> ensureFontsLoaded() async {
+    if (_regularFont != null && _boldFont != null) return;
+    try {
+      final regularData =
+          await rootBundle.load('assets/fonts/Cairo-Regular.ttf');
+      final boldData = await rootBundle.load('assets/fonts/Cairo-Bold.ttf');
+      _regularFont = pw.Font.ttf(regularData);
+      _boldFont = pw.Font.ttf(boldData);
+    } catch (e) {
+      _regularFont = null;
+      _boldFont = null;
+    }
+  }
+
+  static pw.Font? get regularFont => _regularFont;
+  static pw.Font? get boldFont => _boldFont;
+
+  static pw.TextStyle arabicStyle({
+    double fontSize = 12,
+    bool bold = false,
+    PdfColor? color,
+  }) {
+    return pw.TextStyle(
+      font: bold ? _boldFont : _regularFont,
+      fontFallback: bold ? [_regularFont!] : [],
+      fontSize: fontSize,
+      fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+      color: color,
+    );
+  }
+
+  /// Get company data (with cache)
   static Future<Map<String, dynamic>> getCompany() async {
     if (cachedCompany != null) return cachedCompany!;
     try {
@@ -21,14 +54,13 @@ class BrandingService {
     return cachedCompany!;
   }
 
-  /// جلب لوجو الشركة (مع cache)
+  /// Get company logo (with cache)
   static Future<pw.MemoryImage?> getLogo() async {
     if (cachedLogo != null) return cachedLogo;
     try {
       final company = await getCompany();
       final logoUrl = company['logo_url']?.toString() ?? '';
       if (logoUrl.isEmpty) return null;
-
       final res = await http
           .get(Uri.parse(logoUrl))
           .timeout(const Duration(seconds: 8));
@@ -39,18 +71,26 @@ class BrandingService {
     return cachedLogo;
   }
 
-  /// مسح الـ cache (لو الشركة عدلت اللوجو)
+  /// Clear cache
   static void clearCache() {
     cachedCompany = null;
     cachedLogo = null;
+    _regularFont = null;
+    _boldFont = null;
   }
 
-  /// PDF Header موحد
+  /// Unified PDF Header
   static pw.Widget buildPdfHeader({
     required Map<String, dynamic> company,
     pw.MemoryImage? logo,
     String? subtitle,
   }) {
+    final companyName = company['name_ar']?.toString() ??
+        company['name_en']?.toString() ??
+        'Company';
+    final companyNameEn = company['name_en']?.toString() ?? '';
+    final phone = company['phone']?.toString() ?? '';
+
     return pw.Container(
       width: double.infinity,
       padding: const pw.EdgeInsets.all(16),
@@ -87,18 +127,16 @@ class BrandingService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  company['name_ar']?.toString() ??
-                      company['name_en']?.toString() ??
-                      'Company',
-                  style: pw.TextStyle(
+                  companyName,
+                  style: arabicStyle(
                     fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
+                    bold: true,
                     color: PdfColors.white,
                   ),
                 ),
-                if ((company['name_en'] ?? '').toString().isNotEmpty)
+                if (companyNameEn.isNotEmpty)
                   pw.Text(
-                    company['name_en'].toString(),
+                    companyNameEn,
                     style: pw.TextStyle(
                       fontSize: 10,
                       color: PdfColor.fromInt(0xFFE1BEE7),
@@ -108,15 +146,15 @@ class BrandingService {
                   pw.SizedBox(height: 3),
                   pw.Text(
                     subtitle,
-                    style: pw.TextStyle(
+                    style: arabicStyle(
                       fontSize: 11,
                       color: PdfColor.fromInt(0xFFCE93D8),
                     ),
                   ),
                 ],
-                if ((company['phone'] ?? '').toString().isNotEmpty)
+                if (phone.isNotEmpty)
                   pw.Text(
-                    'Tel: ${company['phone']}',
+                    'Tel: $phone',
                     style: pw.TextStyle(
                       fontSize: 9,
                       color: PdfColor.fromInt(0xFFE1BEE7),
@@ -130,18 +168,18 @@ class BrandingService {
     );
   }
 
-  /// PDF Footer موحد ✅ Powered by MotionHR - JS Solutions
+  /// Unified PDF Footer
   static pw.Widget buildPdfFooter({Map<String, dynamic>? company}) {
+    final address = company?['address']?.toString() ?? '';
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: [
         pw.Divider(thickness: 0.5, color: PdfColors.grey400),
         pw.SizedBox(height: 4),
-        if (company != null &&
-            (company['address'] ?? '').toString().isNotEmpty)
+        if (address.isNotEmpty)
           pw.Text(
-            company['address'].toString(),
-            style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+            address,
+            style: arabicStyle(fontSize: 8, color: PdfColors.grey700),
             textAlign: pw.TextAlign.center,
           ),
         pw.SizedBox(height: 3),
@@ -166,24 +204,19 @@ class BrandingService {
     );
   }
 
-  /// نص Excel Footer الموحد
+  /// Excel footer text
   static String excelFooterText() {
     return 'Powered by MotionHR - JS Solutions';
   }
 
-  /// اسم الشركة للاستخدام في Excel/PDF headers
+  /// Company display name
   static String companyDisplayName(Map<String, dynamic> company) {
     return company['name_ar']?.toString() ??
         company['name_en']?.toString() ??
         'MotionHR';
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // قوالب جاهزة لأي شاشة طباعة جديدة في المستقبل
-  // أي تقرير PDF جديد = سطرين بس، والـ branding يتحط تلقائي
-  // ═══════════════════════════════════════════════════════════
-
-  /// PDF صفحة واحدة مع branding كامل (header + footer)
+  /// Single page branded PDF
   static Future<pw.Document> buildBrandedSinglePage({
     String? subtitle,
     required pw.Widget Function(
@@ -191,6 +224,7 @@ class BrandingService {
       pw.MemoryImage? logo,
     ) contentBuilder,
   }) async {
+    await ensureFontsLoaded();
     final company = await getCompany();
     final logo = await getLogo();
     final pdf = pw.Document();
@@ -202,7 +236,8 @@ class BrandingService {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              buildPdfHeader(company: company, logo: logo, subtitle: subtitle),
+              buildPdfHeader(
+                  company: company, logo: logo, subtitle: subtitle),
               pw.SizedBox(height: 16),
               pw.Expanded(child: contentBuilder(company, logo)),
               pw.SizedBox(height: 12),
@@ -215,7 +250,7 @@ class BrandingService {
     return pdf;
   }
 
-  /// PDF متعدد الصفحات مع branding يتكرر في كل صفحة تلقائي
+  /// Multi page branded PDF
   static Future<pw.Document> buildBrandedMultiPage({
     String? subtitle,
     required List<pw.Widget> Function(
@@ -223,14 +258,15 @@ class BrandingService {
       pw.MemoryImage? logo,
     ) contentBuilder,
   }) async {
+    await ensureFontsLoaded();
     final company = await getCompany();
     final logo = await getLogo();
     final pdf = pw.Document();
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        header: (ctx) =>
-            buildPdfHeader(company: company, logo: logo, subtitle: subtitle),
+        header: (ctx) => buildPdfHeader(
+            company: company, logo: logo, subtitle: subtitle),
         footer: (ctx) => buildPdfFooter(company: company),
         build: (ctx) => contentBuilder(company, logo),
       ),

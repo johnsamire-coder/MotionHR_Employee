@@ -1,4 +1,4 @@
-// lib/services/employee_pdf_service.dart
+﻿// lib/services/employee_pdf_service.dart
 
 import 'dart:io';
 import 'package:pdf/pdf.dart';
@@ -19,18 +19,10 @@ class EmployeePdfService {
     String? companyPhone,
     String? companyAddress,
   }) async {
-    // جلب البيانات واللوجو من الخدمة الموحدة
+    await BrandingService.ensureFontsLoaded();
     final company = await BrandingService.getCompany();
     final logo = await BrandingService.getLogo();
-
     final pdf = pw.Document();
-
-    pw.Font? arabicFont;
-    try {
-      arabicFont = pw.Font.helvetica();
-    } catch (_) {
-      arabicFont = pw.Font.helvetica();
-    }
 
     pdf.addPage(
       pw.Page(
@@ -41,45 +33,31 @@ class EmployeePdfService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // ── Header الموحد ──
                 BrandingService.buildPdfHeader(
                   company: company,
                   logo: logo,
                   subtitle: 'Employee Account Details',
                 ),
-
                 pw.SizedBox(height: 20),
-
                 pw.Text(
                   'بيانات الموظف',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                    font: arabicFont,
-                  ),
+                  style: BrandingService.arabicStyle(fontSize: 18, bold: true),
                 ),
                 pw.SizedBox(height: 12),
-                _buildInfoRow('الاسم الكامل:', employee['full_name_ar'] ?? '', arabicFont),
-                _buildInfoRow('الرقم الوظيفي:', employee['employee_code'] ?? '', arabicFont),
-                _buildInfoRow('رقم الموبايل:', employee['phone'] ?? '', arabicFont),
-                _buildInfoRow('الفرع:', employee['branch'] ?? '', arabicFont),
-                _buildInfoRow('القسم:', employee['department'] ?? '', arabicFont),
-                _buildInfoRow('المسمى الوظيفي:', employee['job_title'] ?? '', arabicFont),
-
+                _buildInfoRow('الاسم الكامل:', employee['full_name_ar'] ?? ''),
+                _buildInfoRow('الرقم الوظيفي:', employee['employee_code'] ?? ''),
+                _buildInfoRow('رقم الموبايل:', employee['phone'] ?? ''),
+                _buildInfoRow('الفرع:', employee['branch'] ?? ''),
+                _buildInfoRow('القسم:', employee['department'] ?? ''),
+                _buildInfoRow('المسمى الوظيفي:', employee['job_title'] ?? ''),
                 pw.SizedBox(height: 20),
                 pw.Divider(thickness: 1, color: PdfColors.grey300),
                 pw.SizedBox(height: 12),
-
                 pw.Text(
                   'بيانات الدخول',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                    font: arabicFont,
-                  ),
+                  style: BrandingService.arabicStyle(fontSize: 18, bold: true),
                 ),
                 pw.SizedBox(height: 12),
-
                 pw.Container(
                   width: double.infinity,
                   padding: const pw.EdgeInsets.all(16),
@@ -94,18 +72,15 @@ class EmployeePdfService {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      _buildCredentialRow('Username:', credentials['username'] ?? '', arabicFont, isBold: true),
+                      _buildCredentialRow('Username:', credentials['username'] ?? '', isBold: true),
                       pw.SizedBox(height: 12),
-                      _buildCredentialRow('Password:', credentials['password'] ?? '', arabicFont, isBold: true, isPassword: true),
+                      _buildCredentialRow('Password:', credentials['password'] ?? '', isBold: true, isPassword: true),
                       pw.SizedBox(height: 12),
-                      _buildCredentialRow('Login URL:', credentials['login_url'] ?? 'https://jssolutions-eg.com', arabicFont),
+                      _buildCredentialRow('Login URL:', credentials['login_url'] ?? 'https://jssolutions-eg.com'),
                     ],
                   ),
                 ),
-
                 pw.Spacer(),
-
-                // ── Footer الموحد (المطلوب: Powered by MotionHR - JS Solutions) ──
                 BrandingService.buildPdfFooter(company: company),
               ],
             ),
@@ -121,37 +96,67 @@ class EmployeePdfService {
     return file.path;
   }
 
-  static pw.Widget _buildInfoRow(String label, String value, pw.Font? font) {
+  static pw.Widget _buildInfoRow(String label, String value) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(
         children: [
           pw.Container(
-            width: 120,
+            width: 130,
             child: pw.Text(
               label,
-              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, font: font, color: PdfColor.fromInt(0xFF616161)),
+              style: BrandingService.arabicStyle(
+                fontSize: 11,
+                bold: true,
+                color: PdfColor.fromInt(0xFF616161),
+              ),
             ),
           ),
-          pw.Expanded(child: pw.Text(value, style: pw.TextStyle(fontSize: 11, font: font))),
+          pw.Expanded(
+            child: pw.Text(
+              value,
+              style: BrandingService.arabicStyle(fontSize: 11),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  static pw.Widget _buildCredentialRow(String label, String value, pw.Font? font, {bool isBold = false, bool isPassword = false}) {
+  static pw.Widget _buildCredentialRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    bool isPassword = false,
+  }) {
     return pw.Row(
       children: [
-        pw.Container(width: 120, child: pw.Text(label, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, font: font))),
+        pw.Container(
+          width: 120,
+          child: pw.Text(
+            label,
+            style: BrandingService.arabicStyle(fontSize: 12, bold: true),
+          ),
+        ),
         pw.Expanded(
           child: pw.Container(
             padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: pw.BoxDecoration(
               color: isPassword ? PdfColor.fromInt(0xFFFFEBEE) : PdfColors.white,
               borderRadius: pw.BorderRadius.circular(6),
-              border: pw.Border.all(color: isPassword ? PdfColor.fromInt(0xFFE53935) : PdfColor.fromInt(0xFFBDBDBD)),
+              border: pw.Border.all(
+                color: isPassword
+                    ? PdfColor.fromInt(0xFFE53935)
+                    : PdfColor.fromInt(0xFFBDBDBD),
+              ),
             ),
-            child: pw.Text(value, style: pw.TextStyle(fontSize: isBold ? 13 : 11, fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal, font: font)),
+            child: pw.Text(
+              value,
+              style: BrandingService.arabicStyle(
+                fontSize: isBold ? 13 : 11,
+                bold: isBold,
+              ),
+            ),
           ),
         ),
       ],
@@ -160,7 +165,7 @@ class EmployeePdfService {
 
   static Future<void> sharePdf(String filePath, {String? phone, String? employeeName}) async {
     final file = XFile(filePath);
-    final text = 'بيانات حسابك في MotionHR';
+    const text = 'بيانات حسابك في MotionHR';
     await Share.shareXFiles([file], text: text);
   }
 
