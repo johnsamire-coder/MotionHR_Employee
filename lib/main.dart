@@ -3058,6 +3058,47 @@ class _MyListState extends State<_MyList> {
     final status = (item['status'] ?? '').toString();
     return status == 'pending' || status == 'manager_approved';
   }
+  String _statusLabel(dynamic item, bool isAr) {
+    final statusCode = (item['status'] ?? '').toString().toLowerCase();
+    final statusDisplay = (item['status_display'] ?? '').toString();
+
+    switch (statusCode) {
+      case 'pending':
+        return isAr ? 'قيد الانتظار' : 'Pending';
+      case 'manager_approved':
+      case 'approved':
+        return isAr ? 'موافق عليه' : 'Approved';
+      case 'rejected':
+      case 'manager_rejected':
+        return isAr ? 'مرفوض' : 'Rejected';
+      case 'cancelled':
+        return isAr ? 'ملغي' : 'Cancelled';
+      case 'completed':
+        return isAr ? 'مكتمل' : 'Completed';
+      default:
+        if (isAr) {
+          return statusDisplay.isNotEmpty ? statusDisplay : statusCode;
+        }
+
+        if (statusDisplay.contains('قيد') || statusDisplay.contains('انتظار')) {
+          return 'Pending';
+        }
+        if (statusDisplay.contains('موافق')) {
+          return 'Approved';
+        }
+        if (statusDisplay.contains('مرفوض') || statusDisplay.contains('رفض')) {
+          return 'Rejected';
+        }
+        if (statusDisplay.contains('ملغ')) {
+          return 'Cancelled';
+        }
+        if (statusDisplay.contains('مكتمل')) {
+          return 'Completed';
+        }
+
+        return statusDisplay.isNotEmpty ? statusDisplay : statusCode;
+    }
+  }
 
   Future<void> _cancelItem(dynamic item) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -3153,8 +3194,9 @@ class _MyListState extends State<_MyList> {
         itemCount: _items.length,
         itemBuilder: (_, i) {
           final item = _items[i];
-          final status =
-              (item['status_display'] ?? item['status'] ?? '').toString();
+          final rawStatus =
+              (item['status'] ?? item['status_display'] ?? '').toString();
+          final status = _statusLabel(item, isAr);
           final isLeaveTab = widget.keyName == 'leaves';
           final canCancel = _canCancel(item);
           return Card(
@@ -3198,12 +3240,12 @@ class _MyListState extends State<_MyList> {
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color:
-                                _statusColor(status).withOpacity(0.15),
+                                _statusColor(rawStatus).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(status,
                               style: TextStyle(
-                                  color: _statusColor(status),
+                                  color: _statusColor(rawStatus),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11)),
                         ),
