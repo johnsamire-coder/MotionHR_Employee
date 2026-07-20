@@ -1701,12 +1701,18 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           );
         }
       }
-      await _loadData();
-    } catch (e) {
+      await _loadData();    } catch (e) {
+      debugPrint('ATTENDANCE ERROR: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('${isAr ? 'خطأ' : 'Error'}: $e'),
-            backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isAr ? 'خطأ: $e' : 'Error: $e',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 6),
+          ),
+        );
       }
     } finally {
       setState(() => _loading = false);
@@ -2613,16 +2619,44 @@ class _RequestsScreenState extends State<RequestsScreen> {
     final token = prefs.getString('token') ?? '';
     try {
       final res = await http.get(
-          Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
-          headers: {'Authorization': 'Token $token'});
+        Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         List<dynamic> flatTypes = [];
+
+        bool isLeaveLike(Map<String, dynamic> item) {
+          final name = (item['name'] ?? '').toString().toLowerCase();
+          final category = (item['category'] ?? '').toString().toLowerCase();
+
+          return category.contains('leave') ||
+              category.contains('vacation') ||
+              category.contains('annual') ||
+              category.contains('casual') ||
+              category.contains('sick') ||
+              category.contains('emergency') ||
+              name.contains('اجاز') ||
+              name.contains('إجاز') ||
+              name.contains('سنوي') ||
+              name.contains('عارض') ||
+              name.contains('طارئ') ||
+              name.contains('مرضي') ||
+              name.contains('بدون مرتب') ||
+              name.contains('annual') ||
+              name.contains('casual') ||
+              name.contains('sick') ||
+              name.contains('emergency') ||
+              name.contains('leave') ||
+              name.contains('vacation');
+        }
+
         if (data['categories'] is List) {
           for (final cat in data['categories']) {
             if (cat['types'] is List) {
               for (final t in cat['types']) {
-                flatTypes.add({
+                final item = {
                   'id': t['id'],
                   'name': t['name'],
                   'category': cat['name'],
@@ -2630,7 +2664,11 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   'requires_amount': t['requires_amount'] ?? false,
                   'requires_date_range': t['requires_date_range'] ?? false,
                   'requires_document': t['requires_document'] ?? false,
-                });
+                };
+
+                if (!isLeaveLike(item)) {
+                  flatTypes.add(item);
+                }
               }
             }
           }
@@ -2645,8 +2683,10 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     'requires_date_range': t['requires_date_range'] ?? false,
                     'requires_document': t['requires_document'] ?? false,
                   })
+              .where((item) => !isLeaveLike(Map<String, dynamic>.from(item)))
               .toList();
         }
+
         setState(() => _types = flatTypes);
       }
     } catch (_) {}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/missions_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+import '../manager/create_mission_screen.dart';
+import '../manager/mission_detail_screen.dart';
 
 class ManagerMissionsScreen extends StatefulWidget {
   const ManagerMissionsScreen({super.key});
@@ -41,10 +43,10 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   Map<String, String> _getStatusLabels(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return {
-      '': isAr ? isAr ? 'الكل' : 'All' : 'All',
+      '': isAr ? 'الكل' : 'All',
       'approved': context.l10n.approved,
-      'in_progress': isAr ? isAr ? 'جارية' : 'In Progress' : 'In Progress',
-      'completed': isAr ? isAr ? 'مكتملة' : 'Completed' : 'Completed',
+      'in_progress': isAr ? 'جارية' : 'In Progress',
+      'completed': isAr ? 'مكتملة' : 'Completed',
       'cancelled': context.l10n.cancelled,
       'pending_approval': isAr ? 'انتظار موافقة' : 'Pending Approval',
     };
@@ -78,7 +80,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       });
     } catch (e) {
       setState(() {
-        _error = context.l10n.error;
+        _error = e.toString();
         _loading = false;
       });
     }
@@ -93,7 +95,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
-            isAr ? isAr ? 'إدارة المهمات' : 'Missions Management' : 'Missions Management',
+            isAr ? 'إدارة المهمات' : 'Missions Management',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
@@ -131,7 +133,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {},
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateMissionScreen()),
+            );
+            if (result == true) _loadMissions();
+          },
           backgroundColor: const Color(0xFF6C3FC5),
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(
@@ -166,12 +174,14 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                     color: isSelected ? const Color(0xFF6C3FC5) : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    entry.value,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey.shade700,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  child: Center(
+                    child: Text(
+                      entry.value,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey.shade700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -213,7 +223,15 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {},
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MissionDetailScreen(missionId: mission['id']),
+            ),
+          );
+          if (result == true) _loadMissions();
+        },
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -244,6 +262,16 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                 ],
               ),
               const SizedBox(height: 8),
+              if ((mission['description'] ?? '').toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    mission['description'],
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               if ((mission['location_name'] ?? '').isNotEmpty)
                 Row(
                   children: [
@@ -285,6 +313,20 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                     ),
                 ],
               ),
+              if ((mission['client_name'] ?? '').toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.person, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${isAr ? 'العميل' : 'Client'}: ${mission['client_name']}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -304,6 +346,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           return Center(child: Text(context.l10n.noData));
         }
         final summary = snap.data!['summary'] ?? {};
+        final feedbacks = snap.data!['feedbacks'] as List? ?? [];
         return ListView(
           padding: const EdgeInsets.all(12),
           children: [
@@ -321,9 +364,172 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                 _statCard(isAr ? 'تحتاج متابعة' : 'Needs Follow-up', '${summary['needs_followup'] ?? 0}', Icons.follow_the_signs, Colors.orange),
               ],
             ),
+            if (feedbacks.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                isAr ? 'آخر الفيدباك' : 'Recent Feedback',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...feedbacks.map((fb) => _buildFeedbackCard(fb, isAr)),
+            ],
           ],
         );
       },
+    );
+  }
+
+  Widget _buildFeedbackCard(Map<String, dynamic> fb, bool isAr) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          _showFeedbackDetail(fb, isAr);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.assignment, size: 16, color: Color(0xFF6C3FC5)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      fb['mission_title'] ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
+                ],
+              ),
+              const SizedBox(height: 6),
+              if ((fb['employee_name'] ?? '').toString().isNotEmpty)
+                Row(
+                  children: [
+                    const Icon(Icons.person, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(
+                      fb['employee_name'],
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              if ((fb['client_name'] ?? '').toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.business, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${isAr ? 'العميل' : 'Client'}: ${fb['client_name']}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              if ((fb['interest_level_display'] ?? '').toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      fb['interest_level_display'],
+                      style: const TextStyle(fontSize: 11, color: Colors.blue),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFeedbackDetail(Map<String, dynamic> fb, bool isAr) {
+    showDialog(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.feedback, color: Color(0xFF6C3FC5)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  fb['mission_title'] ?? '',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _detailRow(Icons.person, isAr ? 'الموظف' : 'Employee', fb['employee_name'] ?? '-'),
+                _detailRow(Icons.business, isAr ? 'العميل' : 'Client', fb['client_name'] ?? '-'),
+                _detailRow(Icons.phone, isAr ? 'هاتف العميل' : 'Client Phone', fb['client_phone'] ?? '-'),
+                _detailRow(Icons.star, isAr ? 'مستوى الاهتمام' : 'Interest Level', fb['interest_level_display'] ?? '-'),
+                _detailRow(Icons.handshake, isAr ? 'تم توقيع عقد' : 'Contract Signed', (fb['contract_signed'] == true) ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No')),
+                _detailRow(Icons.follow_the_signs, isAr ? 'يحتاج متابعة' : 'Needs Follow-up', (fb['needs_followup'] == true) ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No')),
+                _detailRow(Icons.calendar_today, isAr ? 'تاريخ المتابعة' : 'Follow-up Date', fb['followup_date'] ?? '-'),
+                if ((fb['notes'] ?? '').toString().isNotEmpty) ...[
+                  const Divider(),
+                  Text(
+                    isAr ? 'ملاحظات:' : 'Notes:',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(fb['notes'], style: const TextStyle(fontSize: 13)),
+                ],
+                _detailRow(Icons.access_time, isAr ? 'تاريخ الإرسال' : 'Submitted', _formatDateTime(fb['created_at'])),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(isAr ? 'إغلاق' : 'Close'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+                children: [
+                  TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -347,28 +553,50 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   }
 
   Widget _buildError() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, size: 60, color: Colors.red),
           const SizedBox(height: 12),
-          Text(_error ?? context.l10n.error),
+          Text(
+            _error ?? (isAr ? 'حدث خطأ' : 'An error occurred'),
+            style: const TextStyle(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: _loadMissions, child: Text(context.l10n.retry)),
+          ElevatedButton.icon(
+            onPressed: _loadMissions,
+            icon: const Icon(Icons.refresh),
+            label: Text(context.l10n.retry),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C3FC5),
+              foregroundColor: Colors.white,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildEmpty() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          Text(context.l10n.noMissions, style: const TextStyle(fontSize: 18, color: Colors.grey)),
+          Text(
+            context.l10n.noMissions,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isAr ? 'اضغط + لإنشاء مهمة جديدة' : 'Press + to create a new mission',
+            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+          ),
         ],
       ),
     );
@@ -391,27 +619,69 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => Directionality(
         textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                isAr ? 'طلبات المهمات المعلقة' : 'Pending Mission Requests',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: ListView.builder(
-                itemCount: requests.length,
-                itemBuilder: (_, i) => ListTile(
-                  title: Text(requests[i]['mission_title'] ?? ''),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          maxChildSize: 0.9,
+          minChildSize: 0.3,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  isAr ? 'طلبات المهمات المعلقة' : 'Pending Mission Requests',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(),
+              Expanded(
+                child: requests.isEmpty
+                    ? Center(
+                        child: Text(
+                          isAr ? 'لا توجد طلبات معلقة' : 'No pending requests',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollCtrl,
+                        itemCount: requests.length,
+                        itemBuilder: (_, i) {
+                          final req = requests[i];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            child: ListTile(
+                              leading: const CircleAvatar(
+                                backgroundColor: Color(0xFF6C3FC5),
+                                child: Icon(Icons.assignment, color: Colors.white, size: 20),
+                              ),
+                              title: Text(
+                                req['mission_title'] ?? '',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(req['employee_name'] ?? ''),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

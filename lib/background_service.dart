@@ -136,21 +136,22 @@ Future<void> saveTrackingFlag(bool trackingEnabled) async {
 }
 
 Future<void> requestLocationPermissionsForTracking() async {
-  try {
-    final locationEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!locationEnabled) {
-      await Geolocator.openLocationSettings();
-      return;
-    }
+  final locationEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!locationEnabled) {
+    throw Exception('Location services are disabled');
+  }
 
-    var permission = await Geolocator.checkPermission();
+  var permission = await Geolocator.checkPermission();
 
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
 
-    if (permission == LocationPermission.deniedForever) {
-      await Geolocator.openAppSettings();
-    }
-  } catch (_) {}
+  if (permission == LocationPermission.denied) {
+    throw Exception('Location permission denied');
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    throw Exception('Location permission permanently denied');
+  }
 }
