@@ -24,22 +24,15 @@ class PayrollService {
   }
 
   Future<Map<String, dynamic>> getSummary({int? year, int? month}) async {
-    final now = DateTime.now();
-    final y = year ?? now.year;
-    final m = month ?? now.month;
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
     return _get('$_base/api/mobile/manager/payroll/summary/?year=$y&month=$m');
   }
 
-  Future<Map<String, dynamic>> getEmployeeDetail({
-    required int employeeId,
-    int? year,
-    int? month,
-  }) async {
-    final now = DateTime.now();
-    final y = year ?? now.year;
-    final m = month ?? now.month;
-    return _get(
-        '$_base/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m');
+  Future<Map<String, dynamic>> getEmployeeDetail({required int employeeId, int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _get('$_base/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m');
   }
 
   Future<Map<String, dynamic>> getSettings() async {
@@ -47,9 +40,8 @@ class PayrollService {
   }
 
   Future<Map<String, dynamic>> getMyPayslip({int? year, int? month}) async {
-    final now = DateTime.now();
-    final y = year ?? now.year;
-    final m = month ?? now.month;
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
     return _get('$_base/api/mobile/employee/payslip/?year=$y&month=$m');
   }
 }
