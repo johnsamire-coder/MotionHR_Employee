@@ -7,7 +7,7 @@ class PayrollService {
 
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = prefs.getString('auth_token') ?? prefs.getString('token') ?? '';
     return {
       'Authorization': 'Token $token',
       'Content-Type': 'application/json',

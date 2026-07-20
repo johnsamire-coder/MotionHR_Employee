@@ -1,4 +1,3 @@
-// lib/services/reports_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,27 +7,12 @@ class ReportsService {
 
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token =
+        prefs.getString('auth_token') ?? prefs.getString('token') ?? '';
     return {
       'Authorization': 'Token $token',
       'Content-Type': 'application/json',
     };
-  }
-
-  String _buildUrl(String endpoint, {
-    int? year,
-    int? month,
-    DateTime? dateFrom,
-    DateTime? dateTo,
-    int? employeeId,
-  }) {
-    final now = DateTime.now();
-    final y = year ?? dateFrom?.year ?? now.year;
-    final m = month ?? dateFrom?.month ?? now.month;
-
-    var url = '$_base/$endpoint/?year=$y&month=$m';
-    if (employeeId != null) url += '&employee_id=$employeeId';
-    return url;
   }
 
   Future<Map<String, dynamic>> _get(String url) async {
@@ -40,89 +24,87 @@ class ReportsService {
     throw Exception('Error ${response.statusCode}: ${response.body}');
   }
 
-  // ─── Attendance Report ───────────────────────────
   Future<Map<String, dynamic>> getAttendanceReport({
     int? year,
     int? month,
     int? employeeId,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/attendance',
-      year: year,
-      month: month,
-      employeeId: employeeId,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url =
+        '$_base/api/mobile/manager/reports/attendance/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
     return _get(url);
   }
 
-  // ─── Late Report ─────────────────────────────────
   Future<Map<String, dynamic>> getLateReport({
     int? year,
     int? month,
     int? employeeId,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/late',
-      year: year,
-      month: month,
-      employeeId: employeeId,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url = '$_base/api/mobile/manager/reports/late/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
     return _get(url);
   }
 
-  // ─── Absence Report ──────────────────────────────
   Future<Map<String, dynamic>> getAbsenceReport({
     int? year,
     int? month,
     int? employeeId,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/absence',
-      year: year,
-      month: month,
-      employeeId: employeeId,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url = '$_base/api/mobile/manager/reports/absence/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
     return _get(url);
   }
 
-  // ─── Requests Report ─────────────────────────────
   Future<Map<String, dynamic>> getRequestsReport({
     int? year,
     int? month,
+    int? employeeId,
+    String? status,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/requests',
-      year: year,
-      month: month,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url = '$_base/api/mobile/manager/reports/requests/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
+    if (status != null && status.isNotEmpty) url += '&status=$status';
     return _get(url);
   }
 
-  // ─── Leaves Report ───────────────────────────────
   Future<Map<String, dynamic>> getLeavesReport({
     int? year,
     int? month,
+    int? employeeId,
+    String? status,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/leaves',
-      year: year,
-      month: month,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url = '$_base/api/mobile/manager/reports/leaves/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
+    if (status != null && status.isNotEmpty) url += '&status=$status';
     return _get(url);
   }
 
-  // ─── Work Hours Report ───────────────────────────
   Future<Map<String, dynamic>> getWorkHoursReport({
     int? year,
     int? month,
     int? employeeId,
   }) async {
-    final url = _buildUrl(
-      'api/mobile/manager/reports/work-hours',
-      year: year,
-      month: month,
-      employeeId: employeeId,
-    );
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    var url =
+        '$_base/api/mobile/manager/reports/work-hours/?year=$y&month=$m';
+    if (employeeId != null) url += '&employee_id=$employeeId';
     return _get(url);
   }
 }
