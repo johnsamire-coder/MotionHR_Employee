@@ -5,7 +5,6 @@ import 'package:motionhr_employee/l10n/l10n.dart';
 
 class CreateMissionScreen extends StatefulWidget {
   const CreateMissionScreen({super.key});
-
   @override
   State<CreateMissionScreen> createState() => _CreateMissionScreenState();
 }
@@ -18,7 +17,6 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
   bool _loadingEmployees = true;
   List<dynamic> _employees = [];
 
-  // Controllers
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
@@ -30,15 +28,13 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
   String _priority = 'normal';
   DateTime? _startTime;
   DateTime? _endTime;
-
-  // المشاركون المختارون
   List<Map<String, dynamic>> _selectedAssignees = [];
 
-  final Map<String, String> _priorityLabels = {
-    'normal': 'عادي',
-    'high': 'عالي',
-    'urgent': 'عاجل',
-  };
+  Map<String, String> get _priorityLabels => {
+        'normal': isAr ? 'عادي' : 'Normal',
+        'high': isAr ? 'عالي' : 'High',
+        'urgent': isAr ? 'عاجل' : 'Urgent',
+      };
 
   final Map<String, Color> _priorityColors = {
     'normal': Colors.blue,
@@ -63,18 +59,18 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
     _clientEmailCtrl.dispose();
     super.dispose();
   }
-Future<void> _loadEmployees() async {
-  try {
-    final result = await EmployeeManagementService.getEmployeesSimple();
-    setState(() {
-      _employees = result;
-      _loadingEmployees = false;
-    });
-  } catch (e) {
-    setState(() => _loadingEmployees = false);
-  }
-}
 
+  Future<void> _loadEmployees() async {
+    try {
+      final result = await EmployeeManagementService.getEmployeesSimple();
+      setState(() {
+        _employees = result;
+        _loadingEmployees = false;
+      });
+    } catch (_) {
+      setState(() => _loadingEmployees = false);
+    }
+  }
 
   Future<void> _pickDateTime({required bool isStart}) async {
     final date = await showDatePicker(
@@ -84,14 +80,13 @@ Future<void> _loadEmployees() async {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date == null || !mounted) return;
-
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
     if (time == null) return;
-
-    final dt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final dt = DateTime(
+        date.year, date.month, date.day, time.hour, time.minute);
     setState(() {
       if (isStart) {
         _startTime = dt;
@@ -108,46 +103,66 @@ Future<void> _loadEmployees() async {
 
     final availableEmployees = _employees.where((e) {
       final id = e['id'].toString();
-      return !_selectedAssignees.any((a) => a['employee_id'].toString() == id);
+      return !_selectedAssignees
+          .any((a) => a['employee_id'].toString() == id);
     }).toList();
 
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
-          title: Text('إضافة مشارك'),
+          title: Text(isAr ? 'إضافة مشارك' : 'Add Participant'),
           content: StatefulBuilder(
             builder: (ctx, setDialogState) => Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(labelText: 'اختر الموظف'),
-                  items: availableEmployees.map<DropdownMenuItem<String>>((e) {
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'اختر الموظف' : 'Select Employee',
+                  ),
+                  items: availableEmployees
+                      .map<DropdownMenuItem<String>>((e) {
                     return DropdownMenuItem<String>(
                       value: e['id'].toString(),
-                      child: Text(e['full_name_ar'] ?? e['username'] ?? ''),
+                      child: Text(
+                          e['full_name_ar'] ?? e['username'] ?? ''),
                     );
                   }).toList(),
-                  onChanged: (v) => setDialogState(() => selectedEmployeeId = v),
+                  onChanged: (v) =>
+                      setDialogState(() => selectedEmployeeId = v),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedRole,
-                  decoration: InputDecoration(labelText: 'الدور'),
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'الدور' : 'Role',
+                  ),
                   items: [
-                    DropdownMenuItem(value: 'lead', child: Text(context.l10n.missionLead)),
-                    DropdownMenuItem(value: 'assistant', child: Text(context.l10n.assistant)),
-                    DropdownMenuItem(value: 'manager', child: Text('مدير مرافق')),
-                    DropdownMenuItem(value: 'trainee', child: Text('متدرب')),
+                    DropdownMenuItem(
+                        value: 'lead',
+                        child: Text(context.l10n.missionLead)),
+                    DropdownMenuItem(
+                        value: 'assistant',
+                        child: Text(context.l10n.assistant)),
+                    DropdownMenuItem(
+                        value: 'manager',
+                        child: Text(
+                            isAr ? 'مدير مرافق' : 'Accompanied Manager')),
+                    DropdownMenuItem(
+                        value: 'trainee',
+                        child:
+                            Text(isAr ? 'متدرب' : 'Trainee')),
                   ],
-                  onChanged: (v) => setDialogState(() => selectedRole = v!),
+                  onChanged: (v) =>
+                      setDialogState(() => selectedRole = v!),
                 ),
                 if (_selectedAssignees.isNotEmpty)
                   CheckboxListTile(
                     title: Text(context.l10n.missionLead),
                     value: isLead,
-                    onChanged: (v) => setDialogState(() => isLead = v!),
+                    onChanged: (v) =>
+                        setDialogState(() => isLead = v!),
                   ),
               ],
             ),
@@ -162,14 +177,18 @@ Future<void> _loadEmployees() async {
                   ? null
                   : () {
                       final emp = _employees.firstWhere(
-                        (e) => e['id'].toString() == selectedEmployeeId,
+                        (e) =>
+                            e['id'].toString() == selectedEmployeeId,
                       );
                       setState(() {
                         _selectedAssignees.add({
-                          'employee_id': int.parse(selectedEmployeeId!),
-                          'employee_name': emp['full_name_ar'] ?? emp['username'],
+                          'employee_id':
+                              int.parse(selectedEmployeeId!),
+                          'employee_name': emp['full_name_ar'] ??
+                              emp['username'],
                           'role': selectedRole,
-                          'is_lead': isLead || _selectedAssignees.isEmpty,
+                          'is_lead': isLead ||
+                              _selectedAssignees.isEmpty,
                         });
                       });
                       Navigator.pop(context);
@@ -177,7 +196,8 @@ Future<void> _loadEmployees() async {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6C3FC5),
               ),
-              child: Text(context.l10n.add, style: TextStyle(color: Colors.white)),
+              child: Text(context.l10n.add,
+                  style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -188,20 +208,22 @@ Future<void> _loadEmployees() async {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('يرجى تحديد وقت البدء والانتهاء')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr
+            ? 'يرجى تحديد وقت البدء والانتهاء'
+            : 'Please set start and end time'),
+      ));
       return;
     }
     if (_selectedAssignees.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('يرجى إضافة موظف واحد على الأقل')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr
+            ? 'يرجى إضافة موظف واحد على الأقل'
+            : 'Please add at least one employee'),
+      ));
       return;
     }
-
     setState(() => _loading = true);
-
     try {
       final result = await MissionsService.createMission(
         title: _titleCtrl.text.trim(),
@@ -222,27 +244,27 @@ Future<void> _loadEmployees() async {
                 })
             .toList(),
       );
-
       if (!mounted) return;
-
       if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ تم إنشاء المهمة بنجاح'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? '✅ تم إنشاء المهمة بنجاح'
+              : '✅ Mission created successfully'),
+          backgroundColor: Colors.green,
+        ));
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['error'] ??
+              (isAr ? 'حدث خطأ' : 'An error occurred')),
+        ));
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ في الاتصال')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              isAr ? 'حدث خطأ في الاتصال' : 'Connection error'),
+        ));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -253,72 +275,90 @@ Future<void> _loadEmployees() async {
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
             isAr ? 'إنشاء مهمة جديدة' : 'Create New Mission',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: _loading
-            ? Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+            ? const Center(
+                child: CircularProgressIndicator(
+                    color: Color(0xFF6C3FC5)))
             : Form(
                 key: _formKey,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     _sectionCard(
-                      title: 'بيانات المهمة',
+                      title: isAr ? 'بيانات المهمة' : 'Mission Info',
                       icon: Icons.assignment,
                       children: [
                         TextFormField(
                           controller: _titleCtrl,
                           decoration: InputDecoration(
-                            labelText: 'عنوان المهمة *',
-                            prefixIcon: Icon(Icons.title),
+                            labelText: isAr
+                                ? 'عنوان المهمة *'
+                                : 'Mission Title *',
+                            prefixIcon: const Icon(Icons.title),
                           ),
-                          validator: (v) =>
-                              v == null || v.isEmpty ? 'العنوان مطلوب' : null,
+                          validator: (v) => v == null || v.isEmpty
+                              ? (isAr
+                                  ? 'العنوان مطلوب'
+                                  : 'Title is required')
+                              : null,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _descCtrl,
                           maxLines: 3,
                           decoration: InputDecoration(
                             labelText: context.l10n.missionDetails,
-                            prefixIcon: Icon(Icons.description),
+                            prefixIcon:
+                                const Icon(Icons.description),
                           ),
                         ),
-                        SizedBox(height: 12),
-                        // الأولوية
+                        const SizedBox(height: 12),
                         Row(
-                          children: _priorityLabels.entries.map((entry) {
-                            final isSelected = _priority == entry.key;
-                            final color = _priorityColors[entry.key]!;
+                          children:
+                              _priorityLabels.entries.map((entry) {
+                            final isSelected =
+                                _priority == entry.key;
+                            final color =
+                                _priorityColors[entry.key]!;
                             return Expanded(
                               child: GestureDetector(
-                                onTap: () => setState(() => _priority = entry.key),
+                                onTap: () => setState(
+                                    () => _priority = entry.key),
                                 child: Container(
-                                  margin: const EdgeInsets.only(left: 6),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  margin:
+                                      const EdgeInsets.only(left: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10),
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? color.withOpacity(0.15)
                                         : Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius:
+                                        BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: isSelected ? color : Colors.grey.shade300,
+                                      color: isSelected
+                                          ? color
+                                          : Colors.grey.shade300,
                                       width: isSelected ? 2 : 1,
                                     ),
                                   ),
                                   child: Column(
                                     children: [
-                                      Icon(Icons.flag, color: color, size: 20),
-                                      SizedBox(height: 4),
+                                      Icon(Icons.flag,
+                                          color: color, size: 20),
+                                      const SizedBox(height: 4),
                                       Text(
                                         entry.value,
                                         style: TextStyle(
@@ -338,106 +378,126 @@ Future<void> _loadEmployees() async {
                         ),
                       ],
                     ),
-
-                    SizedBox(height: 12),
-
+                    const SizedBox(height: 12),
                     _sectionCard(
-                      title: 'التوقيت',
+                      title: isAr ? 'التوقيت' : 'Timing',
                       icon: Icons.schedule,
                       children: [
                         _timePicker(
-                          label: 'وقت البدء',
+                          label:
+                              isAr ? 'وقت البدء' : 'Start Time',
                           value: _startTime,
-                          onTap: () => _pickDateTime(isStart: true),
+                          onTap: () =>
+                              _pickDateTime(isStart: true),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _timePicker(
-                          label: 'وقت الانتهاء',
+                          label: isAr
+                              ? 'وقت الانتهاء'
+                              : 'End Time',
                           value: _endTime,
-                          onTap: () => _pickDateTime(isStart: false),
+                          onTap: () =>
+                              _pickDateTime(isStart: false),
                         ),
                       ],
                     ),
-
-                    SizedBox(height: 12),
-
+                    const SizedBox(height: 12),
                     _sectionCard(
-                      title: 'الموقع والعميل',
+                      title: isAr
+                          ? 'الموقع والعميل'
+                          : 'Location & Client',
                       icon: Icons.location_on,
                       children: [
                         TextFormField(
                           controller: _locationCtrl,
                           decoration: InputDecoration(
-                            labelText: 'اسم الموقع / العنوان',
-                            prefixIcon: Icon(Icons.place),
+                            labelText: isAr
+                                ? 'اسم الموقع / العنوان'
+                                : 'Location / Address',
+                            prefixIcon:
+                                const Icon(Icons.place),
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _clientNameCtrl,
                           decoration: InputDecoration(
                             labelText: context.l10n.clientName,
-                            prefixIcon: Icon(Icons.person),
+                            prefixIcon:
+                                const Icon(Icons.person),
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _clientPhoneCtrl,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
                             labelText: context.l10n.clientPhone,
-                            prefixIcon: Icon(Icons.phone),
+                            prefixIcon:
+                                const Icon(Icons.phone),
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _clientCompanyCtrl,
                           decoration: InputDecoration(
-                            labelText: 'شركة العميل',
-                            prefixIcon: Icon(Icons.business),
+                            labelText: isAr
+                                ? 'شركة العميل'
+                                : 'Client Company',
+                            prefixIcon:
+                                const Icon(Icons.business),
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _clientEmailCtrl,
-                          keyboardType: TextInputType.emailAddress,
+                          keyboardType:
+                              TextInputType.emailAddress,
                           decoration: InputDecoration(
-                            labelText: 'إيميل العميل',
-                            prefixIcon: Icon(Icons.email),
+                            labelText: isAr
+                                ? 'إيميل العميل'
+                                : 'Client Email',
+                            prefixIcon:
+                                const Icon(Icons.email),
                           ),
                         ),
                       ],
                     ),
-
-                    SizedBox(height: 12),
-
+                    const SizedBox(height: 12),
                     _sectionCard(
                       title: isAr ? 'المشاركون' : 'Participants',
                       icon: Icons.group,
                       children: [
                         if (_loadingEmployees)
-                          Center(child: CircularProgressIndicator())
+                          const Center(
+                              child: CircularProgressIndicator())
                         else ...[
                           ..._selectedAssignees.map((a) => ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor:
-                                      const Color(0xFF6C3FC5).withOpacity(0.15),
-                                  child: Icon(Icons.person,
+                                  backgroundColor: const Color(
+                                          0xFF6C3FC5)
+                                      .withOpacity(0.15),
+                                  child: const Icon(Icons.person,
                                       color: Color(0xFF6C3FC5)),
                                 ),
-                                title: Text(a['employee_name'] ?? ''),
-                                subtitle: Text(_roleLabel(a['role'])),
+                                title:
+                                    Text(a['employee_name'] ?? ''),
+                                subtitle:
+                                    Text(_roleLabel(a['role'])),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (a['is_lead'] == true)
-                                      Icon(Icons.star,
-                                          color: Colors.amber, size: 18),
+                                      const Icon(Icons.star,
+                                          color: Colors.amber,
+                                          size: 18),
                                     IconButton(
-                                      icon: Icon(Icons.remove_circle,
+                                      icon: const Icon(
+                                          Icons.remove_circle,
                                           color: Colors.red),
                                       onPressed: () => setState(() =>
-                                          _selectedAssignees.remove(a)),
+                                          _selectedAssignees
+                                              .remove(a)),
                                     ),
                                   ],
                                 ),
@@ -446,38 +506,39 @@ Future<void> _loadEmployees() async {
                             onPressed: _employees.isNotEmpty
                                 ? _showAddAssigneeDialog
                                 : null,
-                            icon: Icon(Icons.add, color: Color(0xFF6C3FC5)),
+                            icon: const Icon(Icons.add,
+                                color: Color(0xFF6C3FC5)),
                             label: Text(
-                              'إضافة مشارك',
-                              style: TextStyle(color: Color(0xFF6C3FC5)),
+                              isAr
+                                  ? 'إضافة مشارك'
+                                  : 'Add Participant',
+                              style: const TextStyle(
+                                  color: Color(0xFF6C3FC5)),
                             ),
                           ),
                         ],
                       ],
                     ),
-
-                    SizedBox(height: 24),
-
+                    const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6C3FC5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                            borderRadius:
+                                BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        'إنشاء المهمة',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        isAr ? 'إنشاء المهمة' : 'Create Mission',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
-
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -492,27 +553,24 @@ Future<void> _loadEmployees() async {
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: const Color(0xFF6C3FC5), size: 20),
-                SizedBox(width: 8),
-                Text(
-                  title,
+            Row(children: [
+              Icon(icon,
+                  color: const Color(0xFF6C3FC5), size: 20),
+              const SizedBox(width: 8),
+              Text(title,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Color(0xFF6C3FC5),
-                  ),
-                ),
-              ],
-            ),
-            Divider(height: 20),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFF6C3FC5))),
+            ]),
+            const Divider(height: 20),
             ...children,
           ],
         ),
@@ -528,40 +586,48 @@ Future<void> _loadEmployees() async {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade400),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            Icon(Icons.access_time, color: Color(0xFF6C3FC5)),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                value == null
-                    ? label
-                    : '${value.day}/${value.month}/${value.year} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
-                style: TextStyle(
-                  color: value == null ? Colors.grey : Colors.black87,
-                  fontSize: 14,
-                ),
+        child: Row(children: [
+          const Icon(Icons.access_time,
+              color: Color(0xFF6C3FC5)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value == null
+                  ? label
+                  : '${value.day}/${value.month}/${value.year} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
+              style: TextStyle(
+                color: value == null
+                    ? Colors.grey
+                    : Colors.black87,
+                fontSize: 14,
               ),
             ),
-            Icon(Icons.arrow_drop_down, color: Colors.grey),
-          ],
-        ),
+          ),
+          const Icon(Icons.arrow_drop_down,
+              color: Colors.grey),
+        ]),
       ),
     );
   }
 
   String _roleLabel(String? role) {
     switch (role) {
-      case 'lead': return context.l10n.missionLead;
-      case 'assistant': return context.l10n.assistant;
-      case 'manager': return 'مدير مرافق';
-      case 'trainee': return 'متدرب';
-      default: return role ?? '';
+      case 'lead':
+        return context.l10n.missionLead;
+      case 'assistant':
+        return context.l10n.assistant;
+      case 'manager':
+        return isAr ? 'مدير مرافق' : 'Accompanied Manager';
+      case 'trainee':
+        return isAr ? 'متدرب' : 'Trainee';
+      default:
+        return role ?? '';
     }
   }
 }
