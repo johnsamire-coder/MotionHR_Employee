@@ -1,8 +1,10 @@
 ﻿// lib/screens/manager/reports/attendance_report_screen.dart
+// Phase 16 — Added Excel Export + fixed encoding
+
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
-import 'package:motionhr_employee/l10n/l10n.dart';
+import '../../../services/report_excel_service.dart';
 
 class AttendanceReportScreen extends StatefulWidget {
   const AttendanceReportScreen({super.key});
@@ -16,6 +18,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _exporting = false;
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -38,7 +41,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
+            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')));
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -48,12 +51,11 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     final now = DateTime.now();
     int tempYear = _selectedYear;
     int tempMonth = _selectedMonth;
-
     await showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -69,14 +71,16 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.chevron_right),
-                    onPressed:
-                        tempYear < now.year ? () => setS(() => tempYear++) : null,
+                    onPressed: tempYear < now.year
+                        ? () => setS(() => tempYear++)
+                        : null,
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
@@ -99,9 +103,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                       child: Text(
                         _monthName(m, isAr),
                         style: TextStyle(
-                          color: tempMonth == m
-                              ? Colors.white
-                              : Colors.black87,
+                          color: tempMonth == m ? Colors.white : Colors.black87,
                           fontSize: 11,
                         ),
                       ),
@@ -114,7 +116,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -125,7 +127,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
             ),
           ],
         ),
@@ -147,32 +149,52 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
           '${item['total_checkouts'] ?? 0}',
         ];
       }).toList();
-
       await ReportPdfService.printReport(
-        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط­ط¶ظˆط± ط§ظ„ط´ظ‡ط±ظٹ' : 'Monthly Attendance Report',
+        title: isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط£ظٹط§ظ… ط§ظ„ط­ط¶ظˆط±', 'ط­ط¶ظˆط±', 'ط§ظ†طµط±ط§ظپ']
+            ? ['اسم الموظف', 'أيام الحضور', 'حضور', 'انصراف']
             : ['Employee', 'Working Days', 'Check-ins', 'Check-outs'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
+            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')));
       }
     }
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final employees = List<Map<String, dynamic>>.from(
+        (_data!['employees'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      await ReportExcelService.exportAttendanceReport(
+        employees: employees,
+        year: _selectedYear,
+        month: _selectedMonth,
+        isAr: isAr,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')));
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final employees = (_data?['employees'] as List?) ?? const [];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط­ط¶ظˆط± ط§ظ„ط´ظ‡ط±ظٹ' : 'Monthly Attendance Report'),
+        title: Text(isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -184,17 +206,30 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
-          if (!_loading && _data != null)
+          if (!_loading && _data != null) ...[
+            _exporting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(
+                    onPressed: _exportExcel,
+                    icon: const Icon(Icons.table_chart_outlined),
+                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
+                  ),
             _printing
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white)),
                   )
                 : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+          ],
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -205,7 +240,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(12),
                 children: [
-                  // Summary
                   Card(
                     color: Colors.blue.shade50,
                     child: Padding(
@@ -214,12 +248,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _stat(
-                            isAr ? 'ط§ظ„ط´ظ‡ط±' : 'Month',
+                            isAr ? 'الشهر' : 'Month',
                             '${_monthName(_selectedMonth, isAr)} $_selectedYear',
                             Colors.purple,
                           ),
                           _stat(
-                            isAr ? 'ظ…ظˆط¸ظپظٹظ†' : 'Employees',
+                            isAr ? 'موظفين' : 'Employees',
                             '${_data?['total_employees'] ?? 0}',
                             Colors.blue,
                           ),
@@ -233,7 +267,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(40),
                         child: Text(
-                          isAr ? 'ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ' : 'No data found',
+                          isAr ? 'لا توجد بيانات' : 'No data found',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
@@ -244,21 +278,21 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                       return Card(
                         child: ListTile(
                           leading: const CircleAvatar(
-                            child: Icon(Icons.person),
+                            backgroundColor: Color(0xFF6A1B9A),
+                            child: Icon(Icons.person, color: Colors.white),
                           ),
-                          title:
-                              Text(item['employee_name']?.toString() ?? '-'),
+                          title: Text(item['employee_name']?.toString() ?? '-'),
                           subtitle: Text(
                             isAr
-                                ? 'ط­ط¶ظˆط±: ${item['working_days'] ?? 0} ظٹظˆظ…'
-                                : 'Attended: ${item['working_days'] ?? 0} days',
+                                ? 'حضور: ${item['working_days'] ?? 0} يوم | غياب: ${item['absent_days'] ?? 0}'
+                                : 'Attended: ${item['working_days'] ?? 0} days | Absent: ${item['absent_days'] ?? 0}',
                           ),
                           trailing: Text(
                             '${item['working_days'] ?? 0}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: Color(0xFF6A1B9A),
                             ),
                           ),
                         ),
@@ -273,14 +307,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
   Widget _stat(String label, String value, Color color) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
+        Text(value,
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
@@ -288,13 +317,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 }
 
 String _monthName(int month, bool isAr) {
-  const ar = [
-    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
-    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
-  ];
-  const en = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return isAr ? ar[month] : en[month];
 }
