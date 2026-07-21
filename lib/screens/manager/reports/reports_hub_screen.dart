@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'attendance_report_screen.dart';
 import 'late_report_screen.dart';
 import 'absence_report_screen.dart';
@@ -116,7 +116,7 @@ class ReportsHubScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
+          backgroundColor: color.withValues(alpha: 0.15),
           child: Icon(icon, color: color),
         ),
         title: Text(title),
