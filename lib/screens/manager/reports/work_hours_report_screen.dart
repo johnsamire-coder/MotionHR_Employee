@@ -1,4 +1,4 @@
-// lib/screens/manager/reports/work_hours_report_screen.dart
+﻿// lib/screens/manager/reports/work_hours_report_screen.dart
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
@@ -36,7 +36,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('خطأ: $e')));
+            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -50,7 +50,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
+          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -72,7 +72,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true,
+                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4, childAspectRatio: 1.4),
@@ -105,7 +105,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(isAr ? 'إلغاء' : 'Cancel')),
+                child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel')),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -115,7 +115,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'تأكيد' : 'Confirm'),
+              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
             ),
           ],
         ),
@@ -139,17 +139,17 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
       }).toList();
 
       await ReportPdfService.printReport(
-        title: isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
+        title: isAr ? 'طھظ‚ط±ظٹط± ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„' : 'Work Hours Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['اسم الموظف', 'إجمالي الساعات', 'أيام العمل', 'متوسط/يوم']
+            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط³ط§ط¹ط§طھ', 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„', 'ظ…طھظˆط³ط·/ظٹظˆظ…']
             : ['Employee', 'Total Hours', 'Days Worked', 'Avg/Day'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e')));
+            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
       }
     }
     if (mounted) setState(() => _printing = false);
@@ -161,7 +161,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'تقرير ساعات العمل' : 'Work Hours Report'),
+        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„' : 'Work Hours Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -192,7 +192,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
           : employees.isEmpty
               ? Center(
                   child: Text(
-                    isAr ? 'لا توجد بيانات' : 'No data found',
+                    isAr ? 'ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ' : 'No data found',
                     style: const TextStyle(fontSize: 16),
                   ),
                 )
@@ -215,11 +215,11 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                             Text(item['employee_name']?.toString() ?? '-'),
                         subtitle: Text(
                           isAr
-                              ? 'إجمالي: ${item['total_hours'] ?? 0} س | ${item['total_days_worked'] ?? 0} يوم'
+                              ? 'ط¥ط¬ظ…ط§ظ„ظٹ: ${item['total_hours'] ?? 0} ط³ | ${item['total_days_worked'] ?? 0} ظٹظˆظ…'
                               : 'Total: ${item['total_hours'] ?? 0}h | ${item['total_days_worked'] ?? 0} days',
                         ),
                         trailing: Text(
-                          '${item['total_hours'] ?? 0}س',
+                          '${item['total_hours'] ?? 0}ط³',
                           style: const TextStyle(
                             color: Colors.indigo,
                             fontWeight: FontWeight.bold,
@@ -235,9 +235,9 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                                 color: Colors.indigo, size: 10),
                             title: Text(day['date']?.toString() ?? '-'),
                             subtitle: Text(
-                                '${day['check_in'] ?? '-'} → ${day['check_out'] ?? '-'}'),
+                                '${day['check_in'] ?? '-'} â†’ ${day['check_out'] ?? '-'}'),
                             trailing: Text(
-                              '${day['hours'] ?? 0}س',
+                              '${day['hours'] ?? 0}ط³',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold),
                             ),
@@ -253,8 +253,8 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
 
 String _monthName(int month, bool isAr) {
   const ar = [
-    '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
+    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
   ];
   const en = [
     '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

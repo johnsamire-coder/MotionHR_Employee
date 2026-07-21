@@ -43,9 +43,40 @@ import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
+import 'services/auto_checkin_service.dart';
+
 
 const String kBaseUrl = 'https://jssolutions-eg.com';
 const Color kPrimaryColor = Color(0xFF1976D2);
+String formatTime12h(dynamic raw) {
+  final text = (raw ?? '').toString().trim();
+  if (text.isEmpty || text == 'null') return '-';
+
+  String timeText = text;
+
+  if (timeText.contains('T')) {
+    timeText = timeText.split('T').last;
+  }
+  if (timeText.contains(' ')) {
+    timeText = timeText.split(' ').last;
+  }
+  if (timeText.contains('.')) {
+    timeText = timeText.split('.').first;
+  }
+
+  final match = RegExp(r'^(\d{1,2}):(\d{2})(?::\d{2})?$').firstMatch(timeText);
+  if (match == null) return text;
+
+  int hour = int.tryParse(match.group(1)!) ?? 0;
+  final minute = match.group(2)!;
+
+  final period = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  if (hour == 0) hour = 12;
+
+  return '${hour.toString().padLeft(2, '0')}:$minute $period';
+}
+
 const Color kPrimaryDark = Color(0xFF0D47A1);
 const Color kAccentColor = Color(0xFF42A5F5);
 const Color kManagerColor = Color(0xFF6A1B9A);
@@ -465,6 +496,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       saveFCMTokenToServer();
       fetchUnreadCount();
+      AutoCheckinService.startMonitoring();
 
       bool needsCharter = false;
       if (appMode != 'manager') {
@@ -758,6 +790,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         saveFCMTokenToServer();
         fetchUnreadCount();
+        AutoCheckinService.startMonitoring();
 
         final mustChange = data['must_change_password'] == true;
         final appMode = data['app_mode'] ?? 'employee';
@@ -2168,7 +2201,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                           borderRadius: BorderRadius.circular(8)),
                       child: const Icon(Icons.login, color: Colors.green)),
                   title: Text(context.l10n.checkInTime),
-                  subtitle: Text('${_status?['check_in_time']}',
+                  subtitle: Text(
+		      formatTime12h(_status?['check_in_time']),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 )),
           if (_status?['check_out_time'] != null &&
@@ -2186,7 +2220,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       child:
                           const Icon(Icons.logout, color: Colors.orange)),
                   title: Text(context.l10n.checkOutTime),
-                  subtitle: Text('${_status?['check_out_time']}',
+                  subtitle: Text(
+  		      formatTime12h(_status?['check_out_time']),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 )),
           const SizedBox(height: 20),

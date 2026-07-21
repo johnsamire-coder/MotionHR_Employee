@@ -1,4 +1,4 @@
-// lib/screens/manager/reports/leaves_report_screen.dart
+﻿// lib/screens/manager/reports/leaves_report_screen.dart
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
@@ -36,7 +36,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('خطأ: $e')));
+            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -50,7 +50,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
+          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -72,7 +72,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true,
+                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4, childAspectRatio: 1.4),
@@ -105,7 +105,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(isAr ? 'إلغاء' : 'Cancel')),
+                child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel')),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -115,7 +115,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'تأكيد' : 'Confirm'),
+              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
             ),
           ],
         ),
@@ -139,17 +139,17 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
         ]);
       }
       await ReportPdfService.printReport(
-        title: isAr ? 'تقرير الإجازات' : 'Leaves Report',
+        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط¥ط¬ط§ط²ط§طھ' : 'Leaves Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['اسم الموظف', 'إجمالي الأيام', 'موافق', 'عدد الطلبات']
+            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط£ظٹط§ظ…', 'ظ…ظˆط§ظپظ‚', 'ط¹ط¯ط¯ ط§ظ„ط·ظ„ط¨ط§طھ']
             : ['Employee', 'Total Days', 'Approved', 'Requests'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e')));
+            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
       }
     }
     if (mounted) setState(() => _printing = false);
@@ -161,7 +161,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'تقرير الإجازات' : 'Leaves Report'),
+        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط¥ط¬ط§ط²ط§طھ' : 'Leaves Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -204,13 +204,13 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _stat(isAr ? 'إجمالي' : 'Total',
+                      _stat(isAr ? 'ط¥ط¬ظ…ط§ظ„ظٹ' : 'Total',
                           '${_data?['total_leaves'] ?? 0}', Colors.teal),
-                      _stat(isAr ? 'موافق' : 'Approved',
+                      _stat(isAr ? 'ظ…ظˆط§ظپظ‚' : 'Approved',
                           '${_data?['approved'] ?? 0}', Colors.green),
-                      _stat(isAr ? 'معلق' : 'Pending',
+                      _stat(isAr ? 'ظ…ط¹ظ„ظ‚' : 'Pending',
                           '${_data?['pending'] ?? 0}', Colors.orange),
-                      _stat(isAr ? 'مرفوض' : 'Rejected',
+                      _stat(isAr ? 'ظ…ط±ظپظˆط¶' : 'Rejected',
                           '${_data?['rejected'] ?? 0}', Colors.red),
                     ],
                   ),
@@ -220,7 +220,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                       ? Center(
                           child: Text(
                             isAr
-                                ? 'لا توجد إجازات في هذا الشهر'
+                                ? 'ظ„ط§ طھظˆط¬ط¯ ط¥ط¬ط§ط²ط§طھ ظپظٹ ظ‡ط°ط§ ط§ظ„ط´ظ‡ط±'
                                 : 'No leaves this month',
                             style: const TextStyle(fontSize: 16),
                           ),
@@ -244,7 +244,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                                     item['name']?.toString() ?? '-'),
                                 subtitle: Text(
                                   isAr
-                                      ? 'إجمالي: ${item['total_days'] ?? 0} يوم | موافق: ${item['approved_days'] ?? 0}'
+                                      ? 'ط¥ط¬ظ…ط§ظ„ظٹ: ${item['total_days'] ?? 0} ظٹظˆظ… | ظ…ظˆط§ظپظ‚: ${item['approved_days'] ?? 0}'
                                       : 'Total: ${item['total_days'] ?? 0}d | Approved: ${item['approved_days'] ?? 0}',
                                 ),
                                 children: lvs.map<Widget>((l) {
@@ -262,9 +262,9 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
                                     leading: Icon(Icons.circle,
                                         color: color, size: 10),
                                     title: Text(
-                                        '${lv['type']} — ${lv['days']} ${isAr ? 'يوم' : 'days'}'),
+                                        '${lv['type']} â€” ${lv['days']} ${isAr ? 'ظٹظˆظ…' : 'days'}'),
                                     subtitle: Text(
-                                        '${lv['from'] ?? '-'} → ${lv['to'] ?? '-'}'),
+                                        '${lv['from'] ?? '-'} â†’ ${lv['to'] ?? '-'}'),
                                     trailing: Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 2),
@@ -312,8 +312,8 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
 
 String _monthName(int month, bool isAr) {
   const ar = [
-    '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
+    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
   ];
   const en = [
     '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

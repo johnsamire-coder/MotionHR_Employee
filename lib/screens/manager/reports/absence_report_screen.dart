@@ -1,4 +1,4 @@
-// lib/screens/manager/reports/absence_report_screen.dart
+﻿// lib/screens/manager/reports/absence_report_screen.dart
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
@@ -16,7 +16,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
   bool _loading = true;
   bool _printing = false;
 
-  // ─── Date Filter ─────────────────────────────────
+  // â”€â”€â”€ Date Filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
 
@@ -38,7 +38,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ: $e')),
+          SnackBar(content: Text('ط®ط·ط£: $e')),
         );
       }
     }
@@ -54,7 +54,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
+          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -84,7 +84,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
               const SizedBox(height: 8),
               // Month grid
               GridView.builder(
-                shrinkWrap: true,
+                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
@@ -127,7 +127,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+              child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -138,7 +138,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'تأكيد' : 'Confirm'),
+              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
             ),
           ],
         ),
@@ -165,18 +165,18 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
       }
 
       await ReportPdfService.printReport(
-        title: isAr ? 'تقرير الغياب' : 'Absence Report',
+        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨' : 'Absence Report',
         subtitle:
             '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['اسم الموظف', 'أيام الغياب', 'أيام العمل', 'تواريخ الغياب']
+            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط£ظٹط§ظ… ط§ظ„ط؛ظٹط§ط¨', 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„', 'طھظˆط§ط±ظٹط® ط§ظ„ط؛ظٹط§ط¨']
             : ['Employee', 'Absent Days', 'Working Days', 'Dates'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ في الطباعة: $e')),
+          SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')),
         );
       }
     }
@@ -189,7 +189,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'تقرير الغياب' : 'Absence Report'),
+        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨' : 'Absence Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -226,10 +226,10 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // ─── Summary Card ─────────────────
+                // â”€â”€â”€ Summary Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 _SummaryCard(data: _data, isAr: isAr),
 
-                // ─── List ─────────────────────────
+                // â”€â”€â”€ List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Expanded(
                   child: employees.isEmpty
                       ? Center(
@@ -244,8 +244,8 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 isAr
-                                    ? 'لا يوجد غياب في هذا الشهر ✅'
-                                    : 'No absences this month ✅',
+                                    ? 'ظ„ط§ ظٹظˆط¬ط¯ ط؛ظٹط§ط¨ ظپظٹ ظ‡ط°ط§ ط§ظ„ط´ظ‡ط± âœ…'
+                                    : 'No absences this month âœ…',
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],
@@ -273,7 +273,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                                 ),
                                 subtitle: Text(
                                   isAr
-                                      ? 'غياب: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} يوم'
+                                      ? 'ط؛ظٹط§ط¨: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} ظٹظˆظ…'
                                       : 'Absent: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} days',
                                 ),
                                 children: absentDates
@@ -300,7 +300,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
   }
 }
 
-// ─── Summary Card Widget ───────────────────────────────
+// â”€â”€â”€ Summary Card Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _SummaryCard extends StatelessWidget {
   final Map<String, dynamic>? data;
   final bool isAr;
@@ -321,12 +321,12 @@ class _SummaryCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _statItem(
-            isAr ? 'أيام العمل' : 'Working Days',
+            isAr ? 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„' : 'Working Days',
             '${data!['total_working_days_in_month'] ?? 0}',
             Colors.blue,
           ),
           _statItem(
-            isAr ? 'موظفين غائبين' : 'Employees Absent',
+            isAr ? 'ظ…ظˆط¸ظپظٹظ† ط؛ط§ط¦ط¨ظٹظ†' : 'Employees Absent',
             '${data!['total_employees_with_absence'] ?? 0}',
             Colors.red,
           ),
@@ -352,11 +352,11 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-// ─── Month Name Helper ─────────────────────────────────
+// â”€â”€â”€ Month Name Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 String _monthName(int month, bool isAr) {
   const ar = [
-    '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
+    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
   ];
   const en = [
     '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

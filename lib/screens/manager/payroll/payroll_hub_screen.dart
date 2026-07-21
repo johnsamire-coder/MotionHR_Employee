@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'payroll_summary_screen.dart';
-import 'payroll_settings_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+
+import '../work_policy_screen.dart';
+import 'payroll_settings_screen.dart';
+import 'payroll_summary_screen.dart';
 
 class PayrollHubScreen extends StatelessWidget {
   const PayrollHubScreen({super.key});
@@ -29,35 +31,50 @@ class PayrollHubScreen extends StatelessWidget {
                 ),
                 subtitle: Text(
                   isAr
-                      ? 'ملخص الرواتب - تفاصيل الموظف - الإعدادات'
-                      : 'Payroll Summary - Employee Details - Settings',
+                      ? 'ملخص الرواتب - الإعدادات - أيام العمل'
+                      : 'Payroll Summary - Settings - Work Days',
                 ),
               ),
             ),
             const SizedBox(height: 8),
             _card(
-              context,
-              Icons.receipt_long,
-              Colors.green,
-              isAr
+              context: context,
+              isAr: isAr,
+              icon: Icons.receipt_long,
+              color: Colors.green,
+              title: isAr
                   ? 'ملخص الرواتب الشهري'
                   : 'Monthly Payroll Summary',
-              isAr
+              subtitle: isAr
                   ? 'كل الموظفين مع الخصومات والبونص'
                   : 'All employees with deductions and bonuses',
-              const PayrollSummaryScreen(),
+              screen: const PayrollSummaryScreen(),
             ),
             _card(
-              context,
-              Icons.settings,
-              Colors.blueGrey,
-              isAr
+              context: context,
+              isAr: isAr,
+              icon: Icons.settings,
+              color: Colors.blueGrey,
+              title: isAr
                   ? 'إعدادات حساب الرواتب'
                   : 'Payroll Settings',
-              isAr
+              subtitle: isAr
                   ? 'قواعد الخصومات والبونص'
                   : 'Deduction and bonus rules',
-              const PayrollSettingsScreen(),
+              screen: const PayrollSettingsScreen(),
+            ),
+            _card(
+              context: context,
+              isAr: isAr,
+              icon: Icons.calendar_month,
+              color: Colors.orange,
+              title: isAr
+                  ? 'أيام العمل والإجازات'
+                  : 'Work Days & Holidays',
+              subtitle: isAr
+                  ? 'تحديد أيام العمل الأسبوعية'
+                  : 'Define weekly work days',
+              screen: const WorkPolicyScreen(),
             ),
           ],
         ),
@@ -65,14 +82,15 @@ class PayrollHubScreen extends StatelessWidget {
     );
   }
 
-  Widget _card(
-    BuildContext ctx,
-    IconData icon,
-    Color color,
-    String title,
-    String subtitle,
-    Widget screen,
-  ) {
+  Widget _card({
+    required BuildContext context,
+    required bool isAr,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required Widget screen,
+  }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -82,9 +100,12 @@ class PayrollHubScreen extends StatelessWidget {
         ),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: Icon(
+          isAr ? Icons.arrow_back_ios_new : Icons.arrow_forward_ios,
+          size: 16,
+        ),
         onTap: () => Navigator.push(
-          ctx,
+          context,
           MaterialPageRoute(builder: (_) => screen),
         ),
       ),
