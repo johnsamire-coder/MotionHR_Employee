@@ -16,6 +16,7 @@ import 'screens/manager/create_announcement_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'screens/manager/manager_missions_screen.dart';
+import 'screens/manager/shifts/shifts_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -6016,6 +6017,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const CreateEmployeeScreen()))),
+                _gridCard(
+                    isAr ? 'الشيفتات' : 'Shifts',
+                    Icons.schedule,
+                    const Color(0xFF00838F),
+                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShiftsScreen()))),
                 _gridCard(
                     context.l10n.missions,
                     Icons.assignment,
