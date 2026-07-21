@@ -394,4 +394,161 @@ class ReportExcelService {
     ];
     return isAr ? ar[month] : en[month];
   }
+
+  static Future<void> exportPayrollRunReport({
+    required List<Map<String, dynamic>> lines,
+    required int year,
+    required int month,
+    required bool isAr,
+  }) async {
+    final excel = Excel.createExcel();
+    final sheetName = isAr ? 'مسير الرواتب' : 'Payroll Run';
+    final sheet = excel[sheetName];
+
+    const arMonths = ['','يناير','فبراير','مارس','ابريل','مايو','يونيو',
+                      'يوليو','اغسطس','سبتمبر','اكتوبر','نوفمبر','ديسمبر'];
+    const enMonths = ['','January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+    final monthName = isAr ? arMonths[month] : enMonths[month];
+
+    // Title
+    sheet.merge(
+      CellIndex.indexByString('A1'),
+      CellIndex.indexByString('I1'),
+    );
+    final titleCell = sheet.cell(CellIndex.indexByString('A1'));
+    titleCell.value = TextCellValue(
+      isAr
+          ? 'مسير رواتب - $monthName $year'
+          : 'Payroll Run - $monthName $year',
+    );
+    titleCell.cellStyle = CellStyle(
+      bold: true,
+      fontSize: 14,
+      horizontalAlign: HorizontalAlign.Center,
+      backgroundColorHex: ExcelColor.fromHexString('#1565C0'),
+      fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
+    );
+
+    // Headers
+    final headers = isAr
+        ? ['م','اسم الموظف','الراتب الاساسي','البدلات','المكافات',
+           'اجمالي المستحقات','اجمالي الخصومات','صافي الراتب','الحالة']
+        : ['#','Employee Name','Basic Salary','Allowances','Bonuses',
+           'Gross','Deductions','Net Salary','Status'];
+
+    final headerStyle = CellStyle(
+      bold: true,
+      backgroundColorHex: ExcelColor.fromHexString('#E3F2FD'),
+      horizontalAlign: HorizontalAlign.Center,
+    );
+
+    for (var i = 0; i < headers.length; i++) {
+      final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1));
+      cell.value = TextCellValue(headers[i]);
+      cell.cellStyle = headerStyle;
+    }
+
+    // Data
+    var totalGross = 0.0;
+    var totalDeductions = 0.0;
+    var totalNet = 0.0;
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final row = i + 2;
+
+      final basic = (line['basic_salary'] as num?)?.toDouble() ?? 0.0;
+      final allowances = (line['total_allowances'] as num?)?.toDouble() ?? 0.0;
+      final bonuses = (line['total_bonuses'] as num?)?.toDouble() ?? 0.0;
+      final gross = (line['gross_salary'] as num?)?.toDouble() ?? 0.0;
+      final deductions = (line['total_deductions'] as num?)?.toDouble() ?? 0.0;
+      final net = (line['net_salary'] as num?)?.toDouble() ?? 0.0;
+      final status = line['status'] as String? ?? '';
+
+      totalGross += gross;
+      totalDeductions += deductions;
+      totalNet += net;
+
+      final rowStyle = CellStyle(
+        backgroundColorHex: ExcelColor.fromHexString(
+            i.isEven ? '#FFFFFF' : '#F5F5F5'),
+      );
+
+      void setCell(int col, CellValue val) {
+        final cell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row));
+        cell.value = val;
+        cell.cellStyle = rowStyle;
+      }
+
+      String arStatus(String s) {
+        switch (s) {
+          case 'draft': return 'مسودة';
+          case 'approved': return 'معتمد';
+          case 'locked': return 'مقفول';
+          default: return s;
+        }
+      }
+
+      setCell(0, IntCellValue(i + 1));
+      setCell(1, TextCellValue(line['employee_name'] as String? ?? ''));
+      setCell(2, DoubleCellValue(basic));
+      setCell(3, DoubleCellValue(allowances));
+      setCell(4, DoubleCellValue(bonuses));
+      setCell(5, DoubleCellValue(gross));
+      setCell(6, DoubleCellValue(deductions));
+      setCell(7, DoubleCellValue(net));
+      setCell(8, TextCellValue(isAr ? arStatus(status) : status));
+    }
+
+    // Totals Row
+    final totalRow = lines.length + 2;
+    final totalStyle = CellStyle(
+      bold: true,
+      backgroundColorHex: ExcelColor.fromHexString('#BBDEFB'),
+    );
+
+    void setTotal(int col, CellValue val) {
+      final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: totalRow));
+      cell.value = val;
+      cell.cellStyle = totalStyle;
+    }
+
+    setTotal(0, TextCellValue(''));
+    setTotal(1, TextCellValue(isAr ? 'الاجمالي' : 'Total'));
+    setTotal(2, TextCellValue(''));
+    setTotal(3, TextCellValue(''));
+    setTotal(4, TextCellValue(''));
+    setTotal(5, DoubleCellValue(totalGross));
+    setTotal(6, DoubleCellValue(totalDeductions));
+    setTotal(7, DoubleCellValue(totalNet));
+    setTotal(8, TextCellValue(''));
+
+    // Column Widths
+    sheet.setColumnWidth(0, 5);
+    sheet.setColumnWidth(1, 25);
+    for (var i = 2; i <= 8; i++) {
+      sheet.setColumnWidth(i, 18);
+    }
+
+    // Save & Share
+    final bytes = excel.encode();
+    if (bytes == null) return;
+
+    final dir = await getTemporaryDirectory();
+    final fileName =
+        'payroll_run_${year}_${month.toString().padLeft(2, '0')}.xlsx';
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(bytes);
+
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: isAr
+          ? 'مسير رواتب $monthName $year'
+          : 'Payroll Run $monthName $year',
+    );
+  }
 }
