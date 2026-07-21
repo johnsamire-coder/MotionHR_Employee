@@ -1,7 +1,10 @@
 ﻿// lib/screens/manager/reports/late_report_screen.dart
+// Phase 17 — Excel Export + encoding fix + AR/EN
+
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
+import '../../../services/report_excel_service.dart';
 
 class LateReportScreen extends StatefulWidget {
   const LateReportScreen({super.key});
@@ -14,6 +17,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _exporting = false;
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -35,8 +39,9 @@ class _LateReportScreenState extends State<LateReportScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -50,7 +55,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -58,21 +63,23 @@ class _LateReportScreenState extends State<LateReportScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () => setS(() => tempYear--)),
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => setS(() => tempYear--),
+                  ),
                   Text('$tempYear',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: tempYear < now.year
-                          ? () => setS(() => tempYear++)
-                          : null),
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed:
+                        tempYear < now.year ? () => setS(() => tempYear++) : null,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4, childAspectRatio: 1.4),
@@ -90,12 +97,13 @@ class _LateReportScreenState extends State<LateReportScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(_monthName(m, isAr),
-                          style: TextStyle(
-                              color: tempMonth == m
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 11)),
+                      child: Text(
+                        _monthName(m, isAr),
+                        style: TextStyle(
+                          color: tempMonth == m ? Colors.white : Colors.black87,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -104,8 +112,9 @@ class _LateReportScreenState extends State<LateReportScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel')),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -115,7 +124,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
             ),
           ],
         ),
@@ -137,31 +146,54 @@ class _LateReportScreenState extends State<LateReportScreen> {
           '${item['total_late_hours'] ?? 0}',
         ];
       }).toList();
-
       await ReportPdfService.printReport(
-        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„طھط£ط®ظٹط±' : 'Late Report',
+        title: isAr ? 'تقرير التأخير' : 'Late Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط£ظٹط§ظ… ط§ظ„طھط£ط®ظٹط±', 'ط¯ظ‚ط§ط¦ظ‚', 'ط³ط§ط¹ط§طھ']
+            ? ['اسم الموظف', 'أيام التأخير', 'دقائق', 'ساعات']
             : ['Employee', 'Late Days', 'Minutes', 'Hours'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final employees = List<Map<String, dynamic>>.from(
+        (_data!['employees'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      await ReportExcelService.exportLateReport(
+        employees: employees,
+        year: _selectedYear,
+        month: _selectedMonth,
+        isAr: isAr,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final employees = (_data?['employees'] as List?) ?? const [];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط§ظ„طھط£ط®ظٹط±' : 'Late Report'),
+        title: Text(isAr ? 'تقرير التأخير' : 'Late Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -173,17 +205,33 @@ class _LateReportScreenState extends State<LateReportScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
-          if (!_loading && _data != null)
+          if (!_loading && _data != null) ...[
+            _exporting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(
+                    onPressed: _exportExcel,
+                    icon: const Icon(Icons.table_chart_outlined),
+                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
+                  ),
             _printing
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white)),
                   )
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+                : IconButton(
+                    onPressed: _print,
+                    icon: const Icon(Icons.print),
+                  ),
+          ],
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -204,7 +252,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _stat(
-                        isAr ? 'ظ…ظˆط¸ظپظٹظ† ظ…طھط£ط®ط±ظٹظ†' : 'Late Employees',
+                        isAr ? 'موظفين متأخرين' : 'Late Employees',
                         '${_data?['total_employees_with_late'] ?? 0}',
                         Colors.orange,
                       ),
@@ -222,8 +270,8 @@ class _LateReportScreenState extends State<LateReportScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 isAr
-                                    ? 'ظ„ط§ ظٹظˆط¬ط¯ طھط£ط®ظٹط± ظپظٹ ظ‡ط°ط§ ط§ظ„ط´ظ‡ط± âœ…'
-                                    : 'No late records this month âœ…',
+                                    ? 'لا يوجد تأخير في هذا الشهر ✅'
+                                    : 'No late records this month ✅',
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],
@@ -248,11 +296,10 @@ class _LateReportScreenState extends State<LateReportScreen> {
                                     item['employee_name']?.toString() ?? '-'),
                                 subtitle: Text(
                                   isAr
-                                      ? 'طھط£ط®ظٹط±: ${item['total_late_days'] ?? 0} ظٹظˆظ… | ${item['total_late_minutes'] ?? 0} ط¯ظ‚ظٹظ‚ط©'
+                                      ? 'تأخير: ${item['total_late_days'] ?? 0} يوم | ${item['total_late_minutes'] ?? 0} دقيقة'
                                       : 'Late: ${item['total_late_days'] ?? 0} days | ${item['total_late_minutes'] ?? 0} min',
                                 ),
-                                children: details
-                                    .map<Widget>((d) {
+                                children: details.map<Widget>((d) {
                                   final day =
                                       Map<String, dynamic>.from(d as Map);
                                   return ListTile(
@@ -262,16 +309,15 @@ class _LateReportScreenState extends State<LateReportScreen> {
                                     title: Text(
                                         day['date']?.toString() ?? '-'),
                                     subtitle: Text(
-                                        'ظˆظ‚طھ ط§ظ„ط­ط¶ظˆط±: ${day['time'] ?? '-'}'),
+                                        '${isAr ? 'وقت الحضور' : 'Check-in'}: ${day['time'] ?? '-'}'),
                                     trailing: Text(
-                                      '${day['minutes_late'] ?? 0} ط¯',
+                                      '${day['minutes_late'] ?? 0} ${isAr ? 'د' : 'm'}',
                                       style: const TextStyle(
                                           color: Colors.orange,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   );
-                                })
-                                    .toList(),
+                                }).toList(),
                               ),
                             );
                           },
@@ -287,9 +333,7 @@ class _LateReportScreenState extends State<LateReportScreen> {
       children: [
         Text(value,
             style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: color)),
+                fontSize: 22, fontWeight: FontWeight.bold, color: color)),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
@@ -297,13 +341,9 @@ class _LateReportScreenState extends State<LateReportScreen> {
 }
 
 String _monthName(int month, bool isAr) {
-  const ar = [
-    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
-    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
-  ];
-  const en = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return isAr ? ar[month] : en[month];
 }

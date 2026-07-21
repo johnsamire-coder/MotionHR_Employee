@@ -1,8 +1,10 @@
 ﻿// lib/screens/manager/reports/absence_report_screen.dart
+// Phase 17 — Excel Export + encoding fix + AR/EN + Container bug fix
+
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
-import 'package:motionhr_employee/l10n/l10n.dart';
+import '../../../services/report_excel_service.dart';
 
 class AbsenceReportScreen extends StatefulWidget {
   const AbsenceReportScreen({super.key});
@@ -15,8 +17,8 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _exporting = false;
 
-  // â”€â”€â”€ Date Filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
 
@@ -38,7 +40,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ط®ط·ط£: $e')),
+          SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')),
         );
       }
     }
@@ -49,16 +51,14 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
     final now = DateTime.now();
     int tempYear = _selectedYear;
     int tempMonth = _selectedMonth;
-
     await showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Year selector
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -66,13 +66,9 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                     icon: const Icon(Icons.chevron_left),
                     onPressed: () => setS(() => tempYear--),
                   ),
-                  Text(
-                    '$tempYear',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('$tempYear',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.chevron_right),
                     onPressed: tempYear < now.year
@@ -82,19 +78,15 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              // Month grid
               GridView.builder(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.4,
-                ),
+                        crossAxisCount: 4, childAspectRatio: 1.4),
                 itemCount: 12,
                 itemBuilder: (_, i) {
                   final m = i + 1;
-                  final selected =
-                      m == tempMonth && tempYear == _selectedYear;
                   return GestureDetector(
                     onTap: () => setS(() => tempMonth = m),
                     child: Container(
@@ -109,13 +101,8 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                       child: Text(
                         _monthName(m, isAr),
                         style: TextStyle(
-                          color: tempMonth == m
-                              ? Colors.white
-                              : Colors.black87,
+                          color: tempMonth == m ? Colors.white : Colors.black87,
                           fontSize: 11,
-                          fontWeight: selected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -127,7 +114,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel'),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -138,7 +125,7 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
             ),
           ],
         ),
@@ -152,7 +139,6 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
     try {
       final employees = (_data!['employees'] as List?) ?? [];
       final rows = <List<String>>[];
-
       for (var e in employees) {
         final item = Map<String, dynamic>.from(e as Map);
         final absentDates = (item['absent_dates'] as List?) ?? [];
@@ -163,37 +149,57 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
           absentDates.take(5).join(', '),
         ]);
       }
-
       await ReportPdfService.printReport(
-        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨' : 'Absence Report',
-        subtitle:
-            '${_monthName(_selectedMonth, isAr)} $_selectedYear',
+        title: isAr ? 'تقرير الغياب' : 'Absence Report',
+        subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط£ظٹط§ظ… ط§ظ„ط؛ظٹط§ط¨', 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„', 'طھظˆط§ط±ظٹط® ط§ظ„ط؛ظٹط§ط¨']
+            ? ['اسم الموظف', 'أيام الغياب', 'أيام العمل', 'تواريخ الغياب']
             : ['Employee', 'Absent Days', 'Working Days', 'Dates'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')),
+          SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
         );
       }
     }
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final employees = List<Map<String, dynamic>>.from(
+        (_data!['employees'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      await ReportExcelService.exportAbsenceReport(
+        employees: employees,
+        year: _selectedYear,
+        month: _selectedMonth,
+        isAr: isAr,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final employees = (_data?['employees'] as List?) ?? const [];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط؛ظٹط§ط¨' : 'Absence Report'),
+        title: Text(isAr ? 'تقرير الغياب' : 'Absence Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
-          // Month Picker Button
           TextButton.icon(
             onPressed: _pickMonth,
             icon: const Icon(Icons.calendar_month, color: Colors.white),
@@ -202,23 +208,33 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
-          if (!_loading && _data != null)
+          if (!_loading && _data != null) ...[
+            _exporting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(
+                    onPressed: _exportExcel,
+                    icon: const Icon(Icons.table_chart_outlined),
+                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
+                  ),
             _printing
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    ),
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
                   )
                 : IconButton(
                     onPressed: _print,
                     icon: const Icon(Icons.print),
                   ),
+          ],
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -226,26 +242,44 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // â”€â”€â”€ Summary Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                _SummaryCard(data: _data, isAr: isAr),
-
-                // â”€â”€â”€ List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // Summary — Fixed: was Container with BoxDecoration having wrong children
+                Container(
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _statItem(
+                        isAr ? 'أيام العمل' : 'Working Days',
+                        '${_data?['total_working_days_in_month'] ?? 0}',
+                        Colors.blue,
+                      ),
+                      _statItem(
+                        isAr ? 'موظفين غائبين' : 'Employees Absent',
+                        '${_data?['total_employees_with_absence'] ?? 0}',
+                        Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
                 Expanded(
                   child: employees.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
-                                Icons.check_circle_outline,
-                                color: Colors.green,
-                                size: 64,
-                              ),
+                              const Icon(Icons.check_circle_outline,
+                                  color: Colors.green, size: 64),
                               const SizedBox(height: 16),
                               Text(
                                 isAr
-                                    ? 'ظ„ط§ ظٹظˆط¬ط¯ ط؛ظٹط§ط¨ ظپظٹ ظ‡ط°ط§ ط§ظ„ط´ظ‡ط± âœ…'
-                                    : 'No absences this month âœ…',
+                                    ? 'لا يوجد غياب في هذا الشهر ✅'
+                                    : 'No absences this month ✅',
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],
@@ -263,32 +297,24 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
                               child: ExpansionTile(
                                 leading: const CircleAvatar(
                                   backgroundColor: Colors.redAccent,
-                                  child: Icon(
-                                    Icons.event_busy,
-                                    color: Colors.white,
-                                  ),
+                                  child: Icon(Icons.event_busy,
+                                      color: Colors.white),
                                 ),
                                 title: Text(
-                                  item['employee_name']?.toString() ?? '-',
-                                ),
+                                    item['employee_name']?.toString() ?? '-'),
                                 subtitle: Text(
                                   isAr
-                                      ? 'ط؛ظٹط§ط¨: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} ظٹظˆظ…'
+                                      ? 'غياب: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} يوم'
                                       : 'Absent: ${item['absent_days'] ?? 0} / ${item['total_working_days'] ?? 0} days',
                                 ),
-                                children: absentDates
-                                    .map<Widget>(
-                                      (d) => ListTile(
-                                        dense: true,
-                                        leading: const Icon(
-                                          Icons.circle,
-                                          color: Colors.red,
-                                          size: 10,
-                                        ),
-                                        title: Text(d.toString()),
-                                      ),
-                                    )
-                                    .toList(),
+                                children: absentDates.map<Widget>((d) {
+                                  return ListTile(
+                                    dense: true,
+                                    leading: const Icon(Icons.circle,
+                                        color: Colors.red, size: 10),
+                                    title: Text(d.toString()),
+                                  );
+                                }).toList(),
                               ),
                             );
                           },
@@ -298,69 +324,23 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
             ),
     );
   }
-}
-
-// â”€â”€â”€ Summary Card Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-class _SummaryCard extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final bool isAr;
-  const _SummaryCard({this.data, required this.isAr});
-
-  @override
-  Widget build(BuildContext context) {
-    if (data == null) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.shade200),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _statItem(
-            isAr ? 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„' : 'Working Days',
-            '${data!['total_working_days_in_month'] ?? 0}',
-            Colors.blue,
-          ),
-          _statItem(
-            isAr ? 'ظ…ظˆط¸ظپظٹظ† ط؛ط§ط¦ط¨ظٹظ†' : 'Employees Absent',
-            '${data!['total_employees_with_absence'] ?? 0}',
-            Colors.red,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _statItem(String label, String value, Color color) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
+        Text(value,
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold, color: color)),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
   }
 }
 
-// â”€â”€â”€ Month Name Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 String _monthName(int month, bool isAr) {
-  const ar = [
-    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
-    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
-  ];
-  const en = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return isAr ? ar[month] : en[month];
 }

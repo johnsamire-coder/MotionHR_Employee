@@ -1,3 +1,6 @@
+﻿// lib/services/language_service.dart
+// Phase 17 — Full encoding cleanup AR/EN
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -5,46 +8,36 @@ class LanguageService {
   static const String _keyLanguage = 'app_language';
   static const String _defaultLanguage = 'ar';
 
-  static final ValueNotifier<Locale> currentLocale = ValueNotifier(const Locale('ar'));
+  static final ValueNotifier<Locale> currentLocale =
+      ValueNotifier(const Locale('ar'));
 
-  // تحميل اللغة المحفوظة عند فتح التطبيق
   static Future<void> loadSavedLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final lang = prefs.getString(_keyLanguage) ?? _defaultLanguage;
     currentLocale.value = Locale(lang);
   }
 
-  // تغيير اللغة
   static Future<void> changeLanguage(String languageCode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLanguage, languageCode);
     currentLocale.value = Locale(languageCode);
   }
 
-  // اللغة الحالية
   static String get currentLanguage => currentLocale.value.languageCode;
-
-  // فحص العربية
   static bool get isArabic => currentLocale.value.languageCode == 'ar';
 
-  // اسم اللغة
   static String getLanguageName(String code) {
     switch (code) {
-      case 'ar':
-        return 'العربية';
-      case 'en':
-        return 'English';
-      default:
-        return code;
+      case 'ar': return 'العربية';
+      case 'en': return 'English';
+      default: return code;
     }
   }
 }
 
-// ── الترجمات ──
 class AppStrings {
   static final Map<String, Map<String, String>> _translations = {
     'ar': {
-      // عام
       'app_name': 'MotionHR',
       'login': 'دخول',
       'logout': 'تسجيل الخروج',
@@ -52,8 +45,8 @@ class AppStrings {
       'password': 'كلمة المرور',
       'remember_me': 'تذكرني',
       'stay_logged_in': 'البقاء مسجلاً',
-      'forgot_password': 'نسيت كلمة المرور؟',
-      'welcome': 'مرحباً بك، سجل دخولك للمتابعة',
+      'forgot_password': 'نسيت كلمة المرور',
+      'welcome': 'مرحباً بك سجل دخولك للمتابعة',
       'save': 'حفظ',
       'cancel': 'إلغاء',
       'confirm': 'تأكيد',
@@ -69,8 +62,10 @@ class AppStrings {
       'language': 'اللغة',
       'settings': 'الإعدادات',
       'change_language': 'تغيير اللغة',
-
-      // الداشبورد
+      'retry': 'إعادة المحاولة',
+      'close': 'إغلاق',
+      'yes': 'نعم',
+      'no': 'لا',
       'dashboard': 'لوحة التحكم',
       'quick_management': 'الإدارة السريعة',
       'tools': 'الأدوات',
@@ -86,8 +81,6 @@ class AppStrings {
       'reminders': 'التذكيرات',
       'company_charter': 'لائحة الشركة',
       'geofence': 'نطاق الجيو',
-
-      // الموظف
       'employee_code': 'الرقم الوظيفي',
       'full_name': 'الاسم الكامل',
       'first_name': 'الاسم الأول',
@@ -112,18 +105,33 @@ class AppStrings {
       'hire_date': 'تاريخ التعيين',
       'basic_salary': 'الراتب الأساسي',
       'reset_password': 'إعادة تعيين كلمة المرور',
-
-      // الحالات
       'active': 'نشط',
       'on_leave': 'في إجازة',
       'suspended': 'موقوف',
       'resigned': 'مستقيل',
       'terminated': 'مفصول',
       'required': 'مطلوب',
+      'check_in': 'تسجيل الحضور',
+      'check_out': 'تسجيل الانصراف',
+      'late': 'متأخر',
+      'absent': 'غائب',
+      'present': 'حاضر',
+      'approved': 'موافق عليه',
+      'rejected': 'مرفوض',
+      'pending': 'قيد الانتظار',
+      'print': 'طباعة',
+      'export': 'تصدير',
+      'share': 'مشاركة',
+      'select_month': 'اختر الشهر',
+      'select_employee': 'اختر الموظف',
+      'total': 'الإجمالي',
+      'net_salary': 'صافي الراتب',
+      'deductions': 'الخصومات',
+      'allowances': 'البدلات',
+      'overtime': 'أوفرتايم',
+      'insurance': 'التأمين',
     },
-
     'en': {
-      // General
       'app_name': 'MotionHR',
       'login': 'Login',
       'logout': 'Logout',
@@ -134,8 +142,8 @@ class AppStrings {
       'forgot_password': 'Forgot password?',
       'welcome': 'Welcome, sign in to continue',
       'save': 'Save',
-      'cancel': 'إلغاء',
-      'confirm': 'تأكيد',
+      'cancel': 'Cancel',
+      'confirm': 'Confirm',
       'delete': 'Delete',
       'edit': 'Edit',
       'add': 'Add',
@@ -148,8 +156,10 @@ class AppStrings {
       'language': 'Language',
       'settings': 'Settings',
       'change_language': 'Change language',
-
-      // Dashboard
+      'retry': 'Retry',
+      'close': 'Close',
+      'yes': 'Yes',
+      'no': 'No',
       'dashboard': 'Dashboard',
       'quick_management': 'Quick Management',
       'tools': 'Tools',
@@ -160,13 +170,11 @@ class AppStrings {
       'employees': 'Employees',
       'add_employee': 'Add Employee',
       'announcements': 'Announcements',
-      'reports': 'التقارير',
-      'payroll': 'الرواتب',
+      'reports': 'Reports',
+      'payroll': 'Payroll',
       'reminders': 'Reminders',
       'company_charter': 'Company Charter',
       'geofence': 'Geofence',
-
-      // Employee
       'employee_code': 'Employee Code',
       'full_name': 'Full Name',
       'first_name': 'First Name',
@@ -183,22 +191,39 @@ class AppStrings {
       'gender': 'Gender',
       'male': 'Male',
       'female': 'Female',
-      'address': 'العنوان',
+      'address': 'Address',
       'branch': 'Branch',
       'department': 'Department',
       'job_title': 'Job Title',
       'direct_manager': 'Direct Manager',
       'hire_date': 'Hire Date',
       'basic_salary': 'Basic Salary',
-      'reset_password': 'إعادة تعيين كلمة المرور',
-
-      // Status
-      'active': 'نشط',
-      'on_leave': 'في إجازة',
+      'reset_password': 'Reset Password',
+      'active': 'Active',
+      'on_leave': 'On Leave',
       'suspended': 'Suspended',
       'resigned': 'Resigned',
       'terminated': 'Terminated',
       'required': 'Required',
+      'check_in': 'Check In',
+      'check_out': 'Check Out',
+      'late': 'Late',
+      'absent': 'Absent',
+      'present': 'Present',
+      'approved': 'Approved',
+      'rejected': 'Rejected',
+      'pending': 'Pending',
+      'print': 'Print',
+      'export': 'Export',
+      'share': 'Share',
+      'select_month': 'Select Month',
+      'select_employee': 'Select Employee',
+      'total': 'Total',
+      'net_salary': 'Net Salary',
+      'deductions': 'Deductions',
+      'allowances': 'Allowances',
+      'overtime': 'Overtime',
+      'insurance': 'Insurance',
     },
   };
 

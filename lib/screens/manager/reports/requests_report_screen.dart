@@ -1,7 +1,10 @@
 ﻿// lib/screens/manager/reports/requests_report_screen.dart
+// Phase 17 — Excel Export + encoding fix + AR/EN + Container bug fix
+
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
+import '../../../services/report_excel_service.dart';
 
 class RequestsReportScreen extends StatefulWidget {
   const RequestsReportScreen({super.key});
@@ -14,6 +17,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _exporting = false;
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -35,8 +39,9 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -50,7 +55,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -58,21 +63,24 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () => setS(() => tempYear--)),
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => setS(() => tempYear--),
+                  ),
                   Text('$tempYear',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: tempYear < now.year
-                          ? () => setS(() => tempYear++)
-                          : null),
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: tempYear < now.year
+                        ? () => setS(() => tempYear++)
+                        : null,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4, childAspectRatio: 1.4),
@@ -90,12 +98,13 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(_monthName(m, isAr),
-                          style: TextStyle(
-                              color: tempMonth == m
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 11)),
+                      child: Text(
+                        _monthName(m, isAr),
+                        style: TextStyle(
+                          color: tempMonth == m ? Colors.white : Colors.black87,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -104,8 +113,9 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel')),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -115,7 +125,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
             ),
           ],
         ),
@@ -134,34 +144,75 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
           item['employee_name']?.toString() ?? '-',
           item['request_type']?.toString() ?? '-',
           item['subject']?.toString() ?? '-',
-          item['status']?.toString() ?? '-',
+          _translateStatus(item['status']?.toString() ?? '-', isAr),
         ];
       }).toList();
-
       await ReportPdfService.printReport(
-        title: isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط·ظ„ط¨ط§طھ' : 'Requests Report',
+        title: isAr ? 'تقرير الطلبات' : 'Requests Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ظ†ظˆط¹ ط§ظ„ط·ظ„ط¨', 'ط§ظ„ظ…ظˆط¶ظˆط¹', 'ط§ظ„ط­ط§ظ„ط©']
+            ? ['اسم الموظف', 'نوع الطلب', 'الموضوع', 'الحالة']
             : ['Employee', 'Type', 'Subject', 'Status'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final requests = List<Map<String, dynamic>>.from(
+        (_data!['details'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      await ReportExcelService.exportRequestsReport(
+        requests: requests,
+        year: _selectedYear,
+        month: _selectedMonth,
+        isAr: isAr,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
+  String _translateStatus(String status, bool ar) {
+    if (!ar) return status;
+    switch (status.toLowerCase()) {
+      case 'approved': return 'موافق';
+      case 'pending': return 'معلق';
+      case 'rejected': return 'مرفوض';
+      default: return status;
+    }
+  }
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved': return Colors.green;
+      case 'rejected': return Colors.red;
+      default: return Colors.orange;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final details = (_data?['details'] as List?) ?? const [];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط§ظ„ط·ظ„ط¨ط§طھ' : 'Requests Report'),
+        title: Text(isAr ? 'تقرير الطلبات' : 'Requests Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -173,18 +224,33 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
-          if (!_loading && _data != null)
-            _printing
+          if (!_loading && _data != null) ...[
+            _exporting
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white)),
                   )
                 : IconButton(
-                    onPressed: _print, icon: const Icon(Icons.print)),
+                    onPressed: _exportExcel,
+                    icon: const Icon(Icons.table_chart_outlined),
+                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
+                  ),
+            _printing
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(
+                    onPressed: _print,
+                    icon: const Icon(Icons.print),
+                  ),
+          ],
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -204,14 +270,13 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _stat(isAr ? 'ط¥ط¬ظ…ط§ظ„ظٹ' : 'Total',
-                          '${_data?['total_requests'] ?? 0}',
-                          Colors.purple),
-                      _stat(isAr ? 'ظ…ظˆط§ظپظ‚' : 'Approved',
+                      _stat(isAr ? 'إجمالي' : 'Total',
+                          '${_data?['total_requests'] ?? 0}', Colors.purple),
+                      _stat(isAr ? 'موافق' : 'Approved',
                           '${_data?['approved'] ?? 0}', Colors.green),
-                      _stat(isAr ? 'ظ…ط¹ظ„ظ‚' : 'Pending',
+                      _stat(isAr ? 'معلق' : 'Pending',
                           '${_data?['pending'] ?? 0}', Colors.orange),
-                      _stat(isAr ? 'ظ…ط±ظپظˆط¶' : 'Rejected',
+                      _stat(isAr ? 'مرفوض' : 'Rejected',
                           '${_data?['rejected'] ?? 0}', Colors.red),
                     ],
                   ),
@@ -219,11 +284,19 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                 Expanded(
                   child: details.isEmpty
                       ? Center(
-                          child: Text(
-                            isAr
-                                ? 'ظ„ط§ طھظˆط¬ط¯ ط·ظ„ط¨ط§طھ ظپظٹ ظ‡ط°ط§ ط§ظ„ط´ظ‡ط±'
-                                : 'No requests this month',
-                            style: const TextStyle(fontSize: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.inbox_outlined,
+                                  size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text(
+                                isAr
+                                    ? 'لا توجد طلبات في هذا الشهر'
+                                    : 'No requests this month',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
                           ),
                         )
                       : ListView.builder(
@@ -234,11 +307,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                                 details[idx] as Map);
                             final status =
                                 item['status']?.toString() ?? '-';
-                            final color = status == 'approved'
-                                ? Colors.green
-                                : status == 'rejected'
-                                    ? Colors.red
-                                    : Colors.orange;
+                            final color = _statusColor(status);
                             return Card(
                               child: ListTile(
                                 leading: const CircleAvatar(
@@ -247,22 +316,20 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                                       color: Colors.white, size: 18),
                                 ),
                                 title: Text(
-                                    item['employee_name']?.toString() ??
-                                        '-'),
+                                    item['employee_name']?.toString() ?? '-'),
                                 subtitle: Text(
-                                  '${item['request_type'] ?? '-'} â€” ${item['subject'] ?? '-'}',
+                                  '${item['request_type'] ?? '-'} — ${item['subject'] ?? '-'}',
                                 ),
                                 trailing: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: color.withOpacity(0.1),
-                                    borderRadius:
-                                        BorderRadius.circular(8),
+                                    color: color.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: color),
                                   ),
                                   child: Text(
-                                    status,
+                                    _translateStatus(status, isAr),
                                     style: TextStyle(
                                         color: color,
                                         fontSize: 11,
@@ -284,9 +351,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
       children: [
         Text(value,
             style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color)),
+                fontSize: 20, fontWeight: FontWeight.bold, color: color)),
         Text(label, style: const TextStyle(fontSize: 10)),
       ],
     );
@@ -294,13 +359,9 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
 }
 
 String _monthName(int month, bool isAr) {
-  const ar = [
-    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
-    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
-  ];
-  const en = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return isAr ? ar[month] : en[month];
 }

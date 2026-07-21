@@ -1,7 +1,10 @@
 ﻿// lib/screens/manager/reports/work_hours_report_screen.dart
+// Phase 17 — Excel Export + encoding fix + AR/EN + ExpansionTile subtitle fix
+
 import 'package:flutter/material.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
+import '../../../services/report_excel_service.dart';
 
 class WorkHoursReportScreen extends StatefulWidget {
   const WorkHoursReportScreen({super.key});
@@ -14,6 +17,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _exporting = false;
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -35,8 +39,9 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -50,7 +55,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'ط§ط®طھط± ط§ظ„ط´ظ‡ط±' : 'Select Month'),
+          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -58,21 +63,24 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () => setS(() => tempYear--)),
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => setS(() => tempYear--),
+                  ),
                   Text('$tempYear',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: tempYear < now.year
-                          ? () => setS(() => tempYear++)
-                          : null),
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: tempYear < now.year
+                        ? () => setS(() => tempYear++)
+                        : null,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               GridView.builder(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4, childAspectRatio: 1.4),
@@ -90,12 +98,13 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(_monthName(m, isAr),
-                          style: TextStyle(
-                              color: tempMonth == m
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 11)),
+                      child: Text(
+                        _monthName(m, isAr),
+                        style: TextStyle(
+                          color: tempMonth == m ? Colors.white : Colors.black87,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -104,8 +113,9 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(isAr ? 'ط¥ظ„ط؛ط§ط،' : 'Cancel')),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -115,7 +125,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                 Navigator.pop(ctx);
                 _load();
               },
-              child: Text(isAr ? 'طھط£ظƒظٹط¯' : 'Confirm'),
+              child: Text(isAr ? 'تأكيد' : 'Confirm'),
             ),
           ],
         ),
@@ -137,31 +147,54 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
           '${item['average_hours_per_day'] ?? 0}',
         ];
       }).toList();
-
       await ReportPdfService.printReport(
-        title: isAr ? 'طھظ‚ط±ظٹط± ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„' : 'Work Hours Report',
+        title: isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
         subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
         headers: isAr
-            ? ['ط§ط³ظ… ط§ظ„ظ…ظˆط¸ظپ', 'ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط³ط§ط¹ط§طھ', 'ط£ظٹط§ظ… ط§ظ„ط¹ظ…ظ„', 'ظ…طھظˆط³ط·/ظٹظˆظ…']
+            ? ['اسم الموظف', 'إجمالي الساعات', 'أيام العمل', 'متوسط/يوم']
             : ['Employee', 'Total Hours', 'Days Worked', 'Avg/Day'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ط®ط·ط£ ظپظٹ ط§ظ„ط·ط¨ط§ط¹ط©: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final employees = List<Map<String, dynamic>>.from(
+        (_data!['employees'] as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      await ReportExcelService.exportWorkHoursReport(
+        employees: employees,
+        year: _selectedYear,
+        month: _selectedMonth,
+        isAr: isAr,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final employees = (_data?['employees'] as List?) ?? const [];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'طھظ‚ط±ظٹط± ط³ط§ط¹ط§طھ ط§ظ„ط¹ظ…ظ„' : 'Work Hours Report'),
+        title: Text(isAr ? 'تقرير ساعات العمل' : 'Work Hours Report'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
@@ -173,17 +206,33 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
-          if (!_loading && _data != null)
+          if (!_loading && _data != null) ...[
+            _exporting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  )
+                : IconButton(
+                    onPressed: _exportExcel,
+                    icon: const Icon(Icons.table_chart_outlined),
+                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
+                  ),
             _printing
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white)),
                   )
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+                : IconButton(
+                    onPressed: _print,
+                    icon: const Icon(Icons.print),
+                  ),
+          ],
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -191,9 +240,17 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
           ? const Center(child: CircularProgressIndicator())
           : employees.isEmpty
               ? Center(
-                  child: Text(
-                    isAr ? 'ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ' : 'No data found',
-                    style: const TextStyle(fontSize: 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.access_time_outlined,
+                          size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        isAr ? 'لا توجد بيانات' : 'No data found',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
                 )
               : ListView.builder(
@@ -208,18 +265,19 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                       child: ExpansionTile(
                         leading: const CircleAvatar(
                           backgroundColor: Colors.indigo,
-                          child:
-                              Icon(Icons.access_time, color: Colors.white),
+                          child: Icon(Icons.access_time,
+                              color: Colors.white),
                         ),
-                        title:
-                            Text(item['employee_name']?.toString() ?? '-'),
+                        title: Text(
+                            item['employee_name']?.toString() ?? '-'),
+                        // Fixed: subtitle must be a Widget, was orphaned string
                         subtitle: Text(
                           isAr
-                              ? 'ط¥ط¬ظ…ط§ظ„ظٹ: ${item['total_hours'] ?? 0} ط³ | ${item['total_days_worked'] ?? 0} ظٹظˆظ…'
+                              ? 'إجمالي: ${item['total_hours'] ?? 0} س | ${item['total_days_worked'] ?? 0} يوم'
                               : 'Total: ${item['total_hours'] ?? 0}h | ${item['total_days_worked'] ?? 0} days',
                         ),
                         trailing: Text(
-                          '${item['total_hours'] ?? 0}ط³',
+                          '${item['total_hours'] ?? 0}${isAr ? 'س' : 'h'}',
                           style: const TextStyle(
                             color: Colors.indigo,
                             fontWeight: FontWeight.bold,
@@ -235,9 +293,9 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
                                 color: Colors.indigo, size: 10),
                             title: Text(day['date']?.toString() ?? '-'),
                             subtitle: Text(
-                                '${day['check_in'] ?? '-'} â†’ ${day['check_out'] ?? '-'}'),
+                                '${day['check_in'] ?? '-'} → ${day['check_out'] ?? '-'}'),
                             trailing: Text(
-                              '${day['hours'] ?? 0}ط³',
+                              '${day['hours'] ?? 0}${isAr ? 'س' : 'h'}',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold),
                             ),
@@ -252,13 +310,9 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
 }
 
 String _monthName(int month, bool isAr) {
-  const ar = [
-    '', 'ظٹظ†ط§ظٹط±', 'ظپط¨ط±ط§ظٹط±', 'ظ…ط§ط±ط³', 'ط£ط¨ط±ظٹظ„', 'ظ…ط§ظٹظˆ', 'ظٹظˆظ†ظٹظˆ',
-    'ظٹظˆظ„ظٹظˆ', 'ط£ط؛ط³ط·ط³', 'ط³ط¨طھظ…ط¨ط±', 'ط£ظƒطھظˆط¨ط±', 'ظ†ظˆظپظ…ط¨ط±', 'ط¯ظٹط³ظ…ط¨ط±'
-  ];
-  const en = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return isAr ? ar[month] : en[month];
 }
