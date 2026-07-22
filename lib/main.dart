@@ -39,6 +39,9 @@ import 'screens/employee/item_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
+import 'screens/manager/permissions_management_screen.dart';
+import 'screens/manager/departments_management_screen.dart';
+import 'screens/manager/offboarding_screen.dart';
 import 'screens/manager/location_report_screen.dart';
 import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
@@ -6123,6 +6126,24 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                             builder: (_) =>
                                 const OrganizationTreeScreen()))),
                 _gridCard(
+                    isAr ? 'إدارة الأقسام' : 'Departments',
+                    Icons.apartment,
+                    const Color(0xFF0D47A1),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const DepartmentsManagementScreen()))),
+                _gridCard(
+                    isAr ? 'إنهاء الخدمة' : 'Offboarding',
+                    Icons.person_remove,
+                    Colors.red,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const OffboardingScreen()))),
+                _gridCard(
                     context.l10n.companyInfo,
                     Icons.business,
                     Colors.pink,
@@ -6131,6 +6152,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const CompanyInfoScreen()))),
+                _gridCard(
+                    isAr ? 'الصلاحيات' : 'Permissions',
+                    Icons.admin_panel_settings,
+                    const Color(0xFF1A56DB),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PermissionsManagementScreen()))),
               ],
             ),
           ),
@@ -6673,3 +6703,8 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
+
+
+
+
