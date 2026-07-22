@@ -154,7 +154,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                 MediaQuery.of(ctx).viewInsets.bottom + 16,
               ),
               child: SizedBox(
-                height: MediaQuery.of(ctx).size.height * 0.8,
+                height: MediaQuery.of(ctx).size.height * 0.82,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -163,6 +163,16 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isAr
+                          ? 'مثال: HR - Finance - Operations - Branch Manager'
+                          : 'Example: HR - Finance - Operations - Branch Manager',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -249,6 +259,42 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
     );
   }
 
+  Widget _helperCard(bool isAr) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isAr ? 'يعني إيه دور' : 'What is a Role?',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isAr
+                ? 'الدور هو قالب صلاحيات. مثال: HR أو Finance أو Operations. بعد ما تعمل الدور تربطه بالقسم من شاشة إدارة الأقسام.'
+                : 'A role is a permissions template. Example: HR, Finance, or Operations. After creating the role, link it to a department from Departments Management.',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -270,6 +316,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? ListView(
+                    padding: const EdgeInsets.all(16),
                     children: [
                       const SizedBox(height: 120),
                       Center(
@@ -279,32 +326,58 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                       ),
                     ],
                   )
-                : _roles.isEmpty
-                    ? ListView(
-                        children: [
-                          const SizedBox(height: 120),
-                          Center(
+                : ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _helperCard(isAr),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _showCreateRoleSheet,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A148C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: Text(isAr ? 'إضافة دور جديد' : 'Add New Role'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_roles.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x11000000),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
                             child: Text(
                               isAr
-                                  ? 'مفيش أدوار لسه — دوس +'
-                                  : 'No roles yet — press +',
+                                  ? 'مفيش أدوار لسه — اضغط "إضافة دور جديد"'
+                                  : 'No roles yet — tap "Add New Role"',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 15,
                               ),
                             ),
                           ),
-                        ],
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _roles.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final role = _roles[index] as Map<String, dynamic>;
+                        )
+                      else
+                        ..._roles.map((roleItem) {
+                          final role = roleItem as Map<String, dynamic>;
                           final permissions = (role['permissions'] as List?) ?? [];
 
                           return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -323,8 +396,8 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                                 Row(
                                   children: [
                                     CircleAvatar(
-                                      backgroundColor: const Color(0xFF1A56DB)
-                                          .withValues(alpha: 0.12),
+                                      backgroundColor:
+                                          const Color(0xFF1A56DB).withValues(alpha: 0.12),
                                       child: const Icon(
                                         Icons.admin_panel_settings,
                                         color: Color(0xFF1A56DB),
@@ -337,6 +410,26 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        isAr
+                                            ? '${role['users_count'] ?? 0} مستخدم'
+                                            : '${role['users_count'] ?? 0} users',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF1A56DB),
                                         ),
                                       ),
                                     ),
@@ -377,8 +470,9 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                               ],
                             ),
                           );
-                        },
-                      ),
+                        }),
+                    ],
+                  ),
       ),
     );
   }
