@@ -3,7 +3,6 @@ import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:math';
 
-import 'l10n/generated/app_localizations.dart';
 import 'package:geocoding/geocoding.dart';
 import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +25,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/biometric_auth_service.dart';
-import 'services/app_strings.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -41,9 +39,7 @@ import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
 import 'screens/manager/permissions_management_screen.dart';
 import 'screens/manager/departments_management_screen.dart';
-import 'screens/manager/department_detail_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
-import 'screens/manager/location_report_screen.dart';
 import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
