@@ -77,7 +77,6 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         SnackBar(content: Text(d['message'] ?? (isAr ? 'تم' : 'Done'))),
       );
 
-      // حدّث البيانات المحلية
       final selectedRole = roleId == null
           ? null
           : widget.roles.firstWhere(
@@ -149,7 +148,6 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
     final count = _employees.length;
 
     if (count > 0) {
-      // لازم يختار قسم بديل
       final depts = await _fetchOtherDepartments();
       if (!mounted) return;
 
@@ -217,8 +215,10 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(isAr ? 'حذف' : 'Delete',
-                  style: const TextStyle(color: Colors.white)),
+              child: Text(
+                isAr ? 'حذف' : 'Delete',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -289,7 +289,8 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
             children: [
               Text(
                 isAr ? 'تغيير الدور الافتراضي' : 'Change Default Role',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -313,30 +314,175 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                   _updateDefaultRole(null);
                 },
               ),
-              ...widget.roles.map((role) => ListTile(
-                    leading: Icon(
-                      selectedRoleId == role['id']
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      color: const Color(0xFF4A148C),
-                    ),
-                    title: Text('${role['name']}'),
-                    subtitle: Text(
-                      isAr
-                          ? '${(role['permissions'] as List?)?.length ?? 0} صلاحية'
-                          : '${(role['permissions'] as List?)?.length ?? 0} permissions',
-                    ),
-                    onTap: () {
-                      setS(() => selectedRoleId = role['id']);
-                      Navigator.pop(ctx);
-                      _updateDefaultRole(role['id']);
-                    },
-                  )),
+              ...widget.roles.map(
+                (role) => ListTile(
+                  leading: Icon(
+                    selectedRoleId == role['id']
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color: const Color(0xFF4A148C),
+                  ),
+                  title: Text('${role['name']}'),
+                  subtitle: Text(
+                    isAr
+                        ? '${(role['permissions'] as List?)?.length ?? 0} صلاحية'
+                        : '${(role['permissions'] as List?)?.length ?? 0} permissions',
+                  ),
+                  onTap: () {
+                    setS(() => selectedRoleId = role['id']);
+                    Navigator.pop(ctx);
+                    _updateDefaultRole(role['id']);
+                  },
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  // ═══════════════════════════════════
+  // نقل موظف لقسم تاني
+  // ═══════════════════════════════════
+  Future<void> _showTransferSheet(Map<String, dynamic> emp) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final otherDepts = await _fetchOtherDepartments();
+    if (!mounted) return;
+
+    if (otherDepts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(isAr ? 'مفيش أقسام تانية' : 'No other departments'),
+        ),
+      );
+      return;
+    }
+
+    final reasonCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
+        child: SizedBox(
+          height: MediaQuery.of(ctx).size.height * 0.7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isAr ? 'نقل موظف' : 'Transfer Employee',
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${emp['full_name'] ?? ''}',
+                style:
+                    TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: reasonCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr
+                      ? 'سبب النقل (اختياري)'
+                      : 'Reason (optional)',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isAr ? 'اختار القسم الجديد:' : 'Select new department:',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: otherDepts.length,
+                  itemBuilder: (_, i) {
+                    final d = otherDepts[i] as Map<String, dynamic>;
+                    return ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4A148C)
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.business,
+                            color: Color(0xFF4A148C), size: 20),
+                      ),
+                      title: Text('${d['name_ar']}'),
+                      subtitle: Text(
+                        isAr
+                            ? '${d['employees_count']} موظف'
+                            : '${d['employees_count']} employees',
+                      ),
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        await _doTransfer(
+                          emp['id'],
+                          d['id'],
+                          reasonCtrl.text.trim(),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _doTransfer(int empId, int newDeptId, String reason) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final token = await AuthStorageService.getSavedToken() ?? '';
+    try {
+      final body = <String, dynamic>{'new_department_id': newDeptId};
+      if (reason.isNotEmpty) body['reason'] = reason;
+
+      final r = await http.post(
+        Uri.parse(
+          'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/$empId/transfer/',
+        ),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+      final d = json.decode(utf8.decode(r.bodyBytes));
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(d['message'] ?? d['error'] ?? ''),
+          backgroundColor:
+              d['success'] == true ? Colors.green : Colors.red,
+        ),
+      );
+
+      if (d['success'] == true) _load();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isAr ? 'حصلت مشكلة' : 'Error occurred'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -370,7 +516,8 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                    const Icon(Icons.delete_outline,
+                        size: 18, color: Colors.red),
                     const SizedBox(width: 8),
                     Text(
                       isAr ? 'حذف القسم' : 'Delete',
@@ -416,7 +563,9 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                         Text(
                           hasRole
                               ? '${_dept['default_role']['name']}'
-                              : (isAr ? 'مفيش دور محدد' : 'No role assigned'),
+                              : (isAr
+                                  ? 'مفيش دور محدد'
+                                  : 'No role assigned'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -462,7 +611,8 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(12),
@@ -499,7 +649,9 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    isAr ? 'مفيش موظفين في القسم ده' : 'No employees in this department',
+                    isAr
+                        ? 'مفيش موظفين في القسم ده'
+                        : 'No employees in this department',
                     style: TextStyle(color: Colors.grey.shade600),
                   ),
                 ),
@@ -524,9 +676,13 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFF4A148C).withValues(alpha: 0.1),
+                        backgroundColor: const Color(0xFF4A148C)
+                            .withValues(alpha: 0.1),
                         child: Text(
-                          (e['full_name'] ?? '?').toString().characters.first,
+                          (e['full_name'] ?? '?')
+                              .toString()
+                              .characters
+                              .first,
                           style: const TextStyle(
                             color: Color(0xFF4A148C),
                             fontWeight: FontWeight.bold,
@@ -540,7 +696,8 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                           children: [
                             Text(
                               '${e['full_name'] ?? ''}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold),
                             ),
                             Text(
                               '${e['job_title'] ?? ''}',
@@ -560,6 +717,30 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                           ],
                         ),
                       ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert,
+                            color: Colors.grey),
+                        onSelected: (v) {
+                          if (v == 'transfer') _showTransferSheet(e);
+                        },
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                            value: 'transfer',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.swap_horiz,
+                                    size: 18, color: Color(0xFF4A148C)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isAr
+                                      ? 'نقل لقسم تاني'
+                                      : 'Transfer Department',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 );
@@ -570,5 +751,3 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
     );
   }
 }
-
-
