@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
+import 'role_detail_screen.dart';
 
 class PermissionsRolesScreen extends StatefulWidget {
   const PermissionsRolesScreen({super.key});
@@ -12,7 +13,6 @@ class PermissionsRolesScreen extends StatefulWidget {
 
 class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
   List<dynamic> _roles = [];
-  List<dynamic> _availablePermissions = [];
   bool _loading = true;
   String? _error;
 
@@ -37,17 +37,10 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
         headers: headers,
       ).timeout(const Duration(seconds: 15));
 
-      final r2 = await http.get(
-        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/available/'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 15));
-
-      if (r1.statusCode == 200 && r2.statusCode == 200) {
+      if (r1.statusCode == 200) {
         final d1 = json.decode(utf8.decode(r1.bodyBytes));
-        final d2 = json.decode(utf8.decode(r2.bodyBytes));
         setState(() {
           _roles = d1['roles'] ?? [];
-          _availablePermissions = d2['permissions'] ?? [];
           _loading = false;
         });
       } else {
@@ -64,7 +57,20 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
     }
   }
 
-  Future<void> _createRole(String name, List<String> selectedPermissions) async {
+  Future<void> _openRoleDetails(Map<String, dynamic> role) async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RoleDetailScreen(role: role),
+      ),
+    );
+
+    if (changed == true) {
+      _load();
+    }
+  }
+
+  Future<void> _createRole(String name) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final token = await AuthStorageService.getSavedToken() ?? '';
 
@@ -77,9 +83,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
         },
         body: json.encode({
           'name': name,
-          'permissions': selectedPermissions
-              .map((code) => {'code': code, 'scope': 'company'})
-              .toList(),
+          'permissions': [],
         }),
       ).timeout(const Duration(seconds: 15));
 
@@ -87,23 +91,39 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
 
       if (!mounted) return;
 
+      if (data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? (isAr ? 'تم إنشاء الدور' : 'Role created')),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        await _load();
+
+        if (!mounted) return;
+
+        await _openRoleDetails({
+          'id': data['role_id'],
+          'name': name,
+          'permissions': [],
+          'users_count': 0,
+        });
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            data['message'] ??
-                (response.statusCode == 200 || response.statusCode == 201
-                    ? (isAr ? 'تم إنشاء الدور' : 'Role created')
-                    : (isAr ? 'حصلت مشكلة' : 'Something went wrong')),
-          ),
+          content: Text(data['error'] ?? (isAr ? 'حصلت مشكلة' : 'Something went wrong')),
+          backgroundColor: Colors.red,
         ),
       );
-
-      _load();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(isAr ? 'حصلت مشكلة في إنشاء الدور' : 'Failed to create role'),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -135,7 +155,6 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
   void _showCreateRoleSheet() {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final nameCtrl = TextEditingController();
-    final selected = <String>{};
 
     showModalBottomSheet(
       context: context,
@@ -144,116 +163,75 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                16,
-                16,
-                MediaQuery.of(ctx).viewInsets.bottom + 16,
-              ),
-              child: SizedBox(
-                height: MediaQuery.of(ctx).size.height * 0.82,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAr ? 'إنشاء دور جديد' : 'Create New Role',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isAr
-                          ? 'مثال: HR - Finance - Operations - Branch Manager'
-                          : 'Example: HR - Finance - Operations - Branch Manager',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(
-                        labelText: isAr ? 'اسم الدور' : 'Role name',
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      isAr ? 'اختار الصلاحيات' : 'Choose permissions',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: _availablePermissions.isEmpty
-                          ? Center(
-                              child: Text(isAr ? 'مفيش صلاحيات' : 'No permissions'),
-                            )
-                          : ListView(
-                              children: _availablePermissions.map((p) {
-                                final item = p as Map<String, dynamic>;
-                                final code = '${item['code']}';
-                                final label = isAr
-                                    ? '${item['label_ar'] ?? item['code']}'
-                                    : '${item['code']}';
-
-                                return CheckboxListTile(
-                                  value: selected.contains(code),
-                                  title: Text(label),
-                                  controlAffinity: ListTileControlAffinity.leading,
-                                  onChanged: (v) {
-                                    setModalState(() {
-                                      if (v == true) {
-                                        selected.add(code);
-                                      } else {
-                                        selected.remove(code);
-                                      }
-                                    });
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final name = nameCtrl.text.trim();
-                          if (name.isEmpty || selected.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isAr
-                                      ? 'اكتب اسم الدور واختار صلاحية واحدة على الأقل'
-                                      : 'Enter role name and choose at least one permission',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          Navigator.pop(ctx);
-                          _createRole(name, selected.toList());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4A148C),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(isAr ? 'حفظ الدور' : 'Save Role'),
-                      ),
-                    ),
-                  ],
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isAr ? 'إضافة دور جديد' : 'Add New Role',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            );
-          },
+              const SizedBox(height: 8),
+              Text(
+                isAr
+                    ? 'اكتب اسم الدور الأول وبعد الحفظ هتدخل تحدد صلاحياته'
+                    : 'Enter the role name first, then you will define its permissions',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'اسم الدور' : 'Role name',
+                  hintText: isAr
+                      ? 'مثال: مدير فرع / مدير مالي / HR'
+                      : 'Example: Branch Manager / Finance Manager / HR',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final name = nameCtrl.text.trim();
+                    if (name.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isAr ? 'اكتب اسم الدور الأول' : 'Please enter role name first',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.pop(ctx);
+                    _createRole(name);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A148C),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(isAr ? 'التالي' : 'Next'),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -282,8 +260,8 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
           const SizedBox(height: 8),
           Text(
             isAr
-                ? 'الدور هو قالب صلاحيات. مثال: HR أو Finance أو Operations. بعد ما تعمل الدور تربطه بالقسم من شاشة إدارة الأقسام.'
-                : 'A role is a permissions template. Example: HR, Finance, or Operations. After creating the role, link it to a department from Departments Management.',
+                ? 'الدور هو قالب صلاحيات. مثال: HR أو مدير مالي أو مدير فرع. اعمل الدور الأول وبعدها افتحه وحدد صلاحياته وبعد كده اربطه بالقسم أو الموظف.'
+                : 'A role is a permissions template. Example: HR, Finance Manager, or Branch Manager. Create the role first, then open it and define its permissions, then link it to a department or employee.',
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 13,
@@ -304,11 +282,6 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
         title: Text(isAr ? 'الأدوار' : 'Roles'),
         backgroundColor: const Color(0xFF4A148C),
         foregroundColor: Colors.white,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateRoleSheet,
-        backgroundColor: const Color(0xFF4A148C),
-        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -344,6 +317,16 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                           label: Text(isAr ? 'إضافة دور جديد' : 'Add New Role'),
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      Text(
+                        isAr
+                            ? 'اضغط على أي دور عشان تفتح صلاحياته وتعدلها'
+                            : 'Tap any role to open and edit its permissions',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       if (_roles.isEmpty)
                         Container(
@@ -376,98 +359,124 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                           final role = roleItem as Map<String, dynamic>;
                           final permissions = (role['permissions'] as List?) ?? [];
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x11000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor:
-                                          const Color(0xFF1A56DB).withValues(alpha: 0.12),
-                                      child: const Icon(
-                                        Icons.admin_panel_settings,
-                                        color: Color(0xFF1A56DB),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        '${role['name'] ?? ''}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEEF2FF),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        isAr
-                                            ? '${role['users_count'] ?? 0} مستخدم'
-                                            : '${role['users_count'] ?? 0} users',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                          return InkWell(
+                            onTap: () => _openRoleDetails(role),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x11000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor:
+                                            const Color(0xFF1A56DB).withValues(alpha: 0.12),
+                                        child: const Icon(
+                                          Icons.admin_panel_settings,
                                           color: Color(0xFF1A56DB),
                                         ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () => _deleteRole(role['id']),
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: Colors.red,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          '${role['name'] ?? ''}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: permissions.map((p) {
-                                    final item = p as Map<String, dynamic>;
-                                    final label = isAr
-                                        ? '${item['label_ar'] ?? item['code']}'
-                                        : '${item['code']}';
-                                    return Container(
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEEF2FF),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          isAr
+                                              ? '${role['users_count'] ?? 0} مستخدم'
+                                              : '${role['users_count'] ?? 0} users',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF1A56DB),
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () => _deleteRole(role['id']),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (permissions.isEmpty)
+                                    Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 10,
                                         vertical: 8,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFF3F4F6),
+                                        color: Colors.orange.shade50,
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Text(
-                                        label,
-                                        style: const TextStyle(fontSize: 12),
+                                        isAr
+                                            ? 'لسه مفيش صلاحيات — اضغط على الدور وحددها'
+                                            : 'No permissions yet — tap the role to define them',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.orange.shade800,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
+                                    )
+                                  else
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: permissions.map((p) {
+                                        final item = p as Map<String, dynamic>;
+                                        final label = isAr
+                                            ? '${item['label_ar'] ?? item['code']}'
+                                            : '${item['label_en'] ?? item['code'] ?? item['code']}';
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF3F4F6),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Text(
+                                            label,
+                                            style: const TextStyle(fontSize: 12),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                ],
+                              ),
                             ),
                           );
                         }),
