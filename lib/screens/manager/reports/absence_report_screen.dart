@@ -2,6 +2,7 @@
 // Phase 17 — Excel Export + encoding fix + AR/EN + Container bug fix
 
 import 'package:flutter/material.dart';
+import '../../../widgets/report_month_picker.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
 import '../../../services/report_excel_service.dart';
@@ -48,89 +49,18 @@ class _AbsenceReportScreenState extends State<AbsenceReportScreen> {
   }
 
   Future<void> _pickMonth() async {
-    final now = DateTime.now();
-    int tempYear = _selectedYear;
-    int tempMonth = _selectedMonth;
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: () => setS(() => tempYear--),
-                  ),
-                  Text('$tempYear',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: tempYear < now.year
-                        ? () => setS(() => tempYear++)
-                        : null,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4, childAspectRatio: 1.4),
-                itemCount: 12,
-                itemBuilder: (_, i) {
-                  final m = i + 1;
-                  return GestureDetector(
-                    onTap: () => setS(() => tempMonth = m),
-                    child: Container(
-                      margin: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: tempMonth == m
-                            ? const Color(0xFF6A1B9A)
-                            : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _monthName(m, isAr),
-                        style: TextStyle(
-                          color: tempMonth == m ? Colors.white : Colors.black87,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(isAr ? 'إلغاء' : 'Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedYear = tempYear;
-                  _selectedMonth = tempMonth;
-                });
-                Navigator.pop(ctx);
-                _load();
-              },
-              child: Text(isAr ? 'تأكيد' : 'Confirm'),
-            ),
-          ],
-        ),
-      ),
+    final result = await showReportMonthPicker(
+      context,
+      initialYear: _selectedYear,
+      initialMonth: _selectedMonth,
     );
+    if (result != null && mounted) {
+      setState(() {
+        _selectedYear = result.year;
+        _selectedMonth = result.month;
+      });
+      _load();
+    }
   }
 
   Future<void> _print() async {
