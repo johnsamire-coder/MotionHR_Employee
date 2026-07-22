@@ -41,6 +41,7 @@ import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
 import 'screens/manager/permissions_management_screen.dart';
 import 'screens/manager/departments_management_screen.dart';
+import 'screens/manager/department_detail_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
 import 'screens/manager/location_report_screen.dart';
 import 'screens/employee_missions_screen.dart';
@@ -6703,6 +6704,7 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
 
 
 
