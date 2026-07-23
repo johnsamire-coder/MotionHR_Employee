@@ -11,7 +11,7 @@ import 'screens/manager/payroll/payroll_hub_screen.dart';
 import 'screens/manager/reminder_settings_screen.dart';
 import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
-import 'screens/manager/create_announcement_screen.dart';
+import 'screens/manager/manager_announcements_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'screens/manager/manager_missions_screen.dart';
@@ -6039,7 +6039,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         context,
                         MaterialPageRoute(
                             builder: (_) =>
-                                const CreateAnnouncementScreen()))),
+                                const ManagerAnnouncementsScreen()))),
               ],
             ),
           ),
@@ -6700,6 +6700,9 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
+
+
 
 
 
