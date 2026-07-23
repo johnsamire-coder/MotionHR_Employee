@@ -293,6 +293,20 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         ),
                       ],
                     ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _showEditMissionSheet,
+                        icon: const Icon(Icons.edit),
+                        label: Text(isAr ? 'تعديل المهمة' : 'Edit Mission'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6C3FC5),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Divider(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -549,6 +563,225 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         }
       }
     }
+  }
+    void _showEditMissionSheet() {
+    final mission = _mission!;
+    final status = mission['status'] ?? '';
+
+    if (status == 'completed' || status == 'cancelled') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isAr
+                ? 'لا يمكن تعديل مهمة مكتملة أو ملغية'
+                : 'Cannot edit a completed or cancelled mission',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final titleCtrl = TextEditingController(text: mission['title'] ?? '');
+    final descCtrl = TextEditingController(text: mission['description'] ?? '');
+    final locationCtrl = TextEditingController(text: mission['location_name'] ?? '');
+    final clientNameCtrl = TextEditingController(text: mission['client_name'] ?? '');
+    final clientPhoneCtrl = TextEditingController(text: mission['client_phone'] ?? '');
+    final clientCompanyCtrl = TextEditingController(
+      text: mission['client_info']?['company_name'] ?? '',
+    );
+    final clientEmailCtrl = TextEditingController(
+      text: mission['client_info']?['email'] ?? '',
+    );
+
+    String priority = mission['priority'] ?? 'normal';
+
+    final priorityOptions = [
+      {'value': 'normal', 'label': isAr ? 'عادي' : 'Normal'},
+      {'value': 'high', 'label': isAr ? 'عالي' : 'High'},
+      {'value': 'urgent', 'label': isAr ? 'عاجل' : 'Urgent'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Directionality(
+          textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 16,
+            ),
+            child: SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.85,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          isAr ? 'تعديل المهمة' : 'Edit Mission',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        TextField(
+                          controller: titleCtrl,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'عنوان المهمة' : 'Mission Title',
+                            prefixIcon: const Icon(Icons.title),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: descCtrl,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'الوصف' : 'Description',
+                            prefixIcon: const Icon(Icons.description),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          initialValue: priority,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'الأولوية' : 'Priority',
+                            prefixIcon: const Icon(Icons.flag),
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: priorityOptions
+                              .map(
+                                (p) => DropdownMenuItem<String>(
+                                  value: p['value'],
+                                  child: Text(p['label'] ?? ''),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (v) {
+                            setSheetState(() {
+                              priority = v ?? 'normal';
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: locationCtrl,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'الموقع / العنوان' : 'Location',
+                            prefixIcon: const Icon(Icons.location_on),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: clientNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'اسم العميل' : 'Client Name',
+                            prefixIcon: const Icon(Icons.person),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: clientPhoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'رقم العميل' : 'Client Phone',
+                            prefixIcon: const Icon(Icons.phone),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: clientCompanyCtrl,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'شركة العميل' : 'Client Company',
+                            prefixIcon: const Icon(Icons.business),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: clientEmailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'إيميل العميل' : 'Client Email',
+                            prefixIcon: const Icon(Icons.email),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final result = await MissionsService.updateMission(
+                          widget.missionId,
+                          title: titleCtrl.text.trim(),
+                          description: descCtrl.text.trim(),
+                          priority: priority,
+                          locationName: locationCtrl.text.trim(),
+                          clientName: clientNameCtrl.text.trim(),
+                          clientPhone: clientPhoneCtrl.text.trim(),
+                          clientCompany: clientCompanyCtrl.text.trim(),
+                          clientEmail: clientEmailCtrl.text.trim(),
+                        );
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              result['success'] == true
+                                  ? (isAr
+                                      ? 'تم تعديل المهمة بنجاح'
+                                      : 'Mission updated successfully')
+                                  : (result['error'] ??
+                                      (isAr ? 'حدث خطأ' : 'An error occurred')),
+                            ),
+                            backgroundColor:
+                                result['success'] == true ? Colors.green : Colors.red,
+                          ),
+                        );
+
+                        if (result['success'] == true) _loadMission();
+                      },
+                      icon: const Icon(Icons.save),
+                      label: Text(isAr ? 'حفظ التعديلات' : 'Save Changes'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6C3FC5),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 void _showReassignDialog() async {
   final assignments = _mission!['assignments'] as List? ?? [];

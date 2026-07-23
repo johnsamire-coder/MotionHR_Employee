@@ -90,6 +90,39 @@ class MissionsService {
     );
     return json.decode(utf8.decode(response.bodyBytes));
   }
+  static Future<Map<String, dynamic>> updateMission(
+    int missionId, {
+    String? title,
+    String? description,
+    String? priority,
+    String? plannedStartTime,
+    String? plannedEndTime,
+    String? locationName,
+    String? clientName,
+    String? clientPhone,
+    String? clientCompany,
+    String? clientEmail,
+  }) async {
+    final headers = await _headers();
+    final body = <String, dynamic>{};
+    if (title != null) body['title'] = title;
+    if (description != null) body['description'] = description;
+    if (priority != null) body['priority'] = priority;
+    if (plannedStartTime != null) body['planned_start_time'] = plannedStartTime;
+    if (plannedEndTime != null) body['planned_end_time'] = plannedEndTime;
+    if (locationName != null) body['location_name'] = locationName;
+    if (clientName != null) body['client_name'] = clientName;
+    if (clientPhone != null) body['client_phone'] = clientPhone;
+    if (clientCompany != null) body['client_company'] = clientCompany;
+    if (clientEmail != null) body['client_email'] = clientEmail;
+
+    final response = await http.put(
+      Uri.parse('$_baseUrl/manager/missions/$missionId/update/'),
+      headers: headers,
+      body: json.encode(body),
+    );
+    return json.decode(utf8.decode(response.bodyBytes));
+  }
 
   static Future<Map<String, dynamic>> cancelMission(int missionId) async {
     final headers = await _headers();
