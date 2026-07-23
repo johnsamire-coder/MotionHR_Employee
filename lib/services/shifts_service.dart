@@ -259,6 +259,25 @@ class ShiftsService {
   }
 
   // ─────────────────────────────────────────────
+  // SHIFT EMPLOYEES
+  // ─────────────────────────────────────────────
+  static Future<List<Map<String, dynamic>>> getShiftEmployees(int shiftId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/$shiftId/employees/'),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['employees'] ?? []);
+    }
+    throw Exception(data['error'] ?? 'خطأ في جلب موظفي الشيفت');
+  }
+
+  // ─────────────────────────────────────────────
   // EFFECTIVE SHIFT
   // ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getEffectiveShift(int employeeId, {String? date}) async {
@@ -281,3 +300,4 @@ class ShiftsService {
     throw Exception(data['error'] ?? 'خطأ في جلب الشيفت الفعلي');
   }
 }
+
