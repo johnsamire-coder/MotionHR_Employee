@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../services/missions_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import '../manager/create_mission_screen.dart';
@@ -43,12 +43,12 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   Map<String, String> _getStatusLabels(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return {
-      '': isAr ? 'الكل' : 'All',
+      '': isAr ? 'ط§ظ„ظƒظ„' : 'All',
       'approved': context.l10n.approved,
-      'in_progress': isAr ? 'جارية' : 'In Progress',
-      'completed': isAr ? 'مكتملة' : 'Completed',
+      'in_progress': isAr ? 'ط¬ط§ط±ظٹط©' : 'In Progress',
+      'completed': isAr ? 'ظ…ظƒطھظ…ظ„ط©' : 'Completed',
       'cancelled': context.l10n.cancelled,
-      'pending_approval': isAr ? 'انتظار موافقة' : 'Pending Approval',
+      'pending_approval': isAr ? 'ط§ظ†طھط¸ط§ط± ظ…ظˆط§ظپظ‚ط©' : 'Pending Approval',
     };
   }
 
@@ -95,7 +95,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
-            isAr ? 'إدارة المهمات' : 'Missions Management',
+            isAr ? 'ط¥ط¯ط§ط±ط© ط§ظ„ظ…ظ‡ظ…ط§طھ' : 'Missions Management',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6C3FC5),
@@ -107,7 +107,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             ),
             IconButton(
               icon: const Icon(Icons.pending_actions, color: Colors.white),
-              tooltip: isAr ? 'الطلبات المعلقة' : 'Pending Requests',
+              tooltip: isAr ? 'ط§ظ„ط·ظ„ط¨ط§طھ ط§ظ„ظ…ط¹ظ„ظ‚ط©' : 'Pending Requests',
               onPressed: _showPendingRequests,
             ),
           ],
@@ -119,7 +119,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             tabs: [
               Tab(text: context.l10n.missions, icon: const Icon(Icons.assignment)),
               Tab(
-                text: isAr ? 'الفيدباك' : 'Feedback',
+                text: isAr ? 'ط§ظ„ظپظٹط¯ط¨ط§ظƒ' : 'Feedback',
                 icon: const Icon(Icons.feedback),
               ),
             ],
@@ -227,7 +227,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => MissionDetailScreen(missionId: mission['id']),
+              builder: (_) => MissionDetailScreen(missionId: mission['id'], isManager: true),
             ),
           );
           if (result == true) _loadMissions();
@@ -306,7 +306,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                         const Icon(Icons.group, size: 14, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
-                          '${assignments.length} ${isAr ? 'مشارك' : 'participants'}',
+                          '${assignments.length} ${isAr ? 'ظ…ط´ط§ط±ظƒ' : 'participants'}',
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
@@ -321,7 +321,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                       const Icon(Icons.person, size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
-                        '${isAr ? 'العميل' : 'Client'}: ${mission['client_name']}',
+                        '${isAr ? 'ط§ظ„ط¹ظ…ظٹظ„' : 'Client'}: ${mission['client_name']}',
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
@@ -360,14 +360,14 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               children: [
                 _statCard(context.l10n.veryInterested, '${summary['very_interested'] ?? 0}', Icons.thumb_up, Colors.green),
                 _statCard(context.l10n.interested, '${summary['interested'] ?? 0}', Icons.sentiment_satisfied, Colors.blue),
-                _statCard(isAr ? 'عقود موقعة' : 'Contracts Signed', '${summary['contracts_signed'] ?? 0}', Icons.handshake, Colors.purple),
-                _statCard(isAr ? 'تحتاج متابعة' : 'Needs Follow-up', '${summary['needs_followup'] ?? 0}', Icons.follow_the_signs, Colors.orange),
+                _statCard(isAr ? 'ط¹ظ‚ظˆط¯ ظ…ظˆظ‚ط¹ط©' : 'Contracts Signed', '${summary['contracts_signed'] ?? 0}', Icons.handshake, Colors.purple),
+                _statCard(isAr ? 'طھط­طھط§ط¬ ظ…طھط§ط¨ط¹ط©' : 'Needs Follow-up', '${summary['needs_followup'] ?? 0}', Icons.follow_the_signs, Colors.orange),
               ],
             ),
             if (feedbacks.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text(
-                isAr ? 'آخر الفيدباك' : 'Recent Feedback',
+                isAr ? 'ط¢ط®ط± ط§ظ„ظپظٹط¯ط¨ط§ظƒ' : 'Recent Feedback',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -426,7 +426,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                       const Icon(Icons.business, size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
-                        '${isAr ? 'العميل' : 'Client'}: ${fb['client_name']}',
+                        '${isAr ? 'ط§ظ„ط¹ظ…ظٹظ„' : 'Client'}: ${fb['client_name']}',
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
@@ -478,30 +478,30 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _detailRow(Icons.person, isAr ? 'الموظف' : 'Employee', fb['employee_name'] ?? '-'),
-                _detailRow(Icons.business, isAr ? 'العميل' : 'Client', fb['client_name'] ?? '-'),
-                _detailRow(Icons.phone, isAr ? 'هاتف العميل' : 'Client Phone', fb['client_phone'] ?? '-'),
-                _detailRow(Icons.star, isAr ? 'مستوى الاهتمام' : 'Interest Level', fb['interest_level_display'] ?? '-'),
-                _detailRow(Icons.handshake, isAr ? 'تم توقيع عقد' : 'Contract Signed', (fb['contract_signed'] == true) ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No')),
-                _detailRow(Icons.follow_the_signs, isAr ? 'يحتاج متابعة' : 'Needs Follow-up', (fb['needs_followup'] == true) ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No')),
-                _detailRow(Icons.calendar_today, isAr ? 'تاريخ المتابعة' : 'Follow-up Date', fb['followup_date'] ?? '-'),
+                _detailRow(Icons.person, isAr ? 'ط§ظ„ظ…ظˆط¸ظپ' : 'Employee', fb['employee_name'] ?? '-'),
+                _detailRow(Icons.business, isAr ? 'ط§ظ„ط¹ظ…ظٹظ„' : 'Client', fb['client_name'] ?? '-'),
+                _detailRow(Icons.phone, isAr ? 'ظ‡ط§طھظپ ط§ظ„ط¹ظ…ظٹظ„' : 'Client Phone', fb['client_phone'] ?? '-'),
+                _detailRow(Icons.star, isAr ? 'ظ…ط³طھظˆظ‰ ط§ظ„ط§ظ‡طھظ…ط§ظ…' : 'Interest Level', fb['interest_level_display'] ?? '-'),
+                _detailRow(Icons.handshake, isAr ? 'طھظ… طھظˆظ‚ظٹط¹ ط¹ظ‚ط¯' : 'Contract Signed', (fb['contract_signed'] == true) ? (isAr ? 'ظ†ط¹ظ…' : 'Yes') : (isAr ? 'ظ„ط§' : 'No')),
+                _detailRow(Icons.follow_the_signs, isAr ? 'ظٹط­طھط§ط¬ ظ…طھط§ط¨ط¹ط©' : 'Needs Follow-up', (fb['needs_followup'] == true) ? (isAr ? 'ظ†ط¹ظ…' : 'Yes') : (isAr ? 'ظ„ط§' : 'No')),
+                _detailRow(Icons.calendar_today, isAr ? 'طھط§ط±ظٹط® ط§ظ„ظ…طھط§ط¨ط¹ط©' : 'Follow-up Date', fb['followup_date'] ?? '-'),
                 if ((fb['notes'] ?? '').toString().isNotEmpty) ...[
                   const Divider(),
                   Text(
-                    isAr ? 'ملاحظات:' : 'Notes:',
+                    isAr ? 'ظ…ظ„ط§ط­ط¸ط§طھ:' : 'Notes:',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(height: 4),
                   Text(fb['notes'], style: const TextStyle(fontSize: 13)),
                 ],
-                _detailRow(Icons.access_time, isAr ? 'تاريخ الإرسال' : 'Submitted', _formatDateTime(fb['created_at'])),
+                _detailRow(Icons.access_time, isAr ? 'طھط§ط±ظٹط® ط§ظ„ط¥ط±ط³ط§ظ„' : 'Submitted', _formatDateTime(fb['created_at'])),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isAr ? 'إغلاق' : 'Close'),
+              child: Text(isAr ? 'ط¥ط؛ظ„ط§ظ‚' : 'Close'),
             ),
           ],
         ),
@@ -561,7 +561,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           const Icon(Icons.error_outline, size: 60, color: Colors.red),
           const SizedBox(height: 12),
           Text(
-            _error ?? (isAr ? 'حدث خطأ' : 'An error occurred'),
+            _error ?? (isAr ? 'ط­ط¯ط« ط®ط·ط£' : 'An error occurred'),
             style: const TextStyle(fontSize: 14),
             textAlign: TextAlign.center,
           ),
@@ -594,7 +594,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            isAr ? 'اضغط + لإنشاء مهمة جديدة' : 'Press + to create a new mission',
+            isAr ? 'ط§ط¶ط؛ط· + ظ„ط¥ظ†ط´ط§ط، ظ…ظ‡ظ…ط© ط¬ط¯ظٹط¯ط©' : 'Press + to create a new mission',
             style: TextStyle(fontSize: 13, color: Colors.grey[400]),
           ),
         ],
@@ -644,7 +644,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  isAr ? 'طلبات المهمات المعلقة' : 'Pending Mission Requests',
+                  isAr ? 'ط·ظ„ط¨ط§طھ ط§ظ„ظ…ظ‡ظ…ط§طھ ط§ظ„ظ…ط¹ظ„ظ‚ط©' : 'Pending Mission Requests',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -653,7 +653,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                 child: requests.isEmpty
                     ? Center(
                         child: Text(
-                          isAr ? 'لا توجد طلبات معلقة' : 'No pending requests',
+                          isAr ? 'ظ„ط§ طھظˆط¬ط¯ ط·ظ„ط¨ط§طھ ظ…ط¹ظ„ظ‚ط©' : 'No pending requests',
                           style: const TextStyle(color: Colors.grey),
                         ),
                       )
