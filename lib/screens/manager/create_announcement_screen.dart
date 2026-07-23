@@ -7,7 +7,9 @@ const _kColor = Color(0xFF6C63FF);
 const _kBase = 'https://jssolutions-eg.com';
 
 class CreateAnnouncementScreen extends StatefulWidget {
-  const CreateAnnouncementScreen({super.key});
+  final Map<String, dynamic>? announcement;
+
+  const CreateAnnouncementScreen({super.key, this.announcement});
 
   @override
   State<CreateAnnouncementScreen> createState() =>
@@ -16,6 +18,7 @@ class CreateAnnouncementScreen extends StatefulWidget {
 
 class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+  bool get isEditing => widget.announcement != null;
 
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
@@ -26,20 +29,18 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   String _targetType = 'all';
   bool _requiresConfirmation = false;
   bool _sendPush = true;
+  bool _resendNotificationOnEdit = false;
   bool _loading = false;
 
   List<Map<String, String>> get _types => [
         {'value': 'general', 'label': isAr ? '📢 إعلان عام' : '📢 General'},
-        {'value': 'holiday', 'label': isAr ? '🎌 إجازة رسمية' : '🎌 Holiday'},
+        {'value': 'holiday', 'label': isAr ? '🏖️ إجازة رسمية' : '🏖️ Holiday'},
         {'value': 'meeting', 'label': isAr ? '👥 اجتماع' : '👥 Meeting'},
         {'value': 'event', 'label': isAr ? '🎉 فعالية' : '🎉 Event'},
         {'value': 'policy', 'label': isAr ? '📋 سياسة جديدة' : '📋 New Policy'},
         {'value': 'reminder', 'label': isAr ? '🔔 تذكير' : '🔔 Reminder'},
         {'value': 'urgent', 'label': isAr ? '🚨 عاجل' : '🚨 Urgent'},
-        {
-          'value': 'celebration',
-          'label': isAr ? '🎊 مناسبة' : '🎊 Celebration'
-        },
+        {'value': 'celebration', 'label': isAr ? '🎊 مناسبة' : '🎊 Celebration'},
       ];
 
   List<Map<String, String>> get _priorities => [
@@ -51,76 +52,135 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
 
   List<Map<String, String>> get _targets => [
         {'value': 'all', 'label': isAr ? 'كل الموظفين' : 'All Employees'},
-        {
-          'value': 'by_department',
-          'label': isAr ? 'حسب الإدارة' : 'By Department',
-        },
-        {
-          'value': 'by_branch',
-          'label': isAr ? 'حسب الفرع' : 'By Branch',
-        },
+        {'value': 'by_department', 'label': isAr ? 'حسب الإدارة' : 'By Department'},
+        {'value': 'by_branch', 'label': isAr ? 'حسب الفرع' : 'By Branch'},
       ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (isEditing) {
+      final ann = widget.announcement!;
+      _titleCtrl.text = (ann['title'] ?? '').toString();
+      _messageCtrl.text = (ann['message'] ?? '').toString();
+      _type = (ann['type'] ?? 'general').toString();
+      _priority = (ann['priority'] ?? 'medium').toString();
+      _targetType = (ann['target_type'] ?? 'all').toString();
+      _requiresConfirmation = ann['requires_confirmation'] == true;
+      _sendPush = ann['send_push'] != false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _messageCtrl.dispose();
+    super.dispose();
+  }
+
+  String _labelFromList(
+    List<Map<String, String>> list,
+    String value,
+    String fallback,
+  ) {
+    for (final item in list) {
+      if (item['value'] == value) {
+        return item['label'] ?? fallback;
+      }
+    }
+    return fallback;
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
 
-    final token = await AuthStorageService.getSavedToken() ?? '';
-
     try {
-      final res = await http.post(
-        Uri.parse('$_kBase/attendance/api/mobile/manager/announcements/create/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'title': _titleCtrl.text.trim(),
-          'message': _messageCtrl.text.trim(),
-          'type': _type,
-          'priority': _priority,
-          'target_type': _targetType,
-          'requires_confirmation': _requiresConfirmation,
-          'send_push': _sendPush,
-        }),
-      );
+      final token = await AuthStorageService.getSavedToken() ?? '';
+      final body = jsonEncode({
+        'title': _titleCtrl.text.trim(),
+        'message': _messageCtrl.text.trim(),
+        'type': _type,
+        'priority': _priority,
+        'target_type': _targetType,
+        'requires_confirmation': _requiresConfirmation,
+        'send_push': _sendPush,
+        'resend_notification': isEditing ? _resendNotificationOnEdit : false,
+      });
+
+      final headers = {
+        'Authorization': 'Token $token',
+        'Content-Type': 'application/json',
+      };
+
+      late http.Response res;
+
+      if (isEditing) {
+        res = await http.put(
+          Uri.parse(
+            '$_kBase/attendance/api/mobile/manager/announcements/${widget.announcement!['id']}/update/',
+          ),
+          headers: headers,
+          body: body,
+        );
+      } else {
+        res = await http.post(
+          Uri.parse('$_kBase/attendance/api/mobile/manager/announcements/create/'),
+          headers: headers,
+          body: body,
+        );
+      }
 
       if (!mounted) return;
 
       final data = jsonDecode(utf8.decode(res.bodyBytes));
 
-      if (res.statusCode == 201 && data['success'] == true) {
+      if (res.statusCode >= 200 && res.statusCode < 300 && data['success'] == true) {
+        String message;
+
+        if (isEditing) {
+          final resentCount = data['resent_count'] ?? 0;
+          if (_resendNotificationOnEdit) {
+            message = isAr
+                ? 'تم تعديل الإعلان وإعادة الإرسال لـ $resentCount موظف ✅'
+                : 'Announcement updated and resent to $resentCount employees ✅';
+          } else {
+            message = isAr
+                ? 'تم تعديل الإعلان بنجاح ✅'
+                : 'Announcement updated successfully ✅';
+          }
+        } else {
+          final totalSent = data['total_sent'] ?? 0;
+          message = isAr
+              ? 'تم نشر الإعلان بنجاح ✅ (اتبعت لـ $totalSent موظف)'
+              : 'Announcement published ✅ (sent to $totalSent employees)';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isAr
-                  ? 'تم نشر الإعلان بنجاح ✅ (اتبعت لـ ${data['total_sent'] ?? 0} موظف)'
-                  : 'Announcement published successfully ✅ (sent to ${data['total_sent'] ?? 0} employees)',
-            ),
+            content: Text(message),
             backgroundColor: Colors.green,
           ),
         );
+
         Navigator.pop(context, true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              data['error'] ??
-                  data['message'] ??
-                  (isAr ? 'حدث خطأ أثناء نشر الإعلان' : 'Failed to publish announcement'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        return;
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            (data['error'] ?? data['message'] ?? (isAr ? 'حدث خطأ' : 'Something went wrong')).toString(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isAr ? 'خطأ في الاتصال' : 'Connection error',
-          ),
+          content: Text(isAr ? 'خطأ في الاتصال' : 'Connection error'),
           backgroundColor: Colors.red,
         ),
       );
@@ -132,45 +192,21 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   }
 
   @override
-  void dispose() {
-    _titleCtrl.dispose();
-    _messageCtrl.dispose();
-    super.dispose();
-  }
-
-  String _typeLabel() {
-    final item = _types.firstWhere(
-      (e) => e['value'] == _type,
-      orElse: () => _types.first,
-    );
-    return item['label'] ?? _type;
-  }
-
-  String _priorityLabel() {
-    final item = _priorities.firstWhere(
-      (e) => e['value'] == _priority,
-      orElse: () => _priorities[1],
-    );
-    return item['label'] ?? _priority;
-  }
-
-  String _targetLabel() {
-    final item = _targets.firstWhere(
-      (e) => e['value'] == _targetType,
-      orElse: () => _targets.first,
-    );
-    return item['label'] ?? _targetType;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
     return Directionality(
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(isAr ? 'إنشاء إعلان جديد' : 'Create Announcement'),
+          title: Text(
+            isEditing
+                ? (isAr ? 'تعديل الإعلان' : 'Edit Announcement')
+                : (isAr ? 'إنشاء إعلان جديد' : 'Create Announcement'),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           backgroundColor: _kColor,
           foregroundColor: Colors.white,
         ),
@@ -204,8 +240,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                           prefixIcon: const Icon(Icons.title),
                           border: const OutlineInputBorder(),
                         ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
                             return isAr ? 'العنوان مطلوب' : 'Title is required';
                           }
                           return null;
@@ -221,8 +257,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                           border: const OutlineInputBorder(),
                           alignLabelWithHint: true,
                         ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
                             return isAr ? 'المحتوى مطلوب' : 'Content is required';
                           }
                           return null;
@@ -260,14 +296,14 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         ),
                         items: _types
                             .map(
-                              (t) => DropdownMenuItem<String>(
-                                value: t['value'],
-                                child: Text(t['label'] ?? ''),
+                              (item) => DropdownMenuItem<String>(
+                                value: item['value'],
+                                child: Text(item['label'] ?? ''),
                               ),
                             )
                             .toList(),
-                        onChanged: (v) {
-                          setState(() => _type = v ?? 'general');
+                        onChanged: (value) {
+                          setState(() => _type = value ?? 'general');
                         },
                       ),
                       const SizedBox(height: 12),
@@ -280,14 +316,14 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         ),
                         items: _priorities
                             .map(
-                              (p) => DropdownMenuItem<String>(
-                                value: p['value'],
-                                child: Text(p['label'] ?? ''),
+                              (item) => DropdownMenuItem<String>(
+                                value: item['value'],
+                                child: Text(item['label'] ?? ''),
                               ),
                             )
                             .toList(),
-                        onChanged: (v) {
-                          setState(() => _priority = v ?? 'medium');
+                        onChanged: (value) {
+                          setState(() => _priority = value ?? 'medium');
                         },
                       ),
                       const SizedBox(height: 12),
@@ -300,14 +336,14 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         ),
                         items: _targets
                             .map(
-                              (t) => DropdownMenuItem<String>(
-                                value: t['value'],
-                                child: Text(t['label'] ?? ''),
+                              (item) => DropdownMenuItem<String>(
+                                value: item['value'],
+                                child: Text(item['label'] ?? ''),
                               ),
                             )
                             .toList(),
-                        onChanged: (v) {
-                          setState(() => _targetType = v ?? 'all');
+                        onChanged: (value) {
+                          setState(() => _targetType = value ?? 'all');
                         },
                       ),
                     ],
@@ -336,8 +372,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         secondary: const Icon(Icons.notifications_active),
                         value: _sendPush,
                         activeThumbColor: _kColor,
-                        onChanged: (v) {
-                          setState(() => _sendPush = v);
+                        onChanged: (value) {
+                          setState(() => _sendPush = value);
                         },
                       ),
                       const Divider(height: 1),
@@ -355,10 +391,31 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         secondary: const Icon(Icons.check_circle_outline),
                         value: _requiresConfirmation,
                         activeThumbColor: _kColor,
-                        onChanged: (v) {
-                          setState(() => _requiresConfirmation = v);
+                        onChanged: (value) {
+                          setState(() => _requiresConfirmation = value);
                         },
                       ),
+                      if (isEditing) ...[
+                        const Divider(height: 1),
+                        SwitchListTile(
+                          title: Text(
+                            isAr
+                                ? 'إعادة إرسال الإشعار بعد التعديل'
+                                : 'Resend notification after edit',
+                          ),
+                          subtitle: Text(
+                            isAr
+                                ? 'لو فعلتها الموظفون المستهدفون هيوصلهم إشعار جديد'
+                                : 'If enabled, targeted employees will receive a new notification',
+                          ),
+                          secondary: const Icon(Icons.refresh),
+                          value: _resendNotificationOnEdit,
+                          activeThumbColor: _kColor,
+                          onChanged: (value) {
+                            setState(() => _resendNotificationOnEdit = value);
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -384,11 +441,25 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text('${isAr ? 'النوع' : 'Type'}: ${_typeLabel()}'),
+                      Text(
+                        '${isAr ? 'النوع' : 'Type'}: ${_labelFromList(_types, _type, _type)}',
+                      ),
                       const SizedBox(height: 4),
-                      Text('${isAr ? 'الأولوية' : 'Priority'}: ${_priorityLabel()}'),
+                      Text(
+                        '${isAr ? 'الأولوية' : 'Priority'}: ${_labelFromList(_priorities, _priority, _priority)}',
+                      ),
                       const SizedBox(height: 4),
-                      Text('${isAr ? 'المستهدفون' : 'Target'}: ${_targetLabel()}'),
+                      Text(
+                        '${isAr ? 'المستهدفون' : 'Target'}: ${_labelFromList(_targets, _targetType, _targetType)}',
+                      ),
+                      if (isEditing) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          isAr
+                              ? 'إعادة الإرسال بعد التعديل: ${_resendNotificationOnEdit ? 'نعم' : 'لا'}'
+                              : 'Resend after edit: ${_resendNotificationOnEdit ? 'Yes' : 'No'}',
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -405,11 +476,13 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.send),
+                    : Icon(isEditing ? Icons.save : Icons.send),
                 label: Text(
                   _loading
-                      ? (isAr ? 'جاري النشر...' : 'Publishing...')
-                      : (isAr ? 'نشر الإعلان' : 'Publish Announcement'),
+                      ? (isAr ? 'جاري الحفظ...' : 'Saving...')
+                      : isEditing
+                          ? (isAr ? 'حفظ التعديلات' : 'Save Changes')
+                          : (isAr ? 'نشر الإعلان' : 'Publish Announcement'),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _kColor,

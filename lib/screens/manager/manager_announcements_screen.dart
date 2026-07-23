@@ -51,13 +51,13 @@ class _ManagerAnnouncementsScreenState
         });
       } else {
         setState(() {
-          _error = 'خطأ في تحميل الإعلانات';
+          _error = isAr ? 'خطأ في تحميل الإعلانات' : 'Failed to load announcements';
           _loading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
-        _error = 'خطأ في الاتصال';
+        _error = isAr ? 'خطأ في الاتصال' : 'Connection error';
         _loading = false;
       });
     }
@@ -70,7 +70,7 @@ class _ManagerAnnouncementsScreenState
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           title: const Text('حذف الإعلان'),
-          content: Text('هل أنت متأكد من حذف "${ann['title']}"؟'),
+          content: Text('هل أنت متأكد من حذف "${ann['title']}"'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -85,21 +85,30 @@ class _ManagerAnnouncementsScreenState
         ),
       ),
     );
+
     if (confirm != true) return;
 
     try {
       final token = await _getToken();
       final res = await http.delete(
         Uri.parse(
-            '$_kBase/attendance/api/mobile/manager/announcements/${ann['id']}/delete/'),
-        headers: {'Authorization': 'Token $token'},
+          '$_kBase/attendance/api/mobile/manager/announcements/${ann['id']}/delete/',
+        ),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'send_deletion_notice': true}),
       );
+
       if (!mounted) return;
+
       final data = jsonDecode(utf8.decode(res.bodyBytes));
+
       if (data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم حذف الإعلان'),
+          SnackBar(
+            content: Text(isAr ? 'تم حذف الإعلان' : 'Announcement deleted'),
             backgroundColor: Colors.green,
           ),
         );
@@ -107,7 +116,9 @@ class _ManagerAnnouncementsScreenState
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['error'] ?? 'حدث خطأ'),
+            content: Text(
+              (data['error'] ?? (isAr ? 'حدث خطأ' : 'An error occurred')).toString(),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -115,8 +126,8 @@ class _ManagerAnnouncementsScreenState
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('خطأ في الاتصال'),
+        SnackBar(
+          content: Text(isAr ? 'خطأ في الاتصال' : 'Connection error'),
           backgroundColor: Colors.red,
         ),
       );
@@ -148,14 +159,16 @@ class _ManagerAnnouncementsScreenState
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
             isAr ? 'إدارة الإعلانات' : 'Manage Announcements',
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           backgroundColor: _kColor,
           iconTheme: const IconThemeData(color: Colors.white),
@@ -167,8 +180,7 @@ class _ManagerAnnouncementsScreenState
           ],
         ),
         body: _loading
-            ? const Center(
-                child: CircularProgressIndicator(color: _kColor))
+            ? const Center(child: CircularProgressIndicator(color: _kColor))
             : _error != null
                 ? _buildError()
                 : _announcements.isEmpty
@@ -178,8 +190,7 @@ class _ManagerAnnouncementsScreenState
                         child: ListView.builder(
                           padding: const EdgeInsets.all(12),
                           itemCount: _announcements.length,
-                          itemBuilder: (_, i) =>
-                              _buildCard(_announcements[i]),
+                          itemBuilder: (_, i) => _buildCard(_announcements[i]),
                         ),
                       ),
         floatingActionButton: FloatingActionButton.extended(
@@ -187,7 +198,8 @@ class _ManagerAnnouncementsScreenState
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => const CreateAnnouncementScreen()),
+                builder: (_) => const CreateAnnouncementScreen(),
+              ),
             );
             if (result == true) _load();
           },
@@ -203,8 +215,8 @@ class _ManagerAnnouncementsScreenState
   }
 
   Widget _buildCard(Map<String, dynamic> ann) {
-    final priority = ann['priority'] ?? 'medium';
-    final type = ann['type'] ?? 'general';
+    final priority = (ann['priority'] ?? 'medium').toString();
+    final type = (ann['type'] ?? 'general').toString();
     final color = _getPriorityColor(priority);
 
     return Card(
@@ -229,7 +241,7 @@ class _ManagerAnnouncementsScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ann['title'] ?? '',
+                        (ann['title'] ?? '').toString(),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -237,9 +249,11 @@ class _ManagerAnnouncementsScreenState
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        ann['publish_at'] ?? '',
+                        (ann['publish_at'] ?? '').toString(),
                         style: const TextStyle(
-                            fontSize: 11, color: Colors.grey),
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -264,20 +278,26 @@ class _ManagerAnnouncementsScreenState
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       value: 'edit',
-                      child: Row(children: [
-                        const Icon(Icons.edit, color: Color(0xFF6C63FF)),
-                        const SizedBox(width: 8),
-                        Text(isAr ? 'تعديل' : 'Edit'),
-                      ]),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit, color: _kColor),
+                          const SizedBox(width: 8),
+                          Text(isAr ? 'تعديل' : 'Edit'),
+                        ],
+                      ),
                     ),
                     PopupMenuItem(
                       value: 'delete',
-                      child: Row(children: [
-                        const Icon(Icons.delete, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Text(isAr ? 'حذف' : 'Delete',
-                            style: const TextStyle(color: Colors.red)),
-                      ]),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Text(
+                            isAr ? 'حذف' : 'Delete',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -286,7 +306,7 @@ class _ManagerAnnouncementsScreenState
             if ((ann['message'] ?? '').toString().isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
-                ann['message'],
+                (ann['message'] ?? '').toString(),
                 style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -297,33 +317,39 @@ class _ManagerAnnouncementsScreenState
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    ann['priority_display'] ?? priority,
+                    (ann['priority_display'] ?? priority).toString(),
                     style: TextStyle(
-                        fontSize: 11,
-                        color: color,
-                        fontWeight: FontWeight.bold),
+                      fontSize: 11,
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    ann['target_type_display'] ?? ann['target_type'] ?? '',
+                    (ann['target_type_display'] ?? ann['target_type'] ?? '').toString(),
                     style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold),
+                      fontSize: 11,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -341,11 +367,15 @@ class _ManagerAnnouncementsScreenState
         children: [
           const Icon(Icons.error_outline, size: 60, color: Colors.red),
           const SizedBox(height: 12),
-          Text(_error ?? 'حدث خطأ'),
+          Text(_error ?? (isAr ? 'حدث خطأ' : 'An error occurred')),
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: _load,
-            child: const Text('إعادة المحاولة'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _kColor,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(isAr ? 'إعادة المحاولة' : 'Retry'),
           ),
         ],
       ),
@@ -365,7 +395,9 @@ class _ManagerAnnouncementsScreenState
           ),
           const SizedBox(height: 8),
           Text(
-            isAr ? 'اضغط + لإنشاء إعلان جديد' : 'Press + to create a new announcement',
+            isAr
+                ? 'اضغط + لإنشاء إعلان جديد'
+                : 'Press + to create a new announcement',
             style: TextStyle(fontSize: 13, color: Colors.grey[400]),
           ),
         ],
@@ -373,4 +405,3 @@ class _ManagerAnnouncementsScreenState
     );
   }
 }
-
