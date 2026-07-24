@@ -9,6 +9,7 @@ import '../employee/employee_summary_screen.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../services/employee_management_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+import 'employee_permissions_screen.dart';
 
 
 class ManagerEmployeeDetailScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadAll();
   }
 
@@ -773,6 +774,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               Tab(icon: Icon(Icons.person), text: 'الملف'),
               Tab(icon: Icon(Icons.folder), text: 'المستندات'),
               Tab(icon: Icon(Icons.history), text: context.l10n.date),
+              Tab(icon: Icon(Icons.access_time), text: isAr ? 'الأذونات' : 'Permissions'),
             ],
           ),
         ),
@@ -792,6 +794,10 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                       _buildProfileTab(),
                       _buildDocumentsTab(),
                       _buildMovementsTab(),
+                      EmployeePermissionsScreen(
+  employeeId: widget.employeeId,
+  employeeName: widget.employeeName,
+),
                     ],
                   ),
       ),
