@@ -1688,17 +1688,38 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           desiredAccuracy: LocationAccuracy.high);
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
+      // routing ??? ??? ??????
+      final String attendanceUrl;
+      final Map<String, dynamic> attendanceBody;
+
+      if (action == 'partial_checkout') {
+        attendanceUrl = '$kBaseUrl/attendance/api/mobile/employee/partial-checkout/';
+        attendanceBody = {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
+      } else if (action == 'resume_checkin') {
+        attendanceUrl = '$kBaseUrl/attendance/api/mobile/employee/resume-checkin/';
+        attendanceBody = {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
+      } else {
+        attendanceUrl = '$kBaseUrl/attendance/api/mobile/attendance/';
+        attendanceBody = {
+          'action': action,
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
+      }
+
       final res = await http.post(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/attendance/'),
+        Uri.parse(attendanceUrl),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Token $token'
         },
-        body: jsonEncode({
-          'action': action,
-          'latitude': position.latitude,
-          'longitude': position.longitude,
-        }),
+        body: jsonEncode(attendanceBody),
       );
       debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
       debugPrint('ATTENDANCE BODY: ${res.body}');
@@ -1880,6 +1901,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     final shiftName = _status?['shift_name'] ?? '';
     final shiftStart = _status?['shift_start'] ?? '';
     final shiftEnd = _status?['shift_end'] ?? '';
+    final allowPartialCheckout = _status?['allow_partial_checkout'] == true;
+    final canPartialCheckout = _status?['can_partial_checkout'] == true;
+    final canResume = _status?['can_resume'] == true;
+    final sessionsToday = (_status?['sessions_today'] ?? 0) as int;
     final remainingSecs = _calculateRemainingSeconds();
     final displayName = _firstName.isNotEmpty
         ? _firstName
@@ -2187,6 +2212,70 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                             ]),
                       ))),
             ]),
+          const SizedBox(height: 12),
+
+          // ?? ????? ?????? ?????? ??????? ??
+          if (allowPartialCheckout && checkedIn && !checkedOut) ...[
+            if (canPartialCheckout)
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: _loading ? null : () => _attendanceAction('partial_checkout'),
+                  icon: const Icon(Icons.exit_to_app),
+                  label: Text(
+                    isAr ? '???? ???? (????? ??????)' : 'Partial Checkout (I will return)',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrange,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            if (canResume)
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: _loading ? null : () => _attendanceAction('resume_checkin'),
+                  icon: const Icon(Icons.login),
+                  label: Text(
+                    isAr ? '???? ????? (???? ${sessionsToday + 1})' : 'Resume Work (Session ${sessionsToday + 1})',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            if (sessionsToday > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.teal.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule, color: Colors.teal, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      isAr
+                          ? '????? ????? ?????: $sessionsToday'
+                          : 'Work sessions today: $sessionsToday',
+                      style: const TextStyle(color: Colors.teal, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+
           const SizedBox(height: 20),
           if (_status?['check_in_time'] != null &&
               (_status?['check_in_time'] ?? '').toString().isNotEmpty)
@@ -3480,6 +3569,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'attendance':
       case 'check_in':
       case 'check_out':
+      case 'partial_checkout':
+      case 'resume_checkin':
       case 'manager_attendance':
         page = const ManagerShell(initialIndex: 2);
         break;
