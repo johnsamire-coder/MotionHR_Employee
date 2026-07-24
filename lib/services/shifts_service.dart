@@ -166,4 +166,132 @@ class ShiftsService {
     }
     throw Exception('خطأ: ${res.statusCode}');
   }
+
+
+  // MY SHIFT
+  static Future<Map<String, dynamic>> getMyShift() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/my-shift/'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? '??? ?? ??? ?????');
+  }
+
+  // SHIFT CHANGE REQUESTS
+  static Future<List<Map<String, dynamic>>> getShiftChangeRequests({String status = 'pending'}) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/change-requests/?status=$status'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['requests'] ?? []);
+    }
+    throw Exception(data['error'] ?? '??? ?? ??? ???????');
+  }
+
+  // HANDLE SHIFT CHANGE REQUEST
+  static Future<Map<String, dynamic>> handleShiftChangeRequest({
+    required int requestId,
+    required String action,
+    String? rejectionReason,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+
+    final body = {
+      'action': action,
+      if (rejectionReason != null && rejectionReason.isNotEmpty)
+        'rejection_reason': rejectionReason,
+    };
+
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/change-requests/$requestId/action/'),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? '??? ????? ?????');
+  }
+
+  // SHIFT OVERRIDE
+  static Future<Map<String, dynamic>> createShiftOverride({
+    required int employeeId,
+    required int shiftId,
+    required String overrideDate,
+    String? reason,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+
+    final body = {
+      'employee_id': employeeId,
+      'shift_id': shiftId,
+      'override_date': overrideDate,
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+    };
+
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/override/create/'),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if ((res.statusCode == 200 || res.statusCode == 201) && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? '??? ????? ?????????');
+  }
+
+  // DELETE SHIFT OVERRIDE
+  static Future<String> deleteShiftOverride(int overrideId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+
+    final res = await http.delete(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/override/$overrideId/delete/'),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return data['message'] ?? '?? ?????';
+    }
+    throw Exception(data['error'] ?? '??? ??? ?????????');
+  }
+
+  // EFFECTIVE SHIFT
+  static Future<Map<String, dynamic>> getEffectiveShift(int employeeId, {String? date}) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('??? ???? ??????');
+
+    final uri = date != null
+        ? '$baseUrl/attendance/api/mobile/manager/employees/$employeeId/effective-shift/?date=$date'
+        : '$baseUrl/attendance/api/mobile/manager/employees/$employeeId/effective-shift/';
+
+    final res = await http.get(
+      Uri.parse(uri),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? '??? ?? ??? ?????? ??????');
+  }
+
 }
