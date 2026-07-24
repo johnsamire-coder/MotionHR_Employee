@@ -26,6 +26,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/biometric_auth_service.dart';
+import 'screens/employee/my_shift_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -1994,23 +1995,48 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          if (shiftName.toString().isNotEmpty)
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(children: [
-                    const Icon(Icons.schedule, color: kPrimaryColor),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: Text(
-                      '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    )),
-                  ])),
-            ),
+if (shiftName.toString().isNotEmpty) ...[
+  Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(children: [
+          const Icon(Icons.schedule, color: kPrimaryColor),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Text(
+            '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          )),
+        ])),
+  ),
+  const SizedBox(height: 8),
+  InkWell(
+    onTap: () => Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const MyShiftScreen())),
+    borderRadius: BorderRadius.circular(12),
+    child: Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: kPrimaryColor.withAlpha(15),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(children: [
+          Icon(Icons.calendar_month, color: kPrimaryColor, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            isAr ? 'تفاصيل شيفتي والجدول الأسبوعي' : 'My Shift Details & Schedule',
+            style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+          const Spacer(),
+          Icon(Icons.arrow_forward_ios, color: kPrimaryColor, size: 14),
+        ]),
+      ),
+    ),
+  ),
+],
           const SizedBox(height: 16),
           if (checkedIn && !checkedOut)
             Container(
