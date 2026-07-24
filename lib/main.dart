@@ -2457,14 +2457,28 @@ class LeavesScreen extends StatefulWidget {
   State<LeavesScreen> createState() => _LeavesScreenState();
 }
 
-class _LeavesScreenState extends State<LeavesScreen> {
+class _LeavesScreenState extends State<LeavesScreen>
+    with SingleTickerProviderStateMixin {
   List<dynamic> _types = [];
   bool _loading = true;
+  late TabController _tabController;
+
+  // بيانات الأذونات
+  Map<String, dynamic>? _permissionData;
+  bool _permissionLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _load();
+    _loadPermissions();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   int _orderKey(Map t) {
@@ -2490,8 +2504,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
           headers: {'Authorization': 'Token $token'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        List<dynamic> list =
-            data['leave_types'] ?? data['types'] ?? [];
+        List<dynamic> list = data['leave_types'] ?? data['types'] ?? [];
         list = list.where((t) {
           final c = (t['category'] ?? '').toString().toLowerCase();
           final n = (t['name'] ?? '').toString();
@@ -2504,9 +2517,48 @@ class _LeavesScreenState extends State<LeavesScreen> {
     setState(() => _loading = false);
   }
 
+  Future<void> _loadPermissions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    try {
+      final res = await http.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/employee/permission-balance/'),
+          headers: {'Authorization': 'Token $token'});
+      if (res.statusCode == 200) {
+        setState(() => _permissionData = jsonDecode(res.body));
+      }
+    } catch (_) {}
+    setState(() => _permissionLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Column(children: [
+      TabBar(
+        controller: _tabController,
+        labelColor: kPrimaryColor,
+        indicatorColor: kPrimaryColor,
+        tabs: [
+          Tab(text: isAr ? 'إجازاتي' : 'My Leaves'),
+          Tab(text: isAr ? 'أذوناتي' : 'My Permissions'),
+        ],
+      ),
+      Expanded(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // تبويب الإجازات
+            _buildLeavesTab(isAr),
+            // تبويب الأذونات
+            _buildPermissionsTab(isAr),
+          ],
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildLeavesTab(bool isAr) {
     if (_loading) return const Center(child: CircularProgressIndicator());
     return ListView(padding: const EdgeInsets.all(16), children: [
       Text(
@@ -2520,8 +2572,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
             : (t['balance'] ?? 0);
         return Card(
             child: ListTile(
-                leading:
-                    const Icon(Icons.beach_access, color: kPrimaryColor),
+                leading: const Icon(Icons.beach_access, color: kPrimaryColor),
                 title: Text(localizedTypeName((t['name'] ?? '').toString(), isAr)),
                 subtitle: Text(
                   isAr
@@ -2533,11 +2584,8 @@ class _LeavesScreenState extends State<LeavesScreen> {
       SizedBox(
           height: 52,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) =>
-                        LeaveRequestScreen(types: _types))),
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => LeaveRequestScreen(types: _types))),
             icon: const Icon(Icons.add),
             label: Text(
               isAr ? 'تقديم طلب إجازة' : 'Submit Leave Request',
@@ -2551,8 +2599,167 @@ class _LeavesScreenState extends State<LeavesScreen> {
           )),
     ]);
   }
-}
 
+  Widget _buildPermissionsTab(bool isAr) {
+    if (_permissionLoading) return const Center(child: CircularProgressIndicator());
+
+    if (_permissionData == null || _permissionData!['enabled'] == false) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.access_time_filled, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(
+              isAr ? 'لا توجد سياسة أذونات مفعلة' : 'No permission policy activated',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final data = _permissionData!;
+    final usedMinutes = data['used_minutes'] ?? 0;
+    final remainingMinutes = data['remaining_minutes'] ?? 0;
+    final monthlyMinutes = data['monthly_minutes'] ?? 0;
+    final usedCount = data['used_count'] ?? 0;
+    final remainingCount = data['remaining_count'] ?? 0;
+    final monthlyCount = data['monthly_count'] ?? 0;
+    final history = List<Map<String, dynamic>>.from(data['history'] ?? []);
+
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      // بطاقة الرصيد
+      Card(
+        color: kPrimaryColor.withAlpha(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              isAr ? 'رصيد الأذونات الشهري' : 'Monthly Permission Balance',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              _balanceBox(
+                isAr ? 'المتاح' : 'Total',
+                '${(monthlyMinutes / 60).toStringAsFixed(1)}h',
+                Colors.blue,
+              ),
+              const SizedBox(width: 8),
+              _balanceBox(
+                isAr ? 'المستخدم' : 'Used',
+                '${(usedMinutes / 60).toStringAsFixed(1)}h',
+                Colors.orange,
+              ),
+              const SizedBox(width: 8),
+              _balanceBox(
+                isAr ? 'الباقي' : 'Remaining',
+                '${(remainingMinutes / 60).toStringAsFixed(1)}h',
+                Colors.green,
+              ),
+            ]),
+            const SizedBox(height: 12),
+            // Progress bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: monthlyMinutes > 0 ? usedMinutes / monthlyMinutes : 0,
+                minHeight: 10,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  usedMinutes >= monthlyMinutes ? Colors.red : Colors.orange,
+                ),
+              ),
+            ),
+            if (monthlyCount > 0) ...[
+              const SizedBox(height: 12),
+              Text(
+                isAr
+                    ? 'عدد المرات: $usedCount / $monthlyCount (باقي $remainingCount)'
+                    : 'Count: $usedCount / $monthlyCount (remaining $remainingCount)',
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            ],
+          ]),
+        ),
+      ),
+
+      const SizedBox(height: 16),
+
+      // سجل الحركات
+      Text(
+        isAr ? 'سجل الأذونات' : 'Permission History',
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 8),
+
+      if (history.isEmpty)
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              isAr ? 'لا يوجد سجل أذونات في هذه الفترة' : 'No permission history this period',
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ),
+        )
+      else
+        ...history.map((e) {
+          final minutes = e['minutes_used'] as int;
+          final isDeduction = minutes > 0;
+          final typeDisplay = e['entry_type_display'] ?? e['entry_type'] ?? '';
+          final date = e['reference_date'] ?? '';
+          final notes = e['notes'] ?? '';
+
+          return Card(
+            child: ListTile(
+              leading: Icon(
+                isDeduction ? Icons.remove_circle : Icons.add_circle,
+                color: isDeduction ? Colors.red : Colors.green,
+              ),
+              title: Text(typeDisplay),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (date.isNotEmpty) Text(date),
+                  if (notes.isNotEmpty)
+                    Text(notes, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
+              ),
+              trailing: Text(
+                '${isDeduction ? "-" : "+"}${(minutes.abs() / 60).toStringAsFixed(1)}h',
+                style: TextStyle(
+                  color: isDeduction ? Colors.red : Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        }),
+    ]);
+  }
+
+  Widget _balanceBox(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withAlpha(30),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(100)),
+        ),
+        child: Column(children: [
+          Text(value,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+        ]),
+      ),
+    );
+  }
+}
 class LeaveRequestScreen extends StatefulWidget {
   final List<dynamic> types;
   const LeaveRequestScreen({super.key, required this.types});
