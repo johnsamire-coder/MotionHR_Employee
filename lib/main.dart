@@ -6179,7 +6179,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                             builder: (_) =>
                                 const PayrollHubScreen()))),
                 _gridCard(
-                    isAr ? '?????? ?????? ??????' : 'Attendance Policies',
+                    isAr ? 'سياسات الحضور والخصم' : 'Attendance Policies',
                     Icons.policy,
                     const Color(0xFF1565C0),
                     () => Navigator.push(
