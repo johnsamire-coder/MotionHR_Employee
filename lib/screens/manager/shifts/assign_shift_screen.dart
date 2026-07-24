@@ -18,30 +18,26 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
 
   late TabController _tabController;
 
-  // Assignment type
-  String _assignmentType = 'employee';
-
   // Data
   List<Map<String, dynamic>> _employees = [];
   List<Map<String, dynamic>> _departments = [];
   List<Map<String, dynamic>> _branches = [];
   List<Map<String, dynamic>> _shiftEmployees = [];
 
+  // Selected (Multi)
+  Set<int> _selectedEmployeeIds = {};
+  Set<int> _selectedDepartmentIds = {};
+  Set<int> _selectedBranchIds = {};
+  bool _assignToCompany = false;
+
   // Loading
   bool _loadingData = true;
   bool _loadingShiftEmps = true;
   bool _assigning = false;
 
-  // Selected values
-  int? _selectedEmployeeId;
-  int? _selectedDepartmentId;
-  int? _selectedBranchId;
-
-  // Dates
+  // Dates + Reason
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
-
-  // Reason
   final _reasonCtrl = TextEditingController();
 
   @override
@@ -104,16 +100,28 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
   }
 
   bool get _canAssign {
-    if (_assignmentType == 'employee' && _selectedEmployeeId == null) return false;
-    if (_assignmentType == 'department' && _selectedDepartmentId == null) return false;
-    if (_assignmentType == 'branch' && _selectedBranchId == null) return false;
-    return true;
+    if (_assignToCompany) return true;
+    return _selectedEmployeeIds.isNotEmpty ||
+        _selectedDepartmentIds.isNotEmpty ||
+        _selectedBranchIds.isNotEmpty;
+  }
+
+  int get _totalSelected {
+    if (_assignToCompany) return _employees.length;
+    int total = _selectedEmployeeIds.length;
+    for (final deptId in _selectedDepartmentIds) {
+      total += _employees.where((e) => e['department_id'] == deptId).length;
+    }
+    for (final branchId in _selectedBranchIds) {
+      total += _employees.where((e) => e['branch_id'] == branchId).length;
+    }
+    return total;
   }
 
   Future<void> _assign() async {
     if (!_canAssign) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(isAr ? 'يرجى اختيار المستهدف' : 'Please select a target'),
+        content: Text(isAr ? 'يرجى اختيار المستهدفين' : 'Please select targets'),
         backgroundColor: Colors.orange,
       ));
       return;
@@ -128,39 +136,39 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         endDate: _endDate != null ? _fmt(_endDate!) : null,
         reason: _reasonCtrl.text.trim().isEmpty ? null : _reasonCtrl.text.trim(),
         lang: isAr ? 'ar' : 'en',
-        employeeId: _assignmentType == 'employee' ? _selectedEmployeeId : null,
-        departmentId: _assignmentType == 'department' ? _selectedDepartmentId : null,
-        branchId: _assignmentType == 'branch' ? _selectedBranchId : null,
-        assignToCompany: _assignmentType == 'company',
+        employeeIds: _selectedEmployeeIds.toList(),
+        departmentIds: _selectedDepartmentIds.toList(),
+        branchIds: _selectedBranchIds.toList(),
+        assignToCompany: _assignToCompany,
       );
 
       if (!mounted) return;
 
       final isPending = result['pending_approval'] == true;
+      final affectedCount = result['affected_employees_count'] ?? 0;
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
           isPending
-              ? (isAr
-                  ? 'تم إرسال طلب التغيير لـ HR للموافقة ✅'
-                  : 'Change request sent to HR for approval ✅')
-              : (result['message'] ?? (isAr ? 'تم التعيين ✅' : 'Assigned ✅')),
+              ? (isAr ? 'تم إرسال الطلب لـ HR ✅' : 'Request sent to HR ✅')
+              : (isAr
+                  ? 'تم تعيين الشيفت لـ $affectedCount موظف ✅'
+                  : 'Shift assigned to $affectedCount employees ✅'),
         ),
         backgroundColor: isPending ? Colors.orange : Colors.green,
       ));
 
       setState(() {
-        _selectedEmployeeId = null;
-        _selectedDepartmentId = null;
-        _selectedBranchId = null;
+        _selectedEmployeeIds = {};
+        _selectedDepartmentIds = {};
+        _selectedBranchIds = {};
+        _assignToCompany = false;
         _reasonCtrl.clear();
         _assigning = false;
       });
 
       _loadData();
-      if (_assignmentType == 'employee') {
-        _tabController.animateTo(1);
-      }
+      _tabController.animateTo(1);
     } catch (e) {
       setState(() => _assigning = false);
       if (!mounted) return;
@@ -186,7 +194,6 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
           ),
           backgroundColor: kShiftColor,
           foregroundColor: Colors.white,
-          elevation: 0,
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: Colors.white,
@@ -194,7 +201,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
             unselectedLabelColor: Colors.white70,
             tabs: [
               Tab(text: isAr ? 'تعيين' : 'Assign', icon: const Icon(Icons.assignment_ind)),
-              Tab(text: isAr ? 'الموظفون الحاليون' : 'Current Employees', icon: const Icon(Icons.people)),
+              Tab(text: isAr ? 'الحاليون' : 'Current', icon: const Icon(Icons.people)),
             ],
           ),
         ),
@@ -202,7 +209,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
           controller: _tabController,
           children: [
             _buildAssignTab(),
-            _buildCurrentEmployeesTab(),
+            _buildCurrentTab(),
           ],
         ),
       ),
@@ -218,161 +225,118 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
       padding: const EdgeInsets.all(16),
       children: [
         // شرح الشيفت
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: kShiftColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kShiftColor.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.schedule, color: kShiftColor),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (widget.shift['name'] ?? '').toString(),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                    ),
-                    Text(
-                      '${widget.shift['start_time'] ?? ''} - ${widget.shift['end_time'] ?? ''}  |  ${isAr ? 'سماح' : 'Grace'}: ${widget.shift['grace_period'] ?? 0} ${isAr ? 'د' : 'min'}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
+        _shiftSummaryCard(),
+        const SizedBox(height: 12),
 
-        // نوع التعيين
+        // الشركة كلها
         Card(
           elevation: 1,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAr ? 'نوع التعيين' : 'Assignment Type',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _typeChip('employee', Icons.person, isAr ? 'موظف' : 'Employee'),
-                    _typeChip('department', Icons.apartment, isAr ? 'قسم' : 'Department'),
-                    _typeChip('branch', Icons.business, isAr ? 'فرع' : 'Branch'),
-                    _typeChip('company', Icons.corporate_fare, isAr ? 'الشركة كلها' : 'Whole Company'),
-                  ],
-                ),
-              ],
+          child: SwitchListTile(
+            title: Text(
+              isAr ? '🏢 الشركة كلها' : '🏢 Whole Company',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
+            subtitle: Text(
+              isAr
+                  ? 'تعيين الشيفت لكل موظفي الشركة'
+                  : 'Assign shift to all company employees',
+              style: const TextStyle(fontSize: 12),
+            ),
+            value: _assignToCompany,
+            activeThumbColor: kShiftColor,
+            onChanged: (v) => setState(() {
+              _assignToCompany = v;
+              if (v) {
+                _selectedEmployeeIds = {};
+                _selectedDepartmentIds = {};
+                _selectedBranchIds = {};
+              }
+            }),
           ),
         ),
         const SizedBox(height: 12),
 
-        // المستهدف
-        Card(
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAr ? 'اختر المستهدف' : 'Select Target',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 12),
-                if (_assignmentType == 'employee')
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedEmployeeId,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'اختر الموظف *' : 'Select Employee *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      prefixIcon: const Icon(Icons.person, color: kShiftColor),
-                    ),
-                    isExpanded: true,
-                    items: _employees.map((e) => DropdownMenuItem<int>(
-                      value: e['id'] as int,
-                      child: Text(
-                        '${e['full_name'] ?? e['full_name_ar'] ?? ''} - ${e['job_title'] ?? ''}',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _selectedEmployeeId = v),
-                  ),
-                if (_assignmentType == 'department')
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedDepartmentId,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'اختر القسم *' : 'Select Department *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      prefixIcon: const Icon(Icons.apartment, color: kShiftColor),
-                    ),
-                    isExpanded: true,
-                    items: _departments.map((d) => DropdownMenuItem<int>(
-                      value: d['id'] as int,
-                      child: Text(
-                        isAr ? (d['name_ar'] ?? '') : (d['name_en'] ?? d['name_ar'] ?? ''),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _selectedDepartmentId = v),
-                  ),
-                if (_assignmentType == 'branch')
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedBranchId,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'اختر الفرع *' : 'Select Branch *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      prefixIcon: const Icon(Icons.business, color: kShiftColor),
-                    ),
-                    isExpanded: true,
-                    items: _branches.map((b) => DropdownMenuItem<int>(
-                      value: b['id'] as int,
-                      child: Text(
-                        isAr ? (b['name_ar'] ?? '') : (b['name_en'] ?? b['name_ar'] ?? ''),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _selectedBranchId = v),
-                  ),
-                if (_assignmentType == 'company')
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: kShiftColor.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: kShiftColor.withValues(alpha: 0.2)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.corporate_fare, color: kShiftColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          isAr
-                              ? 'سيتم تعيين الشيفت على مستوى الشركة كلها'
-                              : 'Shift will be assigned to the whole company',
-                          style: const TextStyle(color: kShiftColor),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
+        if (!_assignToCompany) ...[
+          // الفروع
+          if (_branches.isNotEmpty)
+            _multiSelectCard(
+              title: isAr ? '🏙️ الفروع' : '🏙️ Branches',
+              icon: Icons.business,
+              items: _branches,
+              selectedIds: _selectedBranchIds,
+              nameKey: isAr ? 'name_ar' : 'name_en',
+              fallbackKey: 'name_ar',
+              onToggle: (id) => setState(() {
+                if (_selectedBranchIds.contains(id)) {
+                  _selectedBranchIds.remove(id);
+                } else {
+                  _selectedBranchIds.add(id);
+                }
+              }),
+              onSelectAll: () => setState(() {
+                if (_selectedBranchIds.length == _branches.length) {
+                  _selectedBranchIds = {};
+                } else {
+                  _selectedBranchIds = _branches.map((b) => b['id'] as int).toSet();
+                }
+              }),
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
+          const SizedBox(height: 12),
+
+          // الأقسام
+          if (_departments.isNotEmpty)
+            _multiSelectCard(
+              title: isAr ? '🏛️ الأقسام' : '🏛️ Departments',
+              icon: Icons.apartment,
+              items: _departments,
+              selectedIds: _selectedDepartmentIds,
+              nameKey: isAr ? 'name_ar' : 'name_en',
+              fallbackKey: 'name_ar',
+              onToggle: (id) => setState(() {
+                if (_selectedDepartmentIds.contains(id)) {
+                  _selectedDepartmentIds.remove(id);
+                } else {
+                  _selectedDepartmentIds.add(id);
+                }
+              }),
+              onSelectAll: () => setState(() {
+                if (_selectedDepartmentIds.length == _departments.length) {
+                  _selectedDepartmentIds = {};
+                } else {
+                  _selectedDepartmentIds = _departments.map((d) => d['id'] as int).toSet();
+                }
+              }),
+            ),
+          const SizedBox(height: 12),
+
+          // الموظفين
+          if (_employees.isNotEmpty)
+            _multiSelectCard(
+              title: isAr ? '👥 موظفين محددين' : '👥 Specific Employees',
+              icon: Icons.person,
+              items: _employees,
+              selectedIds: _selectedEmployeeIds,
+              nameKey: 'full_name',
+              fallbackKey: 'full_name_ar',
+              subtitle: 'job_title',
+              onToggle: (id) => setState(() {
+                if (_selectedEmployeeIds.contains(id)) {
+                  _selectedEmployeeIds.remove(id);
+                } else {
+                  _selectedEmployeeIds.add(id);
+                }
+              }),
+              onSelectAll: () => setState(() {
+                if (_selectedEmployeeIds.length == _employees.length) {
+                  _selectedEmployeeIds = {};
+                } else {
+                  _selectedEmployeeIds = _employees.map((e) => e['id'] as int).toSet();
+                }
+              }),
+            ),
+          const SizedBox(height: 12),
+        ],
 
         // التواريخ
         Card(
@@ -396,10 +360,8 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       prefixIcon: const Icon(Icons.calendar_today, color: Colors.green),
                     ),
-                    child: Text(
-                      _fmt(_startDate),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    child: Text(_fmt(_startDate),
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -418,9 +380,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
                           : null,
                     ),
                     child: Text(
-                      _endDate != null
-                          ? _fmt(_endDate!)
-                          : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
+                      _endDate != null ? _fmt(_endDate!) : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
                       style: TextStyle(
                         color: _endDate != null ? Colors.black : Colors.grey[500],
                         fontWeight: _endDate != null ? FontWeight.bold : FontWeight.normal,
@@ -451,20 +411,47 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+
+        // ملخص التعيين
+        if (_canAssign)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: kShiftColor.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: kShiftColor.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isAr ? 'ملخص التعيين' : 'Assignment Summary',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: kShiftColor),
+                ),
+                const SizedBox(height: 8),
+                if (_assignToCompany)
+                  Text(isAr ? '🏢 الشركة كلها' : '🏢 Whole Company'),
+                if (_selectedBranchIds.isNotEmpty)
+                  Text('🏙️ ${_selectedBranchIds.length} ${isAr ? 'فرع' : 'branch(es)'}'),
+                if (_selectedDepartmentIds.isNotEmpty)
+                  Text('🏛️ ${_selectedDepartmentIds.length} ${isAr ? 'قسم' : 'department(s)'}'),
+                if (_selectedEmployeeIds.isNotEmpty)
+                  Text('👥 ${_selectedEmployeeIds.length} ${isAr ? 'موظف مباشر' : 'direct employee(s)'}'),
+              ],
+            ),
+          ),
+        const SizedBox(height: 16),
 
         // زرار التعيين
         SizedBox(
           width: double.infinity,
           height: 54,
           child: ElevatedButton.icon(
-            onPressed: _assigning ? null : _assign,
+            onPressed: (_assigning || !_canAssign) ? null : _assign,
             icon: _assigning
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
+                ? const SizedBox(width: 20, height: 20,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                 : const Icon(Icons.assignment_ind),
             label: Text(
               _assigning
@@ -484,44 +471,114 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
     );
   }
 
-  Widget _typeChip(String type, IconData icon, String label) {
-    final isSelected = _assignmentType == type;
-    return GestureDetector(
-      onTap: () => setState(() {
-        _assignmentType = type;
-        _selectedEmployeeId = null;
-        _selectedDepartmentId = null;
-        _selectedBranchId = null;
-      }),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? kShiftColor : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? kShiftColor : Colors.grey[300]!,
+  Widget _multiSelectCard({
+    required String title,
+    required IconData icon,
+    required List<Map<String, dynamic>> items,
+    required Set<int> selectedIds,
+    required String nameKey,
+    required String fallbackKey,
+    String? subtitle,
+    required void Function(int) onToggle,
+    required void Function() onSelectAll,
+  }) {
+    final allSelected = selectedIds.length == items.length;
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Icon(icon, color: kShiftColor),
+          title: Row(
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(width: 8),
+              if (selectedIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: kShiftColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${selectedIds.length}',
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.grey[700]),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[700],
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: onSelectAll,
+                    icon: Icon(allSelected ? Icons.deselect : Icons.select_all, size: 16),
+                    label: Text(
+                      allSelected
+                          ? (isAr ? 'إلغاء الكل' : 'Deselect All')
+                          : (isAr ? 'تحديد الكل' : 'Select All'),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
             ),
+            ...items.map((item) {
+              final id = item['id'] as int;
+              final name = (item[nameKey] ?? item[fallbackKey] ?? '').toString();
+              final sub = subtitle != null ? (item[subtitle] ?? '').toString() : '';
+              final isSelected = selectedIds.contains(id);
+              return CheckboxListTile(
+                dense: true,
+                value: isSelected,
+                activeColor: kShiftColor,
+                title: Text(name, style: const TextStyle(fontSize: 13)),
+                subtitle: sub.isNotEmpty ? Text(sub, style: const TextStyle(fontSize: 11)) : null,
+                onChanged: (_) => onToggle(id),
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCurrentEmployeesTab() {
+  Widget _shiftSummaryCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kShiftColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kShiftColor.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, color: kShiftColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  (widget.shift['name'] ?? '').toString(),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                Text(
+                  '${widget.shift['start_time'] ?? ''} - ${widget.shift['end_time'] ?? ''}  |  ${isAr ? 'سماح' : 'Grace'}: ${widget.shift['grace_period'] ?? 0} ${isAr ? 'د' : 'min'}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentTab() {
     if (_loadingShiftEmps) {
       return const Center(child: CircularProgressIndicator(color: kShiftColor));
     }
@@ -565,10 +622,8 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  (emp['job_title'] ?? '').toString(),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
+                Text((emp['job_title'] ?? '').toString(),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                 Text(
                   '${isAr ? 'من' : 'From'}: ${emp['start_date'] ?? ''}',
                   style: TextStyle(color: Colors.green[700], fontSize: 12),
