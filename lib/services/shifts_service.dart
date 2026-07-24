@@ -108,6 +108,7 @@ class ShiftsService {
     List<int>? employeeIds,
     List<int>? departmentIds,
     List<int>? branchIds,
+    List<int>? excludedEmployeeIds,
     bool assignToCompany = false,
     required int shiftId,
     required String startDate,
@@ -135,6 +136,10 @@ class ShiftsService {
       ...?branchIds,
     }.toList();
 
+    final allExcludedEmployeeIds = <int>{
+      ...?excludedEmployeeIds,
+    }.toList();
+
     final body = <String, dynamic>{
       'shift_id': shiftId,
       'start_date': startDate,
@@ -150,6 +155,9 @@ class ShiftsService {
     }
     if (allBranchIds.isNotEmpty) {
       body['branch_ids'] = allBranchIds;
+    }
+    if (allExcludedEmployeeIds.isNotEmpty) {
+      body['excluded_employee_ids'] = allExcludedEmployeeIds;
     }
 
     if (endDate != null && endDate.isNotEmpty) {
@@ -368,4 +376,60 @@ class ShiftsService {
 
     throw Exception(data['error'] ?? 'خطأ في جلب الشيفت الفعلي');
   }
+
+  // ??? ?? ????????? ??????? (??? 24)
+  static Future<List<Map<String, dynamic>>> getShiftAssignments({int? shiftId}) async {
+    final token = await _getToken();
+    if (token == null) {
+      throw Exception('??? ???? ??????');
+    }
+
+    final uri = shiftId != null
+        ? '$baseUrl/attendance/api/mobile/manager/shifts/assignments/?shift_id=$shiftId'
+        : '$baseUrl/attendance/api/mobile/manager/shifts/assignments/';
+
+    final res = await http.get(
+      Uri.parse(uri),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['assignments'] ?? []);
+    }
+
+    throw Exception(data['error'] ?? '??? ??? ?????????');
+  }
+
+  static Future<bool> deleteAssignment(int assignmentId) async {
+    final token = await _getToken();
+    if (token == null) {
+      throw Exception('??? ???? ??????');
+    }
+
+    final res = await http.delete(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/assignments/$assignmentId/delete/'),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    return res.statusCode == 200 && data['success'] == true;
+  }
+
+  static Future<bool> updateAssignment(int assignmentId, Map<String, dynamic> body) async {
+    final token = await _getToken();
+    if (token == null) {
+      throw Exception('??? ???? ??????');
+    }
+
+    final res = await http.put(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/assignments/$assignmentId/update/'),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    return res.statusCode == 200 && data['success'] == true;
+  }
+
 }

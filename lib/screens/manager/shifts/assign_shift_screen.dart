@@ -24,11 +24,18 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
   List<Map<String, dynamic>> _branches = [];
   List<Map<String, dynamic>> _shiftEmployees = [];
 
-  // Selected (Multi)
+  // Selected
   Set<int> _selectedEmployeeIds = {};
   Set<int> _selectedDepartmentIds = {};
   Set<int> _selectedBranchIds = {};
   bool _assignToCompany = false;
+
+  // الموظفون المستثنون من تعيينات القسم/الفرع/الشركة
+  Set<int> _excludedEmployeeIds = {};
+
+  // بحث
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
 
   // Loading
   bool _loadingData = true;
@@ -45,12 +52,16 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
+    _searchCtrl.addListener(() {
+      setState(() => _searchQuery = _searchCtrl.text.trim().toLowerCase());
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _reasonCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -99,6 +110,37 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
     }
   }
 
+  // موظفو قسم معين
+  Set<int> _deptEmployeeIds(int deptId) {
+    return _employees
+        .where((e) => e['department_id'] == deptId)
+        .map((e) => e['id'] as int)
+        .toSet();
+  }
+
+  // موظفو فرع معين
+  Set<int> _branchEmployeeIds(int branchId) {
+    return _employees
+        .where((e) => e['branch_id'] == branchId)
+        .map((e) => e['id'] as int)
+        .toSet();
+  }
+
+  // كل موظفي الأقسام والفروع والشركة المختارة (قبل الاستثناء)
+  Set<int> _groupedEmployeeIds() {
+    final result = <int>{};
+    for (final deptId in _selectedDepartmentIds) {
+      result.addAll(_deptEmployeeIds(deptId));
+    }
+    for (final branchId in _selectedBranchIds) {
+      result.addAll(_branchEmployeeIds(branchId));
+    }
+    if (_assignToCompany) {
+      result.addAll(_employees.map((e) => e['id'] as int));
+    }
+    return result;
+  }
+
   bool get _canAssign {
     if (_assignToCompany) return true;
     return _selectedEmployeeIds.isNotEmpty ||
@@ -106,16 +148,36 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         _selectedBranchIds.isNotEmpty;
   }
 
-  int get _totalSelected {
-    if (_assignToCompany) return _employees.length;
-    int total = _selectedEmployeeIds.length;
-    for (final deptId in _selectedDepartmentIds) {
-      total += _employees.where((e) => e['department_id'] == deptId).length;
-    }
-    for (final branchId in _selectedBranchIds) {
-      total += _employees.where((e) => e['branch_id'] == branchId).length;
-    }
-    return total;
+  // هل الموظف ده جزء من تعيين جماعي (قسم/فرع/شركة)؟
+  bool _isGroupedEmployee(int empId) => _groupedEmployeeIds().contains(empId);
+
+  // هل الموظف مستثنى؟
+  bool _isExcluded(int empId) => _excludedEmployeeIds.contains(empId);
+
+  // تبديل استثناء موظف من تعيين جماعي
+  void _toggleExclude(int empId) {
+    setState(() {
+      if (_excludedEmployeeIds.contains(empId)) {
+        _excludedEmployeeIds.remove(empId);
+      } else {
+        _excludedEmployeeIds.add(empId);
+      }
+    });
+  }
+
+  // فلترة الموظفين بالبحث
+  List<Map<String, dynamic>> get _filteredEmployees {
+    if (_searchQuery.isEmpty) return _employees;
+    return _employees.where((e) {
+      final name = (e['full_name'] ?? '').toString().toLowerCase();
+      final national = (e['national_id'] ?? '').toString().toLowerCase();
+      final phone = (e['phone'] ?? '').toString().toLowerCase();
+      final code = (e['employee_code'] ?? '').toString().toLowerCase();
+      return name.contains(_searchQuery) ||
+          national.contains(_searchQuery) ||
+          phone.contains(_searchQuery) ||
+          code.contains(_searchQuery);
+    }).toList();
   }
 
   Future<void> _assign() async {
@@ -139,6 +201,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         employeeIds: _selectedEmployeeIds.toList(),
         departmentIds: _selectedDepartmentIds.toList(),
         branchIds: _selectedBranchIds.toList(),
+        excludedEmployeeIds: _excludedEmployeeIds.toList(),
         assignToCompany: _assignToCompany,
       );
 
@@ -162,6 +225,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         _selectedEmployeeIds = {};
         _selectedDepartmentIds = {};
         _selectedBranchIds = {};
+        _excludedEmployeeIds = {};
         _assignToCompany = false;
         _reasonCtrl.clear();
         _assigning = false;
@@ -224,7 +288,6 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // شرح الشيفت
         _shiftSummaryCard(),
         const SizedBox(height: 12),
 
@@ -251,6 +314,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
                 _selectedEmployeeIds = {};
                 _selectedDepartmentIds = {};
                 _selectedBranchIds = {};
+                _excludedEmployeeIds = {};
               }
             }),
           ),
@@ -270,6 +334,8 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               onToggle: (id) => setState(() {
                 if (_selectedBranchIds.contains(id)) {
                   _selectedBranchIds.remove(id);
+                  // لما نشيل فرع، نشيل استثناءات موظفيه
+                  _excludedEmployeeIds.removeAll(_branchEmployeeIds(id));
                 } else {
                   _selectedBranchIds.add(id);
                 }
@@ -277,6 +343,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               onSelectAll: () => setState(() {
                 if (_selectedBranchIds.length == _branches.length) {
                   _selectedBranchIds = {};
+                  _excludedEmployeeIds = {};
                 } else {
                   _selectedBranchIds = _branches.map((b) => b['id'] as int).toSet();
                 }
@@ -296,6 +363,8 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               onToggle: (id) => setState(() {
                 if (_selectedDepartmentIds.contains(id)) {
                   _selectedDepartmentIds.remove(id);
+                  // لما نشيل قسم، نشيل استثناءات موظفيه
+                  _excludedEmployeeIds.removeAll(_deptEmployeeIds(id));
                 } else {
                   _selectedDepartmentIds.add(id);
                 }
@@ -303,40 +372,18 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               onSelectAll: () => setState(() {
                 if (_selectedDepartmentIds.length == _departments.length) {
                   _selectedDepartmentIds = {};
+                  _excludedEmployeeIds = {};
                 } else {
                   _selectedDepartmentIds = _departments.map((d) => d['id'] as int).toSet();
                 }
               }),
             ),
           const SizedBox(height: 12),
-
-          // الموظفين
-          if (_employees.isNotEmpty)
-            _multiSelectCard(
-              title: isAr ? '👥 موظفين محددين' : '👥 Specific Employees',
-              icon: Icons.person,
-              items: _employees,
-              selectedIds: _selectedEmployeeIds,
-              nameKey: 'full_name',
-              fallbackKey: 'full_name_ar',
-              subtitle: 'job_title',
-              onToggle: (id) => setState(() {
-                if (_selectedEmployeeIds.contains(id)) {
-                  _selectedEmployeeIds.remove(id);
-                } else {
-                  _selectedEmployeeIds.add(id);
-                }
-              }),
-              onSelectAll: () => setState(() {
-                if (_selectedEmployeeIds.length == _employees.length) {
-                  _selectedEmployeeIds = {};
-                } else {
-                  _selectedEmployeeIds = _employees.map((e) => e['id'] as int).toSet();
-                }
-              }),
-            ),
-          const SizedBox(height: 12),
         ],
+
+        // الموظفين مع البحث والقسم والفرع
+        _buildEmployeesSection(),
+        const SizedBox(height: 12),
 
         // التواريخ
         Card(
@@ -380,10 +427,13 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
                           : null,
                     ),
                     child: Text(
-                      _endDate != null ? _fmt(_endDate!) : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
+                      _endDate != null
+                          ? _fmt(_endDate!)
+                          : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
                       style: TextStyle(
                         color: _endDate != null ? Colors.black : Colors.grey[500],
-                        fontWeight: _endDate != null ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            _endDate != null ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -413,55 +463,10 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         ),
         const SizedBox(height: 16),
 
-        // ملخص التعيين
-        if (_canAssign) ...[
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (_assignToCompany)
-                Chip(
-                  label: Text(isAr ? '🏢 الشركة كلها' : '🏢 Whole Company'),
-                  backgroundColor: kShiftColor.withAlpha(20),
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                  onDeleted: () => setState(() => _assignToCompany = false),
-                ),
-              ..._selectedBranchIds.map((id) {
-                final branch = _branches.firstWhere((b) => b['id'] == id, orElse: () => {});
-                final name = (isAr ? branch['name_ar'] : branch['name_en']) ?? branch['name_ar'] ?? '';
-                return Chip(
-                  label: Text('🏙️ $name'),
-                  backgroundColor: Colors.blue.withAlpha(20),
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                  onDeleted: () => setState(() => _selectedBranchIds.remove(id)),
-                );
-              }),
-              ..._selectedDepartmentIds.map((id) {
-                final dept = _departments.firstWhere((d) => d['id'] == id, orElse: () => {});
-                final name = (isAr ? dept['name_ar'] : dept['name_en']) ?? dept['name_ar'] ?? '';
-                return Chip(
-                  label: Text('🏛️ $name'),
-                  backgroundColor: Colors.green.withAlpha(20),
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                  onDeleted: () => setState(() => _selectedDepartmentIds.remove(id)),
-                );
-              }),
-              ..._selectedEmployeeIds.map((id) {
-                final emp = _employees.firstWhere((e) => e['id'] == id, orElse: () => {});
-                final name = emp['full_name'] ?? emp['full_name_ar'] ?? '';
-                return Chip(
-                  label: Text('👤 $name'),
-                  backgroundColor: Colors.orange.withAlpha(20),
-                  deleteIcon: const Icon(Icons.close, size: 16),
-                  onDeleted: () => setState(() => _selectedEmployeeIds.remove(id)),
-                );
-              }),
-            ],
-          ),
-          const SizedBox(height: 12),
-        ],
+        // ملخص الاختيارات
+        _buildSelectionSummary(),
         const SizedBox(height: 16),
-        
+
         // زرار التعيين
         SizedBox(
           width: double.infinity,
@@ -469,8 +474,11 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
           child: ElevatedButton.icon(
             onPressed: (_assigning || !_canAssign) ? null : _assign,
             icon: _assigning
-                ? const SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2))
                 : const Icon(Icons.assignment_ind),
             label: Text(
               _assigning
@@ -486,6 +494,313 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
           ),
         ),
         const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  // ── قسم الموظفين مع البحث ──
+  Widget _buildEmployeesSection() {
+    final grouped = _groupedEmployeeIds();
+    final hasGrouped = grouped.isNotEmpty || _assignToCompany;
+
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: const Icon(Icons.people, color: kShiftColor),
+          title: Row(
+            children: [
+              Text(
+                isAr ? '👥 الموظفون' : '👥 Employees',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(width: 8),
+              if (_selectedEmployeeIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '+${_selectedEmployeeIds.length}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              if (_excludedEmployeeIds.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '-${_excludedEmployeeIds.length}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          subtitle: hasGrouped
+              ? Text(
+                  isAr
+                      ? 'موظفو القسم/الفرع محددون تلقائياً — يمكنك استثناء أي موظف'
+                      : 'Dept/Branch employees auto-selected — tap to exclude',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                )
+              : null,
+          children: [
+            // بحث
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: TextField(
+                controller: _searchCtrl,
+                decoration: InputDecoration(
+                  hintText: isAr
+                      ? 'بحث بالاسم أو الرقم القومي أو التليفون'
+                      : 'Search by name, national ID or phone',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 16),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  isDense: true,
+                ),
+              ),
+            ),
+            // قائمة الموظفين
+            ..._filteredEmployees.map((emp) {
+              final id = emp['id'] as int;
+              final name = (emp['full_name'] ?? '').toString();
+              final dept = (emp['department'] ?? '').toString();
+              final branch = (emp['branch'] ?? '').toString();
+              final jobTitle = (emp['job_title'] ?? '').toString();
+              final isGrouped = _isGroupedEmployee(id);
+              final isExcluded = _isExcluded(id);
+              final isDirectSelected = _selectedEmployeeIds.contains(id);
+
+              Color tileColor = Colors.transparent;
+              if (isExcluded) {
+                tileColor = Colors.red.withValues(alpha: 0.05);
+              } else if (isGrouped) {
+                tileColor = kShiftColor.withValues(alpha: 0.05);
+              }
+
+              return Container(
+                color: tileColor,
+                child: ListTile(
+                  dense: true,
+                  leading: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: isExcluded
+                            ? Colors.red.withValues(alpha: 0.15)
+                            : isGrouped
+                                ? kShiftColor.withValues(alpha: 0.15)
+                                : Colors.grey.withValues(alpha: 0.1),
+                        child: Text(
+                          name.isNotEmpty ? name[0] : '?',
+                          style: TextStyle(
+                            color: isExcluded
+                                ? Colors.red
+                                : isGrouped
+                                    ? kShiftColor
+                                    : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      if (isGrouped && !isExcluded)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: kShiftColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.check,
+                                size: 8, color: Colors.white),
+                          ),
+                        ),
+                      if (isExcluded)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close,
+                                size: 8, color: Colors.white),
+                          ),
+                        ),
+                    ],
+                  ),
+                  title: Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isExcluded ? Colors.red[700] : Colors.black87,
+                      decoration:
+                          isExcluded ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (jobTitle.isNotEmpty)
+                        Text(jobTitle,
+                            style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      if (dept.isNotEmpty || branch.isNotEmpty)
+                        Text(
+                          [
+                            if (dept.isNotEmpty) dept,
+                            if (branch.isNotEmpty) branch,
+                          ].join(' | '),
+                          style: TextStyle(
+                              fontSize: 10, color: Colors.grey[500]),
+                        ),
+                    ],
+                  ),
+                  trailing: isGrouped
+                      ? TextButton(
+                          onPressed: () => _toggleExclude(id),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            foregroundColor:
+                                isExcluded ? kShiftColor : Colors.red,
+                          ),
+                          child: Text(
+                            isExcluded
+                                ? (isAr ? 'إرجاع' : 'Include')
+                                : (isAr ? 'استثناء' : 'Exclude'),
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        )
+                      : Checkbox(
+                          value: isDirectSelected,
+                          activeColor: kShiftColor,
+                          onChanged: (_) => setState(() {
+                            if (isDirectSelected) {
+                              _selectedEmployeeIds.remove(id);
+                            } else {
+                              _selectedEmployeeIds.add(id);
+                            }
+                          }),
+                        ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── ملخص الاختيارات ──
+  Widget _buildSelectionSummary() {
+    if (!_canAssign) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        if (_assignToCompany)
+          Chip(
+            label: Text(isAr ? '🏢 الشركة كلها' : '🏢 Whole Company'),
+            backgroundColor: kShiftColor.withValues(alpha: 0.1),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () => setState(() {
+              _assignToCompany = false;
+              _excludedEmployeeIds = {};
+            }),
+          ),
+        ..._selectedBranchIds.map((id) {
+          final branch =
+              _branches.firstWhere((b) => b['id'] == id, orElse: () => {});
+          final name =
+              (isAr ? branch['name_ar'] : branch['name_en']) ??
+                  branch['name_ar'] ??
+                  '';
+          return Chip(
+            label: Text('🏙️ $name'),
+            backgroundColor: Colors.blue.withValues(alpha: 0.1),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () => setState(() {
+              _selectedBranchIds.remove(id);
+              _excludedEmployeeIds.removeAll(_branchEmployeeIds(id));
+            }),
+          );
+        }),
+        ..._selectedDepartmentIds.map((id) {
+          final dept =
+              _departments.firstWhere((d) => d['id'] == id, orElse: () => {});
+          final name =
+              (isAr ? dept['name_ar'] : dept['name_en']) ??
+                  dept['name_ar'] ??
+                  '';
+          return Chip(
+            label: Text('🏛️ $name'),
+            backgroundColor: Colors.green.withValues(alpha: 0.1),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () => setState(() {
+              _selectedDepartmentIds.remove(id);
+              _excludedEmployeeIds.removeAll(_deptEmployeeIds(id));
+            }),
+          );
+        }),
+        ..._selectedEmployeeIds.map((id) {
+          final emp =
+              _employees.firstWhere((e) => e['id'] == id, orElse: () => {});
+          final name = emp['full_name'] ?? '';
+          return Chip(
+            label: Text('👤 $name'),
+            backgroundColor: Colors.orange.withValues(alpha: 0.1),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () =>
+                setState(() => _selectedEmployeeIds.remove(id)),
+          );
+        }),
+        if (_excludedEmployeeIds.isNotEmpty)
+          Chip(
+            label: Text(
+              isAr
+                  ? '🚫 ${_excludedEmployeeIds.length} مستثنى'
+                  : '🚫 ${_excludedEmployeeIds.length} excluded',
+            ),
+            backgroundColor: Colors.red.withValues(alpha: 0.1),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () => setState(() => _excludedEmployeeIds = {}),
+          ),
       ],
     );
   }
@@ -511,30 +826,39 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
           leading: Icon(icon, color: kShiftColor),
           title: Row(
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(width: 8),
               if (selectedIds.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: kShiftColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '${selectedIds.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
           ),
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
                 children: [
                   TextButton.icon(
                     onPressed: onSelectAll,
-                    icon: Icon(allSelected ? Icons.deselect : Icons.select_all, size: 16),
+                    icon: Icon(
+                        allSelected ? Icons.deselect : Icons.select_all,
+                        size: 16),
                     label: Text(
                       allSelected
                           ? (isAr ? 'إلغاء الكل' : 'Deselect All')
@@ -547,15 +871,21 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
             ),
             ...items.map((item) {
               final id = item['id'] as int;
-              final name = (item[nameKey] ?? item[fallbackKey] ?? '').toString();
-              final sub = subtitle != null ? (item[subtitle] ?? '').toString() : '';
+              final name =
+                  (item[nameKey] ?? item[fallbackKey] ?? '').toString();
+              final sub =
+                  subtitle != null ? (item[subtitle] ?? '').toString() : '';
               final isSelected = selectedIds.contains(id);
               return CheckboxListTile(
                 dense: true,
                 value: isSelected,
                 activeColor: kShiftColor,
-                title: Text(name, style: const TextStyle(fontSize: 13)),
-                subtitle: sub.isNotEmpty ? Text(sub, style: const TextStyle(fontSize: 11)) : null,
+                title:
+                    Text(name, style: const TextStyle(fontSize: 13)),
+                subtitle: sub.isNotEmpty
+                    ? Text(sub,
+                        style: const TextStyle(fontSize: 11))
+                    : null,
                 onChanged: (_) => onToggle(id),
               );
             }),
@@ -583,11 +913,13 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               children: [
                 Text(
                   (widget.shift['name'] ?? '').toString(),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 Text(
                   '${widget.shift['start_time'] ?? ''} - ${widget.shift['end_time'] ?? ''}  |  ${isAr ? 'سماح' : 'Grace'}: ${widget.shift['grace_period'] ?? 0} ${isAr ? 'د' : 'min'}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style:
+                      TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
@@ -599,7 +931,8 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
 
   Widget _buildCurrentTab() {
     if (_loadingShiftEmps) {
-      return const Center(child: CircularProgressIndicator(color: kShiftColor));
+      return const Center(
+          child: CircularProgressIndicator(color: kShiftColor));
     }
 
     if (_shiftEmployees.isEmpty) {
@@ -610,7 +943,9 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
             Icon(Icons.people_outline, size: 70, color: Colors.grey[300]),
             const SizedBox(height: 12),
             Text(
-              isAr ? 'لا يوجد موظفون في هذا الشيفت' : 'No employees in this shift',
+              isAr
+                  ? 'لا يوجد موظفون في هذا الشيفت'
+                  : 'No employees in this shift',
               style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ],
@@ -625,13 +960,15 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         final emp = _shiftEmployees[i];
         return Card(
           margin: const EdgeInsets.only(bottom: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: kShiftColor.withValues(alpha: 0.1),
               child: Text(
                 (emp['full_name'] ?? '?').toString().substring(0, 1),
-                style: const TextStyle(color: kShiftColor, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: kShiftColor, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
@@ -642,10 +979,12 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text((emp['job_title'] ?? '').toString(),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                    style: TextStyle(
+                        color: Colors.grey[600], fontSize: 12)),
                 Text(
                   '${isAr ? 'من' : 'From'}: ${emp['start_date'] ?? ''}',
-                  style: TextStyle(color: Colors.green[700], fontSize: 12),
+                  style: TextStyle(
+                      color: Colors.green[700], fontSize: 12),
                 ),
               ],
             ),

@@ -20,12 +20,21 @@ class _ShiftsScreenState extends State<ShiftsScreen>
   List<Map<String, dynamic>> _shifts = [];
   bool _loading = true;
   String? _error;
-
   bool _didLoadOnce = false;
+
+  // ── التعيينات ──
+  List<Map<String, dynamic>> _assignments = [];
+  bool _loadingAssignments = false;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.index == 2 && _assignments.isEmpty && !_loadingAssignments) {
+        _loadAssignments();
+      }
+    });
   }
 
   @override
@@ -60,6 +69,27 @@ class _ShiftsScreenState extends State<ShiftsScreen>
         _error = e.toString();
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _loadAssignments() async {
+    if (!mounted) return;
+    setState(() => _loadingAssignments = true);
+    try {
+      final data = await ShiftsService.getShiftAssignments();
+      if (mounted) {
+        setState(() {
+          _assignments = data;
+          _loadingAssignments = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loadingAssignments = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -112,6 +142,146 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     }
   }
 
+  Future<void> _deleteAssignment(Map<String, dynamic> a) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          title: Text(isAr ? 'إلغاء التعيين' : 'Remove Assignment'),
+          content: Text(
+            isAr
+                ? 'هل تريد إزالة "${a['target_name']}" من شيفت "${a['shift_name']}"؟'
+                : 'Remove "${a['target_name']}" from shift "${a['shift_name']}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(isAr ? 'تراجع' : 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text(
+                isAr ? 'حذف' : 'Delete',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      final success = await ShiftsService.deleteAssignment(a['id']);
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isAr ? 'تم إلغاء التعيين بنجاح' : 'Assignment removed'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadAssignments();
+        _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _editAssignment(Map<String, dynamic> a) async {
+    final startCtrl = TextEditingController(text: a['start_date']?.toString() ?? '');
+    final endCtrl = TextEditingController(text: a['end_date']?.toString() ?? '');
+    final notesCtrl = TextEditingController(text: a['notes']?.toString() ?? '');
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          title: Text(isAr ? 'تعديل التعيين' : 'Edit Assignment'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                a['target_name']?.toString() ?? '',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: startCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'تاريخ البداية (YYYY-MM-DD)' : 'Start Date (YYYY-MM-DD)',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: endCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'تاريخ النهاية (اختياري)' : 'End Date (optional)',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: notesCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'ملاحظات' : 'Notes',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(isAr ? 'تراجع' : 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: kShiftColor),
+              child: Text(
+                isAr ? 'حفظ' : 'Save',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final body = <String, dynamic>{
+        'start_date': startCtrl.text.trim(),
+        if (endCtrl.text.trim().isNotEmpty) 'end_date': endCtrl.text.trim(),
+        if (notesCtrl.text.trim().isNotEmpty) 'notes': notesCtrl.text.trim(),
+      };
+      final success = await ShiftsService.updateAssignment(a['id'], body);
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isAr ? 'تم تعديل التعيين بنجاح' : 'Assignment updated'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadAssignments();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   Color _shiftColor(String? type) {
     switch (type) {
       case 'morning': return Colors.orange;
@@ -136,6 +306,46 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     }
   }
 
+  IconData _assignmentTypeIcon(String? type) {
+    switch (type) {
+      case 'employee': return Icons.person;
+      case 'department': return Icons.business;
+      case 'branch': return Icons.location_on;
+      case 'company': return Icons.apartment;
+      default: return Icons.assignment_ind;
+    }
+  }
+
+  Color _assignmentTypeColor(String? type) {
+    switch (type) {
+      case 'employee': return Colors.blue;
+      case 'department': return Colors.green;
+      case 'branch': return Colors.orange;
+      case 'company': return Colors.purple;
+      default: return kShiftColor;
+    }
+  }
+
+  String _assignmentTypeLabel(String? type) {
+    if (isAr) {
+      switch (type) {
+        case 'employee': return 'موظف';
+        case 'department': return 'قسم';
+        case 'branch': return 'فرع';
+        case 'company': return 'شركة';
+        default: return type ?? '';
+      }
+    } else {
+      switch (type) {
+        case 'employee': return 'Employee';
+        case 'department': return 'Department';
+        case 'branch': return 'Branch';
+        case 'company': return 'Company';
+        default: return type ?? '';
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -153,7 +363,10 @@ class _ShiftsScreenState extends State<ShiftsScreen>
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
-              onPressed: _load,
+              onPressed: () {
+                _load();
+                if (_tabController.index == 2) _loadAssignments();
+              },
             ),
             IconButton(
               icon: const Icon(Icons.pending_actions, color: Colors.white),
@@ -175,6 +388,10 @@ class _ShiftsScreenState extends State<ShiftsScreen>
                 text: isAr ? 'شيفتي' : 'My Shift',
                 icon: const Icon(Icons.person),
               ),
+              Tab(
+                text: isAr ? 'التعيينات' : 'Assignments',
+                icon: const Icon(Icons.assignment_ind),
+              ),
             ],
           ),
         ),
@@ -183,6 +400,7 @@ class _ShiftsScreenState extends State<ShiftsScreen>
           children: [
             _buildShiftsTab(),
             _buildMyShiftTab(),
+            _buildAssignmentsTab(),
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -206,6 +424,9 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 
+  // ─────────────────────────────────────────────
+  // تبويب الشيفتات
+  // ─────────────────────────────────────────────
   Widget _buildShiftsTab() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: kShiftColor));
@@ -276,7 +497,6 @@ class _ShiftsScreenState extends State<ShiftsScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -351,13 +571,10 @@ class _ShiftsScreenState extends State<ShiftsScreen>
               ],
             ),
           ),
-
-          // Details
           Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               children: [
-                // الأوقات
                 Row(
                   children: [
                     _infoChip(
@@ -417,8 +634,6 @@ class _ShiftsScreenState extends State<ShiftsScreen>
                 const SizedBox(height: 10),
                 const Divider(height: 1),
                 const SizedBox(height: 8),
-
-                // Buttons
                 Row(
                   children: [
                     Icon(Icons.people, size: 14, color: Colors.grey[600]),
@@ -475,6 +690,9 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 
+  // ─────────────────────────────────────────────
+  // تبويب شيفتي
+  // ─────────────────────────────────────────────
   Widget _buildMyShiftTab() {
     return FutureBuilder<Map<String, dynamic>>(
       future: ShiftsService.getMyShift(),
@@ -508,7 +726,6 @@ class _ShiftsScreenState extends State<ShiftsScreen>
         return ListView(
           padding: const EdgeInsets.all(12),
           children: [
-            // شيفت اليوم
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -570,8 +787,6 @@ class _ShiftsScreenState extends State<ShiftsScreen>
               ),
             ),
             const SizedBox(height: 16),
-
-            // جدول الأسبوعين
             Text(
               isAr ? 'الجدول الأسبوعي القادم' : 'Upcoming Schedule',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -647,6 +862,157 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 
+  // ─────────────────────────────────────────────
+  // تبويب التعيينات
+  // ─────────────────────────────────────────────
+  Widget _buildAssignmentsTab() {
+    if (_loadingAssignments && _assignments.isEmpty) {
+      return const Center(child: CircularProgressIndicator(color: kShiftColor));
+    }
+
+    if (!_loadingAssignments && _assignments.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _loadAssignments,
+        child: ListView(
+          children: [
+            const SizedBox(height: 120),
+            Center(
+              child: Column(
+                children: [
+                  Icon(Icons.assignment_outlined, size: 80, color: Colors.grey[300]),
+                  const SizedBox(height: 16),
+                  Text(
+                    isAr ? 'لا توجد تعيينات حالية' : 'No assignments found',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadAssignments,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: _assignments.length,
+        itemBuilder: (_, i) => _buildAssignmentCard(_assignments[i]),
+      ),
+    );
+  }
+
+  Widget _buildAssignmentCard(Map<String, dynamic> a) {
+    final typeColor = _assignmentTypeColor(a['assignment_type']?.toString());
+    final typeIcon = _assignmentTypeIcon(a['assignment_type']?.toString());
+    final typeLabel = _assignmentTypeLabel(a['assignment_type']?.toString());
+    final dept = a['department']?.toString() ?? '';
+    final branch = a['branch']?.toString() ?? '';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // أيقونة النوع
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(typeIcon, color: typeColor, size: 22),
+            ),
+            const SizedBox(width: 12),
+            // التفاصيل
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // الاسم + نوع التعيين
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          a['target_name']?.toString() ?? '',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: typeColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: typeColor.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          typeLabel,
+                          style: TextStyle(fontSize: 10, color: typeColor, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // اسم الشيفت
+                  Row(
+                    children: [
+                      const Icon(Icons.schedule, size: 13, color: kShiftColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        a['shift_name']?.toString() ?? '',
+                        style: const TextStyle(color: kShiftColor, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // القسم والفرع
+                  if (dept.isNotEmpty || branch.isNotEmpty)
+                    Text(
+                      [
+                        if (dept.isNotEmpty) '${isAr ? 'قسم' : 'Dept'}: $dept',
+                        if (branch.isNotEmpty) '${isAr ? 'فرع' : 'Branch'}: $branch',
+                      ].join('  |  '),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    ),
+                  const SizedBox(height: 4),
+                  // التواريخ
+                  Text(
+                    '${isAr ? 'من' : 'From'}: ${a['start_date'] ?? '-'}'
+                    '${a['end_date'] != null ? '   ${isAr ? 'إلى' : 'To'}: ${a['end_date']}' : ''}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            ),
+            // أزرار التعديل والحذف
+            Column(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit_outlined, color: Colors.blue[600], size: 20),
+                  tooltip: isAr ? 'تعديل' : 'Edit',
+                  onPressed: () => _editAssignment(a),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                  tooltip: isAr ? 'حذف' : 'Delete',
+                  onPressed: () => _deleteAssignment(a),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // طلبات التغيير
+  // ─────────────────────────────────────────────
   void _showChangeRequests() async {
     final requests = await ShiftsService.getShiftChangeRequests(status: 'pending');
     if (!mounted) return;
@@ -750,6 +1116,9 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 
+  // ─────────────────────────────────────────────
+  // مساعد
+  // ─────────────────────────────────────────────
   Widget _infoChip(IconData icon, String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -771,4 +1140,3 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 }
-
