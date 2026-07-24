@@ -1903,6 +1903,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     final shiftName = _status?['shift_name'] ?? '';
     final shiftStart = _status?['shift_start'] ?? '';
     final shiftEnd = _status?['shift_end'] ?? '';
+    final shiftPeriods =
+        List<Map<String, dynamic>>.from(_status?['shift_periods'] ?? const []);
+    final missingPeriods =
+        List<Map<String, dynamic>>.from(_status?['missing_periods'] ?? const []);
     final allowPartialCheckout = _status?['allow_partial_checkout'] == true;
     final canPartialCheckout = _status?['can_partial_checkout'] == true;
     final canResume = _status?['can_resume'] == true;
@@ -1994,50 +1998,137 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-if (shiftName.toString().isNotEmpty) ...[
-  Card(
-    elevation: 2,
-    shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12)),
-    child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(children: [
-          const Icon(Icons.schedule, color: kPrimaryColor),
-          const SizedBox(width: 8),
-          Expanded(
-              child: Text(
-            '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          )),
-        ])),
-  ),
-  const SizedBox(height: 8),
-  InkWell(
-    onTap: () => Navigator.push(context,
-        MaterialPageRoute(builder: (_) => const MyShiftScreen())),
-    borderRadius: BorderRadius.circular(12),
-    child: Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: kPrimaryColor.withAlpha(15),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(children: [
-          Icon(Icons.calendar_month, color: kPrimaryColor, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            isAr ? 'تفاصيل شيفتي والجدول الأسبوعي' : 'My Shift Details & Schedule',
-            style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.w600, fontSize: 13),
-          ),
-          const Spacer(),
-          Icon(Icons.arrow_forward_ios, color: kPrimaryColor, size: 14),
-        ]),
-      ),
-    ),
-  ),
-],
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+          if (shiftName.toString().isNotEmpty) ...[
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(children: [
+                    const Icon(Icons.schedule, color: kPrimaryColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(
+                      '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ])),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const MyShiftScreen())),
+              borderRadius: BorderRadius.circular(12),
+              child: Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                color: kPrimaryColor.withAlpha(15),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(children: [
+                    Icon(Icons.calendar_month, color: kPrimaryColor, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      isAr ? 'تفاصيل شيفتي والجدول الأسبوعي' : 'My Shift Details & Schedule',
+                      style: TextStyle(
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.arrow_forward_ios, color: kPrimaryColor, size: 14),
+                  ]),
+                ),
+              ),
+            ),
+            if (shiftPeriods.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isAr ? 'فترات الشيفت اليوم' : 'Today Shift Periods',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...shiftPeriods.map((p) => Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor.withAlpha(12),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: kPrimaryColor.withAlpha(35)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.schedule, size: 16, color: kPrimaryColor),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            if (missingPeriods.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                color: Colors.red[50],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red[700]),
+                          const SizedBox(width: 8),
+                          Text(
+                            isAr ? 'فترات ناقصة اليوم' : 'Missing Periods Today',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...missingPeriods.map((p) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '• ${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
+                              style: TextStyle(color: Colors.red[800], fontSize: 13),
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],          const SizedBox(height: 16),
           if (checkedIn && !checkedOut)
             Container(
               padding: const EdgeInsets.all(16),
