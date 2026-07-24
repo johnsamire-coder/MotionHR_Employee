@@ -49,7 +49,7 @@ class _ManagerEmployeesListScreenState
         queryParams['status'] = _statusFilter;
 
       final uri = Uri.parse(
-              'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/')
+              'https://motion.jssolutions-eg.com/attendance/api/mobile/manager/employees/')
           .replace(
               queryParameters:
                   queryParams.isEmpty ? null : queryParams);
