@@ -414,35 +414,54 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
         const SizedBox(height: 16),
 
         // ملخص التعيين
-        if (_canAssign)
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: kShiftColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: kShiftColor.withValues(alpha: 0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAr ? 'ملخص التعيين' : 'Assignment Summary',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: kShiftColor),
+        if (_canAssign) ...[
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (_assignToCompany)
+                Chip(
+                  label: Text(isAr ? '🏢 الشركة كلها' : '🏢 Whole Company'),
+                  backgroundColor: kShiftColor.withAlpha(20),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => setState(() => _assignToCompany = false),
                 ),
-                const SizedBox(height: 8),
-                if (_assignToCompany)
-                  Text(isAr ? '🏢 الشركة كلها' : '🏢 Whole Company'),
-                if (_selectedBranchIds.isNotEmpty)
-                  Text('🏙️ ${_selectedBranchIds.length} ${isAr ? 'فرع' : 'branch(es)'}'),
-                if (_selectedDepartmentIds.isNotEmpty)
-                  Text('🏛️ ${_selectedDepartmentIds.length} ${isAr ? 'قسم' : 'department(s)'}'),
-                if (_selectedEmployeeIds.isNotEmpty)
-                  Text('👥 ${_selectedEmployeeIds.length} ${isAr ? 'موظف مباشر' : 'direct employee(s)'}'),
-              ],
-            ),
+              ..._selectedBranchIds.map((id) {
+                final branch = _branches.firstWhere((b) => b['id'] == id, orElse: () => {});
+                final name = (isAr ? branch['name_ar'] : branch['name_en']) ?? branch['name_ar'] ?? '';
+                return Chip(
+                  label: Text('🏙️ $name'),
+                  backgroundColor: Colors.blue.withAlpha(20),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => setState(() => _selectedBranchIds.remove(id)),
+                );
+              }),
+              ..._selectedDepartmentIds.map((id) {
+                final dept = _departments.firstWhere((d) => d['id'] == id, orElse: () => {});
+                final name = (isAr ? dept['name_ar'] : dept['name_en']) ?? dept['name_ar'] ?? '';
+                return Chip(
+                  label: Text('🏛️ $name'),
+                  backgroundColor: Colors.green.withAlpha(20),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => setState(() => _selectedDepartmentIds.remove(id)),
+                );
+              }),
+              ..._selectedEmployeeIds.map((id) {
+                final emp = _employees.firstWhere((e) => e['id'] == id, orElse: () => {});
+                final name = emp['full_name'] ?? emp['full_name_ar'] ?? '';
+                return Chip(
+                  label: Text('👤 $name'),
+                  backgroundColor: Colors.orange.withAlpha(20),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => setState(() => _selectedEmployeeIds.remove(id)),
+                );
+              }),
+            ],
           ),
+          const SizedBox(height: 12),
+        ],
         const SizedBox(height: 16),
-
+        
         // زرار التعيين
         SizedBox(
           width: double.infinity,
