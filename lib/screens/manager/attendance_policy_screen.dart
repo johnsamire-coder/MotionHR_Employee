@@ -148,7 +148,8 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
           },
           backgroundColor: kPolicyColor,
           icon: const Icon(Icons.add, color: Colors.white),
-          label: Text(isAr ? 'سياسة جديدة' : 'New Policy', style: const TextStyle(color: Colors.white)),
+          label: Text(isAr ? 'سياسة جديدة' : 'New Policy',
+              style: const TextStyle(color: Colors.white)),
         ),
       ),
     );
@@ -168,46 +169,49 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    policy['name'] ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+            Row(children: [
+              Expanded(
+                child: Text(policy['name'] ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                  ),
-                  child: Text(
-                    _statusLabel(status),
-                    style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+                child: Text(_statusLabel(status),
+                    style: TextStyle(
+                        color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ]),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+            Row(children: [
+              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text('${isAr ? 'من' : 'From'}: ${policy['effective_from'] ?? ''}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              if (policy['effective_to'] != null) ...[
+                const SizedBox(width: 8),
+                Text('${isAr ? 'لحد' : 'To'}: ${policy['effective_to']}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ]),
+            // بيان الأذونات لو مفعلة
+            if (policy['permission_enabled'] == true) ...[
+              const SizedBox(height: 6),
+              Row(children: [
+                const Icon(Icons.access_time, size: 14, color: Colors.teal),
                 const SizedBox(width: 4),
                 Text(
-                  '${isAr ? 'من' : 'From'}: ${policy['effective_from'] ?? ''}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  isAr
+                      ? 'أذونات: ${policy['permission_monthly_hours']} ساعة / ${policy['permission_monthly_count']} مرة'
+                      : 'Permissions: ${policy['permission_monthly_hours']}h / ${policy['permission_monthly_count']} times',
+                  style: const TextStyle(fontSize: 12, color: Colors.teal),
                 ),
-                if (policy['effective_to'] != null) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    '${isAr ? 'لحد' : 'To'}: ${policy['effective_to']}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ],
-            ),
+              ]),
+            ],
             if (assignments.isNotEmpty) ...[
               const SizedBox(height: 6),
               Wrap(
@@ -229,54 +233,42 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
               ),
             ],
             const Divider(height: 16),
-            Row(
-              children: [
-                // تفاصيل
-                TextButton.icon(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
+            Row(children: [
+              TextButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(context,
                       MaterialPageRoute(
-                        builder: (_) => CreateEditPolicyScreen(policy: policy),
-                      ),
-                    );
-                    if (result == true) _load();
-                  },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text(isAr ? 'تعديل' : 'Edit'),
-                  style: TextButton.styleFrom(foregroundColor: kPolicyColor),
-                ),
-
-                // ربط
-                TextButton.icon(
-                  onPressed: () => _showAssignDialog(policy),
-                  icon: const Icon(Icons.link, size: 16),
-                  label: Text(isAr ? 'ربط' : 'Assign'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.teal),
-                ),
-
-                const Spacer(),
-
-                // موافقة
-                if (status == 'draft')
-                  ElevatedButton(
-                    onPressed: () => _approve(policy),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    ),
-                    child: Text(isAr ? 'اعتماد' : 'Approve', style: const TextStyle(fontSize: 12)),
+                          builder: (_) => CreateEditPolicyScreen(policy: policy)));
+                  if (result == true) _load();
+                },
+                icon: const Icon(Icons.edit, size: 16),
+                label: Text(isAr ? 'تعديل' : 'Edit'),
+                style: TextButton.styleFrom(foregroundColor: kPolicyColor),
+              ),
+              TextButton.icon(
+                onPressed: () => _showAssignDialog(policy),
+                icon: const Icon(Icons.link, size: 16),
+                label: Text(isAr ? 'ربط' : 'Assign'),
+                style: TextButton.styleFrom(foregroundColor: Colors.teal),
+              ),
+              const Spacer(),
+              if (status == 'draft')
+                ElevatedButton(
+                  onPressed: () => _approve(policy),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   ),
-
-                // حذف
-                if (status != 'active')
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                    onPressed: () => _delete(policy),
-                  ),
-              ],
-            ),
+                  child: Text(isAr ? 'اعتماد' : 'Approve',
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              if (status != 'active')
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                  onPressed: () => _delete(policy),
+                ),
+            ]),
           ],
         ),
       ),
@@ -309,9 +301,12 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                     border: const OutlineInputBorder(),
                   ),
                   items: [
-                    DropdownMenuItem(value: 'company', child: Text(isAr ? 'الشركة كلها' : 'Whole Company')),
-                    DropdownMenuItem(value: 'branch', child: Text(isAr ? 'فرع' : 'Branch')),
-                    DropdownMenuItem(value: 'department', child: Text(isAr ? 'قسم' : 'Department')),
+                    DropdownMenuItem(value: 'company',
+                        child: Text(isAr ? 'الشركة كلها' : 'Whole Company')),
+                    DropdownMenuItem(value: 'branch',
+                        child: Text(isAr ? 'فرع' : 'Branch')),
+                    DropdownMenuItem(value: 'department',
+                        child: Text(isAr ? 'قسم' : 'Department')),
                   ],
                   onChanged: (v) => setS(() => assignmentType = v ?? 'company'),
                 ),
@@ -324,7 +319,9 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                     ),
                     items: branches.map((b) => DropdownMenuItem<int>(
                       value: b['id'] as int,
-                      child: Text(isAr ? (b['name_ar'] ?? '') : (b['name_en'] ?? b['name_ar'] ?? '')),
+                      child: Text(isAr
+                          ? (b['name_ar'] ?? '')
+                          : (b['name_en'] ?? b['name_ar'] ?? '')),
                     )).toList(),
                     onChanged: (v) => setS(() => selectedBranchId = v),
                   ),
@@ -336,7 +333,9 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                     ),
                     items: departments.map((d) => DropdownMenuItem<int>(
                       value: d['id'] as int,
-                      child: Text(isAr ? (d['name_ar'] ?? '') : (d['name_en'] ?? d['name_ar'] ?? '')),
+                      child: Text(isAr
+                          ? (d['name_ar'] ?? '')
+                          : (d['name_en'] ?? d['name_ar'] ?? '')),
                     )).toList(),
                     onChanged: (v) => setS(() => selectedDeptId = v),
                   ),
@@ -358,12 +357,10 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                       branchId: selectedBranchId,
                     );
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(isAr ? 'تم ربط السياسة ✅' : 'Policy assigned ✅'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(isAr ? 'تم ربط السياسة ✅' : 'Policy assigned ✅'),
+                        backgroundColor: Colors.green,
+                      ));
                       _load();
                     }
                   } catch (e) {
@@ -372,7 +369,8 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: kPolicyColor, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kPolicyColor, foregroundColor: Colors.white),
                 child: Text(isAr ? 'تأكيد' : 'Confirm'),
               ),
             ],
@@ -393,7 +391,8 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: _load,
-            style: ElevatedButton.styleFrom(backgroundColor: kPolicyColor, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: kPolicyColor, foregroundColor: Colors.white),
             child: Text(isAr ? 'إعادة المحاولة' : 'Retry'),
           ),
         ],
@@ -408,10 +407,8 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
         children: [
           Icon(Icons.policy_outlined, size: 80, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          Text(
-            isAr ? 'لا توجد سياسات' : 'No policies',
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
+          Text(isAr ? 'لا توجد سياسات' : 'No policies',
+              style: const TextStyle(fontSize: 18, color: Colors.grey)),
           const SizedBox(height: 8),
           Text(
             isAr ? 'اضغط + لإنشاء سياسة جديدة' : 'Press + to create a new policy',
@@ -422,7 +419,6 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────
 // شاشة إنشاء/تعديل السياسة
@@ -447,6 +443,14 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
   final _notesCtrl = TextEditingController();
   bool _saving = false;
 
+  // Permission Settings
+  bool _permissionEnabled = false;
+  double _permissionMonthlyHours = 4.0;
+  int _permissionMonthlyCount = 2;
+  double _permissionMaxHoursPerRequest = 2.0;
+  bool _permissionFractionAsFull = false;
+  String _permissionResetCycle = 'calendar';
+
   // Late Rules
   List<Map<String, dynamic>> _lateRules = [
     {'from_minutes': 0, 'to_minutes': 15, 'deduction_type': 'none', 'deduction_value': 0.0},
@@ -469,7 +473,8 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
 
   // Night Shift
   List<Map<String, dynamic>> _nightRules = [
-    {'allowance_type': 'fixed_amount', 'amount': 50.0, 'percentage': 10.0, 'night_start_hour': 20, 'min_night_hours': 4},
+    {'allowance_type': 'fixed_amount', 'amount': 50.0, 'percentage': 10.0,
+      'night_start_hour': 20, 'min_night_hours': 4},
   ];
 
   // Weekend Work
@@ -480,7 +485,7 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     if (isEdit) {
       final p = widget.policy!;
       _nameCtrl.text = p['name'] ?? '';
@@ -506,6 +511,15 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
       if ((p['weekend_work_rules'] as List? ?? []).isNotEmpty) {
         _weekendRules = List<Map<String, dynamic>>.from(p['weekend_work_rules']);
       }
+      // Permission Settings
+      _permissionEnabled = p['permission_enabled'] ?? false;
+      _permissionMonthlyHours = double.tryParse(
+          p['permission_monthly_hours']?.toString() ?? '4') ?? 4.0;
+      _permissionMonthlyCount = p['permission_monthly_count'] ?? 2;
+      _permissionMaxHoursPerRequest = double.tryParse(
+          p['permission_max_hours_per_request']?.toString() ?? '2') ?? 2.0;
+      _permissionFractionAsFull = p['permission_fraction_as_full'] ?? false;
+      _permissionResetCycle = p['permission_reset_cycle'] ?? 'calendar';
     }
   }
 
@@ -527,14 +541,17 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
-    if (picked != null) setState(() => isStart ? _effectiveFrom = picked : _effectiveTo = picked);
+    if (picked != null) {
+      setState(() => isStart ? _effectiveFrom = picked : _effectiveTo = picked);
+    }
   }
 
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isAr ? 'اسم السياسة مطلوب' : 'Policy name is required'), backgroundColor: Colors.orange),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'اسم السياسة مطلوب' : 'Policy name is required'),
+        backgroundColor: Colors.orange,
+      ));
       return;
     }
 
@@ -551,6 +568,12 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
         'overtime_rules': _overtimeRules,
         'night_shift_rules': _nightRules,
         'weekend_work_rules': _weekendRules,
+        'permission_enabled': _permissionEnabled,
+        'permission_monthly_hours': _permissionMonthlyHours,
+        'permission_monthly_count': _permissionMonthlyCount,
+        'permission_max_hours_per_request': _permissionMaxHoursPerRequest,
+        'permission_fraction_as_full': _permissionFractionAsFull,
+        'permission_reset_cycle': _permissionResetCycle,
       };
 
       if (isEdit) {
@@ -560,12 +583,10 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? 'تم الحفظ بنجاح ✅' : 'Saved successfully ✅'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'تم الحفظ بنجاح ✅' : 'Saved successfully ✅'),
+          backgroundColor: Colors.green,
+        ));
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -584,7 +605,9 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(
-            isEdit ? (isAr ? 'تعديل السياسة' : 'Edit Policy') : (isAr ? 'سياسة جديدة' : 'New Policy'),
+            isEdit
+                ? (isAr ? 'تعديل السياسة' : 'Edit Policy')
+                : (isAr ? 'سياسة جديدة' : 'New Policy'),
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: kPolicyColor,
@@ -601,6 +624,7 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
               Tab(text: isAr ? 'الغياب' : 'Absence'),
               Tab(text: isAr ? 'أوفر تايم' : 'Overtime'),
               Tab(text: isAr ? 'بدلات' : 'Allowances'),
+              Tab(text: isAr ? 'الأذونات' : 'Permissions'),
             ],
           ),
         ),
@@ -612,6 +636,7 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
             _buildAbsenceTab(),
             _buildOvertimeTab(),
             _buildAllowancesTab(),
+            _buildPermissionsTab(),
           ],
         ),
         bottomNavigationBar: Padding(
@@ -623,11 +648,18 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPolicyColor,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: _saving
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text(isAr ? 'حفظ السياسة ✓' : 'Save Policy ✓', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ? const SizedBox(
+                      width: 24, height: 24,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2))
+                  : Text(
+                      isAr ? 'حفظ السياسة ✓' : 'Save Policy ✓',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ),
@@ -636,73 +668,83 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
   }
 
   Widget _buildBasicTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(isAr ? 'معلومات السياسة' : 'Policy Info',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: isAr ? 'اسم السياسة *' : 'Policy Name *',
-                    prefixIcon: const Icon(Icons.policy, color: kPolicyColor),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () => _pickDate(isStart: true),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'سارية من *' : 'Effective From *',
-                      prefixIcon: const Icon(Icons.calendar_today, color: Colors.green),
-                      border: const OutlineInputBorder(),
-                    ),
-                    child: Text(_fmt(_effectiveFrom), style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () => _pickDate(isStart: false),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'سارية لحد (اختياري)' : 'Effective To (optional)',
-                      prefixIcon: const Icon(Icons.event, color: Colors.orange),
-                      border: const OutlineInputBorder(),
-                      suffixIcon: _effectiveTo != null
-                          ? IconButton(icon: const Icon(Icons.clear, size: 18), onPressed: () => setState(() => _effectiveTo = null))
-                          : null,
-                    ),
-                    child: Text(
-                      _effectiveTo != null ? _fmt(_effectiveTo!) : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
-                      style: TextStyle(color: _effectiveTo != null ? Colors.black : Colors.grey[500]),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _notesCtrl,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    labelText: isAr ? 'ملاحظات' : 'Notes',
-                    prefixIcon: const Icon(Icons.notes, color: kPolicyColor),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ],
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(isAr ? 'معلومات السياسة' : 'Policy Info',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: kPolicyColor)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _nameCtrl,
+              decoration: InputDecoration(
+                labelText: isAr ? 'اسم السياسة *' : 'Policy Name *',
+                prefixIcon: const Icon(Icons.policy, color: kPolicyColor),
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => _pickDate(isStart: true),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: isAr ? 'سارية من *' : 'Effective From *',
+                  prefixIcon:
+                      const Icon(Icons.calendar_today, color: Colors.green),
+                  border: const OutlineInputBorder(),
+                ),
+                child: Text(_fmt(_effectiveFrom),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => _pickDate(isStart: false),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: isAr
+                      ? 'سارية لحد (اختياري)'
+                      : 'Effective To (optional)',
+                  prefixIcon:
+                      const Icon(Icons.event, color: Colors.orange),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _effectiveTo != null
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () =>
+                              setState(() => _effectiveTo = null))
+                      : null,
+                ),
+                child: Text(
+                  _effectiveTo != null
+                      ? _fmt(_effectiveTo!)
+                      : (isAr ? 'بدون تاريخ نهاية' : 'No end date'),
+                  style: TextStyle(
+                      color: _effectiveTo != null
+                          ? Colors.black
+                          : Colors.grey[500]),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: isAr ? 'ملاحظات' : 'Notes',
+                prefixIcon: const Icon(Icons.notes, color: kPolicyColor),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ]),
         ),
-      ],
-    );
+      ),
+    ]);
   }
 
   Widget _buildLateRulesTab() {
@@ -713,383 +755,539 @@ class _CreateEditPolicyScreenState extends State<CreateEditPolicyScreen>
       {'value': 'per_minute', 'label': isAr ? 'لكل دقيقة' : 'Per minute'},
     ];
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            Text(isAr ? 'قواعد خصم التأخير' : 'Late Deduction Rules',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () => setState(() => _lateRules.add(
-                {'from_minutes': 0, 'to_minutes': 30, 'deduction_type': 'day_fraction', 'deduction_value': 0.25}
-              )),
-              icon: const Icon(Icons.add, size: 16),
-              label: Text(isAr ? 'إضافة' : 'Add'),
-            ),
-          ],
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Row(children: [
+        Text(isAr ? 'قواعد خصم التأخير' : 'Late Deduction Rules',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: kPolicyColor)),
+        const Spacer(),
+        TextButton.icon(
+          onPressed: () => setState(() => _lateRules.add({
+                'from_minutes': 0,
+                'to_minutes': 30,
+                'deduction_type': 'day_fraction',
+                'deduction_value': 0.25
+              })),
+          icon: const Icon(Icons.add, size: 16),
+          label: Text(isAr ? 'إضافة' : 'Add'),
         ),
-        const SizedBox(height: 8),
-        ..._lateRules.asMap().entries.map((entry) {
-          final i = entry.key;
-          final rule = entry.value;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text('${isAr ? 'قاعدة' : 'Rule'} ${i + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: kPolicyColor)),
-                      const Spacer(),
-                      if (_lateRules.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
-                          onPressed: () => setState(() => _lateRules.removeAt(i)),
-                        ),
-                    ],
+      ]),
+      const SizedBox(height: 8),
+      ..._lateRules.asMap().entries.map((entry) {
+        final i = entry.key;
+        final rule = entry.value;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text('${isAr ? 'قاعدة' : 'Rule'} ${i + 1}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: kPolicyColor)),
+                const Spacer(),
+                if (_lateRules.length > 1)
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.red, size: 18),
+                    onPressed: () =>
+                        setState(() => _lateRules.removeAt(i)),
                   ),
-                  Row(
-                    children: [
-                      Expanded(child: TextFormField(
-                        initialValue: rule['from_minutes'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'من دقيقة' : 'From min',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _lateRules[i]['from_minutes'] = int.tryParse(v) ?? 0,
-                      )),
-                      const SizedBox(width: 8),
-                      Expanded(child: TextFormField(
-                        initialValue: rule['to_minutes'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'إلى دقيقة' : 'To min',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _lateRules[i]['to_minutes'] = int.tryParse(v) ?? 999,
-                      )),
-                    ],
+              ]),
+              Row(children: [
+                Expanded(
+                    child: TextFormField(
+                  initialValue: rule['from_minutes'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'من دقيقة' : 'From min',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
                   ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: rule['deduction_type'] as String,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'نوع الخصم' : 'Deduction Type',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    items: deductionTypes.map((t) => DropdownMenuItem<String>(
-                      value: t['value'],
-                      child: Text(t['label']!),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _lateRules[i]['deduction_type'] = v),
+                  onChanged: (v) =>
+                      _lateRules[i]['from_minutes'] = int.tryParse(v) ?? 0,
+                )),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: TextFormField(
+                  initialValue: rule['to_minutes'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'إلى دقيقة' : 'To min',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
                   ),
-                  if (rule['deduction_type'] != 'none') ...[
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: rule['deduction_value'].toString(),
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: isAr ? 'القيمة' : 'Value',
-                        helperText: rule['deduction_type'] == 'day_fraction'
-                            ? (isAr ? '0.25 = ربع يوم / 0.5 = نص يوم' : '0.25 = quarter day')
-                            : null,
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (v) => _lateRules[i]['deduction_value'] = double.tryParse(v) ?? 0,
-                    ),
-                  ],
-                ],
+                  onChanged: (v) =>
+                      _lateRules[i]['to_minutes'] = int.tryParse(v) ?? 999,
+                )),
+              ]),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: rule['deduction_type'] as String,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'نوع الخصم' : 'Deduction Type',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: deductionTypes
+                    .map((t) => DropdownMenuItem<String>(
+                        value: t['value'], child: Text(t['label']!)))
+                    .toList(),
+                onChanged: (v) =>
+                    setState(() => _lateRules[i]['deduction_type'] = v),
               ),
-            ),
-          );
-        }),
-      ],
-    );
+              if (rule['deduction_type'] != 'none') ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: rule['deduction_value'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'القيمة' : 'Value',
+                    helperText: rule['deduction_type'] == 'day_fraction'
+                        ? (isAr
+                            ? '0.25 = ربع يوم / 0.5 = نص يوم'
+                            : '0.25 = quarter day')
+                        : null,
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => _lateRules[i]['deduction_value'] =
+                      double.tryParse(v) ?? 0,
+                ),
+              ],
+            ]),
+          ),
+        );
+      }),
+    ]);
   }
 
   Widget _buildAbsenceTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            Text(isAr ? 'قواعد خصم الغياب' : 'Absence Rules',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () => setState(() => _absenceRules.add(
-                {'absence_type': 'unexcused', 'deduction_type': 'day_fraction', 'deduction_value': 1.0}
-              )),
-              icon: const Icon(Icons.add, size: 16),
-              label: Text(isAr ? 'إضافة' : 'Add'),
-            ),
-          ],
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Row(children: [
+        Text(isAr ? 'قواعد خصم الغياب' : 'Absence Rules',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: kPolicyColor)),
+        const Spacer(),
+        TextButton.icon(
+          onPressed: () => setState(() => _absenceRules.add({
+                'absence_type': 'unexcused',
+                'deduction_type': 'day_fraction',
+                'deduction_value': 1.0
+              })),
+          icon: const Icon(Icons.add, size: 16),
+          label: Text(isAr ? 'إضافة' : 'Add'),
         ),
-        ..._absenceRules.asMap().entries.map((entry) {
-          final i = entry.key;
-          final rule = entry.value;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8, top: 4),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text('${isAr ? 'قاعدة' : 'Rule'} ${i + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: kPolicyColor)),
-                      const Spacer(),
-                      if (_absenceRules.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
-                          onPressed: () => setState(() => _absenceRules.removeAt(i)),
-                        ),
-                    ],
+      ]),
+      ..._absenceRules.asMap().entries.map((entry) {
+        final i = entry.key;
+        final rule = entry.value;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8, top: 4),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text('${isAr ? 'قاعدة' : 'Rule'} ${i + 1}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: kPolicyColor)),
+                const Spacer(),
+                if (_absenceRules.length > 1)
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.red, size: 18),
+                    onPressed: () =>
+                        setState(() => _absenceRules.removeAt(i)),
                   ),
-                  DropdownButtonFormField<String>(
-                    initialValue: rule['absence_type'] as String,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'نوع الغياب' : 'Absence Type',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    items: [
-                      DropdownMenuItem(value: 'unexcused', child: Text(isAr ? 'بدون إذن' : 'Unexcused')),
-                      DropdownMenuItem(value: 'consecutive', child: Text(isAr ? 'متتالي' : 'Consecutive')),
-                      DropdownMenuItem(value: 'repeated', child: Text(isAr ? 'متكرر في الشهر' : 'Repeated in month')),
-                    ],
-                    onChanged: (v) => setState(() => _absenceRules[i]['absence_type'] = v),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: rule['deduction_type'] as String,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'نوع الخصم' : 'Deduction Type',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    items: [
-                      DropdownMenuItem(value: 'day_fraction', child: Text(isAr ? 'نسبة من اليوم' : 'Day fraction')),
-                      DropdownMenuItem(value: 'fixed_amount', child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
-                      DropdownMenuItem(value: 'warning', child: Text(isAr ? 'إنذار فقط' : 'Warning only')),
-                    ],
-                    onChanged: (v) => setState(() => _absenceRules[i]['deduction_type'] = v),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    initialValue: rule['deduction_value'].toString(),
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'القيمة' : 'Value',
-                      helperText: isAr ? '1 = يوم كامل / 1.5 = يوم ونص' : '1 = full day / 1.5 = 1.5 days',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => _absenceRules[i]['deduction_value'] = double.tryParse(v) ?? 1,
-                  ),
+              ]),
+              DropdownButtonFormField<String>(
+                initialValue: rule['absence_type'] as String,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'نوع الغياب' : 'Absence Type',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem(
+                      value: 'unexcused',
+                      child: Text(isAr ? 'بدون إذن' : 'Unexcused')),
+                  DropdownMenuItem(
+                      value: 'consecutive',
+                      child: Text(isAr ? 'متتالي' : 'Consecutive')),
+                  DropdownMenuItem(
+                      value: 'repeated',
+                      child: Text(
+                          isAr ? 'متكرر في الشهر' : 'Repeated in month')),
                 ],
+                onChanged: (v) =>
+                    setState(() => _absenceRules[i]['absence_type'] = v),
               ),
-            ),
-          );
-        }),
-      ],
-    );
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: rule['deduction_type'] as String,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'نوع الخصم' : 'Deduction Type',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem(
+                      value: 'day_fraction',
+                      child:
+                          Text(isAr ? 'نسبة من اليوم' : 'Day fraction')),
+                  DropdownMenuItem(
+                      value: 'fixed_amount',
+                      child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
+                  DropdownMenuItem(
+                      value: 'warning',
+                      child: Text(isAr ? 'إنذار فقط' : 'Warning only')),
+                ],
+                onChanged: (v) =>
+                    setState(() => _absenceRules[i]['deduction_type'] = v),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: rule['deduction_value'].toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'القيمة' : 'Value',
+                  helperText: isAr
+                      ? '1 = يوم كامل / 1.5 = يوم ونص'
+                      : '1 = full day / 1.5 = 1.5 days',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (v) => _absenceRules[i]['deduction_value'] =
+                    double.tryParse(v) ?? 1,
+              ),
+            ]),
+          ),
+        );
+      }),
+    ]);
   }
 
   Widget _buildOvertimeTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            Text(isAr ? 'قواعد الأوفر تايم' : 'Overtime Rules',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ..._overtimeRules.asMap().entries.map((entry) {
-          final i = entry.key;
-          final rule = entry.value;
-          final typeLabel = {
-            'after_shift': isAr ? 'بعد الشيفت' : 'After shift',
-            'weekend': isAr ? 'يوم الراحة' : 'Weekend',
-            'holiday': isAr ? 'إجازة رسمية' : 'Holiday',
-            'regular': isAr ? 'عادي' : 'Regular',
-          }[rule['overtime_type']] ?? '';
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Text(isAr ? 'قواعد الأوفر تايم' : 'Overtime Rules',
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: kPolicyColor)),
+      const SizedBox(height: 8),
+      ..._overtimeRules.asMap().entries.map((entry) {
+        final i = entry.key;
+        final rule = entry.value;
+        final typeLabel = {
+              'after_shift': isAr ? 'بعد الشيفت' : 'After shift',
+              'weekend': isAr ? 'يوم الراحة' : 'Weekend',
+              'holiday': isAr ? 'إجازة رسمية' : 'Holiday',
+              'regular': isAr ? 'عادي' : 'Regular',
+            }[rule['overtime_type']] ??
+            '';
 
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(typeLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: kPolicyColor)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: TextFormField(
-                        initialValue: rule['multiplier'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'المضاعف' : 'Multiplier',
-                          helperText: '1.5x / 2x / 2.5x',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _overtimeRules[i]['multiplier'] = double.tryParse(v) ?? 1.5,
-                      )),
-                      const SizedBox(width: 8),
-                      Expanded(child: TextFormField(
-                        initialValue: rule['min_minutes'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'أقل دقائق' : 'Min minutes',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _overtimeRules[i]['min_minutes'] = int.tryParse(v) ?? 30,
-                      )),
-                    ],
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(typeLabel,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: kPolicyColor)),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(
+                    child: TextFormField(
+                  initialValue: rule['multiplier'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'المضاعف' : 'Multiplier',
+                    helperText: '1.5x / 2x / 2.5x',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
                   ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
-    );
+                  onChanged: (v) => _overtimeRules[i]['multiplier'] =
+                      double.tryParse(v) ?? 1.5,
+                )),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: TextFormField(
+                  initialValue: rule['min_minutes'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'أقل دقائق' : 'Min minutes',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => _overtimeRules[i]['min_minutes'] =
+                      int.tryParse(v) ?? 30,
+                )),
+              ]),
+            ]),
+          ),
+        );
+      }),
+    ]);
   }
 
   Widget _buildAllowancesTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // بدل ليلي
-        Text(isAr ? 'بدل الشيفت الليلي' : 'Night Shift Allowance',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-        const SizedBox(height: 8),
-        if (_nightRules.isNotEmpty)
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: _nightRules[0]['allowance_type'] as String,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'نوع البدل' : 'Allowance Type',
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: [
-                      DropdownMenuItem(value: 'fixed_amount', child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
-                      DropdownMenuItem(value: 'percentage', child: Text(isAr ? 'نسبة مئوية' : 'Percentage')),
-                    ],
-                    onChanged: (v) => setState(() => _nightRules[0]['allowance_type'] = v),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: TextFormField(
-                        initialValue: _nightRules[0]['amount'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'المبلغ الثابت (للليلة)' : 'Fixed amount (per night)',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _nightRules[0]['amount'] = double.tryParse(v) ?? 0,
-                      )),
-                      const SizedBox(width: 8),
-                      Expanded(child: TextFormField(
-                        initialValue: _nightRules[0]['percentage'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'النسبة %' : 'Percentage %',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _nightRules[0]['percentage'] = double.tryParse(v) ?? 0,
-                      )),
-                    ],
-                  ),
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Text(isAr ? 'بدل الشيفت الليلي' : 'Night Shift Allowance',
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: kPolicyColor)),
+      const SizedBox(height: 8),
+      if (_nightRules.isNotEmpty)
+        Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(children: [
+              DropdownButtonFormField<String>(
+                initialValue: _nightRules[0]['allowance_type'] as String,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'نوع البدل' : 'Allowance Type',
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                      value: 'fixed_amount',
+                      child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
+                  DropdownMenuItem(
+                      value: 'percentage',
+                      child:
+                          Text(isAr ? 'نسبة مئوية' : 'Percentage')),
                 ],
+                onChanged: (v) =>
+                    setState(() => _nightRules[0]['allowance_type'] = v),
               ),
-            ),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(
+                    child: TextFormField(
+                  initialValue: _nightRules[0]['amount'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr
+                        ? 'المبلغ الثابت (للليلة)'
+                        : 'Fixed amount (per night)',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) =>
+                      _nightRules[0]['amount'] = double.tryParse(v) ?? 0,
+                )),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: TextFormField(
+                  initialValue: _nightRules[0]['percentage'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'النسبة %' : 'Percentage %',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => _nightRules[0]['percentage'] =
+                      double.tryParse(v) ?? 0,
+                )),
+              ]),
+            ]),
           ),
-
-        const SizedBox(height: 16),
-
-        // بدل يوم الراحة
-        Text(isAr ? 'بدل العمل يوم الراحة' : 'Weekend Work Allowance',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kPolicyColor)),
-        const SizedBox(height: 8),
-        if (_weekendRules.isNotEmpty)
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: _weekendRules[0]['compensation_type'] as String,
-                    decoration: InputDecoration(
-                      labelText: isAr ? 'نوع التعويض' : 'Compensation Type',
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: [
-                      DropdownMenuItem(value: 'overtime_multiplier', child: Text(isAr ? 'نسبة من المرتب' : 'Salary multiplier')),
-                      DropdownMenuItem(value: 'fixed_amount', child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
-                      DropdownMenuItem(value: 'day_off', child: Text(isAr ? 'يوم إجازة بديل' : 'Compensatory day off')),
-                    ],
-                    onChanged: (v) => setState(() => _weekendRules[0]['compensation_type'] = v),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: TextFormField(
-                        initialValue: _weekendRules[0]['multiplier'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'المضاعف' : 'Multiplier',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _weekendRules[0]['multiplier'] = double.tryParse(v) ?? 2.0,
-                      )),
-                      const SizedBox(width: 8),
-                      Expanded(child: TextFormField(
-                        initialValue: _weekendRules[0]['amount'].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'المبلغ الثابت' : 'Fixed amount',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => _weekendRules[0]['amount'] = double.tryParse(v) ?? 0,
-                      )),
-                    ],
-                  ),
+        ),
+      const SizedBox(height: 16),
+      Text(isAr ? 'بدل العمل يوم الراحة' : 'Weekend Work Allowance',
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: kPolicyColor)),
+      const SizedBox(height: 8),
+      if (_weekendRules.isNotEmpty)
+        Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(children: [
+              DropdownButtonFormField<String>(
+                initialValue:
+                    _weekendRules[0]['compensation_type'] as String,
+                decoration: InputDecoration(
+                  labelText:
+                      isAr ? 'نوع التعويض' : 'Compensation Type',
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                      value: 'overtime_multiplier',
+                      child: Text(isAr
+                          ? 'نسبة من المرتب'
+                          : 'Salary multiplier')),
+                  DropdownMenuItem(
+                      value: 'fixed_amount',
+                      child: Text(isAr ? 'مبلغ ثابت' : 'Fixed amount')),
+                  DropdownMenuItem(
+                      value: 'day_off',
+                      child: Text(isAr
+                          ? 'يوم إجازة بديل'
+                          : 'Compensatory day off')),
                 ],
+                onChanged: (v) => setState(
+                    () => _weekendRules[0]['compensation_type'] = v),
               ),
-            ),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(
+                    child: TextFormField(
+                  initialValue: _weekendRules[0]['multiplier'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'المضاعف' : 'Multiplier',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => _weekendRules[0]['multiplier'] =
+                      double.tryParse(v) ?? 2.0,
+                )),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: TextFormField(
+                  initialValue: _weekendRules[0]['amount'].toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'المبلغ الثابت' : 'Fixed amount',
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => _weekendRules[0]['amount'] =
+                      double.tryParse(v) ?? 0,
+                )),
+              ]),
+            ]),
           ),
-      ],
-    );
+        ),
+    ]);
+  }
+
+  Widget _buildPermissionsTab() {
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(isAr ? 'إعدادات الأذونات' : 'Permission Settings',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: kPolicyColor)),
+            const SizedBox(height: 12),
+
+            // تفعيل الأذونات
+            SwitchListTile(
+              title: Text(isAr ? 'تفعيل نظام الأذونات' : 'Enable Permission System'),
+              subtitle: Text(isAr
+                  ? 'السماح للموظفين بأذونات شهرية'
+                  : 'Allow employees monthly permissions'),
+              value: _permissionEnabled,
+              activeColor: kPolicyColor,
+              onChanged: (v) => setState(() => _permissionEnabled = v),
+            ),
+
+            if (_permissionEnabled) ...[
+              const Divider(),
+              const SizedBox(height: 8),
+
+              // رصيد الساعات الشهري
+              TextFormField(
+                initialValue: _permissionMonthlyHours.toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'رصيد الساعات الشهري' : 'Monthly Hours Balance',
+                  helperText: isAr ? 'مثال: 4 = 4 ساعات في الشهر' : 'Example: 4 = 4 hours per month',
+                  prefixIcon: const Icon(Icons.access_time, color: kPolicyColor),
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => _permissionMonthlyHours = double.tryParse(v) ?? 4.0,
+              ),
+              const SizedBox(height: 12),
+
+              // عدد المرات الشهري
+              TextFormField(
+                initialValue: _permissionMonthlyCount.toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'عدد المرات في الشهر' : 'Monthly Count',
+                  helperText: isAr ? 'مثال: 2 = مرتين في الشهر' : 'Example: 2 = twice per month',
+                  prefixIcon: const Icon(Icons.repeat, color: kPolicyColor),
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => _permissionMonthlyCount = int.tryParse(v) ?? 2,
+              ),
+              const SizedBox(height: 12),
+
+              // الحد الأقصى للمرة الواحدة
+              TextFormField(
+                initialValue: _permissionMaxHoursPerRequest.toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'الحد الأقصى للإذن الواحد (ساعات)' : 'Max hours per permission',
+                  helperText: isAr ? 'مثال: 2 = الإذن الواحد بحد أقصى ساعتين' : 'Example: 2 = max 2 hours per permission',
+                  prefixIcon: const Icon(Icons.hourglass_top, color: Colors.orange),
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => _permissionMaxHoursPerRequest = double.tryParse(v) ?? 2.0,
+              ),
+              const SizedBox(height: 12),
+
+              // الكسر بمرة كاملة
+              SwitchListTile(
+                title: Text(isAr ? 'الكسر يتحسب مرة كاملة' : 'Fraction counts as full'),
+                subtitle: Text(isAr
+                    ? 'لو استخدم نص ساعة بتحسب مرة كاملة'
+                    : 'Using half hour counts as full permission'),
+                value: _permissionFractionAsFull,
+                activeColor: Colors.orange,
+                onChanged: (v) => setState(() => _permissionFractionAsFull = v),
+              ),
+              const SizedBox(height: 12),
+
+              // دورة التجديد
+              DropdownButtonFormField<String>(
+                value: _permissionResetCycle,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'دورة تجديد الرصيد' : 'Balance Reset Cycle',
+                  prefixIcon: const Icon(Icons.refresh, color: kPolicyColor),
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                      value: 'calendar',
+                      child: Text(isAr ? 'شهر ميلادي' : 'Calendar month')),
+                  DropdownMenuItem(
+                      value: 'payroll',
+                      child: Text(isAr ? 'مع دورة المرتب' : 'Payroll cycle')),
+                ],
+                onChanged: (v) => setState(() => _permissionResetCycle = v ?? 'calendar'),
+              ),
+            ],
+          ]),
+        ),
+      ),
+    ]);
   }
 }
