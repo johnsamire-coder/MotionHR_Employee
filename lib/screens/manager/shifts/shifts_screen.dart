@@ -3,6 +3,7 @@ import '../../../services/shifts_service.dart';
 import 'create_edit_shift_screen.dart';
 import 'assign_shift_screen.dart';
 import 'shift_override_screen.dart';
+import 'shift_rotation_screen.dart';
 
 const Color kShiftColor = Color(0xFF6A1B9A);
 
@@ -377,6 +378,19 @@ class _ShiftsScreenState extends State<ShiftsScreen>
       context,
       MaterialPageRoute(
         builder: (_) => const ShiftOverrideScreen(),
+      ),
+    );
+    _load();
+  },
+),
+IconButton(
+  icon: const Icon(Icons.loop, color: Colors.white),
+  tooltip: isAr ? 'دورات التناوب' : 'Shift Rotations',
+  onPressed: () async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ShiftRotationScreen(),
       ),
     );
     _load();

@@ -452,5 +452,99 @@ class ShiftsService {
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     return res.statusCode == 200 && data['success'] == true;
   }
+  // ── ROTATION APIs ──
+  static Future<List<Map<String, dynamic>>> getRotations() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['rotations'] ?? []);
+    }
+    throw Exception(data['error'] ?? 'فشل جلب التناوبات');
+  }
 
+  static Future<Map<String, dynamic>> createRotation({
+    required String name,
+    required int cycleLengthDays,
+    required String startDate,
+    required List<Map<String, dynamic>> slots,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'name': name,
+        'cycle_length_days': cycleLengthDays,
+        'start_date': startDate,
+        'slots': slots,
+      }),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if ((res.statusCode == 200 || res.statusCode == 201) && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? 'فشل إنشاء التناوب');
+  }
+
+  static Future<bool> deleteRotation(int rotationId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.delete(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    return res.statusCode == 200 && data['success'] == true;
+  }
+
+  static Future<Map<String, dynamic>> assignRotation({
+    required int rotationId,
+    required String assignmentType,
+    required String startDate,
+    String? endDate,
+    int? employeeId,
+    int? departmentId,
+    int? branchId,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final body = <String, dynamic>{
+      'assignment_type': assignmentType,
+      'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (employeeId != null) 'employee_id': employeeId,
+      if (departmentId != null) 'department_id': departmentId,
+      if (branchId != null) 'branch_id': branchId,
+    };
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/assign/'),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if ((res.statusCode == 200 || res.statusCode == 201) && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? 'فشل تعيين التناوب');
+  }
+
+  static Future<List<Map<String, dynamic>>> getRotationAssignments(int rotationId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/assignments/'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['assignments'] ?? []);
+    }
+    throw Exception(data['error'] ?? 'فشل جلب التعيينات');
+  }
 }
