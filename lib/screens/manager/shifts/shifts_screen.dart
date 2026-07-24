@@ -21,11 +21,20 @@ class _ShiftsScreenState extends State<ShiftsScreen>
   bool _loading = true;
   String? _error;
 
+  bool _didLoadOnce = false;
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didLoadOnce) {
+      _didLoadOnce = true;
+      _load();
+    }
   }
 
   @override
@@ -40,7 +49,7 @@ class _ShiftsScreenState extends State<ShiftsScreen>
       _error = null;
     });
     try {
-      final lang = isAr ? 'ar' : 'en';
+      final lang = Localizations.localeOf(context).languageCode == 'ar' ? 'ar' : 'en';
       final shifts = await ShiftsService.getShifts(lang: lang);
       setState(() {
         _shifts = shifts;
@@ -762,3 +771,4 @@ class _ShiftsScreenState extends State<ShiftsScreen>
     );
   }
 }
+

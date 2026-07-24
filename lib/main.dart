@@ -12,6 +12,7 @@ import 'screens/manager/reminder_settings_screen.dart';
 import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/manager_announcements_screen.dart';
+import 'screens/manager/attendance_policy_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'screens/manager/manager_missions_screen.dart';
@@ -6177,6 +6178,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const PayrollHubScreen()))),
+                _gridCard(
+                    isAr ? '?????? ?????? ??????' : 'Attendance Policies',
+                    Icons.policy,
+                    const Color(0xFF1565C0),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const AttendancePolicyScreen()))),
                 _gridCard(
                     context.l10n.reminders,
                     Icons.notifications_active,
