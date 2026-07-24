@@ -300,6 +300,27 @@ class ShiftsService {
     throw Exception(data['error'] ?? 'فشل تنفيذ الطلب');
   }
 
+  // ── GET SHIFT OVERRIDES LIST ──
+  static Future<List<Map<String, dynamic>>> getShiftOverrides({
+    bool showPast = false,
+    int? employeeId,
+    String lang = 'ar',
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    var url = '\$baseUrl/attendance/api/mobile/manager/shifts/overrides/?lang=\$lang&show_past=\${showPast ? "true" : "false"}';
+    if (employeeId != null) url += '&employee_id=\$employeeId';
+
+    final res = await http.get(Uri.parse(url), headers: _headers(token));
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['overrides'] ?? []);
+    }
+    throw Exception(data['error'] ?? 'فشل جلب الاستثناءات');
+  }
+
   // ── SHIFT OVERRIDE ──
   static Future<Map<String, dynamic>> createShiftOverride({
     required int employeeId,

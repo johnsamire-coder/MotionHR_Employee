@@ -2,6 +2,7 @@
 import '../../../services/shifts_service.dart';
 import 'create_edit_shift_screen.dart';
 import 'assign_shift_screen.dart';
+import 'shift_override_screen.dart';
 
 const Color kShiftColor = Color(0xFF6A1B9A);
 
@@ -368,6 +369,19 @@ class _ShiftsScreenState extends State<ShiftsScreen>
                 if (_tabController.index == 2) _loadAssignments();
               },
             ),
+            IconButton(
+  icon: const Icon(Icons.swap_horiz, color: Colors.white),
+  tooltip: isAr ? 'استثناءات الشيفتات' : 'Shift Overrides',
+  onPressed: () async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ShiftOverrideScreen(),
+      ),
+    );
+    _load();
+  },
+),
             IconButton(
               icon: const Icon(Icons.pending_actions, color: Colors.white),
               tooltip: isAr ? 'طلبات التغيير' : 'Change Requests',
