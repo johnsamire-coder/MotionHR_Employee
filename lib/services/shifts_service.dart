@@ -547,4 +547,62 @@ class ShiftsService {
     }
     throw Exception(data['error'] ?? 'فشل جلب التعيينات');
   }
+    // ── LEAVE RECALL APIs ──
+  static Future<Map<String, dynamic>> createLeaveRecall({
+    required int employeeId,
+    required String recallDate,
+    required String reason,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/leave-recall/create/'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'employee_id': employeeId,
+        'recall_date': recallDate,
+        'reason': reason,
+      }),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if ((res.statusCode == 200 || res.statusCode == 201) && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'فشل إنشاء طلب الاستدعاء');
+  }
+
+  static Future<List<Map<String, dynamic>>> getLeaveRecalls({String? status}) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    var url = '$baseUrl/attendance/api/mobile/leave-recall/list/';
+    if (status != null) url += '?status=$status';
+    final res = await http.get(Uri.parse(url), headers: _headers(token));
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['recalls'] ?? []);
+    }
+    throw Exception(data['message'] ?? 'فشل جلب الاستدعاءات');
+  }
+
+  static Future<Map<String, dynamic>> reviewLeaveRecall({
+    required int recallId,
+    required String action,
+    String? notes,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/leave-recall/$recallId/review/'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'action': action,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      }),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'فشل مراجعة طلب الاستدعاء');
+  }
 }

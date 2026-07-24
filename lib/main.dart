@@ -41,6 +41,7 @@ import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
 import 'screens/manager/permissions_management_screen.dart';
 import 'screens/manager/departments_management_screen.dart';
+import 'screens/manager/leave_recall_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
 import 'screens/employee_missions_screen.dart';
 import 'widgets/empty_state_widget.dart';
@@ -577,7 +578,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                isAr
+                Localizations.localeOf(context).languageCode == 'ar'
                     ? 'نظام إدارة الموارد البشرية'
                     : 'Human Resources Management System',
                 style:
@@ -6618,7 +6619,16 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const AttendancePolicyScreen()))),
-                _gridCard(
+_gridCard(
+    'استدعاء / Leave Recall',
+    Icons.person_search,
+    const Color(0xFFE65100),
+    () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                const LeaveRecallScreen()))),
+                                _gridCard(
                     context.l10n.reminders,
                     Icons.notifications_active,
                     Colors.blueGrey,
