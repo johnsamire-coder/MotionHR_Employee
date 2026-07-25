@@ -66,10 +66,21 @@ class _PayrollRunDetailScreenState extends State<PayrollRunDetailScreen> {
   }
 
   Widget _buildSummaryHeader(bool ar) {
-    final totalGross = (_data?['total_gross'] as num?)?.toDouble() ?? 0.0;
-    final totalNet = (_data?['total_net'] as num?)?.toDouble() ?? 0.0;
-    final totalDeductions = (_data?['total_deductions'] as num?)?.toDouble() ?? 0.0;
-    final totalBonuses = (_data?['total_bonuses'] as num?)?.toDouble() ?? 0.0;
+    final allLines = (_data?['lines'] as List? ?? [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+
+    double totalGross = 0.0;
+    double totalNet = 0.0;
+    double totalDeductions = 0.0;
+    double totalBonuses = 0.0;
+
+    for (final line in allLines) {
+      totalGross += (line['gross_salary'] as num?)?.toDouble() ?? 0.0;
+      totalNet += (line['net_salary'] as num?)?.toDouble() ?? 0.0;
+      totalDeductions += (line['total_deductions'] as num?)?.toDouble() ?? 0.0;
+      totalBonuses += (line['bonuses_total'] as num?)?.toDouble() ?? 0.0;
+    }
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -119,7 +130,7 @@ class _PayrollRunDetailScreenState extends State<PayrollRunDetailScreen> {
   Widget _buildLineCard(Map<String, dynamic> line, bool ar) {
     final name = line['employee_name'] as String? ?? '';
     final basic = (line['basic_salary'] as num?)?.toDouble() ?? 0.0;
-    final bonus = (line['total_bonuses'] as num?)?.toDouble() ?? 0.0;
+    final bonus = (line['bonuses_total'] as num?)?.toDouble() ?? 0.0;
     final deduction = (line['total_deductions'] as num?)?.toDouble() ?? 0.0;
     final net = (line['net_salary'] as num?)?.toDouble() ?? 0.0;
     final empId = line['employee_id'] as int? ?? 0;
