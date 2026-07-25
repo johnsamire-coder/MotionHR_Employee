@@ -1,7 +1,4 @@
-﻿// lib/screens/manager/reports/attendance_report_screen.dart
-// Phase 16 — Added Excel Export + fixed encoding
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../widgets/report_month_picker.dart';
 import '../../../services/reports_service.dart';
 import '../../../services/report_pdf_service.dart';
@@ -20,11 +17,14 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
   bool _loading = true;
   bool _printing = false;
   bool _exporting = false;
+  String _search = '';
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
 
-  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+  bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
+
+  static const _color = Color(0xFF1565C0);
 
   @override
   void initState() {
@@ -41,8 +41,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ' : 'Error'}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${_isAr ? 'خطأ' : 'Error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -78,17 +79,20 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
         ];
       }).toList();
       await ReportPdfService.printReport(
-        title: isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
-        subtitle: '${_monthName(_selectedMonth, isAr)} $_selectedYear',
-        headers: isAr
+        title: _isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
+        subtitle: '${_monthName(_selectedMonth)} $_selectedYear',
+        headers: _isAr
             ? ['اسم الموظف', 'أيام الحضور', 'حضور', 'انصراف']
             : ['Employee', 'Working Days', 'Check-ins', 'Check-outs'],
         rows: rows,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  '${_isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _printing = false);
@@ -106,148 +110,404 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
         employees: employees,
         year: _selectedYear,
         month: _selectedMonth,
-        isAr: isAr,
+        isAr: _isAr,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${isAr ? 'خطأ في التصدير' : 'Export error'}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  '${_isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+        );
       }
     }
     if (mounted) setState(() => _exporting = false);
   }
 
+  List<Map<String, dynamic>> get _filtered {
+    final all = (_data?['employees'] as List?)
+            ?.map((e) => Map<String, dynamic>.from(e as Map))
+            .toList() ??
+        [];
+    if (_search.trim().isEmpty) return all;
+    final s = _search.toLowerCase().trim();
+    return all.where((row) {
+      final name =
+          (row['employee_name'] ?? '').toString().toLowerCase();
+      final dept = (row['department'] ?? '').toString().toLowerCase();
+      return name.contains(s) || dept.contains(s);
+    }).toList();
+  }
+
+  String _monthName(int m) {
+    const ar = [
+      '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+    const en = [
+      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return _isAr ? ar[m] : en[m];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final employees = (_data?['employees'] as List?) ?? const [];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report'),
-        backgroundColor: const Color(0xFF6A1B9A),
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton.icon(
-            onPressed: _pickMonth,
-            icon: const Icon(Icons.calendar_month, color: Colors.white),
-            label: Text(
-              '${_monthName(_selectedMonth, isAr)} $_selectedYear',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
+    final filtered = _filtered;
+    final title =
+        _isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report';
+
+    return Directionality(
+      textDirection: _isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7FB),
+        appBar: AppBar(
+          title: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          if (!_loading && _data != null) ...[
-            _exporting
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                        width: 20, height: 20,
+          backgroundColor: _color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            if (!_loading && _data != null) ...[
+              _exporting
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white)),
-                  )
-                : IconButton(
-                    onPressed: _exportExcel,
-                    icon: const Icon(Icons.table_chart_outlined),
-                    tooltip: isAr ? 'تصدير Excel' : 'Export Excel',
-                  ),
-            _printing
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                        width: 20, height: 20,
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: _exportExcel,
+                      icon: const Icon(Icons.table_chart_outlined),
+                      tooltip: _isAr ? 'تصدير Excel' : 'Export Excel',
+                    ),
+              _printing
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white)),
-                  )
-                : IconButton(onPressed: _print, icon: const Icon(Icons.print)),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: _print,
+                      icon: const Icon(Icons.print),
+                    ),
+            ],
+            IconButton(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
           ],
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: ListView(
-                padding: const EdgeInsets.all(12),
+        ),
+        body: Column(
+          children: [
+            // ─── Header ───
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+              decoration: BoxDecoration(
+                color: _color,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _color.withValues(alpha: 0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
                 children: [
-                  Card(
-                    color: Colors.blue.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
+                  // Month Picker
+                  InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: _pickMonth,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.18),
+                        ),
+                      ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _stat(
-                            isAr ? 'الشهر' : 'Month',
-                            '${_monthName(_selectedMonth, isAr)} $_selectedYear',
-                            Colors.purple,
+                          const Icon(Icons.calendar_month,
+                              color: Colors.white, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${_monthName(_selectedMonth)} $_selectedYear',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                          _stat(
-                            isAr ? 'موظفين' : 'Employees',
-                            '${_data?['total_employees'] ?? 0}',
-                            Colors.blue,
+                          Icon(
+                            _isAr
+                                ? Icons.arrow_back_ios_new
+                                : Icons.arrow_forward_ios,
+                            color: Colors.white70,
+                            size: 16,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  if (employees.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: Text(
-                          isAr ? 'لا توجد بيانات' : 'No data found',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                  const SizedBox(height: 12),
+                  // Search
+                  TextField(
+                    onChanged: (v) => setState(() => _search = v),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: _isAr
+                          ? 'بحث بالاسم أو القسم...'
+                          : 'Search by name or dept...',
+                      hintStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
                       ),
-                    )
-                  else
-                    ...employees.map<Widget>((e) {
-                      final item = Map<String, dynamic>.from(e as Map);
-                      return Card(
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0xFF6A1B9A),
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                          title: Text(item['employee_name']?.toString() ?? '-'),
-                          subtitle: Text(
-                            isAr
-                                ? 'حضور: ${item['working_days'] ?? 0} يوم | غياب: ${item['absent_days'] ?? 0}'
-                                : 'Attended: ${item['working_days'] ?? 0} days | Absent: ${item['absent_days'] ?? 0}',
-                          ),
-                          trailing: Text(
-                            '${item['working_days'] ?? 0}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF6A1B9A),
-                            ),
-                          ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Stats
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _chip(
+                          _isAr ? 'الموظفين' : 'Employees',
+                          '${_data?['total_employees'] ?? 0}',
                         ),
-                      );
-                    }),
+                        const SizedBox(width: 8),
+                        _chip(
+                          _isAr ? 'النتائج' : 'Results',
+                          '${filtered.length}',
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+
+            // ─── Body ───
+            Expanded(
+              child: _loading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: _color),
+                    )
+                  : filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.calendar_month,
+                                  size: 64, color: Colors.grey[300]),
+                              const SizedBox(height: 16),
+                              Text(
+                                _isAr
+                                    ? 'لا توجد بيانات'
+                                    : 'No data found',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _load,
+                          child: ListView.builder(
+                            physics:
+                                const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(12),
+                            itemCount: filtered.length,
+                            itemBuilder: (_, i) =>
+                                _buildCard(filtered[i]),
+                          ),
+                        ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _stat(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(value,
+  Widget _chip(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(Map<String, dynamic> emp) {
+    final name = (emp['employee_name'] ?? '').toString();
+    final workDays = emp['working_days'] ?? 0;
+    final absent = emp['absent_days'] ?? 0;
+    final checkins = emp['total_checkins'] ?? 0;
+    final checkouts = emp['total_checkouts'] ?? 0;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 1.5,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ExpansionTile(
+        tilePadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        childrenPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          backgroundColor: _color.withValues(alpha: 0.1),
+          child: Text(
+            name.isNotEmpty ? name[0] : '?',
+            style: const TextStyle(
+              color: _color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        title: Text(
+          name.isNotEmpty ? name : (_isAr ? 'بدون اسم' : 'No name'),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          _isAr
+              ? 'حضور: $workDays يوم | غياب: $absent'
+              : 'Attended: $workDays days | Absent: $absent',
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: _color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$workDays',
+            style: const TextStyle(
+              color: _color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        children: [
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              children: [
+                _detailRow(
+                  _isAr ? 'أيام الحضور' : 'Working Days',
+                  '$workDays',
+                ),
+                _detailRow(
+                  _isAr ? 'أيام الغياب' : 'Absent Days',
+                  '$absent',
+                  valueColor: absent > 0 ? Colors.red : null,
+                ),
+                _detailRow(
+                  _isAr ? 'مرات الحضور' : 'Check-ins',
+                  '$checkins',
+                ),
+                _detailRow(
+                  _isAr ? 'مرات الانصراف' : 'Check-outs',
+                  '$checkouts',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            value,
             style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: const TextStyle(fontSize: 11)),
-      ],
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? _color,
+            ),
+          ),
+        ],
+      ),
     );
   }
-}
-
-String _monthName(int month, bool isAr) {
-  const ar = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-  const en = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return isAr ? ar[month] : en[month];
 }

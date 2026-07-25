@@ -63,55 +63,30 @@ class _MyShiftScreenState extends State<MyShiftScreen> {
     final todayShift = _data!['today_shift'] as Map<String, dynamic>? ?? {};
     final schedule = _data!['schedule'] as List? ?? [];
 
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final todayDisplayShift = Map<String, dynamic>.from(todayShift);
+    final shiftMode = (todayShift['shift_mode'] ?? '').toString();
+
+    if (shiftMode.startsWith('variable')) {
+      for (final item in schedule) {
+        final day = item as Map<String, dynamic>;
+        if ((day['date'] ?? '').toString() == todayStr) {
+          todayDisplayShift['start_time'] =
+              day['start_time'] ?? todayShift['start_time'];
+          todayDisplayShift['end_time'] =
+              day['end_time'] ?? todayShift['end_time'];
+          todayDisplayShift['crosses_midnight'] =
+              day['crosses_midnight'] ?? todayShift['crosses_midnight'];
+          todayDisplayShift['work_hours'] =
+              day['work_hours'] ?? todayShift['work_hours'];
+          break;
+        }
+      }
+    }
+
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(padding: const EdgeInsets.all(12), children: [
-        // شيفت اليوم
-        Card(
-          elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                colors: [kPrimaryColor, kPrimaryColor.withAlpha(180)],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-              ),
-            ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(isAr ? 'شيفت اليوم' : "Today's Shift",
-                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
-              const SizedBox(height: 8),
-              Text((todayShift['name'] ?? '').toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              Row(children: [
-                const Icon(Icons.login, color: Colors.white70, size: 18),
-                const SizedBox(width: 6),
-                Text((todayShift['start_time'] ?? '').toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 16)),
-                const SizedBox(width: 16),
-                const Icon(Icons.logout, color: Colors.white70, size: 18),
-                const SizedBox(width: 6),
-                Text((todayShift['end_time'] ?? '').toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 16)),
-                if (todayShift['crosses_midnight'] == true) ...[
-                  const SizedBox(width: 8),
-                  const Icon(Icons.nights_stay, color: Colors.white70, size: 16),
-                ],
-              ]),
-              const SizedBox(height: 8),
-              Text(
-                '${isAr ? 'ساعات العمل' : 'Work hours'}: ${todayShift['work_hours'] ?? 0} ${isAr ? 'ساعة' : 'hrs'}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ]),
-          ),
-        ),
-        const SizedBox(height: 16),
-
         // معلومات إضافية
         Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
