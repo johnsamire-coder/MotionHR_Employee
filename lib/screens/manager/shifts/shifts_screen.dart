@@ -3,6 +3,7 @@ import '../../../services/shifts_service.dart';
 import 'create_edit_shift_screen.dart';
 import 'assign_shift_screen.dart';
 import 'shift_override_screen.dart';
+import 'assignment_detail_screen.dart';
 import 'shift_rotation_screen.dart';
 
 const Color kShiftColor = Color(0xFF6A1B9A);
@@ -292,6 +293,14 @@ class _ShiftsScreenState extends State<ShiftsScreen>
       case 'flexible': return Colors.green;
       case 'rotating': return Colors.teal;
       case 'split': return Colors.purple;
+      // الأنواع الجديدة (shift_mode)
+      case 'fixed': return kShiftColor;
+      case 'flex_fixed': return Colors.green;
+      case 'flex_split': return const Color(0xFF7B1FA2);
+      case 'split_fixed': return Colors.purple;
+      case 'variable_daily': return Colors.deepOrange;
+      case 'variable_weekly': return Colors.teal;
+      case 'variable_weekly_flex': return const Color(0xFF00838F);
       default: return kShiftColor;
     }
   }
@@ -304,6 +313,14 @@ class _ShiftsScreenState extends State<ShiftsScreen>
       case 'flexible': return Icons.schedule;
       case 'rotating': return Icons.repeat;
       case 'split': return Icons.splitscreen;
+      // الأنواع الجديدة (shift_mode)
+      case 'fixed': return Icons.access_time;
+      case 'flex_fixed': return Icons.timer;
+      case 'flex_split': return Icons.hourglass_bottom;
+      case 'split_fixed': return Icons.splitscreen;
+      case 'variable_daily': return Icons.calendar_view_day;
+      case 'variable_weekly': return Icons.calendar_view_week;
+      case 'variable_weekly_flex': return Icons.calendar_month;
       default: return Icons.access_time;
     }
   }
@@ -512,8 +529,8 @@ IconButton(
   }
 
   Widget _buildShiftCard(Map<String, dynamic> shift) {
-    final color = _shiftColor(shift['shift_type']?.toString());
-    final icon = _shiftIcon(shift['shift_type']?.toString());
+    final color = _shiftColor(shift['shift_mode']?.toString() ?? shift['shift_type']?.toString());
+    final icon = _shiftIcon(shift['shift_mode']?.toString() ?? shift['shift_type']?.toString());
     final isActive = shift['is_active'] == true;
     final isDefault = shift['is_default'] == true;
     final crossesMidnight = shift['crosses_midnight'] == true;
@@ -937,12 +954,27 @@ IconButton(
     final typeLabel = _assignmentTypeLabel(a['assignment_type']?.toString());
     final dept = a['department']?.toString() ?? '';
     final branch = a['branch']?.toString() ?? '';
+    final excludedCount = a['excluded_count'] as int? ?? 0;
+    final isGrouped = a['assignment_type'] != 'employee';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: isGrouped
+            ? () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AssignmentDetailScreen(assignment: a),
+                  ),
+                );
+                _loadAssignments();
+              }
+            : null,
+        child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -991,10 +1023,27 @@ IconButton(
                     children: [
                       const Icon(Icons.schedule, size: 13, color: kShiftColor),
                       const SizedBox(width: 4),
-                      Text(
-                        a['shift_name']?.toString() ?? '',
-                        style: const TextStyle(color: kShiftColor, fontSize: 12, fontWeight: FontWeight.w500),
+                      Expanded(
+                        child: Text(
+                          a['shift_name']?.toString() ?? '',
+                          style: const TextStyle(color: kShiftColor, fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
                       ),
+                      if (excludedCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            '- $excludedCount',
+                            style: TextStyle(fontSize: 10, color: Colors.red[700], fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -1034,6 +1083,7 @@ IconButton(
             ),
           ],
         ),
+      ),
       ),
     );
   }

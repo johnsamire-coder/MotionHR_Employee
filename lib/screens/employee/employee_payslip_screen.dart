@@ -269,7 +269,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // ─── Overtime ─────────────────────
+                    // ─── Additions ─────────────────────
                     _card(
                       isAr ? 'الإضافات' : 'Additions',
                       Icons.add_circle_outline,
@@ -278,8 +278,58 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         _row(isAr ? 'بونص Overtime' : 'Overtime Bonus',
                             '+ ${_data!['overtime_bonus'] ?? 0} ج',
                             Colors.blue),
+                        if ((_data!['night_allowance'] ?? 0) > 0)
+                          _row(isAr ? 'بدل ليلي' : 'Night Allowance',
+                              '+ ${_data!['night_allowance']} ج',
+                              Colors.indigo),
+                        if ((_data!['weekend_allowance'] ?? 0) > 0)
+                          _row(isAr ? 'بدل يوم الراحة' : 'Weekend Allowance',
+                              '+ ${_data!['weekend_allowance']} ج',
+                              Colors.deepPurple),
+                        if ((_data!['night_shift_days'] ?? 0) > 0)
+                          _row(isAr ? 'أيام شيفتات ليلية' : 'Night Shift Days',
+                              '${_data!['night_shift_days']} ${isAr ? 'يوم' : 'days'}',
+                              Colors.grey),
+                        if ((_data!['weekend_work_days'] ?? 0) > 0)
+                          _row(isAr ? 'أيام عمل في الراحة' : 'Weekend Work Days',
+                              '${_data!['weekend_work_days']} ${isAr ? 'يوم' : 'days'}',
+                              Colors.grey),
                       ],
                     ),
+                    const SizedBox(height: 12),
+
+                    // ─── Policy Info ───────────────────
+                    if (_data!['policy_name'] != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.teal.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.policy, color: Colors.teal, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isAr ? 'السياسة المطبقة' : 'Applied Policy',
+                                    style: const TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.w500),
+                                  ),
+                                  Text(
+                                    '${_data!['policy_name']}',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 12),
 
                     // ─── Net Salary ───────────────────

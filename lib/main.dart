@@ -6265,6 +6265,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   bool _loading = true;
   String _firstName = '';
   String _companyName = '';
+  String _userRole = '';
+  bool get _canSeePayroll => _userRole == 'company_admin' || _userRole == 'hr_manager' || _userRole == 'super_admin';
 
   @override
   void initState() {
@@ -6281,6 +6283,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           prefs.getString('full_name') ??
           '';
       _companyName = prefs.getString('company_name') ?? '';
+      _userRole = prefs.getString('role') ?? '';
     });
   }
 
@@ -6601,15 +6604,16 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const ReportsHubScreen()))),
-                _gridCard(
-                    context.l10n.payroll,
-                    Icons.account_balance_wallet,
-                    Colors.green,
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const PayrollHubScreen()))),
+                if (_canSeePayroll)
+                  _gridCard(
+                      context.l10n.payroll,
+                      Icons.account_balance_wallet,
+                      Colors.green,
+                      () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  const PayrollHubScreen()))),
                 _gridCard(
                     isAr ? 'سياسات الحضور والخصم' : 'Attendance Policies',
                     Icons.policy,

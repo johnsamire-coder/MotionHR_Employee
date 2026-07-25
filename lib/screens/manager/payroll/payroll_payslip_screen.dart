@@ -424,6 +424,11 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final installmentDeduction = (d['installment_deduction'] as num?)?.toDouble() ?? 0.0;
     final totalDeductions    = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
     final netSalary          = (d['net_salary'] as num?)?.toDouble() ?? 0.0;
+    final nightAllowance     = (d['night_allowance'] as num?)?.toDouble() ?? 0.0;
+    final weekendAllowance   = (d['weekend_allowance'] as num?)?.toDouble() ?? 0.0;
+    final policyName         = d['policy_name']?.toString();
+    final nightShiftDays     = d['night_shift_days'] as int? ?? 0;
+    final weekendWorkDays    = d['weekend_work_days'] as int? ?? 0;
     final workDays    = d['work_days'] as int? ?? 0;
     final presentDays = d['present_days'] as int? ?? 0;
     final absentDays  = d['absent_days'] as int? ?? 0;
@@ -566,6 +571,14 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           _buildRow(ar ? 'المكافات' : 'Bonuses',
                               totalBonuses, ar,
                               color: Colors.green),
+                          if (nightAllowance > 0)
+                            _buildRow(ar ? 'بدل ليلي' : 'Night Allowance',
+                                nightAllowance, ar,
+                                color: Colors.indigo),
+                          if (weekendAllowance > 0)
+                            _buildRow(ar ? 'بدل يوم الراحة' : 'Weekend Allowance',
+                                weekendAllowance, ar,
+                                color: Colors.deepPurple),
                           const Divider(),
                           _buildRow(ar ? 'الاجمالي' : 'Gross Salary',
                               grossSalary, ar,
@@ -573,6 +586,54 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                         ],
                         Colors.green,
                       ),
+                      // Policy Info Card
+                      if (policyName != null)
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.teal.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.policy, color: Colors.teal, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ar ? 'السياسة المطبقة' : 'Applied Policy',
+                                      style: const TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.w500),
+                                    ),
+                                    Text(
+                                      policyName,
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (nightShiftDays > 0 || weekendWorkDays > 0)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (nightShiftDays > 0)
+                                      Text(
+                                        '${ar ? "ليلي" : "Night"}: $nightShiftDays',
+                                        style: const TextStyle(fontSize: 11, color: Colors.indigo),
+                                      ),
+                                    if (weekendWorkDays > 0)
+                                      Text(
+                                        '${ar ? "راحة" : "Weekend"}: $weekendWorkDays',
+                                        style: const TextStyle(fontSize: 11, color: Colors.deepPurple),
+                                      ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
                       // Deductions
                       _buildSection(
                         ar ? 'الخصومات' : 'Deductions',
