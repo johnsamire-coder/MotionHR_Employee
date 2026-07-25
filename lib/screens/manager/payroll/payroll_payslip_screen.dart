@@ -72,23 +72,23 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final cur = ar ? 'ج.م' : 'EGP';
 
     final basicSalary       = (d['basic_salary'] as num?)?.toDouble() ?? 0.0;
-    final totalAllowances   = (d['total_allowances'] as num?)?.toDouble() ?? 0.0;
-    final totalBonuses      = (d['total_bonuses'] as num?)?.toDouble() ?? 0.0;
+    final totalAllowances   = (d['allowances_total'] as num?)?.toDouble() ?? 0.0;
+    final totalBonuses      = (d['bonuses_total'] as num?)?.toDouble() ?? 0.0;
     final grossSalary       = (d['gross_salary'] as num?)?.toDouble() ?? 0.0;
     final lateDeduction     = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction  = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction= (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
-    final penaltyDeduction  = (d['penalty_deduction'] as num?)?.toDouble() ?? 0.0;
-    final installmentDeduction = (d['installment_deduction'] as num?)?.toDouble() ?? 0.0;
+    final penaltyDeduction  = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
+    final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
     final totalDeductions   = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
     final netSalary         = (d['net_salary'] as num?)?.toDouble() ?? 0.0;
-    final workDays    = d['work_days'] as int? ?? 0;
+    final workDays    = d['total_working_days'] as int? ?? 0;
     final presentDays = d['present_days'] as int? ?? 0;
     final absentDays  = d['absent_days'] as int? ?? 0;
     final lateDays    = d['late_days'] as int? ?? 0;
     final companyName = d['company_name'] as String? ?? 'MotionHR';
-    final position    = d['position'] as String? ?? '';
-    final department  = d['department'] as String? ?? '';
+    final position    = d['job_title_name'] as String? ?? '';
+    final department  = d['department_name'] as String? ?? '';
 
     pw.Widget pdfRow(String label, double value, {bool isBold = false}) {
       return pw.Padding(
@@ -414,14 +414,14 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final ar = _isAr;
     final d = _data ?? {};
     final basicSalary        = (d['basic_salary'] as num?)?.toDouble() ?? 0.0;
-    final totalAllowances    = (d['total_allowances'] as num?)?.toDouble() ?? 0.0;
-    final totalBonuses       = (d['total_bonuses'] as num?)?.toDouble() ?? 0.0;
+    final totalAllowances    = (d['allowances_total'] as num?)?.toDouble() ?? 0.0;
+    final totalBonuses       = (d['bonuses_total'] as num?)?.toDouble() ?? 0.0;
     final grossSalary        = (d['gross_salary'] as num?)?.toDouble() ?? 0.0;
     final lateDeduction      = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction   = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction = (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
-    final penaltyDeduction   = (d['penalty_deduction'] as num?)?.toDouble() ?? 0.0;
-    final installmentDeduction = (d['installment_deduction'] as num?)?.toDouble() ?? 0.0;
+    final penaltyDeduction   = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
+    final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
     final totalDeductions    = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
     final netSalary          = (d['net_salary'] as num?)?.toDouble() ?? 0.0;
     final nightAllowance     = (d['night_allowance'] as num?)?.toDouble() ?? 0.0;
@@ -429,10 +429,12 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final policyName         = d['policy_name']?.toString();
     final nightShiftDays     = d['night_shift_days'] as int? ?? 0;
     final weekendWorkDays    = d['weekend_work_days'] as int? ?? 0;
-    final workDays    = d['work_days'] as int? ?? 0;
+    final workDays    = d['total_working_days'] as int? ?? 0;
     final presentDays = d['present_days'] as int? ?? 0;
     final absentDays  = d['absent_days'] as int? ?? 0;
     final lateDays    = d['late_days'] as int? ?? 0;
+    final earlyLeaveDeduction  = (d['early_leave_deduction'] as num?)?.toDouble() ?? 0.0;
+    final flexShortageDeduction = (d['flex_shortage_deduction'] as num?)?.toDouble() ?? 0.0;
 
     return Directionality(
       textDirection: ar ? TextDirection.rtl : TextDirection.ltr,
@@ -641,6 +643,14 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           _buildRow(ar ? 'تاخير' : 'Late Deduction',
                               lateDeduction, ar,
                               color: Colors.orange),
+                          if (earlyLeaveDeduction > 0)
+                            _buildRow(ar ? '?????? ????' : 'Early Leave',
+                                earlyLeaveDeduction, ar,
+                                color: Colors.deepOrange),
+                          if (flexShortageDeduction > 0)
+                            _buildRow(ar ? '??? ????? ????' : 'Flex Shortage',
+                                flexShortageDeduction, ar,
+                                color: Colors.brown),
                           _buildRow(ar ? 'غياب' : 'Absence Deduction',
                               absenceDeduction, ar,
                               color: Colors.red),
