@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'auth_storage_service.dart';
 
 class PayrollRunService {
-  static const String _base = 'https://jssolutions-eg.com/api';
+  static const String _base =
+      'https://motion.jssolutions-eg.com/attendance/api/mobile/manager';
 
   static Future<String?> _getToken() async {
     return AuthStorageService.getSavedToken();
@@ -14,13 +15,13 @@ class PayrollRunService {
         'Content-Type': 'application/json',
       };
 
-  // ─── List Runs ─────────────────────────────
+  // ─── List Runs ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getPayrollRuns({
     int? year,
     int? month,
   }) async {
     final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
+    if (token == null) return {'success': false, 'error': 'no_token'};
     final now = DateTime.now();
     final y = year ?? now.year;
     final m = month ?? now.month;
@@ -28,107 +29,113 @@ class PayrollRunService {
     try {
       final res = await http
           .get(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 20));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       }
-      return {'error': 'status_${res.statusCode}'};
+      return {'success': false, 'error': 'status_${res.statusCode}'};
     } catch (e) {
-      return {'error': e.toString()};
+      return {'success': false, 'error': e.toString()};
     }
   }
 
-  // ─── Create Run ────────────────────────────
+  // ─── Create Run ────────────────────────────────────────────
   static Future<Map<String, dynamic>> createPayrollRun({
     required int year,
     required int month,
+    String? notes,
   }) async {
     final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse('$_base/payroll/runs/create/');
+    if (token == null) return {'success': false, 'error': 'no_token'};
+    final uri = Uri.parse('$_base/payroll/run/create/');
     try {
       final res = await http
           .post(
             uri,
             headers: _headers(token),
-            body: jsonEncode({'year': year, 'month': month}),
+            body: jsonEncode({
+              'year': year,
+              'month': month,
+              if (notes != null && notes.isNotEmpty) 'notes': notes,
+            }),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(const Duration(seconds: 60));
       return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     } catch (e) {
-      return {'error': e.toString()};
+      return {'success': false, 'error': e.toString()};
     }
   }
 
-  // ─── Approve Run ───────────────────────────
+  // ─── Approve Run ───────────────────────────────────────────
   static Future<Map<String, dynamic>> approvePayrollRun(int runId) async {
     final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
+    if (token == null) return {'success': false, 'error': 'no_token'};
     final uri = Uri.parse('$_base/payroll/runs/$runId/approve/');
     try {
       final res = await http
           .post(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 20));
       return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     } catch (e) {
-      return {'error': e.toString()};
+      return {'success': false, 'error': e.toString()};
     }
   }
 
-  // ─── Lock Run ──────────────────────────────
-  static Future<Map<String, dynamic>> lockPayrollRun(int runId) async {
-    final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse('$_base/payroll/runs/$runId/lock/');
-    try {
-      final res = await http
-          .post(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
-      return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    } catch (e) {
-      return {'error': e.toString()};
-    }
-  }
-
-  // ─── Run Lines ─────────────────────────────
+  // ─── Run Detail + Lines ────────────────────────────────────
   static Future<Map<String, dynamic>> getRunLines(int runId) async {
     final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse('$_base/payroll/runs/$runId/lines/');
+    if (token == null) return {'success': false, 'error': 'no_token'};
+    final uri = Uri.parse('$_base/payroll/runs/$runId/');
     try {
       final res = await http
           .get(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 20));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       }
-      return {'error': 'status_${res.statusCode}'};
+      return {'success': false, 'error': 'status_${res.statusCode}'};
     } catch (e) {
-      return {'error': e.toString()};
+      return {'success': false, 'error': e.toString()};
     }
   }
 
-  // ─── Adjustments ───────────────────────────
+  // ─── Payslip (من payroll_employee_detail API) ──────────────
+  static Future<Map<String, dynamic>> getPayslipData({
+    required int employeeId,
+    required int year,
+    required int month,
+  }) async {
+    final token = await _getToken();
+    if (token == null) return {'success': false, 'error': 'no_token'};
+    final uri = Uri.parse(
+        'https://motion.jssolutions-eg.com/attendance/api/mobile/manager'
+        '/payroll/employee/?employee_id=$employeeId&year=$year&month=$month');
+    try {
+      final res = await http
+          .get(uri, headers: _headers(token))
+          .timeout(const Duration(seconds: 20));
+      if (res.statusCode == 200) {
+        return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      }
+      return {'success': false, 'error': 'status_${res.statusCode}'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // ─── Lock Run (placeholder - not implemented yet) ──────────
+  static Future<Map<String, dynamic>> lockPayrollRun(int runId) async {
+    // TODO: implement lock API in backend
+    return {'success': false, 'error': 'not_implemented'};
+  }
+
+  // ─── Adjustments (placeholder - not implemented yet) ───────
   static Future<Map<String, dynamic>> getBonusesPenalties({
     required int runId,
     int? employeeId,
   }) async {
-    final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    var url = '$_base/payroll/runs/$runId/adjustments/';
-    if (employeeId != null) url += '?employee_id=$employeeId';
-    final uri = Uri.parse(url);
-    try {
-      final res = await http
-          .get(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
-      if (res.statusCode == 200) {
-        return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      }
-      return {'error': 'status_${res.statusCode}'};
-    } catch (e) {
-      return {'error': e.toString()};
-    }
+    // TODO: implement adjustments API in backend
+    return {'success': false, 'adjustments': [], 'error': 'not_implemented'};
   }
 
   static Future<Map<String, dynamic>> addAdjustment({
@@ -138,62 +145,13 @@ class PayrollRunService {
     required double amount,
     required String reason,
   }) async {
-    final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse('$_base/payroll/runs/$runId/adjustments/add/');
-    try {
-      final res = await http
-          .post(
-            uri,
-            headers: _headers(token),
-            body: jsonEncode({
-              'employee_id': employeeId,
-              'type': type,
-              'amount': amount,
-              'reason': reason,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
-      return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    } catch (e) {
-      return {'error': e.toString()};
-    }
+    // TODO: implement add adjustment API in backend
+    return {'success': false, 'error': 'not_implemented'};
   }
 
-  static Future<Map<String, dynamic>> deleteAdjustment(int adjustmentId) async {
-    final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse('$_base/payroll/adjustments/$adjustmentId/delete/');
-    try {
-      final res = await http
-          .delete(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
-      return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    } catch (e) {
-      return {'error': e.toString()};
-    }
-  }
-
-  // ─── Payslip ───────────────────────────────
-  static Future<Map<String, dynamic>> getPayslipData({
-    required int employeeId,
-    required int year,
-    required int month,
-  }) async {
-    final token = await _getToken();
-    if (token == null) return {'error': 'no_token'};
-    final uri = Uri.parse(
-        '$_base/payroll/payslip/?employee_id=$employeeId&year=$year&month=$month');
-    try {
-      final res = await http
-          .get(uri, headers: _headers(token))
-          .timeout(const Duration(seconds: 15));
-      if (res.statusCode == 200) {
-        return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      }
-      return {'error': 'status_${res.statusCode}'};
-    } catch (e) {
-      return {'error': e.toString()};
-    }
+  static Future<Map<String, dynamic>> deleteAdjustment(
+      int adjustmentId) async {
+    // TODO: implement delete adjustment API in backend
+    return {'success': false, 'error': 'not_implemented'};
   }
 }
