@@ -2450,7 +2450,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   onPressed: _loading ? null : () => _attendanceAction('partial_checkout'),
                   icon: const Icon(Icons.exit_to_app),
                   label: Text(
-                    isAr ? '???? ???? (????? ??????)' : 'Partial Checkout (I will return)',
+                    isAr ? 'خروج جزئي (سأعود لاحقاً)' : 'Partial Checkout (I will return)',
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -2468,7 +2468,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   onPressed: _loading ? null : () => _attendanceAction('resume_checkin'),
                   icon: const Icon(Icons.login),
                   label: Text(
-                    isAr ? '???? ????? (???? ${sessionsToday + 1})' : 'Resume Work (Session ${sessionsToday + 1})',
+                    isAr ? 'استئناف العمل (فترة ${sessionsToday + 1})' : 'Resume Work (Session ${sessionsToday + 1})',
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
