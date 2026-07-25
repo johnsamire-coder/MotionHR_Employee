@@ -13,6 +13,7 @@ import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/manager_announcements_screen.dart';
 import 'screens/manager/attendance_policy_screen.dart';
+import 'screens/manager/flex_adjustments_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'screens/manager/manager_missions_screen.dart';
@@ -6695,6 +6696,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const AttendancePolicyScreen()))),
+_gridCard(
+    isAr ? 'تسويات الشيفت المرن' : 'Flex Adjustments',
+    Icons.tune,
+    const Color(0xFF1565C0),
+    () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                const FlexAdjustmentsScreen()))),
 _gridCard(
     'استدعاء / Leave Recall',
     Icons.person_search,
