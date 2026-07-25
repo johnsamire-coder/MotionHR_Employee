@@ -51,6 +51,9 @@ import 'services/auto_checkin_service.dart';
 
 
 const String kBaseUrl = 'https://jssolutions-eg.com';
+
+// NavigatorKey للـ deep navigation من الإشعارات
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 const Color kPrimaryColor = Color(0xFF1976D2);
 String formatTime12h(dynamic raw) {
   final text = (raw ?? '').toString().trim();
@@ -110,7 +113,17 @@ Future<void> initLocalNotifications() async {
   const android = AndroidInitializationSettings('@mipmap/ic_launcher');
   await _localNotif.initialize(
     const InitializationSettings(android: android),
-    onDidReceiveNotificationResponse: (_) {},
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      final payload = response.payload;
+      if (payload != null && payload.isNotEmpty) {
+        try {
+          final data = jsonDecode(payload) as Map<String, dynamic>;
+          handleNotificationNavigation(data);
+        } catch (_) {
+          handleNotificationNavigation({'type': payload});
+        }
+      }
+    },
   );
   await _localNotif
       .resolvePlatformSpecificImplementation<
@@ -124,7 +137,13 @@ Future<void> initLocalNotifications() async {
       );
 }
 
-Future<void> showLocalNotification(String title, String body) async {
+Future<void> showLocalNotification(String title, String body, {Map<String, dynamic>? data}) async {
+  String? payload;
+  if (data != null) {
+    try {
+      payload = jsonEncode(data);
+    } catch (_) {}
+  }
   await _localNotif.show(
     DateTime.now().millisecondsSinceEpoch ~/ 1000,
     title,
@@ -138,6 +157,7 @@ Future<void> showLocalNotification(String title, String body) async {
         icon: '@mipmap/ic_launcher',
       ),
     ),
+    payload: payload,
   );
 }
 
@@ -278,6 +298,48 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   print('🔔 Background message: ${message.notification?.title}');
 }
 
+
+void handleNotificationNavigation(Map<String, dynamic> data) {
+  final context = navigatorKey.currentContext;
+  if (context == null) return;
+  final type = data['type']?.toString() ?? '';
+  try {
+    switch (type) {
+      case 'announcement':
+      case 'announcement_deleted':
+      case 'announcement_updated':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const AnnouncementsScreen(),
+        ));
+        break;
+      case 'shift_changed':
+      case 'shift_assigned':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const ShiftsScreen(),
+        ));
+        break;
+      case 'mission':
+      case 'mission_assigned':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const ManagerMissionsScreen(),
+        ));
+        break;
+      case 'payslip':
+      case 'payroll':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const PayrollHubScreen(),
+        ));
+        break;
+      default:
+        navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        break;
+    }
+  } catch (e) {
+    print('Navigation error: $e');
+  }
+  fetchUnreadCount();
+}
+
 Future<void> initFirebaseMessaging() async {
   try {
     final messaging = FirebaseMessaging.instance;
@@ -289,6 +351,7 @@ Future<void> initFirebaseMessaging() async {
         await showLocalNotification(
           message.notification!.title ?? '',
           message.notification!.body ?? '',
+          data: message.data,
         );
         await fetchUnreadCount();
       }
@@ -296,8 +359,16 @@ Future<void> initFirebaseMessaging() async {
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('👆 User tapped notification: ${message.notification?.title}');
-      fetchUnreadCount();
+      handleNotificationNavigation(message.data);
     });
+
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      print('🚀 App opened from terminated state via notification');
+      Future.delayed(const Duration(seconds: 2), () {
+        handleNotificationNavigation(initialMessage.data);
+      });
+    }
 
     print('✅ Firebase Messaging initialized');
   } catch (e) {
@@ -430,6 +501,7 @@ class _MotionHRAppState extends State<MotionHRApp> {
       valueListenable: LanguageService.currentLocale,
       builder: (context, locale, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
