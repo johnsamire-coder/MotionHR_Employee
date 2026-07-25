@@ -1,12 +1,9 @@
-﻿// lib/services/employee_pdf_service.dart
-
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cross_file/cross_file.dart';
 import 'branding_service.dart';
 
 class EmployeePdfService {
@@ -62,21 +59,42 @@ class EmployeePdfService {
                   width: double.infinity,
                   padding: const pw.EdgeInsets.all(16),
                   decoration: pw.BoxDecoration(
-                    color: PdfColor.fromInt(0xFFF5F5F5),
-                    borderRadius: pw.BorderRadius.circular(10),
+                    color: const PdfColor.fromInt(0xFFF5F5F5),
+                    borderRadius: const pw.BorderRadius.all(
+                      pw.Radius.circular(10),
+                    ),
                     border: pw.Border.all(
-                      color: PdfColor.fromInt(0xFF6A1B9A),
+                      color: const PdfColor.fromInt(0xFF6A1B9A),
                       width: 1.5,
                     ),
                   ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      _buildCredentialRow('Username:', credentials['username'] ?? '', isBold: true),
+                      _buildCredentialRow(
+                        'Username:',
+                        credentials['username'] ?? '',
+                        isBold: true,
+                      ),
                       pw.SizedBox(height: 12),
-                      _buildCredentialRow('Password:', credentials['password'] ?? '', isBold: true, isPassword: true),
+                      _buildCredentialRow(
+                        'Activation Link:',
+                        credentials['activation_link'] ?? '',
+                        isBold: true,
+                      ),
+                      pw.SizedBox(height: 8),
+                      pw.Text(
+                        'الرابط صالح 48 ساعة فقط - Link valid for 48 hours only',
+                        style: BrandingService.arabicStyle(
+                          fontSize: 10,
+                          color: const PdfColor.fromInt(0xFFE65100),
+                        ),
+                      ),
                       pw.SizedBox(height: 12),
-                      _buildCredentialRow('Login URL:', credentials['login_url'] ?? 'https://jssolutions-eg.com'),
+                      _buildCredentialRow(
+                        'Login URL:',
+                        credentials['login_url'] ?? 'https://jssolutions-eg.com',
+                      ),
                     ],
                   ),
                 ),
@@ -90,7 +108,8 @@ class EmployeePdfService {
     );
 
     final dir = await getTemporaryDirectory();
-    final fileName = 'MotionHR_${employee['employee_code'] ?? 'emp'}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final fileName =
+        'MotionHR_${employee['employee_code'] ?? 'emp'}_${DateTime.now().millisecondsSinceEpoch}.pdf';
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file.path;
@@ -101,14 +120,14 @@ class EmployeePdfService {
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(
         children: [
-          pw.Container(
+          pw.SizedBox(
             width: 130,
             child: pw.Text(
               label,
               style: BrandingService.arabicStyle(
                 fontSize: 11,
                 bold: true,
-                color: PdfColor.fromInt(0xFF616161),
+                color: const PdfColor.fromInt(0xFF616161),
               ),
             ),
           ),
@@ -131,7 +150,7 @@ class EmployeePdfService {
   }) {
     return pw.Row(
       children: [
-        pw.Container(
+        pw.SizedBox(
           width: 120,
           child: pw.Text(
             label,
@@ -142,12 +161,16 @@ class EmployeePdfService {
           child: pw.Container(
             padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: pw.BoxDecoration(
-              color: isPassword ? PdfColor.fromInt(0xFFFFEBEE) : PdfColors.white,
-              borderRadius: pw.BorderRadius.circular(6),
+              color: isPassword
+                  ? const PdfColor.fromInt(0xFFFFEBEE)
+                  : PdfColors.white,
+              borderRadius: const pw.BorderRadius.all(
+                pw.Radius.circular(6),
+              ),
               border: pw.Border.all(
                 color: isPassword
-                    ? PdfColor.fromInt(0xFFE53935)
-                    : PdfColor.fromInt(0xFFBDBDBD),
+                    ? const PdfColor.fromInt(0xFFE53935)
+                    : const PdfColor.fromInt(0xFFBDBDBD),
               ),
             ),
             child: pw.Text(
@@ -163,7 +186,11 @@ class EmployeePdfService {
     );
   }
 
-  static Future<void> sharePdf(String filePath, {String? phone, String? employeeName}) async {
+  static Future<void> sharePdf(
+    String filePath, {
+    String? phone,
+    String? employeeName,
+  }) async {
     final file = XFile(filePath);
     const text = 'بيانات حسابك في MotionHR';
     await Share.shareXFiles([file], text: text);
@@ -173,7 +200,9 @@ class EmployeePdfService {
     String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
     if (cleanPhone.startsWith('0')) cleanPhone = '2$cleanPhone';
     final text = message ?? 'مرحبا! تم إنشاء حسابك في MotionHR';
-    final url = Uri.parse('whatsapp://send?phone=$cleanPhone&text=${Uri.encodeComponent(text)}');
+    final url = Uri.parse(
+      'whatsapp://send?phone=$cleanPhone&text=${Uri.encodeComponent(text)}',
+    );
     if (await canLaunchUrl(url)) await launchUrl(url);
   }
 }
