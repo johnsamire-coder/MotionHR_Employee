@@ -3073,6 +3073,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   final _endCtrl = TextEditingController();
   final _reasonCtrl = TextEditingController();
   bool _loading = false;
+  bool _isHalfDay = false;
+  String _halfDayType = 'morning';
   bool get _isOther => _selectedValue == 'other';
 
   Future<void> _pickDate(TextEditingController c) async {
@@ -3110,6 +3112,11 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
             : _reasonCtrl.text
       };
       if (!_isOther) body['leave_type_id'] = _selectedValue;
+      if (_isHalfDay) {
+        body['half_day'] = true;
+        body['half_day_type'] = _halfDayType;
+        body['end_date'] = body['start_date'];
+      }
       final res = await http.post(
           Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
           headers: {
@@ -3162,13 +3169,56 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                           })
                           .map((t) => DropdownMenuItem<String>(
                               value: t['id'].toString(),
-                              child: Text(localizedTypeName((t['name'] ?? '').toString(), isAr)))),
+                              child: Text(localizedTypeName(
+                                  (t['name'] ?? '').toString(), isAr)))),
                       DropdownMenuItem<String>(
                           value: 'other',
                           child: Text(isAr ? 'أخرى' : 'Other')),
                     ],
                     onChanged: (v) =>
                         setState(() => _selectedValue = v)),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(isAr ? 'نص يوم؟' : 'Half Day?'),
+                  subtitle: Text(
+                    isAr ? 'نهاية = نفس بداية' : 'End = same as start',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  value: _isHalfDay,
+                  onChanged: (v) {
+                    setState(() {
+                      _isHalfDay = v;
+                      if (_isHalfDay && _startCtrl.text.isNotEmpty) {
+                        _endCtrl.text = _startCtrl.text;
+                      }
+                    });
+                  },
+                ),
+                if (_isHalfDay) ...[
+                  Row(children: [
+                    Expanded(
+                      child: RadioListTile<String>(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(isAr ? 'صباحي' : 'Morning'),
+                        value: 'morning',
+                        groupValue: _halfDayType,
+                        onChanged: (v) =>
+                            setState(() => _halfDayType = v ?? 'morning'),
+                      ),
+                    ),
+                    Expanded(
+                      child: RadioListTile<String>(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(isAr ? 'مسائي' : 'Afternoon'),
+                        value: 'afternoon',
+                        groupValue: _halfDayType,
+                        onChanged: (v) =>
+                            setState(() => _halfDayType = v ?? 'afternoon'),
+                      ),
+                    ),
+                  ]),
+                ],
                 if (_isOther) ...[
                   const SizedBox(height: 16),
                   TextField(
