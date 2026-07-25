@@ -246,8 +246,8 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
   Widget _buildRunCard(Map<String, dynamic> run, bool ar) {
     final status = run['status'] as String? ?? 'draft';
     final runId = run['id'] as int? ?? 0;
-    final total = (run['total_net'] as num?)?.toDouble() ?? 0.0;
-    final count = run['employee_count'] as int? ?? 0;
+    final total = (run['grand_net'] as num?)?.toDouble() ?? 0.0;
+    final count = run['total_employees'] as int? ?? 0;
     final createdAt = run['created_at'] as String? ?? '';
     final color = _statusColor(status);
 
