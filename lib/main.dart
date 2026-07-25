@@ -28,6 +28,7 @@ import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/biometric_auth_service.dart';
 import 'screens/employee/my_shift_screen.dart';
+import 'screens/employee/requests_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -3228,13 +3229,13 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   }
 }
 
-class RequestsScreen extends StatefulWidget {
-  const RequestsScreen({super.key});
+class OldRequestsScreen extends StatefulWidget {
+  const OldRequestsScreen({super.key});
   @override
-  State<RequestsScreen> createState() => _RequestsScreenState();
+  State<OldRequestsScreen> createState() => _RequestsScreenState();
 }
 
-class _RequestsScreenState extends State<RequestsScreen> {
+class _RequestsScreenState extends State<OldRequestsScreen> {
   List<dynamic> _types = [];
   bool _loading = true;
   String? _selectedValue;
