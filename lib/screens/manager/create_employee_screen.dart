@@ -100,6 +100,10 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
   DateTime? _hireDate = DateTime.now();
   String _contractType = 'permanent';
   DateTime? _contractEndDate;
+  DateTime? _contractStartDate;
+  int _contractDurationMonths = 12;
+  int _probationMonths = 3;
+  String _attendanceMode = 'fixed_shift';
   bool _hasInsurance = false;
   final _insuranceNumberCtrl = TextEditingController();
   bool _loadingLookups = true;
@@ -277,6 +281,7 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
   Future<void> _pickDate({
     required bool isBirth,
     bool isContract = false,
+    bool isContractStart = false,
   }) async {
     DateTime initial, first, last;
     if (isBirth) {
@@ -288,6 +293,10 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
           DateTime.now().add(const Duration(days: 365));
       first = DateTime.now();
       last = DateTime.now().add(const Duration(days: 365 * 10));
+    } else if (isContractStart) {
+      initial = _contractStartDate ?? DateTime.now();
+      first = DateTime(2000);
+      last = DateTime.now().add(const Duration(days: 365 * 2));
     } else {
       initial = _hireDate ?? DateTime.now();
       first = DateTime(2000);
@@ -305,6 +314,8 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
           _birthDate = picked;
         } else if (isContract) {
           _contractEndDate = picked;
+        } else if (isContractStart) {
+          _contractStartDate = picked;
         } else {
           _hireDate = picked;
         }
@@ -352,8 +363,13 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
         jobTitleId: _selectedJobTitleId!,
         directManagerId: _selectedManagerId,
         contractType: _contractType,
-        contractEndDate:
-            _contractEndDate != null ? _fmt(_contractEndDate) : null,
+        contractStartDate:
+            _contractStartDate != null ? _fmt(_contractStartDate) : null,
+        contractDurationMonths: _contractDurationMonths > 0
+            ? _contractDurationMonths
+            : null,
+        probationMonths: _probationMonths,
+        attendanceMode: _attendanceMode,
         hasInsurance: _hasInsurance,
         insuranceNumber: _insuranceNumberCtrl.text.trim(),
         basicSalary: double.tryParse(_salaryCtrl.text.trim()),
@@ -980,8 +996,24 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
         _hireDate,
         () => _pickDate(isBirth: false),
       ),
+      const SizedBox(height: 10),
+      DropdownButtonFormField<String>(
+        initialValue: _attendanceMode,
+        decoration: _dec(
+          isAr ? 'نمط الحضور *' : 'Attendance Mode *',
+          Icons.schedule,
+        ),
+        items: [
+          DropdownMenuItem(value: 'fixed_shift', child: Text(isAr ? 'شيفت ثابت' : 'Fixed Shift')),
+          DropdownMenuItem(value: 'flexible_hours', child: Text(isAr ? 'ساعات مرنة' : 'Flexible Hours')),
+          DropdownMenuItem(value: 'field_worker', child: Text(isAr ? 'ميداني' : 'Field Worker')),
+          DropdownMenuItem(value: 'remote', child: Text(isAr ? 'عن بُعد' : 'Remote')),
+          DropdownMenuItem(value: 'rotating', child: Text(isAr ? 'متناوب' : 'Rotating')),
+        ],
+        onChanged: (v) => setState(() => _attendanceMode = v ?? 'fixed_shift'),
+      ),
       const SizedBox(height: 14),
-      _sectionTitle('العقد والتأمين', 'Contract & Insurance'),
+      _sectionTitle('العقد والتأمينات', 'Contract & Insurance'),
       DropdownButtonFormField<String>(
         initialValue: _contractType,
         decoration: _dec(
@@ -1007,26 +1039,56 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
           ),
           DropdownMenuItem(
             value: 'part_time',
-            child: Text(isAr ? 'جزء وقت' : 'Part Time'),
+            child: Text(isAr ? 'دوام جزئي' : 'Part Time'),
+          ),
+          DropdownMenuItem(
+            value: 'consultant',
+            child: Text(isAr ? 'استشاري' : 'Consultant'),
           ),
         ],
         onChanged: (v) => setState(() => _contractType = v ?? 'permanent'),
       ),
       const SizedBox(height: 10),
-      if (_contractType == 'temporary' || _contractType == 'training') ...[
+      _dateTile(
+        isAr ? 'تاريخ بداية العقد (اختياري)' : 'Contract Start Date (opt)',
+        _contractStartDate,
+        () => _pickDate(isBirth: false, isContractStart: true),
+      ),
+      const SizedBox(height: 10),
+      if (_contractType == 'temporary' || _contractType == 'consultant' || _contractType == 'training') ...[
         _dateTile(
           isAr ? 'تاريخ نهاية العقد' : 'Contract End Date',
           _contractEndDate,
           () => _pickDate(isBirth: false, isContract: true),
         ),
         const SizedBox(height: 10),
+        TextFormField(
+          initialValue: _contractDurationMonths.toString(),
+          keyboardType: TextInputType.number,
+          decoration: _dec(
+            isAr ? 'أو مدة العقد بالشهور' : 'Or Duration in Months',
+            Icons.access_time,
+          ),
+          onChanged: (v) => _contractDurationMonths = int.tryParse(v) ?? 12,
+        ),
+        const SizedBox(height: 10),
       ],
+      TextFormField(
+        initialValue: _probationMonths.toString(),
+        keyboardType: TextInputType.number,
+        decoration: _dec(
+          isAr ? 'فترة التجربة (بالشهور)' : 'Probation (Months)',
+          Icons.fact_check,
+        ),
+        onChanged: (v) => _probationMonths = int.tryParse(v) ?? 3,
+      ),
+      const SizedBox(height: 10),
       SwitchListTile(
         value: _hasInsurance,
         onChanged: (v) => setState(() => _hasInsurance = v),
         title: Text(
           isAr
-              ? 'مشمول بالتأمينات الاجتماعية'
+              ? 'مؤمن عليه بالتأمينات الاجتماعية'
               : 'Has Social Insurance',
         ),
         activeThumbColor: kManagerColor,

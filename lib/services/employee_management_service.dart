@@ -181,6 +181,10 @@ class EmployeeManagementService {
     int? directManagerId,
     String? contractType,
     String? contractEndDate,
+    String? contractStartDate,
+    int? contractDurationMonths,
+    int? probationMonths,
+    String? attendanceMode,
     bool? hasInsurance,
     String? insuranceNumber,
     // Financial
@@ -249,6 +253,14 @@ class EmployeeManagementService {
       body['contract_type'] = contractType;
     if (contractEndDate != null && contractEndDate.isNotEmpty)
       body['contract_end_date'] = contractEndDate;
+    if (contractStartDate != null && contractStartDate.isNotEmpty)
+      body['contract_start_date'] = contractStartDate;
+    if (contractDurationMonths != null)
+      body['contract_duration_months'] = contractDurationMonths;
+    if (probationMonths != null)
+      body['probation_months'] = probationMonths;
+    if (attendanceMode != null && attendanceMode.isNotEmpty)
+      body['attendance_mode'] = attendanceMode;
     if (hasInsurance != null) body['has_insurance'] = hasInsurance;
     if (insuranceNumber != null && insuranceNumber.isNotEmpty)
       body['insurance_number'] = insuranceNumber;
