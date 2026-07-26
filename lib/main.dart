@@ -13,6 +13,7 @@ import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/manager_announcements_screen.dart';
 import 'screens/manager/attendance_policy_screen.dart';
+import 'screens/manager/payroll_policy_screen.dart';
 import 'screens/manager/flex_adjustments_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
@@ -6716,7 +6717,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                               builder: (_) =>
                                   const PayrollHubScreen()))),
                 _gridCard(
-                    isAr ? 'سياسات الحضور والخصم' : 'Attendance Policies',
+                    isAr ? 'سياسات الحضور والانصراف' : 'Attendance Policies',
                     Icons.policy,
                     const Color(0xFF1565C0),
                     () => Navigator.push(
@@ -6724,6 +6725,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const AttendancePolicyScreen()))),
+                _gridCard(
+                    isAr ? 'سياسة المرتبات' : 'Payroll Policy',
+                    Icons.monetization_on,
+                    const Color(0xFF2E7D32),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PayrollPolicyScreen()))),
 _gridCard(
     isAr ? 'تسويات الشيفت المرن' : 'Flex Adjustments',
     Icons.tune,
