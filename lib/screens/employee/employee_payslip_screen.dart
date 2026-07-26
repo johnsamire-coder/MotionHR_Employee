@@ -52,56 +52,63 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(isAr ? 'اختر الشهر' : 'Select Month'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () => setS(() => tempYear--)),
-                  Text('$tempYear',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: tempYear < now.year
-                          ? () => setS(() => tempYear++)
-                          : null),
-                ],
-              ),
-              const SizedBox(height: 8),
-              GridView.builder(
-                shrinkWrap: true,
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4, childAspectRatio: 1.4),
-                itemCount: 12,
-                itemBuilder: (_, i) {
-                  final m = i + 1;
-                  return GestureDetector(
-                    onTap: () => setS(() => tempMonth = m),
-                    child: Container(
-                      margin: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: tempMonth == m
-                            ? const Color(0xFF6A1B9A)
-                            : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(_monthName(m, isAr),
-                          style: TextStyle(
-                              color: tempMonth == m
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 11)),
-                    ),
-                  );
-                },
-              ),
-            ],
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: () => setS(() => tempYear--)),
+                    Text('$tempYear',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: tempYear < now.year
+                            ? () => setS(() => tempYear++)
+                            : null),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 220,
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4, childAspectRatio: 1.4),
+                    itemCount: 12,
+                    itemBuilder: (_, i) {
+                      final m = i + 1;
+                      return GestureDetector(
+                        onTap: () => setS(() => tempMonth = m),
+                        child: Container(
+                          margin: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: tempMonth == m
+                                ? const Color(0xFF6A1B9A)
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(_monthName(m, isAr),
+                              style: TextStyle(
+                                  color: tempMonth == m
+                                      ? Colors.white
+                                      : Colors.black87,
+                                  fontSize: 11)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
