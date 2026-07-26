@@ -14,10 +14,8 @@ class RequestsScreen extends StatefulWidget {
 }
 
 class _RequestsScreenState extends State<RequestsScreen>
-    with SingleTickerProviderStateMixin {
+ {
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
-
-  late TabController _tabController;
 
   // Categories + Types
   List<Map<String, dynamic>> _categories = [];
@@ -32,7 +30,6 @@ class _RequestsScreenState extends State<RequestsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -47,7 +44,6 @@ class _RequestsScreenState extends State<RequestsScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -173,30 +169,8 @@ class _RequestsScreenState extends State<RequestsScreen>
               },
             ),
           ],
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(
-                text: _isAr ? 'تقديم طلب' : 'New Request',
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-              Tab(
-                text: _isAr ? 'طلباتي' : 'My Requests',
-                icon: const Icon(Icons.list_alt),
-              ),
-            ],
-          ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildNewRequestTab(),
-            _buildMyRequestsTab(),
-          ],
-        ),
+        body: _buildNewRequestTab(),
       ),
     );
   }
@@ -302,7 +276,6 @@ class _RequestsScreenState extends State<RequestsScreen>
           isAr: _isAr,
           onSubmitted: () {
             _loadMyRequests();
-            _tabController.animateTo(1);
           },
         ),
       ),

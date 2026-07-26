@@ -2214,57 +2214,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 ),
               ),
             ),
-            if (shiftPeriods.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isAr ? 'فترات الشيفت اليوم' : 'Today Shift Periods',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: kPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...shiftPeriods.map(
-                        (p) => Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor.withAlpha(12),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: kPrimaryColor.withAlpha(35)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.schedule, size: 16, color: kPrimaryColor),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
             if (missingPeriods.isNotEmpty) ...[
               const SizedBox(height: 8),
               Card(
@@ -3965,8 +3914,10 @@ class _MyListState extends State<_MyList> {
                       children: [
                         Expanded(
                           child: Text(
-                            item['title'] ??
+                            item['subject'] ??
+                                item['title'] ??
                                 item['leave_type'] ??
+                                item['type_name'] ??
                                 item['type'] ??
                                 '-',
                             style: const TextStyle(
@@ -4000,6 +3951,32 @@ class _MyListState extends State<_MyList> {
                             style: const TextStyle(
                                 color: Colors.grey, fontSize: 12)),
                       ),
+                      if (item['current_approver'] != null) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.hourglass_top, size: 12, color: Colors.orange.shade700),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${isAr ? "بانتظار" : "Awaiting"}: ${(item['current_approver'] as Map)['role_label'] ?? ''}',
+                                style: TextStyle(
+                                  color: Colors.orange.shade900,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     if (canCancel) ...[
                       const SizedBox(height: 8),
                       const Divider(height: 1),
