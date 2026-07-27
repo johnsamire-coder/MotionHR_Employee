@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/employee_management_service.dart';
 
 const Color kImportColor = Color(0xFF37474F);
@@ -28,14 +30,21 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
     try {
       final bytes = await EmployeeManagementService.downloadEmployeeTemplate();
 
-      final file = File('${Directory.systemTemp.path}/employee_import_template.xlsx');
-      await file.writeAsBytes(bytes);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/employee_import_template.xlsx');
+      await file.writeAsBytes(bytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: isAr ? 'نموذج استيراد الموظفين' : 'Employee import template',
+        subject: isAr ? 'نموذج استيراد الموظفين' : 'Employee import template',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(isAr
-              ? 'تم تحميل النموذج بنجاح'
-              : 'Template downloaded successfully'),
+              ? 'تم تجهيز النموذج. اختر حفظه من نافذة المشاركة'
+              : 'Template is ready. Save it from the share sheet'),
           backgroundColor: Colors.green,
         ));
       }
