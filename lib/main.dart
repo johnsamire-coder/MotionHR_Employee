@@ -15,6 +15,7 @@ import 'screens/manager/manager_announcements_screen.dart';
 import 'screens/manager/attendance_policy_screen.dart';
 import 'screens/manager/payroll_policy_screen.dart';
 import 'screens/manager/leave_policy_screen.dart';
+import 'screens/manager/policies_hub_screen.dart';
 import 'screens/manager/flex_adjustments_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
@@ -6717,6 +6718,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                           MaterialPageRoute(
                               builder: (_) =>
                                   const PayrollHubScreen()))),
+                _gridCard(
+                    isAr ? 'مركز السياسات' : 'Policies Hub',
+                    Icons.dashboard_customize,
+                    const Color(0xFF455A64),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PoliciesHubScreen()))),
                 _gridCard(
                     isAr ? 'سياسات الحضور والانصراف' : 'Attendance Policies',
                     Icons.policy,
