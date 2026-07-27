@@ -222,6 +222,16 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
               label: Text(isAr ? 'الأرصدة' : 'Balances'),
               style: TextButton.styleFrom(foregroundColor: Colors.teal),
             ),
+            TextButton.icon(
+              onPressed: () async {
+                final r = await Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => LeaveTypeRulesScreen(policy: policy)));
+                if (r == true) _load();
+              },
+              icon: const Icon(Icons.rule, size: 16),
+              label: Text(isAr ? 'القواعد' : 'Rules'),
+              style: TextButton.styleFrom(foregroundColor: Colors.deepOrange),
+            ),
             const Spacer(),
             if (status == 'draft')
               ElevatedButton(
@@ -800,6 +810,255 @@ class _LeaveBalanceAdjustmentScreenState
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal, foregroundColor: Colors.white),
               child: Text(isAr ? 'حفظ' : 'Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+// ════════════════════════════════════
+// شاشة قواعد أنواع الإجازات
+// ════════════════════════════════════
+class LeaveTypeRulesScreen extends StatefulWidget {
+  final Map<String, dynamic> policy;
+  const LeaveTypeRulesScreen({super.key, required this.policy});
+
+  @override
+  State<LeaveTypeRulesScreen> createState() => _LeaveTypeRulesScreenState();
+}
+
+class _LeaveTypeRulesScreenState extends State<LeaveTypeRulesScreen> {
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
+  List<Map<String, dynamic>> _leaveTypes = [];
+  List<Map<String, dynamic>> _typeRules = [];
+  bool _loading = true;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final leaveTypes = await LeavePolicyService.getLeaveTypes();
+      final existingRules = List<Map<String, dynamic>>.from(
+        widget.policy['type_rules'] ?? [],
+      );
+
+      final merged = <Map<String, dynamic>>[];
+      for (final lt in leaveTypes) {
+        final existing = existingRules.cast<Map<String, dynamic>?>().firstWhere(
+          (r) => r?['leave_type_id'] == lt['id'],
+          orElse: () => null,
+        );
+
+        merged.add({
+          'leave_type_id': lt['id'],
+          'leave_type_name': lt['name'],
+          'enabled': existing?['enabled'] ?? true,
+          'entitlement_mode': existing?['entitlement_mode'] ?? 'from_service_tier',
+          'fixed_days': existing?['fixed_days'] ?? 0.0,
+          'parent_leave_type_id': existing?['parent_leave_type_id'],
+          'subset_limit_days': existing?['subset_limit_days'] ?? 0.0,
+          'requires_balance': existing?['requires_balance'] ?? true,
+          'allow_negative_balance': existing?['allow_negative_balance'] ?? false,
+          'negative_limit_days': existing?['negative_limit_days'] ?? 0.0,
+          'allow_half_day': existing?['allow_half_day'] ?? true,
+          'allow_hourly': existing?['allow_hourly'] ?? false,
+          'max_days_per_request': existing?['max_days_per_request'] ?? 0,
+          'max_requests_per_year': existing?['max_requests_per_year'] ?? 0,
+          'can_use_during_probation': existing?['can_use_during_probation'] ?? false,
+          'carry_mode': existing?['carry_mode'] ?? 'none',
+          'carry_percentage': existing?['carry_percentage'] ?? 100.0,
+          'carry_max_days': existing?['carry_max_days'] ?? 0.0,
+          'cash_compensation_enabled': existing?['cash_compensation_enabled'] ?? false,
+          'cash_compensation_basis': existing?['cash_compensation_basis'] ?? 'basic_salary',
+        });
+      }
+
+      setState(() {
+        _leaveTypes = leaveTypes;
+        _typeRules = merged;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      final body = {
+        'name': widget.policy['name'],
+        'effective_from': widget.policy['effective_from'],
+        'effective_to': widget.policy['effective_to'],
+        'probation_months': widget.policy['probation_months'],
+        'probation_leave_mode': widget.policy['probation_leave_mode'],
+        'accrual_mode': widget.policy['accrual_mode'],
+        'notes': widget.policy['notes'] ?? '',
+        'tiers': widget.policy['tiers'] ?? [],
+        'type_rules': _typeRules,
+      };
+
+      await LeavePolicyService.updatePolicy(widget.policy['id'], body);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'تم حفظ القواعد بنجاح' : 'Rules saved successfully'),
+          backgroundColor: Colors.green,
+        ));
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      setState(() => _saving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        appBar: AppBar(
+          title: Text(
+            isAr ? 'قواعد أنواع الإجازات' : 'Leave Type Rules',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.deepOrange,
+          foregroundColor: Colors.white,
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator(color: Colors.deepOrange))
+            : _error != null
+                ? Center(child: Text(_error!))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: _typeRules.length,
+                    itemBuilder: (_, i) => _buildRuleCard(i),
+                  ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(
+                      isAr ? 'حفظ القواعد' : 'Save Rules',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleCard(int index) {
+    final rule = _typeRules[index];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              rule['leave_type_name'] ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isAr ? 'تفعيل النوع' : 'Enable Leave Type'),
+              value: rule['enabled'] == true,
+              onChanged: (v) => setState(() => rule['enabled'] = v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isAr ? 'مسموح في فترة التجربة' : 'Allowed During Probation'),
+              value: rule['can_use_during_probation'] == true,
+              onChanged: (v) => setState(() => rule['can_use_during_probation'] = v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isAr ? 'مسموح بنصف يوم' : 'Allow Half Day'),
+              value: rule['allow_half_day'] == true,
+              onChanged: (v) => setState(() => rule['allow_half_day'] = v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isAr ? 'مسموح بالساعة' : 'Allow Hourly'),
+              value: rule['allow_hourly'] == true,
+              onChanged: (v) => setState(() => rule['allow_hourly'] = v),
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              initialValue: rule['carry_mode'],
+              decoration: InputDecoration(
+                labelText: isAr ? 'سياسة الترحيل' : 'Carry Forward Policy',
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(value: 'none', child: Text(isAr ? 'لا ترحيل' : 'No Carry')),
+                DropdownMenuItem(value: 'all', child: Text(isAr ? 'ترحيل كامل' : 'Carry All')),
+                DropdownMenuItem(value: 'percentage', child: Text(isAr ? 'ترحيل نسبة' : 'Carry Percentage')),
+                DropdownMenuItem(value: 'percentage_with_cap', child: Text(isAr ? 'ترحيل بنسبة وحد أقصى' : 'Carry % with Cap')),
+                DropdownMenuItem(value: 'cash_only', child: Text(isAr ? 'مقابل نقدي فقط' : 'Cash Only')),
+              ],
+              onChanged: (v) => setState(() => rule['carry_mode'] = v ?? 'none'),
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: rule['carry_percentage'].toString(),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: isAr ? 'نسبة الترحيل %' : 'Carry Percentage %',
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (v) => rule['carry_percentage'] = double.tryParse(v) ?? 100.0,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: rule['carry_max_days'].toString(),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: isAr ? 'أقصى عدد أيام ترحيل' : 'Max Carry Days',
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (v) => rule['carry_max_days'] = double.tryParse(v) ?? 0.0,
             ),
           ],
         ),

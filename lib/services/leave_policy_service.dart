@@ -117,4 +117,19 @@ class LeavePolicyService {
     }
     throw Exception(data['error'] ?? 'فشل التعديل');
   }
-}
+
+  // الدالة الجديدة تنضاف هنا قبل القوس الأخير
+  static Future<List<Map<String, dynamic>>> getLeaveTypes() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.get(
+      Uri.parse('$baseUrl/attendance/api/mobile/leave-types/'),
+      headers: _headers(token),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['leave_types'] ?? []);
+    }
+    throw Exception(data['error'] ?? 'خطأ في جلب أنواع الإجازات');
+  }
+} // ده القوس اللي بيقفل الكلاس
