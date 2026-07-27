@@ -28,6 +28,58 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
     }
   }
 
+  Future<void> _showApplyPolicyDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          title: Text(isAr ? 'تطبيق السياسة على الموظفين الحاليين' : 'Apply Policy to Existing Employees'),
+          content: Text(isAr
+              ? 'هذا سيحسب ويحدث أرصدة الإجازات لكل الموظفين الحاليين حسب السياسة النشطة. هل أنت متأكد؟'
+              : 'This will calculate and update leave balances for all existing employees based on the active policy. Are you sure?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(isAr ? 'تراجع' : 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              child: Text(isAr ? 'تطبيق الآن' : 'Apply Now'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      setState(() => _loading = true);
+      final result = await LeavePolicyService.applyPolicyToExistingEmployees();
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr
+              ? 'تم التطبيق: ${result['created_balances']} رصيد جديد، ${result['updated_balances']} تحديث'
+              : 'Applied: ${result['created_balances']} new, ${result['updated_balances']} updated'),
+          backgroundColor: Colors.teal,
+          duration: const Duration(seconds: 5),
+        ));
+        _load();
+      }
+    } catch (e) {
+      setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+      }
+    }
+  }
+  
+
   Future<void> _approve(Map<String, dynamic> policy) async {
     try {
       await LeavePolicyService.approvePolicy(policy['id']);
@@ -139,16 +191,31 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
                           itemBuilder: (_, i) => _buildCard(_policies[i]),
                         ),
                       ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            final r = await Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const CreateEditLeavePolicyScreen()));
-            if (r == true) _load();
-          },
-          backgroundColor: kLeavePolicyColor,
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: Text(isAr ? 'سياسة جديدة' : 'New Policy',
-              style: const TextStyle(color: Colors.white)),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: 'apply_policy',
+              onPressed: _showApplyPolicyDialog,
+              backgroundColor: Colors.teal,
+              icon: const Icon(Icons.people, color: Colors.white),
+              label: Text(isAr ? 'تطبيق على الحاليين' : 'Apply to Existing',
+                  style: const TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(height: 10),
+            FloatingActionButton.extended(
+              heroTag: 'new_policy',
+              onPressed: () async {
+                final r = await Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const CreateEditLeavePolicyScreen()));
+                if (r == true) _load();
+              },
+              backgroundColor: kLeavePolicyColor,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(isAr ? 'سياسة جديدة' : 'New Policy',
+                  style: const TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       ),
     );

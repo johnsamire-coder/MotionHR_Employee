@@ -132,4 +132,27 @@ class LeavePolicyService {
     }
     throw Exception(data['error'] ?? 'خطأ في جلب أنواع الإجازات');
   }
-} // ده القوس اللي بيقفل الكلاس
+
+  static Future<Map<String, dynamic>> applyPolicyToExistingEmployees({
+    int? year,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final body = <String, dynamic>{};
+    if (year != null) body['year'] = year;
+
+    final res = await http.post(
+      Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/apply-to-existing/'),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return Map<String, dynamic>.from(data);
+    }
+
+    throw Exception(data['error'] ?? data['message'] ?? 'فشل تطبيق السياسة على الموظفين الحاليين');
+  }
+}
