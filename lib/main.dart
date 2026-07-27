@@ -13,6 +13,7 @@ import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/manager_announcements_screen.dart';
 import 'screens/manager/policies_hub_screen.dart';
+import 'screens/manager/import_tools_screen.dart';
 import 'screens/manager/flex_adjustments_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
@@ -6715,6 +6716,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                           MaterialPageRoute(
                               builder: (_) =>
                                   const PayrollHubScreen()))),
+                _gridCard(
+                    isAr ? 'أدوات الاستيراد' : 'Import Tools',
+                    Icons.upload_file,
+                    const Color(0xFF37474F),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const ImportToolsScreen()))),
                 _gridCard(
                     isAr ? 'مركز السياسات' : 'Policies Hub',
                     Icons.dashboard_customize,

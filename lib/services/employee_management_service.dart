@@ -344,4 +344,50 @@ class EmployeeManagementService {
     }
     throw Exception('خطأ: ${res.statusCode}');
   }
+
+
+  static Future<Map<String, dynamic>> importEmployeesExcel({
+    required String filePath,
+    bool sendEmails = false,
+  }) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final uri = Uri.parse(
+      '$baseUrl/employees/api/mobile/import-excel/',
+    );
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Token $token';
+    request.fields['send_emails'] = sendEmails ? 'true' : 'false';
+    request.files.add(
+      await http.MultipartFile.fromPath('file', filePath),
+    );
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? data['error'] ?? 'فشل استيراد الموظفين');
+  }
+
+
+
+  static Future<List<int>> downloadEmployeeTemplate() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+    final res = await http.get(
+      Uri.parse('$baseUrl/employees/api/mobile/import-template/'),
+      headers: {'Authorization': 'Token $token'},
+    );
+    if (res.statusCode == 200) {
+      return res.bodyBytes.toList();
+    }
+    throw Exception('فشل تحميل النموذج');
+  }
+
 }
