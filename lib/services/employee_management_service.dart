@@ -390,4 +390,37 @@ class EmployeeManagementService {
     throw Exception('فشل تحميل النموذج');
   }
 
+
+  static Future<List<Map<String, dynamic>>> getImportLogs() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final res = await http.get(
+      Uri.parse('$baseUrl/employees/api/mobile/import-logs/'),
+      headers: _headers(token),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode == 200 && data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['logs'] ?? []);
+    }
+    throw Exception(data['message'] ?? 'فشل جلب سجلات الاستيراد');
+  }
+
+
+  static Future<List<int>> downloadFromUrl(String url) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('غير مسجل الدخول');
+
+    final res = await http.get(
+      Uri.parse(url),
+      headers: _headers(token),
+    );
+
+    if (res.statusCode == 200) {
+      return res.bodyBytes.toList();
+    }
+    throw Exception('فشل تحميل الملف');
+  }
+
 }

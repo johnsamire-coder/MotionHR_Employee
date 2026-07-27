@@ -29,6 +29,9 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
   bool _zeroWarning = false; // ignore: prefer_final_fields
   bool _resultSuccess = false;
 
+  List<Map<String, dynamic>> _importLogs = [];
+  bool _loadingLogs = false;
+
   Future<void> _downloadTemplate() async {
     setState(() => _downloading = true);
     try {
@@ -62,6 +65,21 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
     } finally {
       setState(() => _downloading = false);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImportLogs();
+  }
+
+  Future<void> _loadImportLogs() async {
+    setState(() => _loadingLogs = true);
+    try {
+      final logs = await EmployeeManagementService.getImportLogs();
+      if (mounted) setState(() => _importLogs = logs);
+    } catch (_) {}
+    if (mounted) setState(() => _loadingLogs = false);
   }
 
   Future<void> _pickFile() async {
@@ -141,6 +159,8 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
               const SizedBox(height: 16),
               _resultCard(),
             ],
+            const SizedBox(height: 24),
+            _logsSection(),
           ],
         ),
       ),
@@ -383,6 +403,116 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
       ),
       const SizedBox(height: 4),
       Text(label, style: TextStyle(fontSize: 12, color: color.withAlpha(180))),
+    ]);
+  }
+
+  Widget _logsSection() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        const Icon(Icons.history, color: kImportColor),
+        const SizedBox(width: 8),
+        Text(
+          isAr ? 'سجل العمليات (آخر 3 أيام)' : 'Import History (last 3 days)',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kImportColor),
+        ),
+        const Spacer(),
+        IconButton(
+          icon: const Icon(Icons.refresh, color: kImportColor),
+          onPressed: _loadImportLogs,
+        ),
+      ]),
+      if (_loadingLogs)
+        const Center(child: Padding(
+          padding: EdgeInsets.all(16),
+          child: CircularProgressIndicator(),
+        ))
+      else if (_importLogs.isEmpty)
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                isAr ? 'لا توجد عمليات استيراد في آخر 3 أيام' : 'No import operations in the last 3 days',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+          ),
+        )
+      else
+        ..._importLogs.map((log) => _logItem(log)),
+    ]);
+  }
+
+  Widget _logItem(Map<String, dynamic> log) {
+    final int created = log['created_count'] ?? 0;
+    final int updated = log['updated_count'] ?? 0;
+    final int errors  = log['error_count'] ?? 0;
+    final String filename = log['original_filename'] ?? (isAr ? 'ملف غير معروف' : 'Unknown file');
+    final String date = log['created_at'] ?? '';
+    final String uploadedBy = log['uploaded_by'] ?? '';
+    final String? fileUrl = log['file_url'];
+
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.insert_drive_file, color: kImportColor, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(filename,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (fileUrl != null)
+              IconButton(
+                icon: const Icon(Icons.download, color: kImportColor, size: 20),
+                tooltip: isAr ? 'تحميل الملف' : 'Download file',
+                onPressed: () async {
+                  try {
+                    final bytes = await EmployeeManagementService.downloadFromUrl(fileUrl);
+                    final dir = await getTemporaryDirectory();
+                    final file = File('${dir.path}/$filename');
+                    await file.writeAsBytes(bytes, flush: true);
+                    await Share.shareXFiles([XFile(file.path)], text: filename);
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
+                },
+              ),
+          ]),
+          const SizedBox(height: 6),
+          Text('$date  •  $uploadedBy',
+            style: TextStyle(color: Colors.grey[600], fontSize: 11),
+          ),
+          const SizedBox(height: 8),
+          Row(children: [
+            _miniStat(isAr ? 'جديد' : 'New', created, Colors.green),
+            const SizedBox(width: 12),
+            _miniStat(isAr ? 'تحديث' : 'Updated', updated, Colors.blue),
+            const SizedBox(width: 12),
+            _miniStat(isAr ? 'أخطاء' : 'Errors', errors, Colors.red),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  Widget _miniStat(String label, int value, Color color) {
+    return Row(children: [
+      Text(value.toString(),
+        style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13),
+      ),
+      const SizedBox(width: 4),
+      Text(label, style: TextStyle(color: color.withAlpha(180), fontSize: 11)),
     ]);
   }
 }
