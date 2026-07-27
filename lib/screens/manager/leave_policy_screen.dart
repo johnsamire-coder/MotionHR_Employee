@@ -1025,6 +1025,64 @@ class _LeaveTypeRulesScreenState extends State<LeaveTypeRulesScreen> {
               onChanged: (v) => setState(() => rule['allow_hourly'] = v),
             ),
             const SizedBox(height: 10),
+            const Divider(),
+            DropdownButtonFormField<String>(
+              initialValue: rule['entitlement_mode'],
+              decoration: InputDecoration(
+                labelText: isAr ? 'مصدر الرصيد' : 'Entitlement Mode',
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(value: 'from_service_tier', child: Text(isAr ? 'من شرائح الخدمة' : 'From Service Tier')),
+                DropdownMenuItem(value: 'fixed_days', child: Text(isAr ? 'عدد أيام ثابت' : 'Fixed Days')),
+                DropdownMenuItem(value: 'subset_of_parent', child: Text(isAr ? 'جزء من إجازة أخرى (مثل الطارئة)' : 'Subset of Parent')),
+              ],
+              onChanged: (v) => setState(() => rule['entitlement_mode'] = v ?? 'from_service_tier'),
+            ),
+            if (rule['entitlement_mode'] == 'fixed_days') ...[
+              const SizedBox(height: 10),
+              TextFormField(
+                initialValue: rule['fixed_days'].toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'عدد الأيام' : 'Fixed Days',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => rule['fixed_days'] = double.tryParse(v) ?? 0.0,
+              ),
+            ],
+            if (rule['entitlement_mode'] == 'subset_of_parent') ...[
+              const SizedBox(height: 10),
+              TextFormField(
+                initialValue: rule['subset_limit_days'].toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'الحد الأقصى كجزء من الأب (مثال: 7)' : 'Subset Limit Days',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => rule['subset_limit_days'] = double.tryParse(v) ?? 0.0,
+              ),
+            ],
+            const Divider(),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isAr ? 'مسموح برصيد سالب' : 'Allow Negative Balance'),
+              value: rule['allow_negative_balance'] == true,
+              onChanged: (v) => setState(() => rule['allow_negative_balance'] = v),
+            ),
+            if (rule['allow_negative_balance'] == true) ...[
+              const SizedBox(height: 10),
+              TextFormField(
+                initialValue: rule['negative_limit_days'].toString(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'حد الرصيد السالب' : 'Negative Limit Days',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) => rule['negative_limit_days'] = double.tryParse(v) ?? 0.0,
+              ),
+            ],
+            const Divider(),
             DropdownButtonFormField<String>(
               initialValue: rule['carry_mode'],
               decoration: InputDecoration(
