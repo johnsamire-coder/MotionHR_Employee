@@ -117,12 +117,24 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
         sendEmails: _sendEmails,
       );
 
+      final created = result['created'] ?? 0;
+      final updated = result['updated'] ?? 0;
+      final errors = result['errors'] ?? 0;
+      final hasZeroResults = result['has_zero_results'] ?? false;
+      final isFailedImport = errors > 0 && created == 0 && updated == 0;
+
       setState(() {
-        _resultSuccess = true;
-        _resultMessage = result['details'] ?? result['message'] ?? (isAr ? 'تم الاستيراد بنجاح' : 'Import completed successfully');
+        _created = created;
+        _updated = updated;
+        _errors = errors;
+        _zeroWarning = hasZeroResults;
+        _resultSuccess = !isFailedImport;
+        _resultMessage = result['raw'] ?? result['message'] ?? '';
         _selectedFilePath = null;
         _selectedFileName = null;
       });
+
+      _loadImportLogs();
     } catch (e) {
       setState(() {
         _resultSuccess = false;
