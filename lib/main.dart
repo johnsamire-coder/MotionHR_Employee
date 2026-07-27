@@ -12,9 +12,6 @@ import 'screens/manager/reminder_settings_screen.dart';
 import 'screens/employee/employee_profile_screen.dart';
 import 'screens/employee/announcements_screen.dart';
 import 'screens/manager/manager_announcements_screen.dart';
-import 'screens/manager/attendance_policy_screen.dart';
-import 'screens/manager/payroll_policy_screen.dart';
-import 'screens/manager/leave_policy_screen.dart';
 import 'screens/manager/policies_hub_screen.dart';
 import 'screens/manager/flex_adjustments_screen.dart';
 import 'screens/manager/create_employee_screen.dart';
@@ -6727,33 +6724,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const PoliciesHubScreen()))),
-                _gridCard(
-                    isAr ? 'سياسات الحضور والانصراف' : 'Attendance Policies',
-                    Icons.policy,
-                    const Color(0xFF1565C0),
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const AttendancePolicyScreen()))),
-                _gridCard(
-                    isAr ? 'سياسة المرتبات' : 'Payroll Policy',
-                    Icons.monetization_on,
-                    const Color(0xFF2E7D32),
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const PayrollPolicyScreen()))),
-                _gridCard(
-                    isAr ? 'سياسة الإجازات' : 'Leave Policy',
-                    Icons.beach_access,
-                    const Color(0xFF1B5E20),
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const LeavePolicyScreen()))),
+
 _gridCard(
     isAr ? 'تسويات الشيفت المرن' : 'Flex Adjustments',
     Icons.tune,
