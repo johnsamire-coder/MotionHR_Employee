@@ -423,4 +423,24 @@ class EmployeeManagementService {
     throw Exception('فشل تحميل الملف');
   }
 
+
+  static Future<Map<String, dynamic>> activateEmployeeAccount({
+    required String phone,
+    required String nationalIdSuffix,
+    String? newPassword,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/accounts/api/mobile/activate-account/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'phone': phone,
+        'national_id_suffix': nationalIdSuffix,
+        if (newPassword != null) 'new_password': newPassword,
+      }),
+    );
+
+    final data = jsonDecode(utf8.decode(res.bodyBytes));
+    return data;
+  }
+
 }

@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:geocoding/geocoding.dart';
 import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
+import 'screens/auth/activate_account_screen.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
 import 'screens/manager/payroll/payroll_hub_screen.dart';
 import 'screens/manager/reminder_settings_screen.dart';
@@ -1334,6 +1335,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ActivateAccountScreen()),
+                          ),
+                          child: Text(
+                            isAr ? 'تفعيل الحساب لأول مرة' : 'First Time Activation',
+                            style: const TextStyle(color: kPrimaryColor),
+                          ),
+                        ),
                         TextButton(
                           onPressed: _showForgotPassword,
                           child: Text(
