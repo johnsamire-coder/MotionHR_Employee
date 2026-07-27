@@ -23,6 +23,10 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
   String? _selectedFilePath;
   String? _selectedFileName;
   String? _resultMessage;
+  int? _created;
+  int? _updated;
+  int? _errors;
+  bool _zeroWarning = false; // ignore: prefer_final_fields
   bool _resultSuccess = false;
 
   Future<void> _downloadTemplate() async {
@@ -299,39 +303,86 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
   }
 
   Widget _resultCard() {
+    final bool isWarning = _zeroWarning && _resultSuccess;
+    final Color mainColor = isWarning ? Colors.orange : (_resultSuccess ? Colors.green : Colors.red);
+    final Color? bgColor = isWarning ? Colors.orange[50] : (_resultSuccess ? Colors.green[50] : Colors.red[50]);
+
     return Card(
-      elevation: 2,
-      color: _resultSuccess ? Colors.green[50] : Colors.red[50],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      color: bgColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: mainColor.withAlpha(100), width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Icon(
-              _resultSuccess ? Icons.check_circle : Icons.error_outline,
-              color: _resultSuccess ? Colors.green : Colors.red,
-            ),
+            Icon(isWarning ? Icons.warning_amber_rounded : (_resultSuccess ? Icons.check_circle : Icons.error_outline), color: mainColor),
             const SizedBox(width: 8),
-            Text(
-              isAr
-                  ? (_resultSuccess ? 'تم الاستيراد بنجاح' : 'فشل الاستيراد')
-                  : (_resultSuccess ? 'Import Successful' : 'Import Failed'),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: _resultSuccess ? Colors.green : Colors.red,
+            Expanded(
+              child: Text(
+                isWarning
+                    ? (isAr ? 'تنبيه: لا توجد بيانات صالحة' : 'Warning: No valid data')
+                    : (isAr ? (_resultSuccess ? 'نتيجة الاستيراد' : 'فشل الاستيراد') : (_resultSuccess ? 'Import Result' : 'Import Failed')),
+                style: TextStyle(fontWeight: FontWeight.bold, color: mainColor, fontSize: 16),
               ),
             ),
           ]),
-          const SizedBox(height: 8),
-          Text(
-            _resultMessage ?? '',
-            style: TextStyle(
-              color: _resultSuccess ? Colors.green[800] : Colors.red[800],
-              fontSize: 13,
+          const Divider(height: 24),
+          if (_resultSuccess) ...[
+            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+              _statItem(isAr ? 'جديد' : 'New', _created ?? 0, Colors.green),
+              _statItem(isAr ? 'تحديث' : 'Updated', _updated ?? 0, Colors.blue),
+              _statItem(isAr ? 'أخطاء' : 'Errors', _errors ?? 0, Colors.red),
+            ]),
+            const SizedBox(height: 16),
+          ],
+          if (isWarning) ...[
+            const SizedBox(height: 8),
+            Text(
+              isAr
+                  ? 'لم يتم العثور على أي موظفين في الملف. تأكد من:'
+                  : 'No employees found in the file. Make sure:',
+              style: TextStyle(color: Colors.orange[900], fontWeight: FontWeight.bold),
             ),
-          ),
+            const SizedBox(height: 4),
+            Text(isAr ? '• البيانات تبدأ من الصف الرابع' : '• Data starts from row 4', style: TextStyle(color: Colors.orange[800])),
+            Text(isAr ? '• عمود نوع العملية فيه new أو update' : '• operation_type column has new or update', style: TextStyle(color: Colors.orange[800])),
+          ],
+          if (_resultMessage != null && _resultMessage!.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(isAr ? 'التفاصيل:' : 'Details:', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white70,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: SingleChildScrollView(
+                child: Text(
+                  _resultMessage!,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ),
+            ),
+          ],
         ]),
       ),
     );
+  }
+
+  Widget _statItem(String label, int value, Color color) {
+    return Column(children: [
+      Text(
+        value.toString(),
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+      ),
+      const SizedBox(height: 4),
+      Text(label, style: TextStyle(fontSize: 12, color: color.withAlpha(180))),
+    ]);
   }
 }
