@@ -51,6 +51,7 @@ import 'screens/employee_missions_screen.dart';
 import 'screens/employee/field_visits_screen.dart';
 import 'screens/employee/my_work_locations_screen.dart';
 import 'screens/manager/work_locations_approval_screen.dart';
+import 'widgets/account_incomplete_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
@@ -1985,6 +1986,26 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    
+    // Check if account is incomplete (missing worker_type or shift)
+    if (_status?['account_incomplete'] == true) {
+      final missing = List<String>.from(_status?['missing'] ?? const []);
+      final msg = (_status?['message'] ?? '').toString();
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(isAr ? 'الرئيسية' : 'Home'),
+          backgroundColor: Colors.orange,
+          foregroundColor: Colors.white,
+        ),
+        body: SingleChildScrollView(
+          child: AccountIncompleteWidget(
+            missing: missing,
+            message: msg,
+          ),
+        ),
+      );
+    }
+    
     final checkedIn = _status?['checked_in'] == true;
     final checkedOut = _status?['checked_out'] == true;
     final canCheckOut = _status?['can_check_out'] == true;
