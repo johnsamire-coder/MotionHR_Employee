@@ -52,6 +52,7 @@ import 'screens/employee/field_visits_screen.dart';
 import 'screens/employee/my_work_locations_screen.dart';
 import 'screens/manager/work_locations_approval_screen.dart';
 import 'widgets/account_incomplete_screen.dart';
+import 'widgets/adaptive_attendance_buttons.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
@@ -2412,6 +2413,29 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   style: const TextStyle(color: Colors.green),
                 ),
               ]),
+            )
+          else if ((_status?['worker_type'] ?? 'office') != 'office')
+            AdaptiveAttendanceButtons(
+              workerType: _status?['worker_type'] ?? 'office',
+              checkedIn: checkedIn,
+              checkedOut: checkedOut,
+              loading: _loading,
+              activeFieldVisit: _status?['active_field_visit'] as Map<String, dynamic>?,
+              currentApprovedLocation: _status?['current_approved_location'] as Map<String, dynamic>?,
+              onCheckIn: () => _attendanceAction('check_in'),
+              onCheckOut: () => _attendanceAction('check_out'),
+              onStartVisit: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FieldVisitsScreen(),
+                ),
+              ).then((_) => _loadData()),
+              onEndVisit: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FieldVisitsScreen(),
+                ),
+              ).then((_) => _loadData()),
             )
           else
             Row(children: [
