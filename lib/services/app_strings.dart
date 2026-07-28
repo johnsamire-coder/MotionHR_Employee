@@ -227,7 +227,6 @@ class AppStrings {
       // ── الشركة ──
       'company': 'الشركة',
       'company_name': 'اسم الشركة',
-      'company_info': 'بيانات الشركة',
       'company_logo': 'شعار الشركة',
       'company_address': 'عنوان الشركة',
       'company_phone': 'تليفون الشركة',
@@ -245,7 +244,6 @@ class AppStrings {
       'absence_report': 'تقرير الغياب',
       'work_hours_report': 'تقرير ساعات العمل',
       'requests_report': 'تقرير الطلبات',
-      'location_report': 'تقرير المواقع',
       'export_pdf': 'تصدير PDF',
       'export_excel': 'تصدير Excel',
       'print': 'طباعة',
@@ -477,7 +475,6 @@ class AppStrings {
       // ── Company ──
       'company': 'Company',
       'company_name': 'Company Name',
-      'company_info': 'Company Info',
       'company_logo': 'Company Logo',
       'company_address': 'Company Address',
       'company_phone': 'Company Phone',
@@ -495,7 +492,6 @@ class AppStrings {
       'absence_report': 'Absence Report',
       'work_hours_report': 'Work Hours Report',
       'requests_report': 'Requests Report',
-      'location_report': 'Location Report',
       'export_pdf': 'Export PDF',
       'export_excel': 'Export Excel',
       'print': 'Print',
