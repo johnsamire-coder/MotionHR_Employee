@@ -48,6 +48,7 @@ import 'screens/manager/departments_management_screen.dart';
 import 'screens/manager/leave_recall_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
 import 'screens/employee_missions_screen.dart';
+import 'screens/employee/field_visits_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
@@ -2576,6 +2577,25 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 )),
           const SizedBox(height: 20),
+          SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const FieldVisitsScreen())),
+                icon: const Icon(Icons.add_location_alt),
+                label: Text(
+                  isAr ? 'الزيارات الميدانية' : 'Field Visits',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
+              )),
+          const SizedBox(height: 12),
           SizedBox(
               height: 50,
               child: ElevatedButton.icon(
