@@ -49,6 +49,8 @@ import 'screens/manager/leave_recall_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
 import 'screens/employee_missions_screen.dart';
 import 'screens/employee/field_visits_screen.dart';
+import 'screens/employee/my_work_locations_screen.dart';
+import 'screens/manager/work_locations_approval_screen.dart';
 import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
@@ -2591,6 +2593,25 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 ),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
+              )),
+          const SizedBox(height: 12),
+          SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const MyWorkLocationsScreen())),
+                icon: const Icon(Icons.map),
+                label: Text(
+                  isAr ? 'مواقع عملي' : 'My Work Locations',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12))),
@@ -6659,6 +6680,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const ManagerLiveLocationsScreen()))),
+                _gridCard(
+                    isAr ? 'مواقع العمل' : 'Work Locations',
+                    Icons.map,
+                    Colors.indigo,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const WorkLocationsApprovalScreen()))),
                 _gridCard(
                     isAr ? 'الموظفين' : 'Employees',
                     Icons.people,
