@@ -1712,6 +1712,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   String _firstName = '';
   String _gender = 'male';
   Map<String, dynamic>? _status;
+  Timer? _locationTimer;
+  double? _lastLatitude;
+  double? _lastLongitude;
   bool _loading = false;
   Timer? _clockTimer;
   DateTime _now = DateTime.now();
@@ -1749,6 +1752,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
   @override
   void dispose() {
+    _locationTimer?.cancel();
     _clockTimer?.cancel();
     super.dispose();
   }
@@ -1760,16 +1764,79 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     _firstName = prefs.getString('first_name') ?? '';
     _gender = prefs.getString('gender') ?? 'male';
     final token = prefs.getString('token') ?? '';
+    
+    // نجيب الموقع الحالي (لو مسموح)
+    String locationParams = '';
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 5),
+        );
+        _lastLatitude = position.latitude;
+        _lastLongitude = position.longitude;
+        locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
+      } else if (_lastLatitude != null && _lastLongitude != null) {
+        // نستخدم آخر موقع معروف
+        locationParams = '?latitude=$_lastLatitude&longitude=$_lastLongitude';
+      }
+    } catch (_) {}
+    
     try {
       final res = await http.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/status/'),
+        Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
         headers: {'Authorization': 'Token $token'},
       );
       if (res.statusCode == 200) {
-        setState(() => _status = jsonDecode(res.body));
+        if (mounted) setState(() => _status = jsonDecode(res.body));
       }
     } catch (_) {}
     if (mounted) setState(() {});
+    
+    // نبدأ Timer لو مش بدأ
+    _startLocationWatcher();
+  }
+  
+  void _startLocationWatcher() {
+    if (_locationTimer != null && _locationTimer!.isActive) return;
+    _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) _refreshStatusWithLocation();
+    });
+  }
+  
+  Future<void> _refreshStatusWithLocation() async {
+    // بس ندي refresh للـ status من غير ما نغير _fullName إلخ
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    
+    String locationParams = '';
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 5),
+        );
+        _lastLatitude = position.latitude;
+        _lastLongitude = position.longitude;
+        locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
+      }
+    } catch (_) {
+      return; // Silent fail
+    }
+    
+    try {
+      final res = await http.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
+        headers: {'Authorization': 'Token $token'},
+      );
+      if (res.statusCode == 200) {
+        if (mounted) setState(() => _status = jsonDecode(res.body));
+      }
+    } catch (_) {}
   }
 
   Future<void> _attendanceAction(String action) async {
