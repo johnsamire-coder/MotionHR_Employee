@@ -1884,17 +1884,52 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         };
       }
 
-      final res = await http.post(
-        Uri.parse(attendanceUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token $token'
-        },
-        body: jsonEncode(attendanceBody),
-      );
-      debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
-      debugPrint('ATTENDANCE BODY: ${res.body}');
-      final data = jsonDecode(res.body);
+      http.Response? res;
+      bool savedOffline = false;
+
+      try {
+        res = await http.post(
+          Uri.parse(attendanceUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token $token'
+          },
+          body: jsonEncode(attendanceBody),
+        ).timeout(const Duration(seconds: 10));
+        debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
+        debugPrint('ATTENDANCE BODY: ${res.body}');
+      } catch (_) {
+        // مفيش نت او timeout — نحفظ في الطابور
+        await OfflineQueueService.enqueue(
+          actionType: action == 'check_in'
+              ? OfflineActionType.checkIn
+              : OfflineActionType.checkOut,
+          endpoint: attendanceUrl,
+          method: 'POST',
+          body: attendanceBody,
+        );
+        savedOffline = true;
+      }
+
+      if (savedOffline) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isAr
+                    ? '\u2601\uFE0F \u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u0637\u0644\u0628 \u0648\u0633\u064A\u0631\u0633\u0644 \u0639\u0646\u062F \u0639\u0648\u062F\u0629 \u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A'
+                    : '\u2601\uFE0F Saved offline. Will sync when connected.',
+              ),
+              backgroundColor: Colors.blueGrey,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+        await _loadData();
+        return;
+      }
+
+      final data = jsonDecode(res!.body);
       final success = data['success'] == true;
       if (mounted) {
         if (success) {
