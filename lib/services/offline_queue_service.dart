@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 /// نوع العملية المحفوظة في الطابور
 enum OfflineActionType {
@@ -101,9 +102,8 @@ class OfflineQueueService {
     _isSyncing = true;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-      if (token.isEmpty) return;
+      final headers = await ApiClient.buildHeaders(includeContentType: true);
+      if (!headers.containsKey('Authorization')) return;
 
       final database = await db;
       final rows = await database.query(
@@ -114,7 +114,7 @@ class OfflineQueueService {
       );
 
       for (final row in rows) {
-        await _processRow(row, token, database);
+        await _processRow(row, headers, database);
       }
     } catch (_) {
       // مش هنوقف التطبيق لو حصل أي error في المزامنة
@@ -125,7 +125,7 @@ class OfflineQueueService {
 
   static Future<void> _processRow(
     Map<String, dynamic> row,
-    String token,
+    Map<String, String> headers,
     Database database,
   ) async {
     final id = row['id'] as int;
@@ -147,10 +147,6 @@ class OfflineQueueService {
 
     try {
       final uri = Uri.parse(endpoint);
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      };
 
       http.Response res;
       if (method == 'POST') {
