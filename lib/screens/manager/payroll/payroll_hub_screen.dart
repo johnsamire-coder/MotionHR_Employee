@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
 import '../work_policy_screen.dart';
 import 'payroll_settings_screen.dart';
 import 'payroll_summary_screen.dart';
+import 'company_policies_screen.dart';
 
 class PayrollHubScreen extends StatelessWidget {
   const PayrollHubScreen({super.key});
@@ -26,9 +27,7 @@ class PayrollHubScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: Text(
-                  isAr ? 'نظام الرواتب' : 'Payroll System',
-                ),
+                title: Text(isAr ? 'نظام الرواتب' : 'Payroll System'),
                 subtitle: Text(
                   isAr
                       ? 'ملخص الرواتب - الإعدادات - أيام العمل'
@@ -42,9 +41,7 @@ class PayrollHubScreen extends StatelessWidget {
               isAr: isAr,
               icon: Icons.receipt_long,
               color: Colors.green,
-              title: isAr
-                  ? 'ملخص الرواتب الشهري'
-                  : 'Monthly Payroll Summary',
+              title: isAr ? 'ملخص الرواتب الشهري' : 'Monthly Payroll Summary',
               subtitle: isAr
                   ? 'كل الموظفين مع الخصومات والبونص'
                   : 'All employees with deductions and bonuses',
@@ -55,9 +52,7 @@ class PayrollHubScreen extends StatelessWidget {
               isAr: isAr,
               icon: Icons.settings,
               color: Colors.blueGrey,
-              title: isAr
-                  ? 'إعدادات حساب الرواتب'
-                  : 'Payroll Settings',
+              title: isAr ? 'إعدادات حساب الرواتب' : 'Payroll Settings',
               subtitle: isAr
                   ? 'قواعد الخصومات والبونص'
                   : 'Deduction and bonus rules',
@@ -66,11 +61,20 @@ class PayrollHubScreen extends StatelessWidget {
             _card(
               context: context,
               isAr: isAr,
+              icon: Icons.policy,
+              color: const Color(0xFF1565C0),
+              title: isAr ? 'السياسات العامة' : 'Company Policies',
+              subtitle: isAr
+                  ? 'بدلات وخصومات ومكافآت للشركة / فرع / إدارة'
+                  : 'Allowances, deductions & bonuses for company / branch / dept',
+              screen: const CompanyPoliciesScreen(),
+            ),
+            _card(
+              context: context,
+              isAr: isAr,
               icon: Icons.calendar_month,
               color: Colors.orange,
-              title: isAr
-                  ? 'أيام العمل والإجازات'
-                  : 'Work Days & Holidays',
+              title: isAr ? 'أيام العمل والإجازات' : 'Work Days & Holidays',
               subtitle: isAr
                   ? 'تحديد أيام العمل الأسبوعية'
                   : 'Define weekly work days',
