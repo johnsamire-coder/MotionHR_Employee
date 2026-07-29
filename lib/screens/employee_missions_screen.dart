@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';

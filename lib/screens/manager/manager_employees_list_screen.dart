@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class _ManagerEmployeesListScreenState
                   queryParams.isEmpty ? null : queryParams);
 
       final response = await http
-          .get(uri, headers: {'Authorization': 'Token $token'})
+          .get(uri, headers: await ApiClient.buildHeaders())
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {

@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,7 +53,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
       final base = 'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}';
 
       final results = await Future.wait([
@@ -115,10 +116,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
 
       final response = await http.post(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/reset-password/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({'new_password': newPassword}),
       ).timeout(const Duration(seconds: 15));
 
@@ -866,10 +864,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
 
       final response = await http.patch(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/update/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({
           'phone': _phoneCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),

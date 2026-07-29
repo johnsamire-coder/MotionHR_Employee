@@ -1,4 +1,4 @@
-﻿// lib/screens/employee/my_work_locations_screen.dart
+// lib/screens/employee/my_work_locations_screen.dart
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../services/work_locations_service.dart';

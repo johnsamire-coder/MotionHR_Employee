@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 // lib/services/attachment_service.dart
 // Attachment Service - Handles all file operations (Phase 4) - FIXED
 
@@ -164,8 +165,7 @@ class AttachmentService {
       final uri = Uri.parse('$baseUrl/attendance/api/mobile/attachments/upload/');
       final request = http.MultipartRequest('POST', uri);
 
-      request.headers['Authorization'] = 'Token $token';
-      request.fields['model'] = model;
+      request.headers.addAll(await ApiClient.buildHeaders());request.fields['model'] = model;
       request.fields['object_id'] = objectId.toString();
       request.fields['description'] = description;
 
@@ -216,7 +216,7 @@ class AttachmentService {
 
       final response = await http.get(
         uri,
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
 
       print('[List] Status: ${response.statusCode}');
@@ -248,7 +248,7 @@ class AttachmentService {
 
       final response = await http.delete(
         uri,
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
 
       return response.statusCode == 200 || response.statusCode == 204;
@@ -272,7 +272,7 @@ class AttachmentService {
 
       final response = await http.get(
         Uri.parse('$baseUrl/attendance/api/mobile/attachments/${attachment.id}/download/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
 
       if (response.statusCode == 200) {

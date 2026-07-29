@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -34,7 +35,7 @@ class _PermissionsOverridesScreenState
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/users/',
         ),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 15));
 
       if (r.statusCode == 200) {
@@ -150,7 +151,7 @@ class _UserOverrideCheckboxScreenState extends State<_UserOverrideCheckboxScreen
     setState(() => _loading = true);
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final r1 = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/available/'),
@@ -184,7 +185,7 @@ class _UserOverrideCheckboxScreenState extends State<_UserOverrideCheckboxScreen
   Future<void> _save() async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final token = await AuthStorageService.getSavedToken() ?? '';
-    final headers = {'Authorization': 'Token $token', 'Content-Type': 'application/json'};
+    final headers = await ApiClient.buildHeaders(includeContentType: true);
     final userId = widget.user['id'];
 
     for (final ov in _currentOverrides) {

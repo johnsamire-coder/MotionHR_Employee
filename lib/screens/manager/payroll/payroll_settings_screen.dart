@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,7 +64,7 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
       final token = await _getToken();
       final res = await http.get(
         Uri.parse(_baseUrl),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
@@ -120,10 +121,7 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
 
       final res = await http.post(
         Uri.parse(_baseUrl),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode(body),
       ).timeout(const Duration(seconds: 10));
 

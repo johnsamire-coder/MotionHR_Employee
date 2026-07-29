@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 // lib/services/location_tracking_service.dart
 import 'dart:async';
 import 'dart:convert';
@@ -86,10 +87,7 @@ class LocationTrackingService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/attendance/api/mobile/employee/save-location/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'latitude': position.latitude,
           'longitude': position.longitude,
@@ -116,10 +114,7 @@ class LocationTrackingService {
 
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/location-report/?employee_id=$employeeId&shift_date=$shiftDate'),
-      headers: {
-        'Authorization': 'Token $token',
-        'Content-Type': 'application/json',
-      },
+      headers: await ApiClient.buildHeaders(includeContentType: true),
     ).timeout(const Duration(seconds: 15));
 
     if (res.statusCode == 200) {

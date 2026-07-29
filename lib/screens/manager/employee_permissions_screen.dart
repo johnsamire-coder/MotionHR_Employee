@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -50,7 +51,7 @@ class _EmployeePermissionsScreenState
       final res = await http.get(
         Uri.parse(
             '$_kBase/attendance/api/mobile/manager/employees/${widget.employeeId}/permission-balance/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
       if (res.statusCode == 200) {
         setState(() => _data = jsonDecode(res.body));
@@ -127,10 +128,7 @@ class _EmployeePermissionsScreenState
       final res = await http.post(
         Uri.parse(
             '$_kBase/attendance/api/mobile/manager/employees/${widget.employeeId}/permission-grant/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'minutes': int.tryParse(minutesCtrl.text) ?? 0,
           'count': int.tryParse(countCtrl.text) ?? 1,
@@ -213,10 +211,7 @@ class _EmployeePermissionsScreenState
       final res = await http.post(
         Uri.parse(
             '$_kBase/attendance/api/mobile/manager/employees/${widget.employeeId}/permission-rollback/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'reference_date': dateCtrl.text,
           'notes': notesCtrl.text,

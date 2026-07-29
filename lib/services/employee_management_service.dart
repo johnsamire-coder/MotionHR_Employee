@@ -1,4 +1,5 @@
-﻿// lib/services/employee_management_service.dart
+import 'package:motionhr_employee/services/api_client.dart';
+// lib/services/employee_management_service.dart
 // Phase 15: Create employee - Full fields
 
 import 'dart:convert';
@@ -108,8 +109,7 @@ class EmployeeManagementService {
       'POST',
       Uri.parse('$baseUrl/attendance/api/mobile/manager/company-info/upload-logo/'),
     );
-    request.headers['Authorization'] = 'Token $token';
-    request.headers['Accept'] = 'application/json';
+    request.headers.addAll(await ApiClient.buildHeaders());request.headers['Accept'] = 'application/json';
     final ext = filePath.split('.').last.toLowerCase();
     final mimeType = ext == 'png'
         ? 'image/png'
@@ -358,8 +358,7 @@ class EmployeeManagementService {
     );
 
     final request = http.MultipartRequest('POST', uri);
-    request.headers['Authorization'] = 'Token $token';
-    request.fields['send_emails'] = sendEmails ? 'true' : 'false';
+    request.headers.addAll(await ApiClient.buildHeaders());request.fields['send_emails'] = sendEmails ? 'true' : 'false';
     request.files.add(
       await http.MultipartFile.fromPath('file', filePath),
     );
@@ -382,7 +381,7 @@ class EmployeeManagementService {
     if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/employees/api/mobile/import-template/'),
-      headers: {'Authorization': 'Token $token'},
+      headers: await ApiClient.buildHeaders(),
     );
     if (res.statusCode == 200) {
       return res.bodyBytes.toList();

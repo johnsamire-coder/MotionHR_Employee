@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,10 +10,7 @@ class PayrollService {
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? prefs.getString('token') ?? '';
-    return {
-      'Authorization': 'Token $token',
-      'Content-Type': 'application/json',
-    };
+    return ApiClient.buildHeaders(includeContentType: true);
   }
 
   Future<Map<String, dynamic>> _get(String url) async {

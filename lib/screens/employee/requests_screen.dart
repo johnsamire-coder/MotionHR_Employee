@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -59,7 +60,7 @@ class _RequestsScreenState extends State<RequestsScreen>
       if (token == null) return;
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/request-types/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -107,7 +108,7 @@ class _RequestsScreenState extends State<RequestsScreen>
       if (token == null) return;
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/my-requests/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -511,10 +512,7 @@ class _RequestFormScreenState extends State<RequestFormScreen> {
 
       final res = await http.post(
         Uri.parse('$_kBase/attendance/api/mobile/submit-request/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token $token',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode(body),
       );
 

@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
@@ -81,10 +82,7 @@ void backgroundServiceOnStart(ServiceInstance service) async {
 
       await http.post(
         Uri.parse(kLocationApiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token $token',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'latitude': position.latitude,
           'longitude': position.longitude,

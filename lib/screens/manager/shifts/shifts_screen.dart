@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 import 'create_edit_shift_screen.dart';
 import 'assign_shift_screen.dart';

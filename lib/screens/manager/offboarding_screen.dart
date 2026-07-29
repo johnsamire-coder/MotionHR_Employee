@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -25,7 +26,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
     setState(() => _loading = true);
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final r1 = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/offboarding/list/'),
@@ -339,10 +340,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/offboarding/$empId/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({'status': status, 'reason': reason}),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));
@@ -364,10 +362,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/offboarding/$empId/reactivate/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({}),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));

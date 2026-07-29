@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -34,7 +35,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
           : 'https://jssolutions-eg.com/attendance/api/mobile/employee/summary/';
       final response = await http.get(
         Uri.parse(url),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {

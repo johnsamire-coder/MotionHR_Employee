@@ -1,4 +1,4 @@
-﻿// lib/services/language_service.dart
+// lib/services/language_service.dart
 // Phase 17 — Full encoding cleanup AR/EN
 
 import 'package:flutter/material.dart';

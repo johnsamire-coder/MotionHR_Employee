@@ -1,4 +1,5 @@
-﻿// lib/services/field_visits_service.dart
+import 'package:motionhr_employee/services/api_client.dart';
+// lib/services/field_visits_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,10 +11,7 @@ class FieldVisitsService {
     final prefs = await SharedPreferences.getInstance();
     final token =
         prefs.getString('auth_token') ?? prefs.getString('token') ?? '';
-    return {
-      'Authorization': 'Token $token',
-      'Content-Type': 'application/json',
-    };
+    return ApiClient.buildHeaders(includeContentType: true);
   }
 
   // 

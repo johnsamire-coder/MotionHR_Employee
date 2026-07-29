@@ -1,4 +1,4 @@
-﻿// lib/widgets/adaptive_attendance_buttons.dart
+// lib/widgets/adaptive_attendance_buttons.dart
 import 'package:flutter/material.dart';
 
 /// Widget بيعرض الأزرار المناسبة حسب نوع الموظف

@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -109,10 +110,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
         'resend_notification': isEditing ? _resendNotificationOnEdit : false,
       });
 
-      final headers = {
-        'Authorization': 'Token $token',
-        'Content-Type': 'application/json',
-      };
+      final headers = await ApiClient.buildHeaders(includeContentType: true);
 
       late http.Response res;
 

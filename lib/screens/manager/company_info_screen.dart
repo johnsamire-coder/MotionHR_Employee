@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../services/employee_management_service.dart';
 import '../../widgets/empty_state_widget.dart';
 import 'company_edit_screen.dart';

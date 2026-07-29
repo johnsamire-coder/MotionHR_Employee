@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -105,10 +106,7 @@ class _BaseReportScreenState extends State<BaseReportScreen> {
 
       final res = await http.get(
         Uri.parse(url),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
       ).timeout(const Duration(seconds: 30));
 
       if (res.statusCode == 200) {

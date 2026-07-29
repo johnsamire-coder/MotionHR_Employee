@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'permissions_roles_screen.dart';
 import 'permissions_assign_screen.dart';
 import 'permissions_overrides_screen.dart';

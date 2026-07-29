@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -32,7 +33,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     try {
       final res = await http.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/announcements/list/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
 
       if (res.statusCode == 200) {

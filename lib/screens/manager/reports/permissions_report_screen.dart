@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -62,7 +63,7 @@ class _PermissionsReportScreenState
           '$_kBaseP/attendance/api/mobile/manager/reports/permissions/?year=$_selectedYear&month=$_selectedMonth';
       final res = await http.get(
         Uri.parse(url),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 30));
 
       if (res.statusCode == 200) {

@@ -1,4 +1,4 @@
-﻿// lib/screens/manager/work_locations_approval_screen.dart
+// lib/screens/manager/work_locations_approval_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/work_locations_service.dart';
 

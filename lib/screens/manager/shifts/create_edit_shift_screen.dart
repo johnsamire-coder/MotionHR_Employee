@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 
 const Color kShiftColor = Color(0xFF6A1B9A);

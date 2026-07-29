@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,7 @@ class _PermissionsExportScreenState extends State<PermissionsExportScreen> {
     setState(() => _loading = true);
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final rolesResponse = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/roles/'),
@@ -78,7 +79,7 @@ class _PermissionsExportScreenState extends State<PermissionsExportScreen> {
 
       final response = await http.get(
         uri,
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 30));
 
       if (!mounted) return;

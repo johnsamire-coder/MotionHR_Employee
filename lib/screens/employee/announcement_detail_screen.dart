@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -35,10 +36,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     try {
       await http.post(
         Uri.parse('$kBaseUrl/attendance/api/mobile/announcements/mark-read/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({'announcement_id': widget.announcement['id']}),
       );
       setState(() => _isRead = true);

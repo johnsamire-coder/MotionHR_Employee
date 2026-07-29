@@ -1,4 +1,5 @@
-﻿// lib/services/auto_checkin_service.dart
+import 'package:motionhr_employee/services/api_client.dart';
+// lib/services/auto_checkin_service.dart
 // Phase 14: Auto Check-in / Auto Check-out Service
 // ظٹط±ط§ظ‚ط¨ ط§ظ„ظ€ Geofence ظˆظٹط³ط¬ظ„ ط§ظ„ط­ط¶ظˆط±/ط§ظ„ط§ظ†طµط±ط§ظپ طھظ„ظ‚ط§ط¦ظٹط§ظ‹
 
@@ -121,10 +122,7 @@ class AutoCheckinService {
     try {
       final res = await http.get(
         Uri.parse('$_baseUrl/attendance/api/mobile/manager/geofence/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
       ).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
@@ -148,10 +146,7 @@ class AutoCheckinService {
       final now = DateTime.now();
       final res = await http.post(
         Uri.parse('$_baseUrl/attendance/api/mobile/employee/auto-check-in/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'latitude': position.latitude,
           'longitude': position.longitude,
@@ -181,10 +176,7 @@ class AutoCheckinService {
       final now = DateTime.now();
       final res = await http.post(
         Uri.parse('$_baseUrl/attendance/api/mobile/employee/auto-check-out/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({
           'latitude': position.latitude,
           'longitude': position.longitude,
@@ -243,10 +235,7 @@ class AutoCheckinService {
       final res = await http.get(
         Uri.parse(
             '$_baseUrl/attendance/api/mobile/employee/auto-checkin-status/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
       ).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {

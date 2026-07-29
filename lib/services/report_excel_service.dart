@@ -1,4 +1,4 @@
-﻿// lib/services/report_excel_service.dart
+// lib/services/report_excel_service.dart
 // Phase 16 — Excel Export Service
 // Fixed: share_plus API compatibility
 

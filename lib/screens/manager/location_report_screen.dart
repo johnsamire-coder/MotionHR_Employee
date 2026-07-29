@@ -1,4 +1,4 @@
-﻿// lib/screens/manager/location_report_screen.dart
+// lib/screens/manager/location_report_screen.dart
 // Phase 16 — Final clean version (0 warnings)
 
 import 'package:flutter/material.dart';

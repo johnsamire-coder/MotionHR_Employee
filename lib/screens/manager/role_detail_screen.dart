@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -61,7 +62,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/available/',
         ),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -120,10 +121,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/roles/$_roleId/update/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({
           'name': name,
           'permissions': _selectedPermissions

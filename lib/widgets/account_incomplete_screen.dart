@@ -1,4 +1,4 @@
-﻿// lib/widgets/account_incomplete_screen.dart
+// lib/widgets/account_incomplete_screen.dart
 import 'package:flutter/material.dart';
 
 /// شاشة/Widget بيظهر لو الموظف عنده بيانات ناقصة

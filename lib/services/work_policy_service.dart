@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +16,7 @@ class WorkPolicyService {
     try {
       final res = await http.get(
         Uri.parse('$_base/api/mobile/manager/work-policy/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes));
@@ -38,10 +39,7 @@ class WorkPolicyService {
     try {
       final res = await http.post(
         Uri.parse('$_base/api/mobile/manager/work-policy/save/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode(policy),
       ).timeout(const Duration(seconds: 10));
       return res.statusCode == 200;

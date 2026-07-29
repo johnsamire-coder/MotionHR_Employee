@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -30,7 +31,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
 
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final r1 = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/roles/'),
@@ -77,10 +78,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
     try {
       final response = await http.post(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/roles/create/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({
           'name': name,
           'permissions': [],
@@ -136,7 +134,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
     try {
       await http.delete(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/roles/$roleId/delete/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 15));
 
       if (!mounted) return;

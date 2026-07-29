@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -137,10 +138,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
             Uri.parse(
               'https://jssolutions-eg.com/attendance/api/mobile/manager/reminders/trigger/',
             ),
-            headers: {
-              'Authorization': 'Token $token',
-              'Content-Type': 'application/json',
-            },
+            headers: await ApiClient.buildHeaders(includeContentType: true),
             body: json.encode({'type': type}),
           )
           .timeout(const Duration(seconds: 30));
@@ -228,10 +226,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
             Uri.parse(
               'https://jssolutions-eg.com/attendance/api/mobile/manager/reminders/trigger/',
             ),
-            headers: {
-              'Authorization': 'Token $token',
-              'Content-Type': 'application/json',
-            },
+            headers: await ApiClient.buildHeaders(includeContentType: true),
             body: json.encode({'type': 'all'}),
           )
           .timeout(const Duration(seconds: 60));

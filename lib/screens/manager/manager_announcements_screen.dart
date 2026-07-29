@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -41,7 +42,7 @@ class _ManagerAnnouncementsScreenState
       final token = await _getToken();
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/announcements/list/'),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -94,10 +95,7 @@ class _ManagerAnnouncementsScreenState
         Uri.parse(
           '$_kBase/attendance/api/mobile/manager/announcements/${ann['id']}/delete/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: jsonEncode({'send_deletion_notice': true}),
       );
 

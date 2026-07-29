@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -39,7 +40,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/?department_id=$deptId',
         ),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       ).timeout(const Duration(seconds: 15));
 
       if (r.statusCode == 200) {
@@ -65,10 +66,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/departments/${_dept['id']}/edit/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({'default_role_id': roleId ?? 0}),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));
@@ -128,10 +126,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/departments/${_dept['id']}/edit/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({'name_ar': nameCtrl.text.trim()}),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));
@@ -238,10 +233,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/departments/${_dept['id']}/delete/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode(body),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));
@@ -260,7 +252,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/departments/list/',
         ),
-        headers: {'Authorization': 'Token $token'},
+        headers: await ApiClient.buildHeaders(),
       );
       if (r.statusCode == 200) {
         final d = json.decode(utf8.decode(r.bodyBytes));
@@ -456,10 +448,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
         Uri.parse(
           'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/$empId/transfer/',
         ),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode(body),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));

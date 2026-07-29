@@ -1,3 +1,4 @@
+import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -10,10 +11,7 @@ class MissionsService {
 
   static Future<Map<String, String>> _headers() async {
     final token = await AuthStorageService.getSavedToken();
-    return {
-      'Authorization': 'Token $token',
-      'Content-Type': 'application/json',
-    };
+    return ApiClient.buildHeaders(includeContentType: true);
   }
 
   // ─────────────────────────────────────────────
@@ -315,8 +313,7 @@ class MissionsService {
       Uri.parse(
           '$_baseUrl/employee/missions/assignments/$assignmentId/upload/'),
     );
-    request.headers['Authorization'] = 'Token $token';
-    request.fields['caption'] = caption;
+    request.headers.addAll(await ApiClient.buildHeaders());request.fields['caption'] = caption;
     request.files.add(await http.MultipartFile.fromPath(
       'file',
       file.path,

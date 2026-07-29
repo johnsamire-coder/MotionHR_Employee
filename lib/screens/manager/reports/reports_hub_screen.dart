@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'package:motionhr_employee/screens/manager/location_report_screen.dart';
 import 'package:motionhr_employee/screens/manager/reports/absence_report_screen.dart';

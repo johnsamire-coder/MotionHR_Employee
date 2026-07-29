@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -32,7 +33,7 @@ class _DepartmentsManagementScreenState
     });
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final r1 = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/departments/list/'),
@@ -158,7 +159,7 @@ class _DepartmentsManagementScreenState
 
       final r = await http.post(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/departments/add/'),
-        headers: {'Authorization': 'Token $token', 'Content-Type': 'application/json'},
+        headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode(body),
       );
       final d = json.decode(utf8.decode(r.bodyBytes));

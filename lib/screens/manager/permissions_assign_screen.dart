@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+import 'package:motionhr_employee/services/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
@@ -29,7 +30,7 @@ class _PermissionsAssignScreenState extends State<PermissionsAssignScreen> {
     });
     try {
       final token = await AuthStorageService.getSavedToken() ?? '';
-      final headers = {'Authorization': 'Token $token'};
+      final headers = await ApiClient.buildHeaders();
 
       final r1 = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/users/'),
@@ -213,10 +214,7 @@ class _PermissionsAssignScreenState extends State<PermissionsAssignScreen> {
           Uri.parse(
             'https://jssolutions-eg.com/attendance/api/mobile/manager/permissions/assign-role/',
           ),
-          headers: {
-            'Authorization': 'Token $token',
-            'Content-Type': 'application/json',
-          },
+          headers: await ApiClient.buildHeaders(includeContentType: true),
           body: json.encode({'user_id': userId, 'role_id': roleId}),
         );
         if (r.statusCode == 200) success++;
