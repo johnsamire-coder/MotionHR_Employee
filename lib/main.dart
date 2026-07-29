@@ -1,4 +1,5 @@
-﻿import 'dart:async';
+import 'services/api_service.dart';
+import 'dart:async';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -105,12 +106,11 @@ final ValueNotifier<int> unreadNotificationsCount = ValueNotifier<int>(0);
 
 Future<void> fetchUnreadCount() async {
   try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    if (token.isEmpty) return;
+    final authHeaders = await getAuthHeaders();
+    if (authHeaders['Authorization'] == null) return;
     final res = await http.get(
       Uri.parse('$kBaseUrl/attendance/api/mobile/notifications/'),
-      headers: {'Authorization': 'Token $token'},
+      headers: authHeaders,
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
