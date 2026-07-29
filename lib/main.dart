@@ -1,3 +1,4 @@
+import 'services/api_client.dart';
 import 'services/api_service.dart';
 import 'dart:async';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -389,18 +390,15 @@ Future<void> initFirebaseMessaging() async {
 Future<void> saveFCMTokenToServer() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null || token.isEmpty) return;
+    final authHeaders = await getAuthHeaders(includeContentType: true);
+    if (authHeaders['Authorization'] == null) return;
 
     final fcmToken = await FirebaseMessaging.instance.getToken();
     if (fcmToken == null) return;
 
     final res = await http.post(
       Uri.parse('$kBaseUrl/attendance/api/mobile/fcm-token/'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      },
+      headers: authHeaders,
       body: jsonEncode({
         'fcm_token': fcmToken,
         'preferred_language': LanguageService.currentLocale.value.languageCode,
@@ -587,10 +585,9 @@ class _SplashScreenState extends State<SplashScreen> {
       bool needsCharter = false;
       if (appMode != 'manager') {
         try {
-          final res = await http.get(
+          final res = await ApiClient.get(
             Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
-            headers: {'Authorization': 'Token $token'},
-          );
+            );
 
           if (res.statusCode == 200) {
             final data = jsonDecode(res.body);
@@ -1424,13 +1421,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-      final res = await http.post(
+      final res = await ApiClient.post(
         Uri.parse('$kBaseUrl/attendance/api/mobile/change-password/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token $token',
-        },
         body: jsonEncode({
           'current_password': _currentCtrl.text,
           'new_password': _newCtrl.text,
@@ -1774,8 +1766,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     _companyName = prefs.getString('company_name') ?? '';
     _firstName = prefs.getString('first_name') ?? '';
     _gender = prefs.getString('gender') ?? 'male';
-    final token = prefs.getString('token') ?? '';
-    
     // نجيب الموقع الحالي (لو مسموح)
     String locationParams = '';
     try {
@@ -1796,10 +1786,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     } catch (_) {}
     
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
       if (res.statusCode == 200) {
         if (mounted) setState(() => _status = jsonDecode(res.body));
       }
@@ -1820,8 +1809,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   Future<void> _refreshStatusWithLocation() async {
     // بس ندي refresh للـ status من غير ما نغير _fullName إلخ
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    
     String locationParams = '';
     try {
       final permission = await Geolocator.checkPermission();
@@ -1840,10 +1827,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     }
     
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
       if (res.statusCode == 200) {
         if (mounted) setState(() => _status = jsonDecode(res.body));
       }
@@ -1858,7 +1844,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       final position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
       // routing ??? ??? ??????
       final String attendanceUrl;
       final Map<String, dynamic> attendanceBody;
@@ -1888,12 +1873,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       bool savedOffline = false;
 
       try {
-        res = await http.post(
+        res = await ApiClient.post(
           Uri.parse(attendanceUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode(attendanceBody),
         ).timeout(const Duration(seconds: 10));
         debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
@@ -2816,11 +2797,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse('$kBaseUrl/attendance/api/mobile/history/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() =>
@@ -2956,11 +2936,10 @@ class _LeavesScreenState extends State<LeavesScreen>
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse('$kBaseUrl/attendance/api/mobile/leave-types/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         List<dynamic> list = data['leave_types'] ?? data['types'] ?? [];
@@ -2978,11 +2957,10 @@ class _LeavesScreenState extends State<LeavesScreen>
 
   Future<void> _loadPermissions() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse('$kBaseUrl/attendance/api/mobile/employee/permission-balance/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         setState(() => _permissionData = jsonDecode(res.body));
       }
@@ -3263,7 +3241,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     setState(() => _loading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
       final body = <String, dynamic>{
         'start_date': _startCtrl.text,
         'end_date': _endCtrl.text,
@@ -3277,12 +3254,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         body['half_day_type'] = _halfDayType;
         body['end_date'] = body['start_date'];
       }
-      final res = await http.post(
+      final res = await ApiClient.post(
           Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode(body));
       final data = jsonDecode(res.body);
       if (mounted) {
@@ -3515,12 +3488,10 @@ class _RequestsScreenState extends State<OldRequestsScreen> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/request-types/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -3662,7 +3633,6 @@ class _RequestsScreenState extends State<OldRequestsScreen> {
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
       final body = <String, dynamic>{
         'title': _titleCtrl.text.trim(),
         'description': _isOther
@@ -3682,13 +3652,9 @@ class _RequestsScreenState extends State<OldRequestsScreen> {
         body['permission_time'] = _permissionTimeCtrl.text.trim();
         body['duration_hours'] = _durationHoursCtrl.text.trim();
       }
-      final res = await http.post(
+      final res = await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/submit-request/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode(body));
       final data = jsonDecode(res.body);
       if (mounted) {
@@ -3929,12 +3895,11 @@ class _MyListState extends State<_MyList> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/${widget.endpoint}/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() => _items = data[widget.keyName] ?? []);
@@ -4045,19 +4010,14 @@ class _MyListState extends State<_MyList> {
     );
     if (confirmed != true || !mounted) return;
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     final id = item['id'];
     final isLeave = widget.keyName == 'leaves';
     final url = isLeave
         ? '$kBaseUrl/attendance/api/mobile/my-leaves/$id/cancel/'
         : '$kBaseUrl/attendance/api/mobile/my-requests/$id/cancel/';
     try {
-      final res = await http.post(
+      final res = await ApiClient.post(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token $token'
-        },
         body: jsonEncode({'reason': reasonCtrl.text.trim()}),
       );
       final data = jsonDecode(res.body);
@@ -4248,12 +4208,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/notifications/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() {
@@ -4268,30 +4227,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAllRead() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      await http.post(
+      await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          });
+          );
       _load();
     } catch (_) {}
   }
 
   Future<void> _markOneRead(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      await http.post(
+      await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/notifications/mark-read/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode({'id': id}));
       _load();
     } catch (_) {}
@@ -4515,11 +4465,10 @@ class _CharterScreenState extends State<CharterScreen> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['success'] == true && data['has_charter'] == true)
@@ -4558,13 +4507,9 @@ class _CharterScreenState extends State<CharterScreen> {
     setState(() => _submitting = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-      final res = await http.post(
+      final res = await ApiClient.post(
           Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          });
+          );
       final data = jsonDecode(res.body);
       if (data['success'] == true) {
         if (!mounted) return;
@@ -4880,13 +4825,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-
     try {
-      final r1 = await http.get(
+      final r1 = await ApiClient.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
 
       if (r1.statusCode == 200) {
         final data = jsonDecode(r1.body);
@@ -4900,11 +4842,10 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
         }
       }
 
-      final r2 = await http.get(
+      final r2 = await ApiClient.get(
         Uri.parse(
             '$kBaseUrl/attendance/api/mobile/manager/charter/acceptances/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
 
       if (r2.statusCode == 200) {
         final data = jsonDecode(r2.body);
@@ -4999,8 +4940,11 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
     setState(() => _saving = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
+      final authHeaders = await getAuthHeaders();
+      if (authHeaders['Authorization'] == null) {
+        setState(() => _saving = false);
+        return;
+      }
 
       final request = http.MultipartRequest(
         'POST',
@@ -5008,7 +4952,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
             '$kBaseUrl/attendance/api/mobile/manager/charter/update/'),
       );
 
-      request.headers['Authorization'] = 'Token $token';
+      request.headers.addAll(authHeaders);
       request.fields['title'] = _titleCtrl.text.trim();
       request.fields['introduction'] = _introCtrl.text.trim();
       request.fields['content'] = _contentCtrl.text.trim();
@@ -6034,13 +5978,10 @@ class _ManagerGeofenceScreenState
   }
 Future<void> _loadGeofence() async {
   final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
-
   try {
-    final res = await http.get(
+    final res = await ApiClient.get(
       Uri.parse('$kBaseUrl/attendance/api/mobile/geofence/'),
-      headers: {'Authorization': 'Token $token'},
-    );
+      );
 
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -6168,14 +6109,9 @@ Future<void> _loadGeofence() async {
     setState(() => _saving = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-      final res = await http.post(
+      final res = await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/geofence/set/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode({
             'latitude': _currentLat,
             'longitude': _currentLng,
@@ -6602,13 +6538,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   Future<void> _load() async {
     if (mounted) setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final r1 = await http.get(
+      final r1 = await ApiClient.get(
         Uri.parse(
             '$kBaseUrl/attendance/api/mobile/manager/pending/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
       if (r1.statusCode == 200) {
         final d = jsonDecode(r1.body);
         final pr =
@@ -6620,11 +6554,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         _pending =
             tp is num ? tp.toInt() : pr + pl + pg;
       }
-      final r2 = await http.get(
+      final r2 = await ApiClient.get(
         Uri.parse(
             '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
       if (r2.statusCode == 200) {
         final d = jsonDecode(r2.body);
         final items = ((d['items'] as List?) ??
@@ -6634,11 +6567,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         _present =
             total is num ? total.toInt() : items.length;
       }
-      final r3 = await http.get(
+      final r3 = await ApiClient.get(
         Uri.parse(
             '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
-        headers: {'Authorization': 'Token $token'},
-      );
+        );
       if (r3.statusCode == 200) {
         final d = jsonDecode(r3.body);
         _fieldWorkers =
@@ -7185,12 +7117,11 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/manager/pending/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() => _items = [
@@ -7264,7 +7195,6 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
       {String notes = ''}) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
       final body = {
         'id': item['id'],
@@ -7272,13 +7202,9 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
         'action': action,
       };
       if (notes.isNotEmpty) body['notes'] = notes;
-      final res = await http.post(
+      final res = await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/manager/action/'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token $token'
-          },
           body: jsonEncode(body));
       final data = jsonDecode(res.body);
       if (mounted) {
@@ -7390,12 +7316,11 @@ class _ManagerAttendanceScreenState
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/manager/attendance/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() =>
@@ -7470,12 +7395,11 @@ class _ManagerLiveLocationsScreenState
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
     try {
-      final res = await http.get(
+      final res = await ApiClient.get(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
-          headers: {'Authorization': 'Token $token'});
+          );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() => _items = data['items'] ?? []);
