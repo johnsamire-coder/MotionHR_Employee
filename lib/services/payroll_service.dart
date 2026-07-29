@@ -1,4 +1,5 @@
 ﻿import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,15 @@ class PayrollService {
     throw Exception('Error ${response.statusCode}');
   }
 
+  Future<Uint8List> _getBytes(String url) async {
+    final headers = await _headers();
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    }
+    throw Exception('Error ${response.statusCode}');
+  }
+
   Future<Map<String, dynamic>> getSummary({int? year, int? month}) async {
     final y = year ?? DateTime.now().year;
     final m = month ?? DateTime.now().month;
@@ -37,6 +47,18 @@ class PayrollService {
 
   Future<Map<String, dynamic>> getSettings() async {
     return _get('$_base/api/mobile/manager/payroll/settings/');
+  }
+
+  Future<Uint8List> getEmployeeDetailPdf({
+    required int employeeId,
+    int? year,
+    int? month,
+  }) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getBytes(
+      '$_base/api/mobile/manager/payroll/employee/?employee_id=$employeeId&year=$y&month=$m&export=pdf',
+    );
   }
 
   Future<Map<String, dynamic>> getMyPayslip({int? year, int? month}) async {

@@ -1,16 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../services/payroll_service.dart';
 
 class PayrollEmployeeDetailScreen extends StatefulWidget {
   final int employeeId;
   final String employeeName;
+  final int year;
+  final int month;
 
   const PayrollEmployeeDetailScreen({
     super.key,
     required this.employeeId,
     required this.employeeName,
+    required this.year,
+    required this.month,
   });
 
   @override
@@ -24,6 +33,7 @@ class _PayrollEmployeeDetailScreenState
 
   Map<String, dynamic>? _data;
   bool _loading = true;
+  bool _exporting = false;
 
   bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
 
@@ -36,7 +46,11 @@ class _PayrollEmployeeDetailScreenState
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      _data = await _service.getEmployeeDetail(employeeId: widget.employeeId);
+      _data = await _service.getEmployeeDetail(
+        employeeId: widget.employeeId,
+        year: widget.year,
+        month: widget.month,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,6 +62,75 @@ class _PayrollEmployeeDetailScreenState
       }
     }
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _printPdf() async {
+    setState(() => _exporting = true);
+    try {
+      final bytes = await _service.getEmployeeDetailPdf(
+        employeeId: widget.employeeId,
+        year: widget.year,
+        month: widget.month,
+      );
+
+      await Printing.layoutPdf(
+        onLayout: (_) async => bytes,
+        name:
+            'payroll_employee_${widget.employeeId}_${widget.year}_${widget.month}.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isAr
+                  ? '\u0641\u0634\u0644\u062A \u0627\u0644\u0637\u0628\u0627\u0639\u0629'
+                  : 'Print failed',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
+  }
+
+  Future<void> _downloadPdf() async {
+    setState(() => _exporting = true);
+    try {
+      final bytes = await _service.getEmployeeDetailPdf(
+        employeeId: widget.employeeId,
+        year: widget.year,
+        month: widget.month,
+      );
+
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}/payroll_employee_${widget.employeeId}_${widget.year}_${widget.month}.pdf',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: isAr
+            ? '\u0645\u0644\u0641 \u0645\u0631\u062A\u0628 - ${widget.employeeName}'
+            : 'Payroll PDF - ${widget.employeeName}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isAr
+                  ? '\u0641\u0634\u0644 \u062A\u062D\u0645\u064A\u0644 PDF'
+                  : 'PDF download failed',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
   }
 
   String _money(dynamic value) {
@@ -286,6 +369,8 @@ class _PayrollEmployeeDetailScreenState
   }
 
   Widget _attendanceCard() {
+    final missingCheckoutDaysCount =
+        int.tryParse('${_data?['missing_checkout_days_count'] ?? 0}') ?? 0;
     return Card(
       elevation: 2,
       child: Padding(
@@ -342,6 +427,15 @@ class _PayrollEmployeeDetailScreenState
               isAr ? 'ساعات الأوفرتايم' : 'Overtime Hours',
               _value(_data?['overtime_hours'], '0'),
             ),
+            if (missingCheckoutDaysCount > 0)
+              _infoRow(
+                isAr
+                    ? '\u26A0\uFE0F \u0623\u064A\u0627\u0645 \u0628\u062F\u0648\u0646 \u062A\u0633\u062C\u064A\u0644 \u062E\u0631\u0648\u062C'
+                    : '⚠️ Missing Checkout Days',
+                missingCheckoutDaysCount.toString(),
+                color: Colors.deepOrange,
+                bold: true,
+              ),
           ],
         ),
       ),
@@ -415,6 +509,10 @@ class _PayrollEmployeeDetailScreenState
               final day = Map<String, dynamic>.from(d as Map);
               final status = _value(day['effective_status'], _value(day['status']));
               final color = _statusColor(status);
+              final missingCheckout = day['missing_checkout'] == true;
+              final visitCount = int.tryParse('${day['visit_count'] ?? 0}') ?? 0;
+              final visitTotalMinutes = int.tryParse('${day['visit_total_minutes'] ?? 0}') ?? 0;
+              final autoClosedVisitsCount = int.tryParse('${day['auto_closed_visits_count'] ?? 0}') ?? 0;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -446,6 +544,37 @@ class _PayrollEmployeeDetailScreenState
                               : '${day['late_minutes']} min',
                           style: TextStyle(color: color, fontSize: 11),
                         ),
+                      if (missingCheckout)
+                        Text(
+                          isAr
+                              ? '\u26A0\uFE0F \u0628\u062F\u0648\u0646 \u062A\u0633\u062C\u064A\u0644 \u062E\u0631\u0648\u062C'
+                              : '⚠️ No Checkout',
+                          style: const TextStyle(
+                            color: Colors.deepOrange,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      if (visitCount > 0)
+                        Text(
+                          isAr
+                              ? '$visitCount \u0632\u064A\u0627\u0631\u0627\u062A / $visitTotalMinutes \u062F'
+                              : '$visitCount visits / $visitTotalMinutes min',
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontSize: 10,
+                          ),
+                        ),
+                      if (autoClosedVisitsCount > 0)
+                        Text(
+                          isAr
+                              ? '\u0625\u063A\u0644\u0627\u0642 \u062A\u0644\u0642\u0627\u0626\u064A: $autoClosedVisitsCount'
+                              : 'Auto-closed: $autoClosedVisitsCount',
+                          style: const TextStyle(
+                            color: Colors.brown,
+                            fontSize: 10,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -475,6 +604,32 @@ class _PayrollEmployeeDetailScreenState
           backgroundColor: const Color(0xFF6A1B9A),
           foregroundColor: Colors.white,
           actions: [
+            if (_exporting)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            else ...[
+              IconButton(
+                onPressed: _downloadPdf,
+                icon: const Icon(Icons.download),
+                tooltip: isAr
+                    ? '\u062A\u062D\u0645\u064A\u0644 PDF'
+                    : 'Download PDF',
+              ),
+              IconButton(
+                onPressed: _printPdf,
+                icon: const Icon(Icons.print),
+                tooltip: isAr ? '\u0637\u0628\u0627\u0639\u0629' : 'Print',
+              ),
+            ],
             IconButton(
               onPressed: _load,
               icon: const Icon(Icons.refresh),

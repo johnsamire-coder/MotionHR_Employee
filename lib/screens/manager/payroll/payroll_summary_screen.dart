@@ -83,42 +83,41 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.4,
-                ),
-                itemCount: 12,
-                itemBuilder: (_, i) {
-                  final m = i + 1;
-                  final selected = m == tempMonth;
-                  return GestureDetector(
-                    onTap: () => setS(() => tempMonth = m),
-                    child: Container(
-                      margin: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? const Color(0xFF6A1B9A)
-                            : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _monthName(m, isAr),
-                        style: TextStyle(
-                          color: selected ? Colors.white : Colors.black87,
-                          fontSize: 11,
-                          fontWeight: selected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+              SizedBox(
+                width: double.maxFinite,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: List.generate(12, (i) {
+                    final m = i + 1;
+                    final selected = m == tempMonth;
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => setS(() => tempMonth = m),
+                      child: Container(
+                        width: 62,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? const Color(0xFF6A1B9A)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          _monthName(m, isAr),
+                          style: TextStyle(
+                            color: selected ? Colors.white : Colors.black87,
+                            fontSize: 11,
+                            fontWeight: selected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  }),
+                ),
               ),
             ],
           ),
@@ -454,6 +453,8 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                                       item['employee_name']
                                               ?.toString() ??
                                           '-',
+                                  year: _selectedYear,
+                                  month: _selectedMonth,
                                 ),
                               ),
                             ),
