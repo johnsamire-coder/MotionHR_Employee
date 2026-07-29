@@ -822,6 +822,14 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('token', data['token']);
         await prefs.setString('auth_token', data['token']); // للبصمة
 
+        // JWT tokens
+        if (data['access'] != null) {
+          await prefs.setString('jwt_access', data['access']);
+        }
+        if (data['refresh'] != null) {
+          await prefs.setString('jwt_refresh', data['refresh']);
+        }
+
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
         String companyName = data['company_name'] ?? '';
