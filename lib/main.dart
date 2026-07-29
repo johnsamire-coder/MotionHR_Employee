@@ -25,6 +25,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/offline_queue_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/auth_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -882,6 +883,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         saveFCMTokenToServer();
         fetchUnreadCount();
+        OfflineQueueService.startAutoSync();
+        OfflineQueueService.syncAll();
         AutoCheckinService.startMonitoring();
 
         final mustChange = data['must_change_password'] == true;
