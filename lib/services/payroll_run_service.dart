@@ -1,34 +1,27 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'auth_storage_service.dart';
+import 'api_client.dart';
 
 class PayrollRunService {
   static const String _base =
       'https://motion.jssolutions-eg.com/attendance/api/mobile/manager';
 
-  static Future<String?> _getToken() async {
-    return AuthStorageService.getSavedToken();
+  static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
+    return ApiClient.buildHeaders(includeContentType: includeContentType);
   }
-
-  static Map<String, String> _headers(String token) => {
-        'Authorization': 'Token $token',
-        'Content-Type': 'application/json',
-      };
 
   // ─── List Runs ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getPayrollRuns({
     int? year,
     int? month,
   }) async {
-    final token = await _getToken();
-    if (token == null) return {'success': false, 'error': 'no_token'};
     final now = DateTime.now();
     final y = year ?? now.year;
     final m = month ?? now.month;
     final uri = Uri.parse('$_base/payroll/runs/?year=$y&month=$m');
     try {
       final res = await http
-          .get(uri, headers: _headers(token))
+          .get(uri, headers: await _headers())
           .timeout(const Duration(seconds: 20));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -45,14 +38,12 @@ class PayrollRunService {
     required int month,
     String? notes,
   }) async {
-    final token = await _getToken();
-    if (token == null) return {'success': false, 'error': 'no_token'};
     final uri = Uri.parse('$_base/payroll/run/create/');
     try {
       final res = await http
           .post(
             uri,
-            headers: _headers(token),
+            headers: await _headers(),
             body: jsonEncode({
               'year': year,
               'month': month,
@@ -68,12 +59,10 @@ class PayrollRunService {
 
   // ─── Approve Run ───────────────────────────────────────────
   static Future<Map<String, dynamic>> approvePayrollRun(int runId) async {
-    final token = await _getToken();
-    if (token == null) return {'success': false, 'error': 'no_token'};
     final uri = Uri.parse('$_base/payroll/runs/$runId/approve/');
     try {
       final res = await http
-          .post(uri, headers: _headers(token))
+          .post(uri, headers: await _headers())
           .timeout(const Duration(seconds: 20));
       return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     } catch (e) {
@@ -83,12 +72,10 @@ class PayrollRunService {
 
   // ─── Run Detail + Lines ────────────────────────────────────
   static Future<Map<String, dynamic>> getRunLines(int runId) async {
-    final token = await _getToken();
-    if (token == null) return {'success': false, 'error': 'no_token'};
     final uri = Uri.parse('$_base/payroll/runs/$runId/');
     try {
       final res = await http
-          .get(uri, headers: _headers(token))
+          .get(uri, headers: await _headers())
           .timeout(const Duration(seconds: 20));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -105,14 +92,12 @@ class PayrollRunService {
     required int year,
     required int month,
   }) async {
-    final token = await _getToken();
-    if (token == null) return {'success': false, 'error': 'no_token'};
     final uri = Uri.parse(
         'https://motion.jssolutions-eg.com/attendance/api/mobile/manager'
         '/payroll/employee/?employee_id=$employeeId&year=$year&month=$month');
     try {
       final res = await http
-          .get(uri, headers: _headers(token))
+          .get(uri, headers: await _headers())
           .timeout(const Duration(seconds: 20));
       if (res.statusCode == 200) {
         return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;

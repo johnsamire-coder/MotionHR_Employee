@@ -1,27 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 class AttendancePolicyService {
   static const String baseUrl = 'https://jssolutions-eg.com';
 
-  static Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token') ?? prefs.getString('auth_token');
+  static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
+    return ApiClient.buildHeaders(includeContentType: includeContentType);
   }
-
-  static Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      };
 
   // ── LIST POLICIES ──
   static Future<List<Map<String, dynamic>>> getPolicies() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -32,11 +24,9 @@ class AttendancePolicyService {
 
   // ── GET POLICY ──
   static Future<Map<String, dynamic>> getPolicy(int policyId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/$policyId/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -47,11 +37,9 @@ class AttendancePolicyService {
 
   // ── CREATE POLICY ──
   static Future<Map<String, dynamic>> createPolicy(Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -63,11 +51,9 @@ class AttendancePolicyService {
 
   // ── UPDATE POLICY ──
   static Future<Map<String, dynamic>> updatePolicy(int policyId, Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.put(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/$policyId/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -79,11 +65,9 @@ class AttendancePolicyService {
 
   // ── DELETE POLICY ──
   static Future<String> deletePolicy(int policyId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/$policyId/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -94,11 +78,9 @@ class AttendancePolicyService {
 
   // ── APPROVE POLICY ──
   static Future<Map<String, dynamic>> approvePolicy(int policyId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/$policyId/approve/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode({}),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -115,8 +97,6 @@ class AttendancePolicyService {
     int? departmentId,
     int? branchId,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final body = {
       'assignment_type': assignmentType,
       if (departmentId != null) 'department_id': departmentId,
@@ -124,7 +104,7 @@ class AttendancePolicyService {
     };
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/attendance-policy/$policyId/assign/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));

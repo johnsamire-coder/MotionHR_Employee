@@ -1,26 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 class LeavePolicyService {
   static const String baseUrl = 'https://motion.jssolutions-eg.com';
 
-  static Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token') ?? prefs.getString('auth_token');
+  static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
+    return ApiClient.buildHeaders(includeContentType: includeContentType);
   }
 
-  static Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      };
-
   static Future<List<Map<String, dynamic>>> getPolicies() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -30,11 +22,9 @@ class LeavePolicyService {
   }
 
   static Future<Map<String, dynamic>> createPolicy(Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -45,11 +35,9 @@ class LeavePolicyService {
   }
 
   static Future<Map<String, dynamic>> updatePolicy(int policyId, Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.put(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/$policyId/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -60,11 +48,9 @@ class LeavePolicyService {
   }
 
   static Future<String> deletePolicy(int policyId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/$policyId/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -74,11 +60,9 @@ class LeavePolicyService {
   }
 
   static Future<Map<String, dynamic>> approvePolicy(int policyId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/$policyId/approve/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode({}),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -89,13 +73,11 @@ class LeavePolicyService {
   }
 
   static Future<List<Map<String, dynamic>>> getBalanceAdjustments({int? employeeId}) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     String url = '$baseUrl/attendance/api/mobile/manager/leave-balance-adjustments/';
     if (employeeId != null) {
       url += '?employee_id=$employeeId';
     }
-    final res = await http.get(Uri.parse(url), headers: _headers(token));
+    final res = await http.get(Uri.parse(url), headers: await _headers());
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
       return List<Map<String, dynamic>>.from(data['adjustments'] ?? []);
@@ -104,11 +86,9 @@ class LeavePolicyService {
   }
 
   static Future<Map<String, dynamic>> addBalanceAdjustment(Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-balance-adjustments/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -120,11 +100,9 @@ class LeavePolicyService {
 
   // الدالة الجديدة تنضاف هنا قبل القوس الأخير
   static Future<List<Map<String, dynamic>>> getLeaveTypes() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/leave-types/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -136,15 +114,13 @@ class LeavePolicyService {
   static Future<Map<String, dynamic>> applyPolicyToExistingEmployees({
     int? year,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     final body = <String, dynamic>{};
     if (year != null) body['year'] = year;
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/leave-policy/apply-to-existing/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 

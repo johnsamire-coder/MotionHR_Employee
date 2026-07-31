@@ -1,30 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 class ShiftsService {
   static const String baseUrl = 'https://jssolutions-eg.com';
 
-  static Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token') ?? prefs.getString('auth_token');
+  static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
+    return ApiClient.buildHeaders(includeContentType: includeContentType);
   }
-
-  static Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      };
 
   // ── LIST SHIFTS ──
   static Future<List<Map<String, dynamic>>> getShifts({String lang = 'ar'}) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/?lang=$lang'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     if (res.statusCode == 200) {
@@ -40,14 +29,9 @@ class ShiftsService {
 
   // ── CREATE SHIFT ──
   static Future<Map<String, dynamic>> createShift(Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/create/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -61,14 +45,9 @@ class ShiftsService {
 
   // ── UPDATE SHIFT ──
   static Future<Map<String, dynamic>> updateShift(int shiftId, Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.patch(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/$shiftId/update/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -82,14 +61,9 @@ class ShiftsService {
 
   // ── DELETE SHIFT ──
   static Future<String> deleteShift(int shiftId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/$shiftId/delete/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -116,12 +90,7 @@ class ShiftsService {
     String? reason,
     String lang = 'ar',
   }) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
-    final allEmployeeIds = <int>{
+final allEmployeeIds = <int>{
       if (employeeId != null) employeeId,
       ...?employeeIds,
     }.toList();
@@ -169,7 +138,7 @@ class ShiftsService {
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/assign/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -183,14 +152,9 @@ class ShiftsService {
 
   // ── SHIFT EMPLOYEES ──
   static Future<List<Map<String, dynamic>>> getShiftEmployees(int shiftId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/$shiftId/employees/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     if (res.statusCode == 200) {
@@ -206,14 +170,9 @@ class ShiftsService {
 
   // ── EMPLOYEE SHIFTS ──
   static Future<List<Map<String, dynamic>>> getEmployeeShifts(int employeeId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/$employeeId/shifts/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     if (res.statusCode == 200) {
@@ -229,14 +188,9 @@ class ShiftsService {
 
   // ── MY SHIFT ──
   static Future<Map<String, dynamic>> getMyShift() async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/my-shift/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -251,14 +205,9 @@ class ShiftsService {
   static Future<List<Map<String, dynamic>>> getShiftChangeRequests({
     String status = 'pending',
   }) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/change-requests/?status=$status'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -275,12 +224,7 @@ class ShiftsService {
     required String action,
     String? rejectionReason,
   }) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
-    final body = {
+final body = {
       'action': action,
       if (rejectionReason != null && rejectionReason.isNotEmpty)
         'rejection_reason': rejectionReason,
@@ -288,7 +232,7 @@ class ShiftsService {
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/change-requests/$requestId/action/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -306,13 +250,11 @@ class ShiftsService {
     int? employeeId,
     String lang = 'ar',
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     var url = '\$baseUrl/attendance/api/mobile/manager/shifts/overrides/?lang=\$lang&show_past=\${showPast ? "true" : "false"}';
     if (employeeId != null) url += '&employee_id=\$employeeId';
 
-    final res = await http.get(Uri.parse(url), headers: _headers(token));
+    final res = await http.get(Uri.parse(url), headers: await _headers());
     final data = jsonDecode(utf8.decode(res.bodyBytes));
 
     if (res.statusCode == 200 && data['success'] == true) {
@@ -328,12 +270,7 @@ class ShiftsService {
     required String overrideDate,
     String? reason,
   }) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
-    final body = {
+final body = {
       'employee_id': employeeId,
       'shift_id': shiftId,
       'override_date': overrideDate,
@@ -342,7 +279,7 @@ class ShiftsService {
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/override/create/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -356,14 +293,9 @@ class ShiftsService {
 
   // ── DELETE SHIFT OVERRIDE ──
   static Future<String> deleteShiftOverride(int overrideId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/override/$overrideId/delete/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -376,18 +308,13 @@ class ShiftsService {
 
   // ── EFFECTIVE SHIFT ──
   static Future<Map<String, dynamic>> getEffectiveShift(int employeeId, {String? date}) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('غير مسجل الدخول');
-    }
-
     final uri = date != null
         ? '$baseUrl/attendance/api/mobile/manager/employees/$employeeId/effective-shift/?date=$date'
         : '$baseUrl/attendance/api/mobile/manager/employees/$employeeId/effective-shift/';
 
     final res = await http.get(
       Uri.parse(uri),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -400,18 +327,13 @@ class ShiftsService {
 
   // ??? ?? ????????? ??????? (??? 24)
   static Future<List<Map<String, dynamic>>> getShiftAssignments({int? shiftId}) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('??? ???? ??????');
-    }
-
     final uri = shiftId != null
         ? '$baseUrl/attendance/api/mobile/manager/shifts/assignments/?shift_id=$shiftId'
         : '$baseUrl/attendance/api/mobile/manager/shifts/assignments/';
 
     final res = await http.get(
       Uri.parse(uri),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -423,14 +345,9 @@ class ShiftsService {
   }
 
   static Future<bool> deleteAssignment(int assignmentId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('??? ???? ??????');
-    }
-
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/assignments/$assignmentId/delete/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -438,14 +355,9 @@ class ShiftsService {
   }
 
   static Future<bool> updateAssignment(int assignmentId, Map<String, dynamic> body) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('??? ???? ??????');
-    }
-
     final res = await http.put(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/shifts/assignments/$assignmentId/update/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -454,11 +366,9 @@ class ShiftsService {
   }
   // ── ROTATION APIs ──
   static Future<List<Map<String, dynamic>>> getRotations() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -473,11 +383,9 @@ class ShiftsService {
     required String startDate,
     required List<Map<String, dynamic>> slots,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode({
         'name': name,
         'cycle_length_days': cycleLengthDays,
@@ -493,11 +401,9 @@ class ShiftsService {
   }
 
   static Future<bool> deleteRotation(int rotationId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.delete(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     return res.statusCode == 200 && data['success'] == true;
@@ -512,8 +418,6 @@ class ShiftsService {
     int? departmentId,
     int? branchId,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final body = <String, dynamic>{
       'assignment_type': assignmentType,
       'start_date': startDate,
@@ -524,7 +428,7 @@ class ShiftsService {
     };
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/assign/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -535,11 +439,9 @@ class ShiftsService {
   }
 
   static Future<List<Map<String, dynamic>>> getRotationAssignments(int rotationId) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/rotations/$rotationId/assignments/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
@@ -553,11 +455,9 @@ class ShiftsService {
     required String recallDate,
     required String reason,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/leave-recall/create/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode({
         'employee_id': employeeId,
         'recall_date': recallDate,
@@ -572,11 +472,9 @@ class ShiftsService {
   }
 
   static Future<List<Map<String, dynamic>>> getLeaveRecalls({String? status}) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     var url = '$baseUrl/attendance/api/mobile/leave-recall/list/';
     if (status != null) url += '?status=$status';
-    final res = await http.get(Uri.parse(url), headers: _headers(token));
+    final res = await http.get(Uri.parse(url), headers: await _headers());
     final data = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200 && data['success'] == true) {
       return List<Map<String, dynamic>>.from(data['recalls'] ?? []);
@@ -589,11 +487,9 @@ class ShiftsService {
     required String action,
     String? notes,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/leave-recall/$recallId/review/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode({
         'action': action,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
