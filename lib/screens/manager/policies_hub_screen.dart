@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'attendance_policy_screen.dart';
 import 'payroll_policy_screen.dart';
 import 'leave_policy_screen.dart';
+import 'official_holidays_screen.dart';
 
 const Color kPoliciesHubColor = Color(0xFF455A64);
 
@@ -77,6 +78,22 @@ class PoliciesHubScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            _policyCard(
+              context,
+              title: isAr ? 'الإجازات الرسمية' : 'Official Holidays',
+              subtitle: isAr
+                  ? 'أيام الأعياد والعطل الرسمية ومعاملتها في الرواتب'
+                  : 'Public holidays and their payroll treatment',
+              color: const Color(0xFF6A1B9A),
+              icon: Icons.celebration,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const OfficialHolidaysScreen(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -129,7 +146,8 @@ class PoliciesHubScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, color: Colors.grey[500], size: 18),
+              Icon(Icons.arrow_forward_ios,
+                  color: Colors.grey[500], size: 18),
             ],
           ),
         ),
