@@ -3,6 +3,7 @@ import 'permissions_roles_screen.dart';
 import 'permissions_assign_screen.dart';
 import 'permissions_overrides_screen.dart';
 import 'permissions_export_screen.dart';
+import 'permissions_hub_screen.dart';
 
 class PermissionsManagementScreen extends StatelessWidget {
   const PermissionsManagementScreen({super.key});
@@ -114,6 +115,22 @@ class PermissionsManagementScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (_) => const PermissionsExportScreen(),
+              ),
+            ),
+          ),
+          _item(
+            context: context,
+            icon: Icons.admin_panel_settings,
+            color: const Color(0xFF37474F),
+            titleAr: 'الصلاحيات الافتراضية والتعيين الجماعي',
+            titleEn: 'Default & Bulk Permissions',
+            subAr: 'عرض وتعديل صلاحيات موظف أو قسم أو فرع',
+            subEn: 'View and edit permissions per user, department or branch',
+            isAr: isAr,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PermissionsHubScreen(),
               ),
             ),
           ),
