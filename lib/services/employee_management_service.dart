@@ -4,29 +4,20 @@ import 'package:motionhr_employee/services/api_client.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http_parser/http_parser.dart';
 
 class EmployeeManagementService {
   static const String baseUrl = 'https://jssolutions-eg.com';
 
-  static Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token') ?? prefs.getString('auth_token');
+  static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
+    return ApiClient.buildHeaders(includeContentType: includeContentType);
   }
-
-  static Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token $token',
-      };
 
   // ── BRANCHES ──
   static Future<List<Map<String, dynamic>>> getBranches() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/branches/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -39,11 +30,9 @@ class EmployeeManagementService {
 
   // ── DEPARTMENTS ──
   static Future<List<Map<String, dynamic>>> getDepartments() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/departments/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -56,11 +45,9 @@ class EmployeeManagementService {
 
   // ── JOB TITLES ──
   static Future<List<Map<String, dynamic>>> getJobTitles() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/job-titles/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -73,11 +60,9 @@ class EmployeeManagementService {
 
   // ── COMPANY INFO ──
   static Future<Map<String, dynamic>> getCompanyInfo() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/company-info/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -90,11 +75,9 @@ class EmployeeManagementService {
 
   // ── UPDATE COMPANY INFO ──
   static Future<bool> updateCompanyInfo(Map<String, dynamic> data) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.patch(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/company-info/update/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(data),
     );
     if (res.statusCode == 200 || res.statusCode == 204) return true;
@@ -103,8 +86,6 @@ class EmployeeManagementService {
 
   // ── UPLOAD COMPANY LOGO ──
   static Future<bool> uploadCompanyLogo(String filePath) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$baseUrl/attendance/api/mobile/manager/company-info/upload-logo/'),
@@ -133,11 +114,9 @@ class EmployeeManagementService {
 
   // ── EMPLOYEES SIMPLE ──
   static Future<List<Map<String, dynamic>>> getEmployeesSimple() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/simple/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -203,8 +182,6 @@ class EmployeeManagementService {
     String? employeeCode,
     String? language,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     final body = <String, dynamic>{
       'first_name_ar': firstNameAr,
@@ -289,7 +266,7 @@ class EmployeeManagementService {
 
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/create/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
 
@@ -310,8 +287,6 @@ class EmployeeManagementService {
     int? newJobTitleId,
     String? reason,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final body = <String, dynamic>{};
     if (newManagerId != null) body['new_manager_id'] = newManagerId;
     if (newBranchId != null) body['new_branch_id'] = newBranchId;
@@ -320,7 +295,7 @@ class EmployeeManagementService {
     if (reason != null && reason.isNotEmpty) body['reason'] = reason;
     final res = await http.post(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/employees/$employeeId/transfer/'),
-      headers: _headers(token),
+      headers: await _headers(),
       body: jsonEncode(body),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -331,11 +306,9 @@ class EmployeeManagementService {
 
   // ── ORGANIZATION TREE ──
   static Future<Map<String, dynamic>> getOrganizationTree() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/attendance/api/mobile/manager/organization-tree/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -350,8 +323,6 @@ class EmployeeManagementService {
     required String filePath,
     bool sendEmails = false,
   }) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     final uri = Uri.parse(
       '$baseUrl/employees/api/mobile/import-excel/',
@@ -377,8 +348,6 @@ class EmployeeManagementService {
 
 
   static Future<List<int>> downloadEmployeeTemplate() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
     final res = await http.get(
       Uri.parse('$baseUrl/employees/api/mobile/import-template/'),
       headers: await ApiClient.buildHeaders(),
@@ -391,12 +360,10 @@ class EmployeeManagementService {
 
 
   static Future<List<Map<String, dynamic>>> getImportLogs() async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     final res = await http.get(
       Uri.parse('$baseUrl/employees/api/mobile/import-logs/'),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(utf8.decode(res.bodyBytes));
@@ -408,12 +375,10 @@ class EmployeeManagementService {
 
 
   static Future<List<int>> downloadFromUrl(String url) async {
-    final token = await _getToken();
-    if (token == null) throw Exception('غير مسجل الدخول');
 
     final res = await http.get(
       Uri.parse(url),
-      headers: _headers(token),
+      headers: await _headers(),
     );
 
     if (res.statusCode == 200) {
