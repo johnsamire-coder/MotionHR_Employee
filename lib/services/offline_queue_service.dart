@@ -10,6 +10,8 @@ import 'api_client.dart';
 enum OfflineActionType {
   checkIn,
   checkOut,
+  partialCheckout,
+  resumeCheckin,
   sendLocation,
   fieldVisitStart,
   fieldVisitEnd,

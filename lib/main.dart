@@ -1881,10 +1881,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         debugPrint('ATTENDANCE BODY: ${res.body}');
       } catch (_) {
         // مفيش نت او timeout — نحفظ في الطابور
-        await OfflineQueueService.enqueue(
+                await OfflineQueueService.enqueue(
           actionType: action == 'check_in'
               ? OfflineActionType.checkIn
-              : OfflineActionType.checkOut,
+              : action == 'check_out'
+                  ? OfflineActionType.checkOut
+                  : action == 'partial_checkout'
+                      ? OfflineActionType.partialCheckout
+                      : OfflineActionType.resumeCheckin,
           endpoint: attendanceUrl,
           method: 'POST',
           body: attendanceBody,
@@ -2678,8 +2682,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 ),
               ),
           ],
-
-          const SizedBox(height: 20),
           if (_status?['check_in_time'] != null &&
               (_status?['check_in_time'] ?? '').toString().isNotEmpty)
             Card(
