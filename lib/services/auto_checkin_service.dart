@@ -1,7 +1,7 @@
 import 'package:motionhr_employee/services/api_client.dart';
 // lib/services/auto_checkin_service.dart
 // Phase 14: Auto Check-in / Auto Check-out Service
-// ظٹط±ط§ظ‚ط¨ ط§ظ„ظ€ Geofence ظˆظٹط³ط¬ظ„ ط§ظ„ط­ط¶ظˆط±/ط§ظ„ط§ظ†طµط±ط§ظپ طھظ„ظ‚ط§ط¦ظٹط§ظ‹
+// يراقب الـ Geofence ويسجل الحضور/الانصراف تلقائياً
 
 import 'dart:async';
 import 'dart:convert';
@@ -38,34 +38,34 @@ class AutoCheckinService {
   // â”€â”€ Language â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static String get _lang => LanguageService.currentLanguage;
 
-  // â”€â”€ ط¨ط¯ط، ط§ظ„ظ…ط±ط§ظ‚ط¨ط© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── بدء المراقبة ───────────────────────────────────────
   static Future<void> startMonitoring() async {
     if (_isRunning) return;
 
-    // طھط­ظ‚ظ‚ ظ…ظ† ط§ظ„طµظ„ط§ط­ظٹط§طھ ط£ظˆظ„ط§ظ‹
+    // تحقق من الصلاحيات أولاً
     final hasPermission = await _checkPermissions();
     if (!hasPermission) return;
 
     _isRunning = true;
     _resetDailyState();
 
-    // ظپط­طµ ظپظˆط±ظٹ ط¹ظ†ط¯ ط§ظ„ط¨ط¯ط،
+    // فحص فوري عند البدء
     await _checkAndProcess();
 
-    // ط«ظ… ظƒظ„ ط¯ظ‚ظٹظ‚طھظٹظ†
+    // ثم كل دقيقتين
     _timer = Timer.periodic(const Duration(minutes: 2), (_) async {
       await _checkAndProcess();
     });
   }
 
-  // â”€â”€ ط¥ظٹظ‚ط§ظپ ط§ظ„ظ…ط±ط§ظ‚ط¨ط© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── إيقاف المراقبة ─────────────────────────────────────
   static void stopMonitoring() {
     _timer?.cancel();
     _timer = null;
     _isRunning = false;
   }
 
-  // â”€â”€ ط¥ط¹ط§ط¯ط© ط¶ط¨ط· ط§ظ„ط­ط§ظ„ط© ط§ظ„ظٹظˆظ…ظٹط© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── إعادة ضبط الحالة اليومية ───────────────────────────
   static void _resetDailyState() {
     final now = DateTime.now();
     if (_lastCheckTime != null && _lastCheckTime!.day != now.day) {
@@ -75,7 +75,7 @@ class AutoCheckinService {
     _lastCheckTime = now;
   }
 
-  // â”€â”€ ط§ظ„ظپط­طµ ط§ظ„ط±ط¦ظٹط³ظٹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── الفحص الرئيسي ──────────────────────────────────────
   static Future<void> _checkAndProcess() async {
     try {
       _resetDailyState();
@@ -83,15 +83,15 @@ class AutoCheckinService {
       final token = await _getToken();
       if (token == null) return;
 
-      // ط¬ظٹط¨ ط§ظ„ظ€ Geofence ظ…ظ† ط§ظ„ظ€ API
+      // جيب الـ Geofence من الـ API
       final geofence = await _getGeofence(token);
       if (geofence == null) return;
 
-      // ط¬ظٹط¨ ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط­ط§ظ„ظٹ
+      // جيب الموقع الحالي
       final position = await _getCurrentPosition();
       if (position == null) return;
 
-      // ط§ط­ط³ط¨ ط§ظ„ظ…ط³ط§ظپط©
+      // احسب المسافة
       final distance = Geolocator.distanceBetween(
         position.latitude,
         position.longitude,
@@ -102,7 +102,7 @@ class AutoCheckinService {
       final radius = (geofence['radius'] ?? 100).toDouble();
       final isInsideGeofence = distance <= radius;
 
-      // ظ‚ط±ط± ط§ظ„ط¥ط¬ط±ط§ط،
+      // قرر الإجراء
       if (isInsideGeofence && !_checkedInToday) {
         await _performAutoCheckin(token, position);
       } else if (!isInsideGeofence && _checkedInToday && !_checkedOutToday) {
@@ -111,13 +111,13 @@ class AutoCheckinService {
     } catch (e) {
       onError?.call(
         _lang == 'ar'
-            ? 'ط®ط·ط£ ظپظٹ ط§ظ„ظ…ط±ط§ظ‚ط¨ط© ط§ظ„طھظ„ظ‚ط§ط¦ظٹط©'
+            ? 'خطأ في المراقبة التلقائية'
             : 'Auto monitoring error',
       );
     }
   }
 
-  // â”€â”€ ط¬ظ„ط¨ ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ظ€ Geofence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── جلب إعدادات الـ Geofence ───────────────────────────
   static Future<Map<String, dynamic>?> _getGeofence(String token) async {
     try {
       final res = await http.get(
@@ -137,7 +137,7 @@ class AutoCheckinService {
     }
   }
 
-  // â”€â”€ طھط³ط¬ظٹظ„ ط§ظ„ط­ط¶ظˆط± ط§ظ„طھظ„ظ‚ط§ط¦ظٹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── تسجيل الحضور التلقائي ──────────────────────────────
   static Future<void> _performAutoCheckin(
     String token,
     Position position,
@@ -160,14 +160,14 @@ class AutoCheckinService {
       if (res.statusCode == 200) {
         _checkedInToday = true;
         final msg = _lang == 'ar'
-            ? 'âœ… طھظ… طھط³ط¬ظٹظ„ ط­ط¶ظˆط±ظƒ طھظ„ظ‚ط§ط¦ظٹط§ظ‹'
+            ? '✅ تم تسجيل حضورك تلقائياً'
             : 'âœ… Auto check-in recorded';
         onAutoCheckin?.call(msg);
       }
     } catch (_) {}
   }
 
-  // â”€â”€ طھط³ط¬ظٹظ„ ط§ظ„ط§ظ†طµط±ط§ظپ ط§ظ„طھظ„ظ‚ط§ط¦ظٹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── تسجيل الانصراف التلقائي ────────────────────────────
   static Future<void> _performAutoCheckout(
     String token,
     Position position,
@@ -190,14 +190,14 @@ class AutoCheckinService {
       if (res.statusCode == 200) {
         _checkedOutToday = true;
         final msg = _lang == 'ar'
-            ? 'âœ… طھظ… طھط³ط¬ظٹظ„ ط§ظ†طµط±ط§ظپظƒ طھظ„ظ‚ط§ط¦ظٹط§ظ‹'
+            ? '✅ تم تسجيل انصرافك تلقائياً'
             : 'âœ… Auto check-out recorded';
         onAutoCheckout?.call(msg);
       }
     } catch (_) {}
   }
 
-  // â”€â”€ ظپط­طµ ط§ظ„طµظ„ط§ط­ظٹط§طھ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── فحص الصلاحيات ──────────────────────────────────────
   static Future<bool> _checkPermissions() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return false;
@@ -212,7 +212,7 @@ class AutoCheckinService {
     return true;
   }
 
-  // â”€â”€ ط¬ظٹط¨ ط§ظ„ظ…ظˆظ‚ط¹ ط§ظ„ط­ط§ظ„ظٹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── جيب الموقع الحالي ──────────────────────────────────
   static Future<Position?> _getCurrentPosition() async {
     try {
       return await Geolocator.getCurrentPosition(
@@ -224,7 +224,7 @@ class AutoCheckinService {
     }
   }
 
-  // â”€â”€ ظپط­طµ ط§ظ„ط­ط§ظ„ط© ط§ظ„ط­ط§ظ„ظٹط© ظ…ظ† ط§ظ„ظ€ Backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── فحص الحالة الحالية من الـ Backend ──────────────────
   static Future<Map<String, dynamic>> getCheckinStatus() async {
     final token = await _getToken();
     if (token == null) {
@@ -246,7 +246,7 @@ class AutoCheckinService {
     return {'success': false, 'checked_in': false, 'checked_out': false};
   }
 
-  // â”€â”€ ظ…ط²ط§ظ…ظ†ط© ط§ظ„ط­ط§ظ„ط© ظ…ط¹ ط§ظ„ظ€ Backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── مزامنة الحالة مع الـ Backend ───────────────────────
   static Future<void> syncStateFromBackend() async {
     final status = await getCheckinStatus();
     if (status['success'] == true) {

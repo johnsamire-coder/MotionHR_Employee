@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/missions_service.dart';
 import '../../services/employee_management_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class MissionDetailScreen extends StatefulWidget {
   final int missionId;
@@ -23,6 +25,10 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   bool _loading = true;
   Map<String, dynamic>? _mission;
   String? _error;
+
+  // locations timeline
+  final Map<int, List<dynamic>> _assignmentLocations = {};
+  bool _locationsLoading = false;
 
   final Map<String, Color> _statusColors = {
     'approved': Colors.blue,
@@ -64,6 +70,24 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     }
   }
 
+
+  Future<void> _loadLocationsForAssignment(int assignmentId) async {
+    setState(() {
+      _locationsLoading = true;
+    });
+    try {
+      final result = await MissionsService.getLocationTimeline(assignmentId);
+      final locs = result['locations'] as List? ?? [];
+      setState(() {
+        _assignmentLocations[assignmentId] = locs;
+        _locationsLoading = false;
+      });
+    } catch (_) {
+      setState(() {
+        _locationsLoading = false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -267,6 +291,178 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
             ),
           ],
 
+          // مواقع الموظف
+          if (widget.isManager && assignments.isNotEmpty) ...[
+            SizedBox(height: 12),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.map, color: Color(0xFF6C3FC5)),
+                        SizedBox(width: 8),
+                        Text(
+                          'مواقع الموظف',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Color(0xFF6C3FC5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(height: 16),
+                    ...assignments.map((a) {
+                      final assignmentId = a['id'] as int?;
+                      if (assignmentId == null) return SizedBox.shrink();
+                      final locs = _assignmentLocations[assignmentId];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 14,
+                                backgroundColor: Color(0xFF6C3FC5).withOpacity(0.15),
+                                child: Text(
+                                  (a['employee_name'] ?? '?')[0],
+                                  style: TextStyle(
+                                    color: Color(0xFF6C3FC5),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  a['employee_name'] ?? '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              if (locs == null)
+                                TextButton.icon(
+                                  onPressed: _locationsLoading
+                                      ? null
+                                      : () => _loadLocationsForAssignment(assignmentId),
+                                  icon: _locationsLoading
+                                      ? SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : Icon(Icons.location_on, size: 16),
+                                  label: Text(
+                                    'عرض المواقع',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Color(0xFF6C3FC5),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (locs != null) ...[
+                            SizedBox(height: 8),
+                            locs.isEmpty
+                                ? Padding(
+                                    padding: EdgeInsets.only(bottom: 8),
+                                    child: Text(
+                                      'لا توجد مواقع مسجلة',
+                                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                                    ),
+                                  )
+                                : Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 200,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: FlutterMap(
+                                            options: MapOptions(
+                                              initialCenter: LatLng(
+                                                double.tryParse(locs.first['lat'].toString()) ?? 30.0,
+                                                double.tryParse(locs.first['lng'].toString()) ?? 31.0,
+                                              ),
+                                              initialZoom: 14,
+                                            ),
+                                            children: [
+                                              TileLayer(
+                                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                userAgentPackageName: 'com.example.motionhr_employee',
+                                              ),
+                                              PolylineLayer(
+                                                polylines: [
+                                                  Polyline(
+                                                    points: locs.map((loc) => LatLng(
+                                                      double.tryParse(loc['lat'].toString()) ?? 0,
+                                                      double.tryParse(loc['lng'].toString()) ?? 0,
+                                                    )).toList(),
+                                                    color: Color(0xFF6C3FC5),
+                                                    strokeWidth: 3,
+                                                  ),
+                                                ],
+                                              ),
+                                              MarkerLayer(
+                                                markers: locs.asMap().entries.map((entry) {
+                                                  final idx = entry.key;
+                                                  final loc = entry.value;
+                                                  final isFirst = idx == 0;
+                                                  final isLast = idx == locs.length - 1;
+                                                  return Marker(
+                                                    point: LatLng(
+                                                      double.tryParse(loc['lat'].toString()) ?? 0,
+                                                      double.tryParse(loc['lng'].toString()) ?? 0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child: Icon(
+                                                      isFirst
+                                                          ? Icons.play_circle_filled
+                                                          : isLast
+                                                              ? Icons.stop_circle
+                                                              : Icons.circle,
+                                                      color: isFirst
+                                                          ? Colors.green
+                                                          : isLast
+                                                              ? Colors.red
+                                                              : Color(0xFF6C3FC5),
+                                                      size: isFirst || isLast ? 28 : 16,
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 6),
+                                      Text(
+                                        '${locs.length} نقطة مسجلة',
+                                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                            SizedBox(height: 8),
+                          ],
+                          if (assignments.indexOf(a) < assignments.length - 1)
+                            Divider(height: 12),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ),
+          ],
           // أزرار المدير
           if (widget.isManager && _mission!['status'] != 'cancelled' &&
               _mission!['status'] != 'completed') ...[
@@ -982,3 +1178,4 @@ void _showReassignDialog() async {
     );
   }
 }
+
