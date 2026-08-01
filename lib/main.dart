@@ -37,6 +37,7 @@ import 'screens/employee/requests_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
@@ -51,6 +52,7 @@ import 'screens/manager/leave_recall_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
 import 'screens/employee_missions_screen.dart';
 import 'screens/employee/field_visits_screen.dart';
+import 'services/field_visits_service.dart';
 import 'screens/employee/my_work_locations_screen.dart';
 import 'screens/manager/work_locations_approval_screen.dart';
 import 'widgets/account_incomplete_screen.dart';
@@ -60,7 +62,6 @@ import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
 import 'services/auto_checkin_service.dart';
 import 'services/connectivity_service.dart';
-import 'services/local_notification_service.dart';
 
 
 const String kBaseUrl = 'https://jssolutions-eg.com';
@@ -101,6 +102,9 @@ const Color kPrimaryDark = Color(0xFF0D47A1);
 const Color kAccentColor = Color(0xFF42A5F5);
 const Color kManagerColor = Color(0xFF6A1B9A);
 
+final FlutterLocalNotificationsPlugin _localNotif =
+    FlutterLocalNotificationsPlugin();
+
 final ValueNotifier<int> unreadNotificationsCount = ValueNotifier<int>(0);
 
 Future<void> fetchUnreadCount() async {
@@ -119,16 +123,54 @@ Future<void> fetchUnreadCount() async {
 }
 
 Future<void> initLocalNotifications() async {
-  await LocalNotificationService.init(
-    onTap: handleNotificationNavigation,
+  const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+  await _localNotif.initialize(
+    const InitializationSettings(android: android),
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      final payload = response.payload;
+      if (payload != null && payload.isNotEmpty) {
+        try {
+          final data = jsonDecode(payload) as Map<String, dynamic>;
+          handleNotificationNavigation(data);
+        } catch (_) {
+          handleNotificationNavigation({'type': payload});
+        }
+      }
+    },
   );
+  await _localNotif
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'motionhr_channel',
+          'MotionHR Notifications',
+          importance: Importance.max,
+        ),
+      );
 }
 
 Future<void> showLocalNotification(String title, String body, {Map<String, dynamic>? data}) async {
-  await LocalNotificationService.show(
+  String? payload;
+  if (data != null) {
+    try {
+      payload = jsonEncode(data);
+    } catch (_) {}
+  }
+  await _localNotif.show(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000,
     title,
     body,
-    data: data,
+    const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'motionhr_channel',
+        'MotionHR Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+    ),
+    payload: payload,
   );
 }
 
@@ -433,8 +475,6 @@ void main() async {
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
     await initFirebaseMessaging();
   } catch (_) {}
-  OfflineQueueService.startAutoSync();
-  unawaited(OfflineQueueService.syncAll());
   await configureBackgroundTracking();
   runApp(const MotionHRApp());
 }
@@ -1673,6 +1713,9 @@ class EmployeeHomeScreen extends StatefulWidget {
 
 class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   String _fullName = '';
+  final _fieldVisitsService = FieldVisitsService();
+  bool _shiftPeriodsExpanded = false;
+  bool _missingPeriodsExpanded = false;
   String _companyName = '';
   String _firstName = '';
   String _gender = 'male';
@@ -1803,33 +1846,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     setState(() => _loading = true);
     try {
       await requestLocationPermissionsForTracking();
-
-      Position? position;
-      try {
-        position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        ).timeout(const Duration(seconds: 4));
-      } catch (_) {
-        position = await Geolocator.getLastKnownPosition();
-      }
-
-      if (position == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isAr
-                    ? 'تعذر تحديد الموقع الحالي'
-                    : 'Could not determine current location',
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
-        return;
-      }
-
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
       final prefs = await SharedPreferences.getInstance();
       // routing ??? ??? ??????
       final String attendanceUrl;
@@ -2081,6 +2099,207 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     return (elapsed / total).clamp(0.0, 1.0);
   }
 
+
+  Future<Position?> _getVisitCurrentLocation() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+        if (perm == LocationPermission.denied) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAr ? 'لازم تسمح بالوصول للموقع' : 'Location permission denied'),
+            backgroundColor: Colors.red,
+          ));
+          return null;
+        }
+      }
+      if (perm == LocationPermission.deniedForever) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'فعّل الموقع من إعدادات الجهاز' : 'Enable location from device settings'),
+          backgroundColor: Colors.red,
+        ));
+        return null;
+      }
+      try {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 4));
+      } catch (_) {
+        return await Geolocator.getLastKnownPosition();
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'خطأ في تحديد الموقع' : 'Location error'),
+        backgroundColor: Colors.red,
+      ));
+      return null;
+    }
+  }
+
+  Future<Map<String, String>?> _showQuickStartVisitDialog({
+    required String defaultVisitType,
+    required String locationName,
+  }) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final purposeCtrl = TextEditingController();
+    final notesCtrl = TextEditingController();
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isAr ? 'تسجيل زيارة' : 'Start Visit'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.location_on, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(locationName, style: const TextStyle(fontWeight: FontWeight.w600))),
+                ]),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: purposeCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'الغرض من الزيارة *' : 'Purpose *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.assignment),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: notesCtrl,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'ملاحظات (اختياري)' : 'Notes (optional)',
+                  border: const OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(isAr ? 'إلغاء' : 'Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (purposeCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(isAr ? 'اكتب الغرض من الزيارة' : 'Please enter purpose'),
+                  backgroundColor: Colors.red,
+                ));
+                return;
+              }
+              Navigator.pop(context, {
+                'visit_type': defaultVisitType,
+                'location_name': locationName,
+                'purpose': purposeCtrl.text.trim(),
+                'notes': notesCtrl.text.trim(),
+              });
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+            child: Text(isAr ? 'حفظ' : 'Save'),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
+  Future<void> _startQuickFieldVisit() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    String defaultVisitType = 'other';
+    try {
+      final types = await _fieldVisitsService.getVisitTypes();
+      if (types.isNotEmpty) {
+        final otherType = types.cast<dynamic>().where((t) => '${t['value']}' == 'other').toList();
+        defaultVisitType = otherType.isNotEmpty ? '${otherType.first['value']}' : '${types.first['value']}';
+      }
+    } catch (_) {}
+    final locationName = (_status?['current_approved_location']?['name'] ?? (isAr ? 'الموقع الحالي' : 'Current Location')).toString();
+    final dialogResult = await _showQuickStartVisitDialog(defaultVisitType: defaultVisitType, locationName: locationName);
+    if (dialogResult == null) return;
+    final position = await _getVisitCurrentLocation();
+    if (position == null) return;
+    if (mounted) setState(() => _loading = true);
+    try {
+      final response = await _fieldVisitsService.startVisit(
+        visitType: dialogResult['visit_type']!,
+        locationName: dialogResult['location_name']!,
+        purpose: dialogResult['purpose']!,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        notes: dialogResult['notes'] ?? '',
+      );
+      if (!mounted) return;
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'تم بدء الزيارة بنجاح' : 'Visit started successfully'),
+          backgroundColor: Colors.green,
+        ));
+        await _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text((response['message'] ?? response['detail'] ?? (isAr ? 'فشل بدء الزيارة' : 'Failed to start visit')).toString()),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'فشل بدء الزيارة' : 'Failed to start visit'),
+        backgroundColor: Colors.red,
+      ));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _endQuickFieldVisit() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final activeVisit = _status?['active_field_visit'] as Map<String, dynamic>?;
+    if (activeVisit == null || activeVisit['id'] == null) return;
+    final position = await _getVisitCurrentLocation();
+    if (position == null) return;
+    if (mounted) setState(() => _loading = true);
+    try {
+      final response = await _fieldVisitsService.endVisit(
+        visitId: activeVisit['id'],
+        latitude: position.latitude,
+        longitude: position.longitude,
+        notes: '',
+      );
+      if (!mounted) return;
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'تم إنهاء الزيارة' : 'Visit ended successfully'),
+          backgroundColor: Colors.green,
+        ));
+        await _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text((response['message'] ?? response['detail'] ?? (isAr ? 'فشل إنهاء الزيارة' : 'Failed to end visit')).toString()),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'فشل إنهاء الزيارة' : 'Failed to end visit'),
+        backgroundColor: Colors.red,
+      ));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -2211,42 +2430,38 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isAr ? 'فترات الشيفت اليوم' : 'Today Shift Periods',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: kPrimaryColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...shiftPeriods.map((p) => Container(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor.withAlpha(12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: kPrimaryColor.withAlpha(35)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.schedule, size: 16, color: kPrimaryColor),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
+      child: ExpansionTile(
+        initiallyExpanded: _shiftPeriodsExpanded,
+        onExpansionChanged: (v) => setState(() => _shiftPeriodsExpanded = v),
+        leading: const Icon(Icons.schedule, color: kPrimaryColor),
+        title: Text(
+          isAr ? 'فترات الشيفت اليوم' : 'Today Shift Periods',
+          style: const TextStyle(fontWeight: FontWeight.bold, color: kPrimaryColor),
         ),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        children: [
+          ...shiftPeriods.map((p) => Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withAlpha(12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: kPrimaryColor.withAlpha(35)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule, size: 16, color: kPrimaryColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
       ),
     ),
   ],
@@ -2257,34 +2472,24 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       elevation: 1,
       color: Colors.red[50],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.red[700]),
-                const SizedBox(width: 8),
-                Text(
-                  isAr ? 'فترات ناقصة اليوم' : 'Missing Periods Today',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red[700],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ...missingPeriods.map((p) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    '• ${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
-                    style: TextStyle(color: Colors.red[800], fontSize: 13),
-                  ),
-                )),
-          ],
+      child: ExpansionTile(
+        initiallyExpanded: _missingPeriodsExpanded,
+        onExpansionChanged: (v) => setState(() => _missingPeriodsExpanded = v),
+        leading: Icon(Icons.warning_amber_rounded, color: Colors.red[700]),
+        title: Text(
+          isAr ? 'فترات ناقصة اليوم' : 'Missing Periods Today',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red[700]),
         ),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        children: [
+          ...missingPeriods.map((p) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '• ${p['name'] ?? ''}: ${p['start'] ?? ''} - ${p['end'] ?? ''}',
+                  style: TextStyle(color: Colors.red[800], fontSize: 13),
+                ),
+              )),
+        ],
       ),
     ),
   ],
@@ -2521,18 +2726,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               currentApprovedLocation: _status?['current_approved_location'] as Map<String, dynamic>?,
               onCheckIn: () => _attendanceAction('check_in'),
               onCheckOut: () => _attendanceAction('check_out'),
-              onStartVisit: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const FieldVisitsScreen(),
-                ),
-              ).then((_) => _loadData()),
-              onEndVisit: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const FieldVisitsScreen(),
-                ),
-              ).then((_) => _loadData()),
+              onStartVisit: () => _startQuickFieldVisit(),
+              onEndVisit: () => _endQuickFieldVisit(),
             )
           else
             Row(children: [
@@ -7510,8 +7705,6 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
-
-
 
 
 
