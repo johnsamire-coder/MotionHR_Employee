@@ -536,6 +536,28 @@ IconButton(
     final crossesMidnight = shift['crosses_midnight'] == true;
     final workDays = shift['work_days'] as List? ?? [];
 
+    String displayStart = (shift['start_time'] ?? '-').toString();
+    String displayEnd = (shift['end_time'] ?? '-').toString();
+
+    final shiftMode = (shift['shift_mode'] ?? shift['shift_type'] ?? '').toString();
+    final scheduleConfig = (shift['schedule_config'] as Map?) ?? {};
+    final rawPeriods = (scheduleConfig['periods'] as List?) ?? const [];
+
+    if (shiftMode == 'split_fixed' && rawPeriods.isNotEmpty) {
+      final first = rawPeriods.first as Map;
+      final last = rawPeriods.last as Map;
+
+      final firstStart = first['start'];
+      final lastEnd = last['end'];
+
+      if (firstStart != null && firstStart.toString().trim().isNotEmpty) {
+        displayStart = firstStart.toString();
+      }
+      if (lastEnd != null && lastEnd.toString().trim().isNotEmpty) {
+        displayEnd = lastEnd.toString();
+      }
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -624,13 +646,13 @@ IconButton(
                   children: [
                     _infoChip(
                       Icons.login,
-                      '${isAr ? 'بداية' : 'Start'}: ${shift['start_time'] ?? '-'}',
+                      '${isAr ? 'بداية' : 'Start'}: $displayStart',
                       Colors.green,
                     ),
                     const SizedBox(width: 6),
                     _infoChip(
                       Icons.logout,
-                      '${isAr ? 'نهاية' : 'End'}: ${shift['end_time'] ?? '-'}',
+                      '${isAr ? 'نهاية' : 'End'}: $displayEnd',
                       Colors.red,
                     ),
                     if (crossesMidnight) ...[
