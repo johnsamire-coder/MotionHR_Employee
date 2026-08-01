@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_client.dart';
+import 'local_notification_service.dart';
 
 /// نوع العملية المحفوظة في الطابور
 enum OfflineActionType {
@@ -177,6 +178,14 @@ class OfflineQueueService {
           where: 'id = ?',
           whereArgs: [id],
         );
+        // إشعار للموظف بنجاح المزامنة
+        final actionType = row['action_type'] as String? ?? '';
+        final notifTypes = ['checkIn', 'checkOut', 'partialCheckout', 'resumeCheckin'];
+        if (notifTypes.contains(actionType)) {
+          try {
+            await LocalNotificationService.showSyncSuccess(actionType);
+          } catch (_) {}
+        }
       } else if (res.statusCode >= 400 && res.statusCode < 500) {
         // خطأ في البيانات — مش هتتصلح بالإعادة
         await database.update(

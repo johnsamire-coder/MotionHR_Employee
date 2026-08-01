@@ -1,5 +1,8 @@
-// lib/screens/employee/employee_payslip_screen.dart
+﻿// lib/screens/employee/employee_payslip_screen.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/payroll_service.dart';
 import '../../services/report_pdf_service.dart';
 
@@ -15,6 +18,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
   bool _printing = false;
+  bool _sharing = false;
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -165,6 +169,38 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
     if (mounted) setState(() => _printing = false);
   }
 
+  Future<void> _sharePayslipPdf() async {
+    if (_data == null) return;
+    setState(() => _sharing = true);
+    try {
+      final bytes = await _service.getMyPayslipPdf(
+        year: _selectedYear,
+        month: _selectedMonth,
+      );
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}/payslip_${_selectedYear}_${_selectedMonth}.pdf',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: isAr
+            ? 'كشف راتب'
+            : 'Payslip',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isAr ? 'فشل تحميل PDF' : 'PDF download failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+    if (mounted) setState(() => _sharing = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,9 +227,30 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white)),
                   )
-                : IconButton(
-                    onPressed: _print,
-                    icon: const Icon(Icons.print),
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: _print,
+                        icon: const Icon(Icons.print),
+                        tooltip: isAr ? 'طباعة' : 'Print',
+                      ),
+                      _sharing
+                          ? const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: _sharePayslipPdf,
+                              icon: const Icon(Icons.download),
+                              tooltip: isAr ? 'تحميل ومشاركة' : 'Download',
+                            ),
+                    ],
                   ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],

@@ -475,6 +475,71 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
     );
   }
 
+
+  Future<void> _changeWorkerType() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    String? selected = _profile!['worker_type'] ?? 'office';
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setS) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text('تغيير تصنيف الموظف'),
+            content: DropdownButtonFormField<String>(
+              value: selected,
+              decoration: const InputDecoration(
+                labelText: 'نوع الموظف',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'office', child: Text('مكتبي')),
+                DropdownMenuItem(value: 'field_free', child: Text('ميداني حر')),
+                DropdownMenuItem(value: 'field_assigned', child: Text('ميداني محدد')),
+              ],
+              onChanged: (v) { selected = v; setS(() {}); },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('إلغاء'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, selected),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
+                child: const Text('حفظ', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (result == null || result == _profile!['worker_type']) return;
+    try {
+      final res = await ApiClient.patch(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/update/'),
+        body: jsonEncode({'worker_type': result}),
+      );
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        await _loadAll();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم تغيير تصنيف الموظف ✅'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل التغيير'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   Widget _buildProfileTab() {
     if (_profile == null) {
       return EmptyStateWidget(
@@ -618,6 +683,18 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
           _infoRow('نوع العقد', _profile!['contract_type']),
           _infoRow(context.l10n.status, _profile!['status']),
+        ]),
+        _sectionCard('تصنيف الموظف', Icons.work_outline, const Color(0xFF0288D1), [
+          Row(
+            children: [
+              Expanded(child: _infoRow('التصنيف الحالي', _profile!['worker_type_display'] ?? '-', icon: Icons.person_pin)),
+              IconButton(
+                icon: const Icon(Icons.edit, color: Color(0xFF0288D1)),
+                tooltip: 'تغيير التصنيف',
+                onPressed: _changeWorkerType,
+              ),
+            ],
+          ),
         ]),
         _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF6A1B9A), [
           _infoRow('البنك', _profile!['bank_name']),

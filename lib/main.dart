@@ -37,7 +37,6 @@ import 'screens/employee/requests_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
@@ -60,6 +59,8 @@ import 'widgets/empty_state_widget.dart';
 import 'services/language_service.dart';
 import 'services/location_tracking_service.dart';
 import 'services/auto_checkin_service.dart';
+import 'services/connectivity_service.dart';
+import 'services/local_notification_service.dart';
 
 
 const String kBaseUrl = 'https://jssolutions-eg.com';
@@ -100,9 +101,6 @@ const Color kPrimaryDark = Color(0xFF0D47A1);
 const Color kAccentColor = Color(0xFF42A5F5);
 const Color kManagerColor = Color(0xFF6A1B9A);
 
-final FlutterLocalNotificationsPlugin _localNotif =
-    FlutterLocalNotificationsPlugin();
-
 final ValueNotifier<int> unreadNotificationsCount = ValueNotifier<int>(0);
 
 Future<void> fetchUnreadCount() async {
@@ -121,54 +119,16 @@ Future<void> fetchUnreadCount() async {
 }
 
 Future<void> initLocalNotifications() async {
-  const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-  await _localNotif.initialize(
-    const InitializationSettings(android: android),
-    onDidReceiveNotificationResponse: (NotificationResponse response) {
-      final payload = response.payload;
-      if (payload != null && payload.isNotEmpty) {
-        try {
-          final data = jsonDecode(payload) as Map<String, dynamic>;
-          handleNotificationNavigation(data);
-        } catch (_) {
-          handleNotificationNavigation({'type': payload});
-        }
-      }
-    },
+  await LocalNotificationService.init(
+    onTap: handleNotificationNavigation,
   );
-  await _localNotif
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(
-        const AndroidNotificationChannel(
-          'motionhr_channel',
-          'MotionHR Notifications',
-          importance: Importance.max,
-        ),
-      );
 }
 
 Future<void> showLocalNotification(String title, String body, {Map<String, dynamic>? data}) async {
-  String? payload;
-  if (data != null) {
-    try {
-      payload = jsonEncode(data);
-    } catch (_) {}
-  }
-  await _localNotif.show(
-    DateTime.now().millisecondsSinceEpoch ~/ 1000,
+  await LocalNotificationService.show(
     title,
     body,
-    const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'motionhr_channel',
-        'MotionHR Notifications',
-        importance: Importance.max,
-        priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
-      ),
-    ),
-    payload: payload,
+    data: data,
   );
 }
 
@@ -473,6 +433,8 @@ void main() async {
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
     await initFirebaseMessaging();
   } catch (_) {}
+  OfflineQueueService.startAutoSync();
+  unawaited(OfflineQueueService.syncAll());
   await configureBackgroundTracking();
   runApp(const MotionHRApp());
 }
@@ -1841,8 +1803,33 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     setState(() => _loading = true);
     try {
       await requestLocationPermissionsForTracking();
-      final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 4));
+      } catch (_) {
+        position = await Geolocator.getLastKnownPosition();
+      }
+
+      if (position == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isAr
+                    ? 'تعذر تحديد الموقع الحالي'
+                    : 'Could not determine current location',
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       // routing ??? ??? ??????
       final String attendanceUrl;
@@ -1868,32 +1855,45 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           'longitude': position.longitude,
         };
       }
-
       http.Response? res;
       bool savedOffline = false;
 
-      try {
-        res = await ApiClient.post(
-          Uri.parse(attendanceUrl),
-          body: jsonEncode(attendanceBody),
-        ).timeout(const Duration(seconds: 10));
-        debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
-        debugPrint('ATTENDANCE BODY: ${res.body}');
-      } catch (_) {
-        // مفيش نت او timeout — نحفظ في الطابور
-                await OfflineQueueService.enqueue(
-          actionType: action == 'check_in'
-              ? OfflineActionType.checkIn
-              : action == 'check_out'
-                  ? OfflineActionType.checkOut
-                  : action == 'partial_checkout'
-                      ? OfflineActionType.partialCheckout
-                      : OfflineActionType.resumeCheckin,
+      final offlineActionType = action == 'check_in'
+          ? OfflineActionType.checkIn
+          : action == 'check_out'
+              ? OfflineActionType.checkOut
+              : action == 'partial_checkout'
+                  ? OfflineActionType.partialCheckout
+                  : OfflineActionType.resumeCheckin;
+
+      final hasInternet =
+          await ConnectivityService.hasInternetConnection();
+
+      if (!hasInternet) {
+        await OfflineQueueService.enqueue(
+          actionType: offlineActionType,
           endpoint: attendanceUrl,
           method: 'POST',
           body: attendanceBody,
         );
         savedOffline = true;
+      } else {
+        try {
+          res = await ApiClient.post(
+            Uri.parse(attendanceUrl),
+            body: jsonEncode(attendanceBody),
+          ).timeout(const Duration(seconds: 10));
+          debugPrint('ATTENDANCE STATUS: ${res.statusCode}');
+          debugPrint('ATTENDANCE BODY: ${res.body}');
+        } catch (_) {
+          await OfflineQueueService.enqueue(
+            actionType: offlineActionType,
+            endpoint: attendanceUrl,
+            method: 'POST',
+            body: attendanceBody,
+          );
+          savedOffline = true;
+        }
       }
 
       if (savedOffline) {
@@ -1910,7 +1910,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             ),
           );
         }
-        await _loadData();
         return;
       }
 

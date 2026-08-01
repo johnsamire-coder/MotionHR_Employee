@@ -64,4 +64,12 @@ class PayrollService {
     final m = month ?? DateTime.now().month;
     return _get('$_base/api/mobile/employee/payslip/?year=$y&month=$m');
   }
+
+  Future<Uint8List> getMyPayslipPdf({int? year, int? month}) async {
+    final y = year ?? DateTime.now().year;
+    final m = month ?? DateTime.now().month;
+    return _getBytes(
+      '$_base/api/mobile/employee/payslip/?year=$y&month=$m&export=pdf',
+    );
+  }
 }
