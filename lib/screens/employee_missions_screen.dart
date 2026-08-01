@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
+import 'common/location_picker_screen.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
 class EmployeeMissionsScreen extends StatefulWidget {
@@ -358,6 +359,8 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     final locationCtrl = TextEditingController();
     final clientNameCtrl = TextEditingController();
     final clientPhoneCtrl = TextEditingController();
+    double? locationLat;
+    double? locationLng;
     DateTime? startTime;
     DateTime? endTime;
     const String priority = 'normal';
@@ -412,8 +415,52 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               labelText: isAr ? 'الموقع / العنوان' : 'Location / Address',
               border: const OutlineInputBorder(),
               prefixIcon: const Icon(Icons.place),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  Icons.map,
+                  color: locationLat != null ? Colors.green : const Color(0xFF6C3FC5),
+                ),
+                tooltip: isAr ? 'اختر الموقع من الخريطة' : 'Pick from map',
+                onPressed: () async {
+                  final picked = await Navigator.push<LocationPickerResult>(
+                    ctx,
+                    MaterialPageRoute(
+                      builder: (_) => LocationPickerScreen(
+                        initialLat: locationLat,
+                        initialLng: locationLng,
+                      ),
+                    ),
+                  );
+
+                  if (picked != null) {
+                    setTabState(() {
+                      locationLat = picked.latitude;
+                      locationLng = picked.longitude;
+                      locationCtrl.text = picked.address;
+                    });
+                  }
+                },
+              ),
             ),
           ),
+          if (locationLat != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      isAr
+                          ? 'تم تحديد الموقع بنجاح'
+                          : 'Location selected successfully',
+                      style: const TextStyle(fontSize: 11, color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 12),
           TextField(
             controller: clientNameCtrl,
@@ -525,6 +572,8 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                 plannedStartTime: startTime!.toIso8601String(),
                 plannedEndTime: endTime!.toIso8601String(),
                 locationName: locationCtrl.text.trim(),
+                locationLat: locationLat,
+                locationLng: locationLng,
                 clientName: clientNameCtrl.text.trim(),
                 clientPhone: clientPhoneCtrl.text.trim(),
               );

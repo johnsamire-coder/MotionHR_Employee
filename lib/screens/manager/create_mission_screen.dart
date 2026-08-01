@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/location_picker_screen.dart';
 import '../../services/missions_service.dart';
 import '../../services/employee_management_service.dart';
 
@@ -31,6 +32,8 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
   String _priority = 'normal';
   DateTime? _startTime;
   DateTime? _endTime;
+  double? _locationLat;
+  double? _locationLng;
 
   Map<String, String> get _priorityLabels => {
         'normal': isAr ? 'عادي' : 'Normal',
@@ -93,6 +96,26 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
     if (nationalId.isNotEmpty) parts.add('🪪 $nationalId');
 
     return parts.join('   ');
+  }
+
+  Future<void> _pickLocationFromMap() async {
+    final result = await Navigator.push<LocationPickerResult>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initialLat: _locationLat,
+          initialLng: _locationLng,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _locationLat = result.latitude;
+        _locationLng = result.longitude;
+        _locationCtrl.text = result.address;
+      });
+    }
   }
 
   Future<void> _pickDateTime({required bool isStart}) async {
@@ -432,6 +455,8 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
         plannedStartTime: _startTime!.toIso8601String(),
         plannedEndTime: _endTime!.toIso8601String(),
         locationName: _locationCtrl.text.trim(),
+        locationLat: _locationLat,
+        locationLng: _locationLng,
         clientName: _clientNameCtrl.text.trim(),
         clientPhone: _clientPhoneCtrl.text.trim(),
         clientCompany: _clientCompanyCtrl.text.trim(),
@@ -626,8 +651,32 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                                 ? 'اسم الموقع / العنوان'
                                 : 'Location / Address',
                             prefixIcon: const Icon(Icons.place),
+                            suffixIcon: IconButton(
+                                    icon: Icon(
+                                      Icons.map,
+                                      color: _locationLat != null ? Colors.green : Colors.deepPurple,
+                                    ),
+                                    tooltip: isAr ? 'اختر الموقع من الخريطة' : 'Pick from map',
+                                    onPressed: _pickLocationFromMap,
+                                  ),
                           ),
                         ),
+                        if (_locationLat != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isAr
+                                      ? 'تم تحديد الموقع: ${_locationLat!.toStringAsFixed(5)}, ${_locationLng!.toStringAsFixed(5)}'
+                                      : 'Location set: ${_locationLat!.toStringAsFixed(5)}, ${_locationLng!.toStringAsFixed(5)}',
+                                  style: const TextStyle(fontSize: 11, color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _clientNameCtrl,

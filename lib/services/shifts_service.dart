@@ -325,7 +325,7 @@ final body = {
     throw Exception(data['error'] ?? 'خطأ في جلب الشيفت الفعلي');
   }
 
-  // ??? ?? ????????? ??????? (??? 24)
+  // جلب استثناءات الشيفتات (الأخيرة 24)
   static Future<List<Map<String, dynamic>>> getShiftAssignments({int? shiftId}) async {
     final uri = shiftId != null
         ? '$baseUrl/attendance/api/mobile/manager/shifts/assignments/?shift_id=$shiftId'
@@ -341,7 +341,7 @@ final body = {
       return List<Map<String, dynamic>>.from(data['assignments'] ?? []);
     }
 
-    throw Exception(data['error'] ?? '??? ??? ?????????');
+    throw Exception(data['error'] ?? 'فشل حذف الاستثناء');
   }
 
   static Future<bool> deleteAssignment(int assignmentId) async {

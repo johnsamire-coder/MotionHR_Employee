@@ -644,11 +644,11 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                               lateDeduction, ar,
                               color: Colors.orange),
                           if (earlyLeaveDeduction > 0)
-                            _buildRow(ar ? '?????? ????' : 'Early Leave',
+                            _buildRow(ar ? 'انصراف مبكر' : 'Early Leave',
                                 earlyLeaveDeduction, ar,
                                 color: Colors.deepOrange),
                           if (flexShortageDeduction > 0)
-                            _buildRow(ar ? '??? ????? ????' : 'Flex Shortage',
+                            _buildRow(ar ? 'نقص ساعات مرنة' : 'Flex Shortage',
                                 flexShortageDeduction, ar,
                                 color: Colors.brown),
                           _buildRow(ar ? 'غياب' : 'Absence Deduction',

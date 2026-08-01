@@ -1849,7 +1849,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       final position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       final prefs = await SharedPreferences.getInstance();
-      // routing ??? ??? ??????
+      // routing حسب نوع العملية
       final String attendanceUrl;
       final Map<String, dynamic> attendanceBody;
 
@@ -2815,7 +2815,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             ]),
           const SizedBox(height: 12),
 
-          // ?? ????? ?????? ?????? ??????? ??
+          // أزرار الخروج الجزئي والاستئناف
           if (allowPartialCheckout && checkedIn && !checkedOut) ...[
             if (canPartialCheckout)
               SizedBox(
@@ -2868,7 +2868,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                     const SizedBox(width: 8),
                     Text(
                       isAr
-                          ? '????? ????? ?????: $sessionsToday'
+                          ? 'عدد فترات العمل اليوم: $sessionsToday'
                           : 'Work sessions today: $sessionsToday',
                       style: const TextStyle(color: Colors.teal, fontSize: 13),
                     ),
