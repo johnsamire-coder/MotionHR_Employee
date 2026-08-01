@@ -56,8 +56,6 @@ class _RequestsScreenState extends State<RequestsScreen>
   Future<void> _loadCategories() async {
     setState(() => _loadingCats = true);
     try {
-      final token = await _getToken();
-      if (token == null) return;
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/request-types/'),
         headers: await ApiClient.buildHeaders(),
@@ -104,8 +102,6 @@ class _RequestsScreenState extends State<RequestsScreen>
   Future<void> _loadMyRequests() async {
     setState(() => _loadingReqs = true);
     try {
-      final token = await _getToken();
-      if (token == null) return;
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/my-requests/'),
         headers: await ApiClient.buildHeaders(),

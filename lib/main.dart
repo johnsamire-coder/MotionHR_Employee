@@ -4462,15 +4462,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'check_out':
       case 'partial_checkout':
       case 'resume_checkin':
+        page = appMode == 'manager'
+            ? const ManagerShell(initialIndex: 0)
+            : const EmployeeShell(initialIndex: 0);
+        break;
       case 'manager_attendance':
-        page = const ManagerShell(initialIndex: 2);
+        page = const ManagerShell(initialIndex: 1);
         break;
       case 'request_approved':
       case 'request_rejected':
       case 'leave_approved':
       case 'leave_rejected':
         page = appMode == 'manager'
-            ? const ManagerShell(initialIndex: 1)
+            ? const ManagerShell(initialIndex: 2)
             : const EmployeeShell(initialIndex: 3);
         break;
       case 'charter_acceptance':
@@ -6607,6 +6611,7 @@ Future<void> _loadGeofence() async {
 class ManagerShell extends StatefulWidget {
   final int initialIndex;
   const ManagerShell({super.key, this.initialIndex = 0});
+
   @override
   State<ManagerShell> createState() => _ManagerShellState();
 }
@@ -6622,15 +6627,31 @@ class _ManagerShellState extends State<ManagerShell> {
   }
 
   List<Widget> get _pages => [
-        const ManagerDashboard(),
-        const ManagerPendingScreen(),
-        const ManagerAttendanceScreen(),
-        const ManagerLiveLocationsScreen(),
+        const EmployeeHomeScreen(),
+        const ManagerTeamScreen(),
+        const ManagerMyRequestsHubScreen(),
+        ManagerMoreScreen(onLogout: _logout),
       ];
 
+  String _title(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    switch (_index) {
+      case 0:
+        return isAr ? 'أنا' : 'Me';
+      case 1:
+        return isAr ? 'فريقي' : 'My Team';
+      case 2:
+        return isAr ? 'طلباتي' : 'My Requests';
+      case 3:
+        return isAr ? 'المزيد' : 'More';
+      default:
+        return isAr ? 'أنا' : 'Me';
+    }
+  }
+
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
     await AuthStorageService.clearAll();
+    await stopBackgroundTracking();
     unreadNotificationsCount.value = 0;
     if (!mounted) return;
     Navigator.pushReplacement(
@@ -6643,60 +6664,580 @@ class _ManagerShellState extends State<ManagerShell> {
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     return Directionality(
-        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-        child: Scaffold(
-          appBar: AppBar(
-              title: Text(isAr
-                  ? 'MotionHR - المدير'
-                  : 'MotionHR - Manager'),
-              backgroundColor: kManagerColor,
-              foregroundColor: Colors.white,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.description),
-                  tooltip:
-                      isAr ? 'لائحة الشركة' : 'Company Charter',
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              const ManagerCharterScreen())),
-                ),
-                const NotificationBellButton(),
-                IconButton(
-                    icon: const Icon(Icons.settings),
-                    tooltip: context.l10n.settings,
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const SettingsScreen()))),
-                IconButton(
-                    icon: const Icon(Icons.logout),
-                    onPressed: _logout),
-              ]),
-          body: _pages[_index],
-          bottomNavigationBar: BottomNavigationBar(
-              currentIndex: _index,
-              onTap: (i) => setState(() => _index = i),
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: kManagerColor,
-              items: [
-                BottomNavigationBarItem(
-                    icon: const Icon(Icons.dashboard),
-                    label: context.l10n.home),
-                BottomNavigationBarItem(
-                    icon: const Icon(Icons.pending_actions),
-                    label: context.l10n.requests),
-                BottomNavigationBarItem(
-                    icon: const Icon(Icons.people),
-                    label: isAr ? 'الحضور' : 'Attendance'),
-                BottomNavigationBarItem(
-                    icon: const Icon(Icons.location_on),
-                    label: isAr ? 'المواقع' : 'Locations'),
-              ]),
-        ));
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_title(context)),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+          actions: [
+            const NotificationBellButton(),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: context.l10n.logout,
+              onPressed: _logout,
+            ),
+          ],
+        ),
+        body: _pages[_index],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _index,
+          onTap: (i) => setState(() => _index = i),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: kManagerColor,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person),
+              label: isAr ? 'أنا' : 'Me',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.groups),
+              label: isAr ? 'فريقي' : 'My Team',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.assignment),
+              label: isAr ? 'طلباتي' : 'My Requests',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.more_horiz),
+              label: isAr ? 'المزيد' : 'More',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
+
+
+class ManagerTeamScreen extends StatefulWidget {
+  const ManagerTeamScreen({super.key});
+
+  @override
+  State<ManagerTeamScreen> createState() => _ManagerTeamScreenState();
+}
+
+class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
+  int _pending = 0, _present = 0, _fieldWorkers = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (mounted) setState(() => _loading = true);
+    try {
+      final r1 = await ApiClient.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/pending/'),
+      );
+      if (r1.statusCode == 200) {
+        final d = jsonDecode(r1.body);
+        final tp = d['total_pending'];
+        final pr = ((d['pending_requests'] as List?) ?? []).length;
+        final pl = ((d['pending_leaves'] as List?) ?? []).length;
+        final pg = ((d['pending'] as List?) ?? []).length;
+        _pending = tp is num ? tp.toInt() : pr + pl + pg;
+      }
+      final r2 = await ApiClient.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/attendance/'),
+      );
+      if (r2.statusCode == 200) {
+        final d = jsonDecode(r2.body);
+        final items = ((d['items'] as List?) ?? (d['attendance'] as List?) ?? []);
+        final total = d['total'];
+        _present = total is num ? total.toInt() : items.length;
+      }
+      final r3 = await ApiClient.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/live-locations/'),
+      );
+      if (r3.statusCode == 200) {
+        final d = jsonDecode(r3.body);
+        _fieldWorkers = ((d['locations'] as List?) ?? []).length;
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Widget _statChip(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(value,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            const SizedBox(height: 2),
+            Text(label,
+                style: TextStyle(fontSize: 11, color: color),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _teamCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+    int badge = 0,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
+              ),
+              if (badge > 0)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text('$badge',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold)),
+                ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios, size: 14, color: color),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // هيدر الإحصائيات
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isAr ? 'نظرة عامة على الفريق' : 'Team Overview',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _loading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.white))
+                    : Row(
+                        children: [
+                          _statChip(
+                              isAr ? 'معلقة' : 'Pending',
+                              '$_pending',
+                              Colors.orangeAccent),
+                          const SizedBox(width: 8),
+                          _statChip(
+                              isAr ? 'حاضر' : 'Present',
+                              '$_present',
+                              Colors.greenAccent),
+                          const SizedBox(width: 8),
+                          _statChip(
+                              isAr ? 'ميداني' : 'Field',
+                              '$_fieldWorkers',
+                              Colors.lightBlueAccent),
+                        ],
+                      ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isAr ? 'إدارة الفريق' : 'Team Management',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF4A148C),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _teamCard(
+            context: context,
+            icon: Icons.pending_actions,
+            title: isAr ? 'الطلبات المعلقة' : 'Pending Requests',
+            color: Colors.orange,
+            badge: _pending,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const ManagerPendingScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.how_to_reg,
+            title: isAr ? 'حضور الفريق اليوم' : "Team Attendance Today",
+            color: Colors.green,
+            badge: _present,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const ManagerAttendanceScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.location_on,
+            title: isAr ? 'المواقع المباشرة' : 'Live Locations',
+            color: const Color(0xFF7B1FA2),
+            badge: _fieldWorkers,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const ManagerLiveLocationsScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.assignment,
+            title: isAr ? 'مهمات الفريق' : 'Team Missions',
+            color: const Color(0xFF6C3FC5),
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const ManagerMissionsScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.people,
+            title: isAr ? 'الموظفين' : 'Employees',
+            color: Colors.indigo,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const ManagerEmployeesListScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.bar_chart,
+            title: isAr ? 'تقارير الفريق' : 'Team Reports',
+            color: Colors.teal,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const ReportsHubScreen())),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+class ManagerMyRequestsHubScreen extends StatelessWidget {
+  const ManagerMyRequestsHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kManagerColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: kManagerColor.withValues(alpha: 0.12),
+                child: const Icon(Icons.assignment, color: kManagerColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isAr
+                      ? 'من هنا تقدر تقدم طلباتك وتتابع الإجازات والأذونات والطلبات السابقة'
+                      : 'Submit your requests and follow leaves, permissions, and previous requests from here',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _hubCard(
+          context,
+          icon: Icons.post_add,
+          title: isAr ? 'تقديم طلب جديد' : 'Submit New Request',
+          subtitle: isAr
+              ? 'قدّم طلب جديد من الأنواع المتاحة'
+              : 'Create a new request from available types',
+          color: const Color(0xFF6C3FC5),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RequestsScreen()),
+          ),
+        ),
+        _hubCard(
+          context,
+          icon: Icons.event_available,
+          title: isAr ? 'إجازاتي وأذوناتي' : 'My Leaves & Permissions',
+          subtitle: isAr
+              ? 'شوف الأرصدة وقدّم إجازة أو إذن'
+              : 'View balances and submit leave or permission',
+          color: Colors.green,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const _ManagerLeavesPermissionsWrapperScreen(),
+            ),
+          ),
+        ),
+        _hubCard(
+          context,
+          icon: Icons.history,
+          title: isAr ? 'طلباتي السابقة' : 'Previous Requests',
+          subtitle: isAr
+              ? 'راجع الطلبات والإجازات اللي قدمتها قبل كده'
+              : 'Review your previously submitted requests and leaves',
+          color: Colors.orange,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const _ManagerPreviousRequestsWrapperScreen(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _hubCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        leading: CircleAvatar(
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(subtitle),
+        ),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: color),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _ManagerLeavesPermissionsWrapperScreen extends StatelessWidget {
+  const _ManagerLeavesPermissionsWrapperScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isAr ? 'إجازاتي وأذوناتي' : 'My Leaves & Permissions'),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const LeavesScreen(),
+      ),
+    );
+  }
+}
+
+class _ManagerPreviousRequestsWrapperScreen extends StatelessWidget {
+  const _ManagerPreviousRequestsWrapperScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isAr ? 'طلباتي السابقة' : 'Previous Requests'),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const MyItemsScreen(),
+      ),
+    );
+  }
+}
+
+class ManagerMoreScreen extends StatelessWidget {
+  final Future<void> Function() onLogout;
+  const ManagerMoreScreen({super.key, required this.onLogout});
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kManagerColor.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: kManagerColor.withOpacity(0.12),
+                child: const Icon(Icons.manage_accounts, color: kManagerColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isAr
+                      ? 'كل الأدوات الشخصية والإدارية السريعة في مكان واحد'
+                      : 'Your personal and quick admin tools in one place',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _managerMoreTile(
+          context,
+          icon: Icons.person,
+          title: context.l10n.profile,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const EmployeeProfileScreen()),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.campaign,
+          title: context.l10n.announcements,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ManagerAnnouncementsScreen()),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.lock,
+          title: context.l10n.changePassword,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.settings,
+          title: context.l10n.settings,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.logout,
+          title: context.l10n.logout,
+          color: Colors.red,
+          onTap: () async {
+            await onLogout();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _managerMoreTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = kManagerColor,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.12),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: color),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
 
 class ManagerDashboard extends StatefulWidget {
   const ManagerDashboard({super.key});
