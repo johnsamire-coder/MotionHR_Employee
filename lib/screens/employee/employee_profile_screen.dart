@@ -2,7 +2,6 @@ import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'employee_movements_screen.dart';
 import 'employee_documents_screen.dart';
 import 'employee_summary_screen.dart';
@@ -29,8 +28,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
       final response = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/employee/profile/'),
         headers: await ApiClient.buildHeaders(),
@@ -265,6 +262,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               _infoRow(context.l10n.branch, _profile!['branch'], icon: Icons.business),
                               _infoRow(context.l10n.department, _profile!['department']),
                               _infoRow(isAr ? 'المسمى الوظيفي' : 'Job Title', _profile!['job_title']),
+                              _infoRow(isAr ? '\u062A\u0635\u0646\u064A\u0641 \u0627\u0644\u0645\u0648\u0638\u0641' : 'Worker Type', _profile!['worker_type_display'] ?? _profile!['worker_type'], icon: Icons.badge_outlined),
                               _infoRow(isAr ? 'المدير المباشر' : 'Direct Manager', _profile!['direct_manager']?['name']),
                               _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
                               _infoRow(isAr ? 'نوع العقد' : 'Contract Type', _profile!['contract_type']),
