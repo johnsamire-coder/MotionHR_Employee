@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'package:motionhr_employee/screens/manager/location_report_screen.dart';
 import 'package:motionhr_employee/screens/manager/reports/absence_report_screen.dart';
@@ -13,8 +14,34 @@ import 'package:motionhr_employee/screens/manager/reports/requests_report_screen
 import 'package:motionhr_employee/screens/manager/reports/shifts_report_screen.dart';
 import 'package:motionhr_employee/screens/manager/reports/work_hours_report_screen.dart';
 
-class ReportsHubScreen extends StatelessWidget {
+class ReportsHubScreen extends StatefulWidget {
   const ReportsHubScreen({super.key});
+
+  @override
+  State<ReportsHubScreen> createState() => _ReportsHubScreenState();
+}
+
+class _ReportsHubScreenState extends State<ReportsHubScreen> {
+  String _userRole = '';
+  bool get _canSeePayroll =>
+      _userRole == 'company_admin' ||
+      _userRole == 'hr_manager' ||
+      _userRole == 'super_admin';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _userRole = prefs.getString('role') ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +150,8 @@ class ReportsHubScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _sectionHeader(
               isAr
-                  ? '💼 تقارير الشيفتات والرواتب'
-                  : '💼 Shifts & Payroll Reports',
+                  ? '💼 تقارير الشيفتات'
+                  : '💼 Shifts Reports',
             ),
             const SizedBox(height: 8),
             _card(
@@ -135,6 +162,7 @@ class ReportsHubScreen extends StatelessWidget {
               isAr ? 'توزيع الموظفين على الشيفتات' : 'Employee shift distribution',
               const ShiftsReportScreen(),
             ),
+            if (_canSeePayroll)
             _card(
               context,
               Icons.payments_outlined,
