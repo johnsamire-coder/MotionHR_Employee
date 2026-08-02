@@ -1,0 +1,11 @@
+flutter_native_splash:
+  color: "#1A1B4B"
+  image: assets/branding/icon_gradient.png
+  android_12:
+    color: "#1A1B4B"
+    image: assets/branding/icon_gradient.png
+    icon_background_color: "#1A1B4B"
+  android: true
+  ios: true
+  web: false
+  fullscreen: false

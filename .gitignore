@@ -73,3 +73,17 @@ ssh
 android/hs_err_pid*.log
 android/replay_pid*.log
 hardcoded_arabic_report.txt
+
+# MotionHR - Ignore inspection/patch/verify files
+analyze_*.txt
+inspect_*.txt
+patch_*.txt
+verify_*.txt
+git_status_*.txt
+git_commit_*.txt
+git_push_*.txt
+_project_tree.txt
+MotionHR_AI_Context_*.zip
+_AI_CONTEXT_PACKAGE_*.zip
+_AI_CONTEXT_PACKAGE_*/
+employee_import_template_*.xlsx

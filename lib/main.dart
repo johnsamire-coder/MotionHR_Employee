@@ -646,13 +646,22 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.location_on, size: 100, color: Colors.white),
+              Image.asset(
+                'assets/branding/icon_gradient.png',
+                width: 120,
+                height: 120,
+              ),
               const SizedBox(height: 20),
+              Image.asset(
+                'assets/branding/logo_horizontal_white.png',
+                width: 200,
+              ),
+              const SizedBox(height: 8),
               const Text(
                 'MotionHR',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
+                  color: Colors.transparent,
+                  fontSize: 0,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
                 ),
@@ -892,9 +901,15 @@ class _LoginScreenState extends State<LoginScreen> {
         bool needsCharter = false;
         if (appMode != 'manager') {
           try {
+            final jwtAccess = data['access'] ?? '';
+            final fallbackToken = data['token'] ?? '';
+            final authValue = jwtAccess.toString().isNotEmpty
+                ? 'Bearer $jwtAccess'
+                : 'Token $fallbackToken';
+
             final charterRes = await http.get(
               Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'),
-              headers: {'Authorization': 'Token ${data['token']}'},
+              headers: {'Authorization': authValue},
             );
             if (charterRes.statusCode == 200) {
               final charterData = jsonDecode(charterRes.body);
@@ -1052,15 +1067,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.location_on,
-                        size: 70, color: Colors.white),
+                        size: 0, color: Colors.transparent),
+                  ),
+                  Image.asset(
+                    'assets/branding/icon_gradient.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                  const SizedBox(height: 12),
+                  Image.asset(
+                    'assets/branding/logo_horizontal_white.png',
+                    width: 220,
                   ),
                   const SizedBox(height: 20),
                   const Text(
                     'MotionHR',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.transparent,
                       letterSpacing: 2,
                     ),
                   ),
@@ -1640,7 +1665,10 @@ class _EmployeeShellState extends State<EmployeeShell> {
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('MotionHR'),
+          title: Image.asset(
+            'assets/branding/logo_horizontal_white.png',
+            height: 32,
+          ),
           backgroundColor: kPrimaryColor,
           foregroundColor: Colors.white,
           actions: [

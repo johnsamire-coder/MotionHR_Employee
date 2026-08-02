@@ -40,7 +40,9 @@ dependencies:
 
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_lints: ^4.0.0
+  flutter_native_splash: ^2.4.4
 
 flutter:
   uses-material-design: true
@@ -49,6 +51,7 @@ flutter:
   assets:
     - lib/l10n/
     - assets/fonts/
+    - assets/branding/
   fonts:
     - family: Cairo
       fonts:
