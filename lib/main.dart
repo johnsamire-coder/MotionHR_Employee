@@ -6695,7 +6695,17 @@ class _ManagerShellState extends State<ManagerShell> {
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_title(context)),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/branding/icon_white.png',
+                height: 28,
+              ),
+              const SizedBox(width: 10),
+              Text(_title(context)),
+            ],
+          ),
           backgroundColor: kManagerColor,
           foregroundColor: Colors.white,
           actions: [
