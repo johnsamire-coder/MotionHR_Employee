@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'api_client.dart';
 
 class PermissionsService {
-  static const String baseUrl = 'https://motion.jssolutions-eg.com';
+  static const String baseUrl = 'https://jssolutions-eg.com';
 
   static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
     return ApiClient.buildHeaders(includeContentType: includeContentType);
