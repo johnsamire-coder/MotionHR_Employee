@@ -4,7 +4,7 @@ import 'auth_storage_service.dart';
 
 class TaxPolicyService {
   static const String _baseUrl = 'https://jssolutions-eg.com';
-  static const String _basePath = '/attendance/api/mobile/manager/tax';
+  static const String _basePath = '/attendance/api/mobile/manager/tax/policies';
 
   static Future<Map<String, String>> _headers() async {
     final token = await AuthStorageService.getSavedToken() ?? '';
@@ -18,7 +18,7 @@ class TaxPolicyService {
 
   static Future<List<dynamic>> listPolicies() async {
     final res = await http.get(
-      Uri.parse('$_baseUrl$_basePath/policies/'),
+      Uri.parse('$_baseUrl$_basePath/'),
       headers: await _headers(),
     );
     if (res.statusCode == 200) {
@@ -31,7 +31,7 @@ class TaxPolicyService {
 
   static Future<Map<String, dynamic>> getPolicy(int id) async {
     final res = await http.get(
-      Uri.parse('$_baseUrl$_basePath/policies/$id/'),
+      Uri.parse('$_baseUrl$_basePath/$id/'),
       headers: await _headers(),
     );
     if (res.statusCode == 200) {
@@ -43,7 +43,7 @@ class TaxPolicyService {
 
   static Future<Map<String, dynamic>> createPolicy(Map<String, dynamic> data) async {
     final res = await http.post(
-      Uri.parse('$_baseUrl$_basePath/policies/'),
+      Uri.parse('$_baseUrl$_basePath/'),
       headers: await _headers(),
       body: json.encode(data),
     );
@@ -55,7 +55,7 @@ class TaxPolicyService {
 
   static Future<Map<String, dynamic>> updatePolicy(int id, Map<String, dynamic> data) async {
     final res = await http.put(
-      Uri.parse('$_baseUrl$_basePath/policies/$id/'),
+      Uri.parse('$_baseUrl$_basePath/$id/'),
       headers: await _headers(),
       body: json.encode(data),
     );
@@ -67,7 +67,7 @@ class TaxPolicyService {
 
   static Future<bool> deletePolicy(int id) async {
     final res = await http.delete(
-      Uri.parse('$_baseUrl$_basePath/policies/$id/'),
+      Uri.parse('$_baseUrl$_basePath/$id/'),
       headers: await _headers(),
     );
     return res.statusCode == 200 || res.statusCode == 204;
@@ -84,7 +84,7 @@ class TaxPolicyService {
     };
     if (policyId != null) body['policy_id'] = policyId;
     final res = await http.post(
-      Uri.parse('$_baseUrl$_basePath/calculate/'),
+      Uri.parse('$_baseUrl/attendance/api/mobile/manager/tax/calculate/'),
       headers: await _headers(),
       body: json.encode(body),
     );
