@@ -4,6 +4,7 @@ import 'payroll_policy_screen.dart';
 import 'leave_policy_screen.dart';
 import 'official_holidays_screen.dart';
 import 'payroll/tax_policy_screen.dart';
+import 'payroll/eos_policy_screen.dart';
 
 const Color kPoliciesHubColor = Color(0xFF455A64);
 
@@ -108,6 +109,22 @@ class PoliciesHubScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const TaxPolicyScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _policyCard(
+              context,
+              title: isAr ? '?????? ????? ??????' : 'End of Service',
+              subtitle: isAr
+                  ? '????? ?????? ???? ?????????'
+                  : 'Service tiers and entitlement rates',
+              color: const Color(0xFFF57C00),
+              icon: Icons.card_giftcard,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EosPolicyScreen(),
                 ),
               ),
             ),
