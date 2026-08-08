@@ -458,7 +458,7 @@ class _LeavesEnhancedReportScreenState
                   style: const TextStyle(fontSize: 13),
                 ),
                 subtitle: Text(
-                  '${_isAr ? 'متبقي' : 'Remaining'}: ${bal['remaining_days'] ?? 0}',
+                  '${_isAr ? 'متبقي' : 'Remaining'}: ${bal['remaining_days'] ?? 0}  ?  ${_isAr ? 'معلق' : 'Pending'}: ${bal['pending_days'] ?? 0}',
                   style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[600]),
@@ -491,11 +491,28 @@ class _LeavesEnhancedReportScreenState
                   '${lv['leave_type'] ?? '-'} — ${lv['days_count'] ?? 0} ${_isAr ? 'يوم' : 'd'}',
                   style: const TextStyle(fontSize: 13),
                 ),
-                subtitle: Text(
-                  '${lv['start_date'] ?? '-'} → ${lv['end_date'] ?? '-'}',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[600]),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${lv['start_date'] ?? '-'} → ${lv['end_date'] ?? '-'}',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600]),
+                    ),
+                    Text(
+                      [
+                        '${_isAr ? 'مدفوعة' : 'Paid'}: ${lv['is_paid'] == true ? (_isAr ? 'نعم' : 'Yes') : (_isAr ? 'لا' : 'No')}',
+                        if ((lv['is_half_day'] ?? false) == true)
+                          '${_isAr ? 'نصف يوم' : 'Half Day'}${(lv['half_day_type'] ?? '').toString().isNotEmpty ? ' (${lv['half_day_type']})' : ''}',
+                        if ((lv['reason'] ?? '').toString().isNotEmpty)
+                          '${_isAr ? 'السبب' : 'Reason'}: ${lv['reason']}',
+                      ].join('  ?  '),
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[500]),
+                    ),
+                  ],
                 ),
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(

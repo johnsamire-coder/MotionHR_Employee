@@ -435,6 +435,8 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
     final type = (req['request_type'] ?? '').toString();
     final subject = (req['subject'] ?? '').toString();
     final status = (req['status'] ?? '').toString();
+    final requestId = (req['id'] ?? '').toString();
+    final createdAt = (req['created_at'] ?? '').toString();
     final color = _statusColor(status);
 
     return Card(
@@ -466,9 +468,24 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            '$type — $subject',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$type \u2014 $subject',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+              if (requestId.isNotEmpty || createdAt.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Text(
+                    '${requestId.isNotEmpty ? (_isAr ? 'ID: ' : 'ID: ') + requestId : ''}'
+                    '${requestId.isNotEmpty && createdAt.isNotEmpty ? '  ?  ' : ''}'
+                    '${createdAt.isNotEmpty ? (_isAr ? 'Date: ' : 'Date: ') + createdAt : ''}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                ),
+            ],
           ),
         ),
         trailing: Container(

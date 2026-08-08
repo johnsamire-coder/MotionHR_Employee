@@ -451,6 +451,11 @@ class _DailyAttendanceReportScreenState
     final workHours = emp['work_hours'] ?? 0;
     final lateMin = emp['late_minutes'] ?? 0;
     final shiftName = emp['shift_name']?.toString() ?? '';
+    final branch = (emp['branch'] ?? '').toString();
+    final earlyLeave = emp['early_leave_minutes'] ?? 0;
+    final overtimeH = emp['overtime_hours'] ?? 0;
+    final isNight = emp['is_night_shift'] == true;
+    final isWeekend = emp['is_weekend_work'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -504,6 +509,29 @@ class _DailyAttendanceReportScreenState
                   style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey[500])),
+            if (branch.isNotEmpty)
+              Text(branch,
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[500])),
+            Row(children: [
+              if (earlyLeave > 0)
+                Text(
+                  '${_isAr ? '\u0627\u0646\u0635\u0631\u0627\u0641': 'Early'}: $earlyLeave${_isAr ? '\u062f' : 'm'}  ',
+                  style: const TextStyle(fontSize: 10, color: Colors.deepOrange),
+                ),
+              if (overtimeH > 0)
+                Text(
+                  '${_isAr ? '\u0623\u0648\u0641\u0631': 'OT'}: $overtimeH${_isAr ? '\u0633' : 'h'}  ',
+                  style: const TextStyle(fontSize: 10, color: Colors.green),
+                ),
+              if (isNight)
+                Text('${_isAr ? '????????': 'Night'}  ',
+                  style: const TextStyle(fontSize: 10, color: Colors.indigo)),
+              if (isWeekend)
+                Text('${_isAr ? '??????????': 'Weekend'}  ',
+                  style: const TextStyle(fontSize: 10, color: Colors.purple)),
+            ]),
           ],
         ),
         trailing: Column(
