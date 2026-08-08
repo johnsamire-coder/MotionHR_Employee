@@ -64,45 +64,63 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     return ar ? arN[m] : enN[m];
   }
 
+
   Future<Uint8List> _generatePdf(bool ar) async {
     final pdf = pw.Document();
     final d = _data!;
-    final font = await PdfGoogleFonts.cairoRegular();
-    final bold = await PdfGoogleFonts.cairoBold();
-    final cur = ar ? 'ج.م' : 'EGP';
 
-    final basicSalary       = (d['basic_salary'] as num?)?.toDouble() ?? 0.0;
-    final totalAllowances   = (d['allowances_total'] as num?)?.toDouble() ?? 0.0;
-    final totalBonuses      = (d['bonuses_total'] as num?)?.toDouble() ?? 0.0;
-    final grossSalary       = (d['gross_salary'] as num?)?.toDouble() ?? 0.0;
-    final lateDeduction     = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
-    final absenceDeduction  = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
-    final insuranceDeduction= (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
-    final socialInsEmp      = (d['social_insurance_employee'] as num?)?.toDouble() ?? 0.0;
-    final medicalInsEmp     = (d['medical_insurance_employee'] as num?)?.toDouble() ?? 0.0;
-    final taxDeduction      = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
-    final penaltyDeduction  = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
-    final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
-    final totalDeductions   = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
-    final netSalary         = (d['net_salary'] as num?)?.toDouble() ?? 0.0;
+    final font = await PdfGoogleFonts.amiriRegular();
+    final bold = await PdfGoogleFonts.amiriBold();
+    final cur = ar ? '\u062c.\u0645' : 'EGP';
+
+    final basicSalary         = (d['basic_salary'] as num?)?.toDouble() ?? 0.0;
+    final totalAllowances     = (d['allowances_total'] as num?)?.toDouble() ?? 0.0;
+    final totalBonuses        = (d['bonuses_total'] as num?)?.toDouble() ?? 0.0;
+    final grossSalary         = (d['gross_salary'] as num?)?.toDouble() ?? 0.0;
+    final lateDeduction       = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
+    final absenceDeduction    = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
+    final insuranceDeduction  = (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
+    final socialInsEmp        = (d['social_insurance_employee'] as num?)?.toDouble() ?? 0.0;
+    final medicalInsEmp       = (d['medical_insurance_employee'] as num?)?.toDouble() ?? 0.0;
+    final taxDeduction        = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
+    final penaltyDeduction    = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
+    final installmentDeduction= (d['installments_total'] as num?)?.toDouble() ?? 0.0;
+    final totalDeductions     = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
+    final netSalary           = (d['net_salary'] as num?)?.toDouble() ?? 0.0;
+
     final workDays    = d['total_working_days'] as int? ?? 0;
     final presentDays = d['present_days'] as int? ?? 0;
     final absentDays  = d['absent_days'] as int? ?? 0;
     final lateDays    = d['late_days'] as int? ?? 0;
+
     final companyName = d['company_name'] as String? ?? 'MotionHR';
     final position    = d['job_title_name'] as String? ?? '';
     final department  = d['department_name'] as String? ?? '';
 
-    pw.Widget pdfRow(String label, double value, {bool isBold = false}) {
+    pw.Widget pdfRow(String label, double value, {bool isBold = false, PdfColor? color}) {
       return pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 3),
         child: pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            pw.Text(label,
-                style: pw.TextStyle(font: isBold ? bold : font, fontSize: isBold ? 13 : 11)),
-            pw.Text('${value.toStringAsFixed(2)} $cur',
-                style: pw.TextStyle(font: isBold ? bold : font, fontSize: isBold ? 13 : 11)),
+            pw.Expanded(
+              child: pw.Text(
+                label,
+                style: pw.TextStyle(
+                  font: isBold ? bold : font,
+                  fontSize: isBold ? 13 : 11,
+                  color: color,
+                ),
+              ),
+            ),
+            pw.Text(
+              '${value.toStringAsFixed(2)} $cur',
+              style: pw.TextStyle(
+                font: isBold ? bold : font,
+                fontSize: isBold ? 13 : 11,
+                color: color,
+              ),
+            ),
           ],
         ),
       );
@@ -112,190 +130,282 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         textDirection: ar ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        margin: const pw.EdgeInsets.all(24),
         build: (ctx) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
           children: [
             // Header
             pw.Container(
               padding: const pw.EdgeInsets.all(20),
-              decoration: const pw.BoxDecoration(
-                color: PdfColor.fromInt(0xFF1565C0),
+              decoration: pw.BoxDecoration(
+                color: const PdfColor.fromInt(0xFF1565C0),
+                borderRadius: pw.BorderRadius.circular(12),
               ),
-              child: pw.Column(children: [
-                pw.Text(companyName,
-                    style: pw.TextStyle(font: bold, fontSize: 22, color: PdfColors.white)),
-                pw.SizedBox(height: 6),
-                pw.Text(
-                  ar ? 'قسيمة الراتب - ${_monthName(widget.month, ar)} ${widget.year}'
-                     : 'Payslip - ${_monthName(widget.month, ar)} ${widget.year}',
-                  style: pw.TextStyle(font: font, fontSize: 14, color: PdfColors.grey300),
-                ),
-              ]),
+              child: pw.Column(
+                children: [
+                  pw.Text(
+                    companyName,
+                    style: pw.TextStyle(font: bold, fontSize: 22, color: PdfColors.white),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 6),
+                  pw.Text(
+                    ar
+                        ? '\u0642\u0633\u064a\u0645\u0629 \u0627\u0644\u0631\u0627\u062a\u0628 - ${_monthName(widget.month, ar)} ${widget.year}'
+                        : 'Payslip - ${_monthName(widget.month, ar)} ${widget.year}',
+                    style: pw.TextStyle(font: font, fontSize: 14, color: PdfColors.grey300),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ],
+              ),
             ),
+
             pw.SizedBox(height: 12),
+
             // Employee Info
             pw.Container(
               padding: const pw.EdgeInsets.all(14),
               decoration: pw.BoxDecoration(
                 color: const PdfColor.fromInt(0xFFF5F5F5),
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(10),
               ),
-              child: pw.Row(children: [
-                pw.Expanded(child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(ar ? 'الاسم' : 'Name',
-                        style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    pw.Text(widget.employeeName,
-                        style: pw.TextStyle(font: bold, fontSize: 12)),
-                  ],
-                )),
-                pw.Expanded(child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(ar ? 'المسمى' : 'Position',
-                        style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    pw.Text(position,
-                        style: pw.TextStyle(font: bold, fontSize: 12)),
-                  ],
-                )),
-                pw.Expanded(child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(ar ? 'القسم' : 'Department',
-                        style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    pw.Text(department,
-                        style: pw.TextStyle(font: bold, fontSize: 12)),
-                  ],
-                )),
-              ]),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          ar ? '\u0627\u0644\u0627\u0633\u0645' : 'Name',
+                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                        ),
+                        pw.Text(
+                          widget.employeeName,
+                          style: pw.TextStyle(font: bold, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          ar ? '\u0627\u0644\u0645\u0633\u0645\u0649' : 'Position',
+                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                        ),
+                        pw.Text(
+                          position,
+                          style: pw.TextStyle(font: bold, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          ar ? '\u0627\u0644\u0642\u0633\u0645' : 'Department',
+                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                        ),
+                        pw.Text(
+                          department,
+                          style: pw.TextStyle(font: bold, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+
             pw.SizedBox(height: 10),
+
             // Attendance
             pw.Container(
               padding: const pw.EdgeInsets.all(14),
               decoration: pw.BoxDecoration(
                 border: pw.Border.all(color: const PdfColor.fromInt(0xFFE0E0E0)),
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(10),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(ar ? 'ملخص الحضور' : 'Attendance',
-                      style: pw.TextStyle(font: bold, fontSize: 13,
-                          color: const PdfColor.fromInt(0xFF1565C0))),
+                  pw.Text(
+                    ar ? '\u0645\u0644\u062e\u0635 \u0627\u0644\u062d\u0636\u0648\u0631' : 'Attendance Summary',
+                    style: pw.TextStyle(
+                      font: bold,
+                      fontSize: 13,
+                      color: const PdfColor.fromInt(0xFF1565C0),
+                    ),
+                  ),
                   pw.SizedBox(height: 8),
-                  pw.Row(children: [
-                    pw.Expanded(child: pw.Column(children: [
-                      pw.Text('$workDays',
-                          style: pw.TextStyle(font: bold, fontSize: 16)),
-                      pw.Text(ar ? 'ايام العمل' : 'Work Days',
-                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    ])),
-                    pw.Expanded(child: pw.Column(children: [
-                      pw.Text('$presentDays',
-                          style: pw.TextStyle(font: bold, fontSize: 16,
-                              color: const PdfColor.fromInt(0xFF2E7D32))),
-                      pw.Text(ar ? 'الحضور' : 'Present',
-                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    ])),
-                    pw.Expanded(child: pw.Column(children: [
-                      pw.Text('$absentDays',
-                          style: pw.TextStyle(font: bold, fontSize: 16,
-                              color: const PdfColor.fromInt(0xFFC62828))),
-                      pw.Text(ar ? 'الغياب' : 'Absent',
-                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    ])),
-                    pw.Expanded(child: pw.Column(children: [
-                      pw.Text('$lateDays',
-                          style: pw.TextStyle(font: bold, fontSize: 16,
-                              color: const PdfColor.fromInt(0xFFE65100))),
-                      pw.Text(ar ? 'التاخير' : 'Late',
-                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey)),
-                    ])),
-                  ]),
+                  pw.Row(
+                    children: [
+                      pw.Expanded(
+                        child: pw.Column(
+                          children: [
+                            pw.Text('$workDays', style: pw.TextStyle(font: bold, fontSize: 16)),
+                            pw.Text(
+                              ar ? '\u0623\u064a\u0627\u0645 \u0627\u0644\u0639\u0645\u0644' : 'Work Days',
+                              style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Column(
+                          children: [
+                            pw.Text(
+                              '$presentDays',
+                              style: pw.TextStyle(font: bold, fontSize: 16, color: const PdfColor.fromInt(0xFF2E7D32)),
+                            ),
+                            pw.Text(
+                              ar ? '\u0627\u0644\u062d\u0636\u0648\u0631' : 'Present',
+                              style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Column(
+                          children: [
+                            pw.Text(
+                              '$absentDays',
+                              style: pw.TextStyle(font: bold, fontSize: 16, color: const PdfColor.fromInt(0xFFC62828)),
+                            ),
+                            pw.Text(
+                              ar ? '\u0627\u0644\u063a\u064a\u0627\u0628' : 'Absent',
+                              style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Column(
+                          children: [
+                            pw.Text(
+                              '$lateDays',
+                              style: pw.TextStyle(font: bold, fontSize: 16, color: const PdfColor.fromInt(0xFFE65100)),
+                            ),
+                            pw.Text(
+                              ar ? '\u0627\u0644\u062a\u0623\u062e\u064a\u0631' : 'Late',
+                              style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
+
             pw.SizedBox(height: 10),
+
             // Earnings & Deductions
-            pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(14),
-                  decoration: pw.BoxDecoration(
-                    color: const PdfColor.fromInt(0xFFE8F5E9),
-                    borderRadius: pw.BorderRadius.circular(8),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(ar ? 'المستحقات' : 'Earnings',
-                          style: pw.TextStyle(font: bold, fontSize: 13,
-                              color: const PdfColor.fromInt(0xFF1B5E20))),
-                      pw.SizedBox(height: 8),
-                      pdfRow(ar ? 'الراتب الاساسي' : 'Basic', basicSalary),
-                      pdfRow(ar ? 'البدلات' : 'Allowances', totalAllowances),
-                      pdfRow(ar ? 'المكافات' : 'Bonuses', totalBonuses),
-                      pw.Divider(color: const PdfColor.fromInt(0xFF4CAF50)),
-                      pdfRow(ar ? 'الاجمالي' : 'Gross', grossSalary, isBold: true),
-                    ],
-                  ),
-                ),
-              ),
-              pw.SizedBox(width: 10),
-              pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(14),
-                  decoration: pw.BoxDecoration(
-                    color: const PdfColor.fromInt(0xFFFFEBEE),
-                    borderRadius: pw.BorderRadius.circular(8),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(ar ? 'الخصومات' : 'Deductions',
-                          style: pw.TextStyle(font: bold, fontSize: 13,
-                              color: const PdfColor.fromInt(0xFFB71C1C))),
-                      pw.SizedBox(height: 8),
-                      pdfRow(ar ? 'تاخير' : 'Late', lateDeduction),
-                      pdfRow(ar ? 'غياب' : 'Absence', absenceDeduction),
-                      pdfRow(ar ? 'ضريبة' : 'Tax', taxDeduction),
-                      if (socialInsEmp > 0) pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0627\u062c\u062a\u0645\u0627\u0639\u064a' : 'Social Insurance', socialInsEmp),
-                      if (medicalInsEmp > 0) pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0637\u0628\u064a' : 'Medical Insurance', medicalInsEmp),
-                      if (insuranceDeduction > 0 && socialInsEmp == 0 && medicalInsEmp == 0) pdfRow(ar ? '\u062a\u0627\u0645\u064a\u0646' : 'Insurance', insuranceDeduction),
-                      pdfRow(ar ? 'تامين' : 'Insurance', insuranceDeduction),
-                      pdfRow(ar ? 'جزاءات' : 'Penalties', penaltyDeduction),
-                      pdfRow(ar ? 'اقساط' : 'Installments', installmentDeduction),
-                      pw.Divider(color: const PdfColor.fromInt(0xFFF44336)),
-                      pdfRow(ar ? 'اجمالي الخصومات' : 'Total', totalDeductions, isBold: true),
-                    ],
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(14),
+                    decoration: pw.BoxDecoration(
+                      color: const PdfColor.fromInt(0xFFE8F5E9),
+                      borderRadius: pw.BorderRadius.circular(10),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          ar ? '\u0627\u0644\u0645\u0633\u062a\u062d\u0642\u0627\u062a' : 'Earnings',
+                          style: pw.TextStyle(
+                            font: bold,
+                            fontSize: 13,
+                            color: const PdfColor.fromInt(0xFF1B5E20),
+                          ),
+                        ),
+                        pw.SizedBox(height: 8),
+                        pdfRow(ar ? '\u0627\u0644\u0631\u0627\u062a\u0628 \u0627\u0644\u0623\u0633\u0627\u0633\u064a' : 'Basic', basicSalary),
+                        pdfRow(ar ? '\u0627\u0644\u0628\u062f\u0644\u0627\u062a' : 'Allowances', totalAllowances),
+                        pdfRow(ar ? '\u0627\u0644\u0645\u0643\u0627\u0641\u0622\u062a' : 'Bonuses', totalBonuses),
+                        pw.Divider(color: const PdfColor.fromInt(0xFF4CAF50)),
+                        pdfRow(ar ? '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a' : 'Gross', grossSalary, isBold: true),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ]),
+                pw.SizedBox(width: 10),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(14),
+                    decoration: pw.BoxDecoration(
+                      color: const PdfColor.fromInt(0xFFFFEBEE),
+                      borderRadius: pw.BorderRadius.circular(10),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          ar ? '\u0627\u0644\u062e\u0635\u0648\u0645\u0627\u062a' : 'Deductions',
+                          style: pw.TextStyle(
+                            font: bold,
+                            fontSize: 13,
+                            color: const PdfColor.fromInt(0xFFB71C1C),
+                          ),
+                        ),
+                        pw.SizedBox(height: 8),
+                        pdfRow(ar ? '\u062a\u0623\u062e\u064a\u0631' : 'Late', lateDeduction),
+                        pdfRow(ar ? '\u063a\u064a\u0627\u0628' : 'Absence', absenceDeduction),
+                        pdfRow(ar ? '\u0636\u0631\u064a\u0628\u0629' : 'Tax', taxDeduction),
+                        if (socialInsEmp > 0)
+                          pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0627\u062c\u062a\u0645\u0627\u0639\u064a' : 'Social Insurance', socialInsEmp),
+                        if (medicalInsEmp > 0)
+                          pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0637\u0628\u064a' : 'Medical Insurance', medicalInsEmp),
+                        if (insuranceDeduction > 0 && socialInsEmp == 0 && medicalInsEmp == 0)
+                          pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646' : 'Insurance', insuranceDeduction),
+                        pdfRow(ar ? '\u062c\u0632\u0627\u0621\u0627\u062a' : 'Penalties', penaltyDeduction),
+                        pdfRow(ar ? '\u0623\u0642\u0633\u0627\u0637' : 'Installments', installmentDeduction),
+                        pw.Divider(color: const PdfColor.fromInt(0xFFF44336)),
+                        pdfRow(ar ? '\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u062e\u0635\u0648\u0645\u0627\u062a' : 'Total Deductions', totalDeductions, isBold: true),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
             pw.SizedBox(height: 12),
+
             // Net Salary
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
-              decoration: const pw.BoxDecoration(
-                color: PdfColor.fromInt(0xFF1B5E20),
-                borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
+              decoration: pw.BoxDecoration(
+                color: const PdfColor.fromInt(0xFF1B5E20),
+                borderRadius: pw.BorderRadius.circular(10),
               ),
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text(ar ? 'صافي الراتب' : 'Net Salary',
-                      style: pw.TextStyle(font: bold, fontSize: 18, color: PdfColors.white)),
-                  pw.Text('${netSalary.toStringAsFixed(2)} $cur',
-                      style: pw.TextStyle(font: bold, fontSize: 20, color: PdfColors.yellow)),
+                  pw.Text(
+                    ar ? '\u0635\u0627\u0641\u064a \u0627\u0644\u0631\u0627\u062a\u0628' : 'Net Salary',
+                    style: pw.TextStyle(font: bold, fontSize: 18, color: PdfColors.white),
+                  ),
+                  pw.Text(
+                    '${netSalary.toStringAsFixed(2)} $cur',
+                    style: pw.TextStyle(font: bold, fontSize: 20, color: PdfColors.yellow),
+                  ),
                 ],
               ),
             ),
+
             pw.Spacer(),
+
             pw.Text(
-              ar ? 'تم انشاء هذه القسيمة بواسطة نظام MotionHR'
-                 : 'Generated by MotionHR System',
+              ar
+                  ? '\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0647\u0630\u0647 \u0627\u0644\u0642\u0633\u064a\u0645\u0629 \u0628\u0648\u0627\u0633\u0637\u0629 \u0646\u0638\u0627\u0645 MotionHR'
+                  : 'Generated by MotionHR System',
               style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey),
               textAlign: pw.TextAlign.center,
             ),
@@ -303,6 +413,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
         ),
       ),
     );
+
     return pdf.save();
   }
 
