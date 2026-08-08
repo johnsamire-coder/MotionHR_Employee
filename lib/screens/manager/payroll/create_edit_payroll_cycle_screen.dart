@@ -12,57 +12,58 @@ class CreateEditPayrollCycleScreen extends StatefulWidget {
 }
 
 class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScreen> {
-  final _cutoffDayCtrl = TextEditingController(text: '25');
-  final _payDayCtrl = TextEditingController(text: '5');
-  final _workingDaysCtrl = TextEditingController(text: '22');
-  final _notifyDaysCtrl = TextEditingController(text: '2');
-  final _refPrefixCtrl = TextEditingController(text: 'PR');
-  final _startDateCtrl = TextEditingController(text: DateTime.now().toIso8601String().split('T').first);
-  final _endDateCtrl = TextEditingController();
+  final _cutoffDayCtrl    = TextEditingController(text: '25');
+  final _payDayCtrl       = TextEditingController(text: '5');
+  final _workingDaysCtrl  = TextEditingController(text: '22');
+  final _notifyDaysCtrl   = TextEditingController(text: '2');
+  final _refPrefixCtrl    = TextEditingController(text: 'PR');
+  final _startDateCtrl    = TextEditingController();
+  final _endDateCtrl      = TextEditingController();
   final _changeReasonCtrl = TextEditingController();
 
-  String _cycleType = 'calendar_month';
-  String _weeklyPayDay = 'sunday';
-  String _holidayHandling = 'before';
-  String _defaultCurrency = 'EGP';
-  String _prorationMethod = '30_days';
-  String _newEmployeeHandling = 'prorated';
-  String _approvalLevel = 'hr_only';
-  String _firstApproverRole = 'hr_manager';
-  String _secondApproverRole = '';
-  String _thirdApproverRole = '';
-  bool _autoGeneratePayroll = true;
-  bool _requireApprovalBeforePay = true;
-  bool _isActive = true;
-  bool _saving = false;
+  String _cycleType              = 'calendar_month';
+  String _weeklyPayDay           = 'sunday';
+  String _holidayHandling        = 'before';
+  String _defaultCurrency        = 'EGP';
+  String _prorationMethod        = '30_days';
+  String _newEmployeeHandling    = 'prorated';
+  String _approvalLevel          = 'hr_only';
+  String _firstApproverRole      = 'hr_manager';
+  String _secondApproverRole     = '';
+  String _thirdApproverRole      = '';
+  bool   _autoGeneratePayroll    = true;
+  bool   _requireApprovalBeforePay = true;
+  bool   _isActive               = true;
+  bool   _saving                 = false;
 
   bool get _isEdit => widget.existing != null;
 
   @override
   void initState() {
     super.initState();
+    _startDateCtrl.text = DateTime.now().toIso8601String().split('T').first;
     if (_isEdit) {
       final p = widget.existing!;
-      _cycleType = p['cycle_type'] ?? 'calendar_month';
-      _cutoffDayCtrl.text = (p['cutoff_day'] ?? 25).toString();
-      _payDayCtrl.text = (p['pay_day'] ?? 5).toString();
-      _weeklyPayDay = p['weekly_pay_day'] ?? 'sunday';
-      _holidayHandling = p['holiday_handling'] ?? 'before';
-      _defaultCurrency = p['default_currency'] ?? 'EGP';
-      _prorationMethod = p['proration_method'] ?? '30_days';
-      _workingDaysCtrl.text = (p['working_days_per_month'] ?? 22).toString();
-      _newEmployeeHandling = p['new_employee_handling'] ?? 'prorated';
-      _notifyDaysCtrl.text = (p['payslip_notify_days_before'] ?? 2).toString();
-      _autoGeneratePayroll = p['auto_generate_payroll'] ?? true;
-      _refPrefixCtrl.text = p['payroll_ref_prefix'] ?? 'PR';
-      _approvalLevel = p['approval_level'] ?? 'hr_only';
-      _requireApprovalBeforePay = p['require_approval_before_pay'] ?? true;
-      _firstApproverRole = p['first_approver_role'] ?? 'hr_manager';
-      _secondApproverRole = p['second_approver_role'] ?? '';
-      _thirdApproverRole = p['third_approver_role'] ?? '';
-      _isActive = p['is_active'] ?? true;
-      _startDateCtrl.text = p['start_date'] ?? '';
-      _endDateCtrl.text = p['end_date'] ?? '';
+      _cycleType               = p['cycle_type']               ?? 'calendar_month';
+      _cutoffDayCtrl.text      = (p['cutoff_day']              ?? 25).toString();
+      _payDayCtrl.text         = (p['pay_day']                 ?? 5).toString();
+      _weeklyPayDay            = p['weekly_pay_day']            ?? 'sunday';
+      _holidayHandling         = p['holiday_handling']          ?? 'before';
+      _defaultCurrency         = p['default_currency']          ?? 'EGP';
+      _prorationMethod         = p['proration_method']          ?? '30_days';
+      _workingDaysCtrl.text    = (p['working_days_per_month']   ?? 22).toString();
+      _newEmployeeHandling     = p['new_employee_handling']     ?? 'prorated';
+      _notifyDaysCtrl.text     = (p['payslip_notify_days_before'] ?? 2).toString();
+      _autoGeneratePayroll     = p['auto_generate_payroll']     ?? true;
+      _refPrefixCtrl.text      = p['payroll_ref_prefix']        ?? 'PR';
+      _approvalLevel           = p['approval_level']            ?? 'hr_only';
+      _requireApprovalBeforePay= p['require_approval_before_pay'] ?? true;
+      _firstApproverRole       = p['first_approver_role']       ?? 'hr_manager';
+      _secondApproverRole      = p['second_approver_role']      ?? '';
+      _thirdApproverRole       = p['third_approver_role']       ?? '';
+      _isActive                = p['is_active']                 ?? true;
+      _startDateCtrl.text      = p['start_date']                ?? '';
+      _endDateCtrl.text        = p['end_date']                  ?? '';
     }
   }
 
@@ -82,11 +83,7 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
   Future<void> _pickDate(TextEditingController ctrl) async {
     final now = DateTime.now();
     DateTime initial;
-    try {
-      initial = DateTime.parse(ctrl.text);
-    } catch (_) {
-      initial = now;
-    }
+    try { initial = DateTime.parse(ctrl.text); } catch (_) { initial = now; }
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -100,11 +97,9 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
   }
 
   Future<void> _save() async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
     if (_startDateCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isAr ? '????? ????? ?????' : 'Start date required')),
+        const SnackBar(content: Text('تاريخ البدء مطلوب')),
       );
       return;
     }
@@ -112,27 +107,27 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
     setState(() => _saving = true);
 
     final data = {
-      'cycle_type': _cycleType,
-      'cutoff_day': int.tryParse(_cutoffDayCtrl.text) ?? 25,
-      'pay_day': int.tryParse(_payDayCtrl.text) ?? 5,
-      'weekly_pay_day': _weeklyPayDay,
-      'holiday_handling': _holidayHandling,
-      'default_currency': _defaultCurrency,
-      'proration_method': _prorationMethod,
-      'working_days_per_month': int.tryParse(_workingDaysCtrl.text) ?? 22,
-      'new_employee_handling': _newEmployeeHandling,
+      'cycle_type'                : _cycleType,
+      'cutoff_day'                : int.tryParse(_cutoffDayCtrl.text) ?? 25,
+      'pay_day'                   : int.tryParse(_payDayCtrl.text) ?? 5,
+      'weekly_pay_day'            : _weeklyPayDay,
+      'holiday_handling'          : _holidayHandling,
+      'default_currency'          : _defaultCurrency,
+      'proration_method'          : _prorationMethod,
+      'working_days_per_month'    : int.tryParse(_workingDaysCtrl.text) ?? 22,
+      'new_employee_handling'     : _newEmployeeHandling,
       'payslip_notify_days_before': int.tryParse(_notifyDaysCtrl.text) ?? 2,
-      'auto_generate_payroll': _autoGeneratePayroll,
-      'payroll_ref_prefix': _refPrefixCtrl.text.trim(),
-      'approval_level': _approvalLevel,
+      'auto_generate_payroll'     : _autoGeneratePayroll,
+      'payroll_ref_prefix'        : _refPrefixCtrl.text.trim(),
+      'approval_level'            : _approvalLevel,
       'require_approval_before_pay': _requireApprovalBeforePay,
-      'first_approver_role': _firstApproverRole,
-      'second_approver_role': _secondApproverRole,
-      'third_approver_role': _thirdApproverRole,
-      'is_active': _isActive,
-      'start_date': _startDateCtrl.text.trim(),
-      'end_date': _endDateCtrl.text.trim().isEmpty ? null : _endDateCtrl.text.trim(),
-      'change_reason': _changeReasonCtrl.text.trim(),
+      'first_approver_role'       : _firstApproverRole,
+      'second_approver_role'      : _secondApproverRole,
+      'third_approver_role'       : _thirdApproverRole,
+      'is_active'                 : _isActive,
+      'start_date'                : _startDateCtrl.text.trim(),
+      'end_date'                  : _endDateCtrl.text.trim().isEmpty ? null : _endDateCtrl.text.trim(),
+      'change_reason'             : _changeReasonCtrl.text.trim(),
     };
 
     try {
@@ -143,28 +138,22 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isAr ? '?? ?????' : 'Saved'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('تم الحفظ'), backgroundColor: Colors.green),
       );
       Navigator.pop(context, true);
     } catch (e) {
       setState(() => _saving = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isAr ? '??? ?????: $e' : 'Save failed: $e'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('فشل الحفظ: $e'), backgroundColor: Colors.red),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final isMonthly = _cycleType == 'calendar_month' || _cycleType == 'custom_month';
+    final isAr         = Localizations.localeOf(context).languageCode == 'ar';
+    final isMonthly    = _cycleType == 'calendar_month' || _cycleType == 'custom_month';
     final showApprover2 = _approvalLevel == 'hr_plus_manager' || _approvalLevel == 'hr_plus_finance_plus_ceo';
     final showApprover3 = _approvalLevel == 'hr_plus_finance_plus_ceo';
 
@@ -173,18 +162,13 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(_isEdit
-              ? (isAr ? '????? ????? ???? ???????' : 'Edit Payroll Cycle')
-              : (isAr ? '????? ????? ???? ???????' : 'Create Payroll Cycle')),
+          title: Text(_isEdit ? 'تعديل سياسة دورة الرواتب' : 'إنشاء سياسة دورة الرواتب'),
           backgroundColor: kCycleCreateColor,
           foregroundColor: Colors.white,
           actions: [
             TextButton(
               onPressed: _saving ? null : _save,
-              child: Text(
-                isAr ? '???' : 'Save',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
+              child: const Text('حفظ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -193,91 +177,90 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ??? ??????
-              _card(isAr ? '??? ??????' : 'Cycle Type', Icons.calendar_month, [
-                _dropdown(_cycleType, isAr ? '?????' : 'Type', [
-                  {'value': 'calendar_month', 'label': isAr ? '??? ?????? (1 ? ??? ???)' : 'Calendar Month'},
-                  {'value': 'custom_month', 'label': isAr ? '??? ????' : 'Custom Month'},
-                  {'value': 'weekly', 'label': isAr ? '??????' : 'Weekly'},
-                  {'value': 'bi_weekly', 'label': isAr ? '?? ???????' : 'Bi-Weekly'},
+
+              // ═══ نوع الدورة ═══
+              _card('نوع الدورة', Icons.calendar_month, [
+                _dropdown(_cycleType, 'النوع', [
+                  {'value': 'calendar_month', 'label': 'شهر ميلادي (1 → آخر يوم)'},
+                  {'value': 'custom_month',   'label': 'شهر مخصص'},
+                  {'value': 'weekly',         'label': 'أسبوعي'},
+                  {'value': 'bi_weekly',      'label': 'كل أسبوعين'},
                 ], (v) => setState(() => _cycleType = v)),
                 if (_cycleType == 'custom_month') ...[
                   const SizedBox(height: 10),
-                  _numberField(_cutoffDayCtrl, isAr ? '??? ??? ????? (1-31)' : 'Cutoff Day (1-31)'),
+                  _numberField(_cutoffDayCtrl, 'يوم قفل الشهر (1-31)'),
                 ],
               ]),
               const SizedBox(height: 14),
 
-              // ??? ?????
-              _card(isAr ? '??? ??? ????????' : 'Pay Day', Icons.attach_money, [
+              // ═══ يوم الصرف ═══
+              _card('يوم صرف المرتبات', Icons.attach_money, [
                 if (isMonthly)
-                  _numberField(_payDayCtrl, isAr ? '??? ????? ?? ????? (1-31)' : 'Pay Day (1-31)')
+                  _numberField(_payDayCtrl, 'يوم الصرف في الشهر (1-31)')
                 else
-                  _dropdown(_weeklyPayDay, isAr ? '??? ????? ????????' : 'Weekly Pay Day', [
-                    {'value': 'sunday', 'label': isAr ? '?????' : 'Sunday'},
-                    {'value': 'monday', 'label': isAr ? '???????' : 'Monday'},
-                    {'value': 'tuesday', 'label': isAr ? '????????' : 'Tuesday'},
-                    {'value': 'wednesday', 'label': isAr ? '????????' : 'Wednesday'},
-                    {'value': 'thursday', 'label': isAr ? '??????' : 'Thursday'},
-                    {'value': 'friday', 'label': isAr ? '??????' : 'Friday'},
-                    {'value': 'saturday', 'label': isAr ? '?????' : 'Saturday'},
+                  _dropdown(_weeklyPayDay, 'يوم الصرف الأسبوعي', [
+                    {'value': 'sunday',    'label': 'الأحد'},
+                    {'value': 'monday',    'label': 'الاثنين'},
+                    {'value': 'tuesday',   'label': 'الثلاثاء'},
+                    {'value': 'wednesday', 'label': 'الأربعاء'},
+                    {'value': 'thursday',  'label': 'الخميس'},
+                    {'value': 'friday',    'label': 'الجمعة'},
+                    {'value': 'saturday',  'label': 'السبت'},
                   ], (v) => setState(() => _weeklyPayDay = v)),
                 const SizedBox(height: 10),
-                _dropdown(_holidayHandling, isAr ? '?? ????? ??? ????' : 'If Pay Day is Holiday', [
-                  {'value': 'before', 'label': isAr ? '????? ????? ???? ????' : 'Pay Before'},
-                  {'value': 'after', 'label': isAr ? '????? ????? ???? ????' : 'Pay After'},
-                  {'value': 'same', 'label': isAr ? '??? ?????' : 'Same Day'},
+                _dropdown(_holidayHandling, 'لو الصرف يوم عطلة', [
+                  {'value': 'before', 'label': 'الصرف اليوم اللي قبله'},
+                  {'value': 'after',  'label': 'الصرف اليوم اللي بعده'},
+                  {'value': 'same',   'label': 'نفس اليوم'},
                 ], (v) => setState(() => _holidayHandling = v)),
               ]),
               const SizedBox(height: 14),
 
-              // ??????
-              _card(isAr ? '??????' : 'Currency', Icons.currency_exchange, [
-                _dropdown(_defaultCurrency, isAr ? '?????? ??????????' : 'Default Currency', [
-                  {'value': 'EGP', 'label': isAr ? '???? ???? (EGP)' : 'Egyptian Pound (EGP)'},
-                  {'value': 'USD', 'label': isAr ? '????? ?????? (USD)' : 'US Dollar (USD)'},
-                  {'value': 'EUR', 'label': isAr ? '???? (EUR)' : 'Euro (EUR)'},
-                  {'value': 'SAR', 'label': isAr ? '???? ????? (SAR)' : 'Saudi Riyal (SAR)'},
-                  {'value': 'AED', 'label': isAr ? '???? ??????? (AED)' : 'UAE Dirham (AED)'},
+              // ═══ العملة ═══
+              _card('العملة', Icons.currency_exchange, [
+                _dropdown(_defaultCurrency, 'العملة الافتراضية', [
+                  {'value': 'EGP', 'label': 'جنيه مصري (EGP)'},
+                  {'value': 'USD', 'label': 'دولار أمريكي (USD)'},
+                  {'value': 'EUR', 'label': 'يورو (EUR)'},
+                  {'value': 'SAR', 'label': 'ريال سعودي (SAR)'},
+                  {'value': 'AED', 'label': 'درهم إماراتي (AED)'},
                 ], (v) => setState(() => _defaultCurrency = v)),
               ]),
               const SizedBox(height: 14),
 
-              // ????? ??????
-              _card(isAr ? '????? ?????? ????????' : 'Proration Method', Icons.calculate, [
-                _dropdown(_prorationMethod, isAr ? '???????' : 'Method', [
-                  {'value': '30_days', 'label': isAr ? '30 ??? ??????' : '30 Days Always'},
-                  {'value': 'actual_days', 'label': isAr ? '???? ????? ???????' : 'Actual Days'},
-                  {'value': 'working_days', 'label': isAr ? '???? ????? ???' : 'Working Days'},
+              // ═══ طريقة الحساب ═══
+              _card('طريقة النسبة والتناسب', Icons.calculate, [
+                _dropdown(_prorationMethod, 'الطريقة', [
+                  {'value': '30_days',      'label': '30 يوم دائماً'},
+                  {'value': 'actual_days',  'label': 'أيام الشهر الفعلية'},
+                  {'value': 'working_days', 'label': 'أيام العمل فقط'},
                 ], (v) => setState(() => _prorationMethod = v)),
                 if (_prorationMethod == 'working_days') ...[
                   const SizedBox(height: 10),
-                  _numberField(_workingDaysCtrl, isAr ? '???? ????? ??????? (1-31)' : 'Working Days/Month'),
+                  _numberField(_workingDaysCtrl, 'أيام العمل الشهرية (1-31)'),
                 ],
               ]),
               const SizedBox(height: 14),
 
-              // ?????? ??????
-              _card(isAr ? '?????? ?????? ??????' : 'New Employee Handling', Icons.person_add, [
-                _dropdown(_newEmployeeHandling, isAr ? '??????' : 'Handling', [
-                  {'value': 'full', 'label': isAr ? '???? ???? ?? ??? ???' : 'Full Salary'},
-                  {'value': 'prorated', 'label': isAr ? '??????? ????????' : 'Prorated'},
-                  {'value': 'next_cycle', 'label': isAr ? '???? ?? ?????? ??????' : 'Next Cycle'},
+              // ═══ الموظف الجديد ═══
+              _card('معالجة الموظف الجديد', Icons.person_add, [
+                _dropdown(_newEmployeeHandling, 'المعالجة', [
+                  {'value': 'full',       'label': 'مرتب كامل من أول يوم'},
+                  {'value': 'prorated',   'label': 'بالنسبة والتناسب'},
+                  {'value': 'next_cycle', 'label': 'يبدأ من الدورة الجاية'},
                 ], (v) => setState(() => _newEmployeeHandling = v)),
               ]),
               const SizedBox(height: 14),
 
-              // ?????????
-              _card(isAr ? '?????????' : 'Notifications', Icons.notifications, [
-                Row(
-                  children: [
-                    Expanded(child: _numberField(_notifyDaysCtrl, isAr ? '????? ??? ???? ???' : 'Notify Days Before')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _textField(_refPrefixCtrl, isAr ? '????? ?????' : 'Ref Prefix')),
-                  ],
-                ),
+              // ═══ الإشعارات ═══
+              _card('الإشعارات', Icons.notifications, [
+                Row(children: [
+                  Expanded(child: _numberField(_notifyDaysCtrl, 'إشعار قبل الصرف بكام يوم')),
+                  const SizedBox(width: 10),
+                  Expanded(child: _textField(_refPrefixCtrl, 'بادئة الرقم المسلسل')),
+                ]),
                 SwitchListTile(
-                  title: Text(isAr ? '????? Payroll ?????? ??? ?????' : 'Auto-generate on cutoff'),
+                  title: const Text('توليد Payroll تلقائي يوم القفل'),
                   value: _autoGeneratePayroll,
                   activeThumbColor: kCycleCreateColor,
                   contentPadding: EdgeInsets.zero,
@@ -286,15 +269,15 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
               ]),
               const SizedBox(height: 14),
 
-              // ?????????
-              _card(isAr ? '?????????' : 'Approvals', Icons.check_circle, [
-                _dropdown(_approvalLevel, isAr ? '????? ????????' : 'Approval Level', [
-                  {'value': 'hr_only', 'label': isAr ? 'HR ???' : 'HR Only'},
-                  {'value': 'hr_plus_manager', 'label': isAr ? 'HR + ?????? ?????' : 'HR + Manager'},
-                  {'value': 'hr_plus_finance_plus_ceo', 'label': isAr ? 'HR + ???? + ???? ???' : 'HR + Finance + CEO'},
+              // ═══ الموافقات ═══
+              _card('الموافقات', Icons.check_circle, [
+                _dropdown(_approvalLevel, 'مستوى الموافقة', [
+                  {'value': 'hr_only',                  'label': 'HR فقط'},
+                  {'value': 'hr_plus_manager',          'label': 'HR + المدير العام'},
+                  {'value': 'hr_plus_finance_plus_ceo', 'label': 'HR + مالي + مدير عام'},
                 ], (v) => setState(() => _approvalLevel = v)),
                 SwitchListTile(
-                  title: Text(isAr ? '???????? ?????? ??? ?????' : 'Require approval before pay'),
+                  title: const Text('الموافقة مطلوبة قبل الصرف'),
                   value: _requireApprovalBeforePay,
                   activeThumbColor: kCycleCreateColor,
                   contentPadding: EdgeInsets.zero,
@@ -302,78 +285,82 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  isAr
-                      ? '??? ??????? ???????? ?? ?????? ????????:'
-                      : 'Roles responsible for approving payroll:',
+                  'الأدوار المسؤولة عن اعتماد الرواتب:',
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
                 ),
                 const SizedBox(height: 10),
-                _dropdown(_firstApproverRole, isAr ? '??????? ????? (HR)' : 'First Approver (HR)', [
-                  {'value': 'hr_manager', 'label': isAr ? '???? ??????? ???????' : 'HR Manager'},
-                  {'value': 'company_admin', 'label': isAr ? '???? ??????' : 'Company Admin'},
-                  {'value': 'manager', 'label': isAr ? '????' : 'Manager'},
+                _dropdown(_firstApproverRole, 'الموافق الأول (HR)', [
+                  {'value': 'hr_manager',    'label': 'مدير الموارد البشرية'},
+                  {'value': 'company_admin', 'label': 'مدير الشركة'},
+                  {'value': 'manager',       'label': 'مدير'},
                 ], (v) => setState(() => _firstApproverRole = v)),
                 if (showApprover2) ...[
                   const SizedBox(height: 10),
-                  _dropdown(_secondApproverRole.isEmpty ? 'manager' : _secondApproverRole,
-                      isAr ? '??????? ?????? (??????)' : 'Second Approver (Manager)', [
-                    {'value': 'manager', 'label': isAr ? '???? ???' : 'General Manager'},
-                    {'value': 'company_admin', 'label': isAr ? '???? ??????' : 'Company Admin'},
-                  ], (v) => setState(() => _secondApproverRole = v)),
+                  _dropdown(
+                    _secondApproverRole.isEmpty ? 'manager' : _secondApproverRole,
+                    'الموافق الثاني (المدير)',
+                    [
+                      {'value': 'manager',       'label': 'مدير عام'},
+                      {'value': 'company_admin', 'label': 'مدير الشركة'},
+                    ],
+                    (v) => setState(() => _secondApproverRole = v),
+                  ),
                 ],
                 if (showApprover3) ...[
                   const SizedBox(height: 10),
-                  _dropdown(_thirdApproverRole.isEmpty ? 'company_admin' : _thirdApproverRole,
-                      isAr ? '??????? ?????? (??????/CEO)' : 'Third Approver (Finance/CEO)', [
-                    {'value': 'company_admin', 'label': isAr ? '???? ?????? (CEO)' : 'Company Admin (CEO)'},
-                    {'value': 'finance_manager', 'label': isAr ? '???? ????' : 'Finance Manager'},
-                  ], (v) => setState(() => _thirdApproverRole = v)),
+                  _dropdown(
+                    _thirdApproverRole.isEmpty ? 'company_admin' : _thirdApproverRole,
+                    'الموافق الثالث (مالي/CEO)',
+                    [
+                      {'value': 'company_admin',    'label': 'مدير الشركة (CEO)'},
+                      {'value': 'finance_manager',  'label': 'مدير مالي'},
+                    ],
+                    (v) => setState(() => _thirdApproverRole = v),
+                  ),
                 ],
               ]),
               const SizedBox(height: 14),
 
-              // ????????
-              _card(isAr ? '???? ???????' : 'Effective Period', Icons.date_range, [
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _pickDate(_startDateCtrl),
-                        child: IgnorePointer(
-                          child: TextField(
-                            controller: _startDateCtrl,
-                            decoration: InputDecoration(
-                              labelText: isAr ? '?? ????? *' : 'Start Date *',
-                              border: const OutlineInputBorder(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              suffixIcon: const Icon(Icons.calendar_today, size: 18),
-                            ),
+              // ═══ التواريخ ═══
+              _card('فترة السريان', Icons.date_range, [
+                Row(children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _pickDate(_startDateCtrl),
+                      child: IgnorePointer(
+                        child: TextField(
+                          controller: _startDateCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'من تاريخ *',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            suffixIcon: Icon(Icons.calendar_today, size: 18),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _pickDate(_endDateCtrl),
-                        child: IgnorePointer(
-                          child: TextField(
-                            controller: _endDateCtrl,
-                            decoration: InputDecoration(
-                              labelText: isAr ? '??? ????? (???????)' : 'End Date (optional)',
-                              border: const OutlineInputBorder(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              suffixIcon: const Icon(Icons.calendar_today, size: 18),
-                            ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _pickDate(_endDateCtrl),
+                      child: IgnorePointer(
+                        child: TextField(
+                          controller: _endDateCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'لحد تاريخ (اختياري)',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            suffixIcon: Icon(Icons.calendar_today, size: 18),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ]),
                 const SizedBox(height: 10),
                 SwitchListTile(
-                  title: Text(isAr ? '??????? ????' : 'Policy is active'),
+                  title: const Text('السياسة نشطة'),
                   value: _isActive,
                   activeThumbColor: kCycleCreateColor,
                   contentPadding: EdgeInsets.zero,
@@ -381,20 +368,19 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
                 ),
               ]),
 
-              if (_isEdit) ...[
-                const SizedBox(height: 14),
-                _card(isAr ? '??? ???????' : 'Change Reason', Icons.edit_note, [
-                  TextField(
-                    controller: _changeReasonCtrl,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: isAr ? '????: ????? ??? ????? ?? 5 ??? 1' : 'e.g. Change pay day from 5 to 1',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
+              // ═══ سبب التغيير ═══
+              const SizedBox(height: 14),
+              _card('سبب التغيير', Icons.edit_note, [
+                TextField(
+                  controller: _changeReasonCtrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'مثال: تغيير يوم الصرف من 5 لـ 1',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                ]),
-              ],
+                ),
+              ]),
 
               const SizedBox(height: 30),
               SizedBox(
@@ -406,9 +392,7 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.check),
                   label: Text(
-                    _saving
-                        ? (isAr ? '???? ?????...' : 'Saving...')
-                        : (_isEdit ? (isAr ? '??? ?????????' : 'Save Changes') : (isAr ? '????? ???????' : 'Create Policy')),
+                    _saving ? 'جاري الحفظ...' : (_isEdit ? 'حفظ التعديلات' : 'إنشاء السياسة'),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -429,21 +413,17 @@ class _CreateEditPayrollCycleScreenState extends State<CreateEditPayrollCycleScr
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2)),
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: kCycleCreateColor),
-              const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: kCycleCreateColor)),
-            ],
-          ),
+          Row(children: [
+            Icon(icon, size: 18, color: kCycleCreateColor),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: kCycleCreateColor)),
+          ]),
           const SizedBox(height: 12),
           ...children,
         ],

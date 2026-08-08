@@ -33,12 +33,12 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
   bool get _isEdit => widget.existing != null;
 
   final List<Map<String, String>> _reasonsList = [
-    {'code': 'resignation', 'ar': '???????', 'en': 'Resignation'},
-    {'code': 'termination', 'ar': '????? ?? ??????', 'en': 'Termination'},
-    {'code': 'death', 'ar': '????', 'en': 'Death'},
-    {'code': 'disability', 'ar': '???', 'en': 'Disability'},
-    {'code': 'retirement', 'ar': '?????', 'en': 'Retirement'},
-    {'code': 'mutual_agreement', 'ar': '????? ?????', 'en': 'Mutual'},
+    {'code': 'resignation',      'ar': 'استقالة',            'en': 'Resignation'},
+    {'code': 'termination',      'ar': 'إنهاء من الشركة',    'en': 'Termination'},
+    {'code': 'death',            'ar': 'وفاة',               'en': 'Death'},
+    {'code': 'disability',       'ar': 'عجز',                'en': 'Disability'},
+    {'code': 'retirement',       'ar': 'تقاعد',              'en': 'Retirement'},
+    {'code': 'mutual_agreement', 'ar': 'اتفاق مشترك',        'en': 'Mutual'},
   ];
 
   @override
@@ -61,9 +61,9 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
         _initDefaultReasons();
       }
     } else {
-      _nameCtrl.text = '????? ?????? ????? ??????';
+      _nameCtrl.text = 'سياسة مكافأة نهاية الخدمة';
       _tiers = [
-        {'from_year': 1, 'to_year': 5, 'months_per_year': 1.0},
+        {'from_year': 1, 'to_year': 5,  'months_per_year': 1.0},
         {'from_year': 5, 'to_year': 10, 'months_per_year': 1.5},
         {'from_year': 10, 'to_year': null, 'months_per_year': 2.0},
       ];
@@ -73,11 +73,11 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
 
   void _initDefaultReasons() {
     _reasons = {
-      'resignation': 50,
-      'termination': 100,
-      'death': 100,
-      'disability': 100,
-      'retirement': 100,
+      'resignation':      50,
+      'termination':      100,
+      'death':            100,
+      'disability':       100,
+      'retirement':       100,
       'mutual_agreement': 75,
     };
   }
@@ -131,19 +131,17 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       });
     } catch (e) {
       setState(() => _calculating = false);
-      final isAr = Localizations.localeOf(context).languageCode == 'ar';
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isAr ? '??? ??????' : 'Calc failed')),
+        const SnackBar(content: Text('فشل الحساب')),
       );
     }
   }
 
   Future<void> _save() async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
     if (_nameCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isAr ? '????? ?????' : 'Name required')),
+        const SnackBar(content: Text('اسم السياسة مطلوب')),
       );
       return;
     }
@@ -151,13 +149,13 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
     setState(() => _saving = true);
 
     final data = {
-      'name': _nameCtrl.text.trim(),
-      'salary_base_type': _salaryBaseType,
-      'include_allowances': _includeAllowances,
-      'min_service_months': int.tryParse(_minMonthsCtrl.text) ?? 12,
-      'service_tiers': _tiers,
+      'name':                    _nameCtrl.text.trim(),
+      'salary_base_type':        _salaryBaseType,
+      'include_allowances':      _includeAllowances,
+      'min_service_months':      int.tryParse(_minMonthsCtrl.text) ?? 12,
+      'service_tiers':           _tiers,
       'termination_adjustments': _reasons,
-      'change_reason': _changeReasonCtrl.text.trim(),
+      'change_reason':           _changeReasonCtrl.text.trim(),
     };
 
     try {
@@ -168,20 +166,14 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isAr ? '?? ?????' : 'Saved'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('تم الحفظ'), backgroundColor: Colors.green),
       );
       Navigator.pop(context, true);
     } catch (e) {
       setState(() => _saving = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isAr ? '??? ?????: $e' : 'Save failed: $e'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('فشل الحفظ: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -195,18 +187,13 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(_isEdit
-              ? (isAr ? '????? ???????' : 'Edit Policy')
-              : (isAr ? '????? ????? ??????' : 'Create EOS Policy')),
+          title: Text(_isEdit ? 'تعديل سياسة نهاية الخدمة' : 'إنشاء سياسة نهاية الخدمة'),
           backgroundColor: kEosCreateColor,
           foregroundColor: Colors.white,
           actions: [
             TextButton(
               onPressed: _saving ? null : _save,
-              child: Text(
-                isAr ? '???' : 'Save',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
+              child: const Text('حفظ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -215,28 +202,28 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionCard(isAr ? '???????? ????????' : 'Basic Info', [
+              _sectionCard('المعلومات الأساسية', [
                 TextField(
                   controller: _nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '??? ??????? *' : 'Policy Name *',
-                    border: const OutlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: const InputDecoration(
+                    labelText: 'اسم السياسة *',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   initialValue: _salaryBaseType,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '???? ???? ??????' : 'Salary Base',
-                    border: const OutlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: const InputDecoration(
+                    labelText: 'أساس حساب المرتب',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                  items: [
-                    DropdownMenuItem(value: 'last_basic', child: Text(isAr ? '??? ???? ?????' : 'Last basic')),
-                    DropdownMenuItem(value: 'last_gross', child: Text(isAr ? '??? ???? ??????' : 'Last gross')),
-                    DropdownMenuItem(value: 'avg_3_months', child: Text(isAr ? '????? 3 ????' : 'Avg 3 mo')),
-                    DropdownMenuItem(value: 'avg_12_months', child: Text(isAr ? '????? 12 ???' : 'Avg 12 mo')),
+                  items: const [
+                    DropdownMenuItem(value: 'last_basic',    child: Text('آخر راتب أساسي')),
+                    DropdownMenuItem(value: 'last_gross',    child: Text('آخر راتب إجمالي')),
+                    DropdownMenuItem(value: 'avg_3_months',  child: Text('متوسط آخر 3 شهور')),
+                    DropdownMenuItem(value: 'avg_12_months', child: Text('متوسط آخر 12 شهر')),
                   ],
                   onChanged: (v) => setState(() => _salaryBaseType = v ?? 'last_basic'),
                 ),
@@ -244,15 +231,15 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
                 TextField(
                   controller: _minMonthsCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '???? ?????? ?????? (????)' : 'Min service (months)',
-                    border: const OutlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: const InputDecoration(
+                    labelText: 'الحد الأدنى لسنوات الخدمة (شهور)',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 10),
                 SwitchListTile(
-                  title: Text(isAr ? '????? ??????? ?? ??????' : 'Include allowances'),
+                  title: const Text('تشمل البدلات في أساس الحساب'),
                   value: _includeAllowances,
                   activeThumbColor: kEosCreateColor,
                   contentPadding: EdgeInsets.zero,
@@ -265,19 +252,17 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
               _reasonsCard(isAr),
               const SizedBox(height: 14),
               _calculatorCard(isAr),
-              if (_isEdit) ...[
-                const SizedBox(height: 14),
-                _sectionCard(isAr ? '??? ???????' : 'Change Reason', [
-                  TextField(
-                    controller: _changeReasonCtrl,
-                    decoration: InputDecoration(
-                      labelText: isAr ? '????: ????? 2025' : 'e.g. Update 2025',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
+              const SizedBox(height: 14),
+              _sectionCard('سبب التغيير', [
+                TextField(
+                  controller: _changeReasonCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'مثال: تحديث 2025',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                ]),
-              ],
+                ),
+              ]),
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
@@ -288,9 +273,7 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.check),
                   label: Text(
-                    _saving
-                        ? (isAr ? '???? ?????...' : 'Saving...')
-                        : (_isEdit ? (isAr ? '??? ?????????' : 'Save Changes') : (isAr ? '?????' : 'Create')),
+                    _saving ? 'جاري الحفظ...' : (_isEdit ? 'حفظ التعديلات' : 'إنشاء'),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -311,9 +294,7 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2)),
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -328,7 +309,7 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
   }
 
   Widget _tiersCard(bool isAr) {
-    return _sectionCard(isAr ? '????? ??????' : 'Service Tiers', [
+    return _sectionCard('شرائح المكافأة (بالسنوات)', [
       ..._tiers.asMap().entries.map((entry) {
         final i = entry.key;
         final t = entry.value;
@@ -340,97 +321,91 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFFFFE0B2)),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  initialValue: (t['from_year'] ?? 0).toString(),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '?? (???)' : 'From (yr)',
-                    isDense: true,
-                    border: const OutlineInputBorder(),
-                  ),
-                  onChanged: (v) => _updateTier(i, 'from_year', int.tryParse(v) ?? 0),
+          child: Row(children: [
+            Expanded(
+              child: TextFormField(
+                initialValue: (t['from_year'] ?? 0).toString(),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'من (سنة)',
+                  isDense: true,
+                  border: OutlineInputBorder(),
                 ),
+                onChanged: (v) => _updateTier(i, 'from_year', int.tryParse(v) ?? 0),
               ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: TextFormField(
-                  initialValue: (t['to_year'] ?? '').toString(),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '??? (? ????)' : 'To (?)',
-                    isDense: true,
-                    border: const OutlineInputBorder(),
-                  ),
-                  onChanged: (v) => _updateTier(i, 'to_year', v.isEmpty ? null : int.tryParse(v)),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextFormField(
+                initialValue: t['to_year']?.toString() ?? '',
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'لحد (فارغ=لا نهاية)',
+                  isDense: true,
+                  border: OutlineInputBorder(),
                 ),
+                onChanged: (v) => _updateTier(i, 'to_year', v.isEmpty ? null : int.tryParse(v)),
               ),
-              const SizedBox(width: 6),
-              SizedBox(
-                width: 75,
-                child: TextFormField(
-                  initialValue: (t['months_per_year'] ?? 0).toString(),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: isAr ? '?/?' : 'mo/yr',
-                    isDense: true,
-                    border: const OutlineInputBorder(),
-                  ),
-                  onChanged: (v) => _updateTier(i, 'months_per_year', double.tryParse(v) ?? 0),
+            ),
+            const SizedBox(width: 6),
+            SizedBox(
+              width: 75,
+              child: TextFormField(
+                initialValue: (t['months_per_year'] ?? 0).toString(),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'شهر/سنة',
+                  isDense: true,
+                  border: OutlineInputBorder(),
                 ),
+                onChanged: (v) => _updateTier(i, 'months_per_year', double.tryParse(v) ?? 0),
               ),
-              IconButton(
-                onPressed: () => _removeTier(i),
-                icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
-                padding: EdgeInsets.zero,
-              ),
-            ],
-          ),
+            ),
+            IconButton(
+              onPressed: () => _removeTier(i),
+              icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
+              padding: EdgeInsets.zero,
+            ),
+          ]),
         );
       }),
       const SizedBox(height: 4),
       OutlinedButton.icon(
         onPressed: _addTier,
         icon: const Icon(Icons.add, size: 18),
-        label: Text(isAr ? '????? ?????' : 'Add Tier'),
+        label: const Text('إضافة شريحة'),
         style: OutlinedButton.styleFrom(foregroundColor: kEosCreateColor),
       ),
     ]);
   }
 
   Widget _reasonsCard(bool isAr) {
-    return _sectionCard(isAr ? '???? ????????? ??? ??? ???????' : 'Rate by Termination Reason', [
+    return _sectionCard('نسبة الاستحقاق حسب سبب الإنهاء', [
       ..._reasonsList.map((r) {
         final code = r['code']!;
         final label = isAr ? r['ar']! : r['en']!;
         final val = _reasons[code] ?? 100;
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(label, style: const TextStyle(fontSize: 13)),
-              ),
-              SizedBox(
-                width: 100,
-                child: TextFormField(
-                  initialValue: val.toStringAsFixed(0),
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    suffixText: '%',
-                    isDense: true,
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (v) => setState(() {
-                    _reasons[code] = double.tryParse(v) ?? 100;
-                  }),
+          child: Row(children: [
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+            SizedBox(
+              width: 100,
+              child: TextFormField(
+                initialValue: val.toStringAsFixed(0),
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  suffixText: '%',
+                  isDense: true,
+                  border: OutlineInputBorder(),
                 ),
+                onChanged: (v) => setState(() {
+                  _reasons[code] = double.tryParse(v) ?? 100;
+                }),
               ),
-            ],
-          ),
+            ),
+          ]),
         );
       }),
     ]);
@@ -441,9 +416,7 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2)),
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,100 +427,93 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.vertical(top: const Radius.circular(12), bottom: _showCalc ? Radius.zero : const Radius.circular(12)),
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(12),
+                  bottom: _showCalc ? Radius.zero : const Radius.circular(12),
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calculate, color: kEosCreateColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    isAr ? '????? ???????' : 'EOS Calculator',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: kEosCreateColor),
-                  ),
-                  const Spacer(),
-                  Icon(_showCalc ? Icons.expand_less : Icons.expand_more, color: kEosCreateColor),
-                ],
-              ),
+              child: Row(children: [
+                const Icon(Icons.calculate, color: kEosCreateColor, size: 20),
+                const SizedBox(width: 8),
+                const Text('حاسبة نهاية الخدمة',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: kEosCreateColor)),
+                const Spacer(),
+                Icon(_showCalc ? Icons.expand_less : Icons.expand_more, color: kEosCreateColor),
+              ]),
             ),
           ),
           if (_showCalc)
             Padding(
               padding: const EdgeInsets.all(14),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _calcYearsCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: isAr ? '????? ??????' : 'Years',
-                            border: const OutlineInputBorder(),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: _calcSalaryCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: isAr ? '??????' : 'Salary',
-                            border: const OutlineInputBorder(),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    initialValue: _calcReason,
-                    decoration: InputDecoration(
-                      labelText: isAr ? '??? ???????' : 'Reason',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    items: _reasonsList.map((r) => DropdownMenuItem(
-                      value: r['code'],
-                      child: Text(isAr ? r['ar']! : r['en']!),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _calcReason = v ?? 'termination'),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _calculating ? null : _runCalculation,
-                      icon: _calculating
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.calculate, size: 18),
-                      label: Text(isAr ? '????' : 'Calculate'),
-                      style: ElevatedButton.styleFrom(backgroundColor: kEosCreateColor, foregroundColor: Colors.white),
-                    ),
-                  ),
-                  if (_calcResult != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3E0),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _calcRow(isAr ? '???? ??????' : 'Months earned', _calcResult!['total_months_earned']),
-                          _calcRow(isAr ? '???????? ?????????' : 'Gross benefit', _calcResult!['gross_benefit']),
-                          _calcRow(isAr ? '??? ???? ?????' : 'Final benefit', _calcResult!['final_benefit'], bold: true),
-                        ],
+              child: Column(children: [
+                Row(children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _calcYearsCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'سنوات الخدمة',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _calcSalaryCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'المرتب',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: _calcReason,
+                  decoration: const InputDecoration(
+                    labelText: 'سبب الإنهاء',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: _reasonsList.map((r) => DropdownMenuItem(
+                    value: r['code'],
+                    child: Text(isAr ? r['ar']! : r['en']!),
+                  )).toList(),
+                  onChanged: (v) => setState(() => _calcReason = v ?? 'termination'),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _calculating ? null : _runCalculation,
+                    icon: _calculating
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.calculate, size: 18),
+                    label: const Text('احسب'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: kEosCreateColor, foregroundColor: Colors.white),
+                  ),
+                ),
+                if (_calcResult != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      _calcRow('الشهور المستحقة', _calcResult!['total_months_earned']),
+                      _calcRow('المكافأة الإجمالية', _calcResult!['gross_benefit']),
+                      _calcRow('المكافأة النهائية', _calcResult!['final_benefit'], bold: true),
+                    ]),
+                  ),
                 ],
-              ),
+              ]),
             ),
         ],
       ),
@@ -560,11 +526,14 @@ class _CreateEditEosPolicyScreenState extends State<CreateEditEosPolicyScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
-          Text(
-            '$value EGP',
-            style: TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal, color: bold ? kEosCreateColor : Colors.black87),
-          ),
+          Text(label,
+              style: TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+          Text('$value EGP',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                color: bold ? kEosCreateColor : Colors.black87,
+              )),
         ],
       ),
     );
