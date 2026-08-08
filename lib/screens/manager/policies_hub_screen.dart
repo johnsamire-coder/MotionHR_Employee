@@ -6,6 +6,7 @@ import 'official_holidays_screen.dart';
 import 'payroll/tax_policy_screen.dart';
 import 'payroll/eos_policy_screen.dart';
 import 'payroll/insurance_policies_screen.dart';
+import 'payroll/payroll_cycle_screen.dart';
 
 const Color kPoliciesHubColor = Color(0xFF455A64);
 
@@ -142,6 +143,22 @@ class PoliciesHubScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const InsurancePoliciesScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _policyCard(
+              context,
+              title: isAr ? '???? ???????' : 'Payroll Cycle',
+              subtitle: isAr
+                  ? '???? ????? ?????? ??????????'
+                  : 'Cutoff, pay day and approvals',
+              color: const Color(0xFF5E35B1),
+              icon: Icons.calendar_month,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PayrollCycleScreen(),
                 ),
               ),
             ),
