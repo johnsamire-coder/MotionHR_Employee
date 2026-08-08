@@ -4,7 +4,7 @@ import 'auth_storage_service.dart';
 
 class LeaveRuleService {
   static const String _baseUrl  = 'https://jssolutions-eg.com';
-  static const String _basePath = '/attendance/api/mobile/manager/leave-policy';
+  static const String _basePath = '/attendance/api/mobile/manager/rules/leave';
 
   static Future<Map<String, String>> _headers() async {
     final token = await AuthStorageService.getSavedToken() ?? '';
@@ -24,7 +24,7 @@ class LeaveRuleService {
     if (res.statusCode == 200) {
       final data = json.decode(utf8.decode(res.bodyBytes));
       if (data is List) return data;
-      return data['rules'] ?? data['policies'] ?? data['results'] ?? [];
+      return data['rules'] ?? data['results'] ?? [];
     }
     throw Exception('Failed to load leave rules: ${res.statusCode}');
   }
@@ -36,9 +36,9 @@ class LeaveRuleService {
     );
     if (res.statusCode == 200) {
       final data = json.decode(utf8.decode(res.bodyBytes));
-      return data['rule'] ?? data['policy'] ?? data;
+      return data['rule'] ?? data;
     }
-    throw Exception('Failed to load rule: ${res.statusCode}');
+    throw Exception('Failed to load leave rule: ${res.statusCode}');
   }
 
   static Future<Map<String, dynamic>> createRule(Map<String, dynamic> data) async {
