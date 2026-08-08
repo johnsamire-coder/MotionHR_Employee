@@ -78,6 +78,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final lateDeduction     = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction  = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction= (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
+    final taxDeduction      = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
     final penaltyDeduction  = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
     final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
     final totalDeductions   = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
@@ -257,6 +258,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                       pw.SizedBox(height: 8),
                       pdfRow(ar ? 'تاخير' : 'Late', lateDeduction),
                       pdfRow(ar ? 'غياب' : 'Absence', absenceDeduction),
+                      pdfRow(ar ? 'ضريبة' : 'Tax', taxDeduction),
                       pdfRow(ar ? 'تامين' : 'Insurance', insuranceDeduction),
                       pdfRow(ar ? 'جزاءات' : 'Penalties', penaltyDeduction),
                       pdfRow(ar ? 'اقساط' : 'Installments', installmentDeduction),
@@ -420,6 +422,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final lateDeduction      = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction   = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction = (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
+    final taxDeduction       = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
     final penaltyDeduction   = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
     final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
     final totalDeductions    = (d['total_deductions'] as num?)?.toDouble() ?? 0.0;
@@ -654,6 +657,9 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           _buildRow(ar ? 'غياب' : 'Absence Deduction',
                               absenceDeduction, ar,
                               color: Colors.red),
+                          _buildRow(ar ? 'ضريبة' : 'Tax',
+                              taxDeduction, ar,
+                              color: Colors.indigo),
                           _buildRow(ar ? 'تامين' : 'Insurance',
                               insuranceDeduction, ar,
                               color: Colors.purple),
