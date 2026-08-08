@@ -3,6 +3,7 @@ import 'attendance_policy_screen.dart';
 import 'payroll_policy_screen.dart';
 import 'leave_policy_screen.dart';
 import 'official_holidays_screen.dart';
+import 'payroll/tax_policy_screen.dart';
 
 const Color kPoliciesHubColor = Color(0xFF455A64);
 
@@ -91,6 +92,22 @@ class PoliciesHubScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const OfficialHolidaysScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _policyCard(
+              context,
+              title: isAr ? '????? ???????' : 'Tax Policy',
+              subtitle: isAr
+                  ? '??????? ???????? ?????????? ???????'
+                  : 'Tax brackets and personal exemptions',
+              color: const Color(0xFFE65100),
+              icon: Icons.receipt_long,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TaxPolicyScreen(),
                 ),
               ),
             ),
