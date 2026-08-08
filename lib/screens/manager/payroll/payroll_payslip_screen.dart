@@ -78,6 +78,8 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final lateDeduction     = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction  = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction= (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
+    final socialInsEmp      = (d['social_insurance_employee'] as num?)?.toDouble() ?? 0.0;
+    final medicalInsEmp     = (d['medical_insurance_employee'] as num?)?.toDouble() ?? 0.0;
     final taxDeduction      = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
     final penaltyDeduction  = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
     final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
@@ -259,6 +261,9 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                       pdfRow(ar ? 'تاخير' : 'Late', lateDeduction),
                       pdfRow(ar ? 'غياب' : 'Absence', absenceDeduction),
                       pdfRow(ar ? 'ضريبة' : 'Tax', taxDeduction),
+                      if (socialInsEmp > 0) pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0627\u062c\u062a\u0645\u0627\u0639\u064a' : 'Social Insurance', socialInsEmp),
+                      if (medicalInsEmp > 0) pdfRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0637\u0628\u064a' : 'Medical Insurance', medicalInsEmp),
+                      if (insuranceDeduction > 0 && socialInsEmp == 0 && medicalInsEmp == 0) pdfRow(ar ? '\u062a\u0627\u0645\u064a\u0646' : 'Insurance', insuranceDeduction),
                       pdfRow(ar ? 'تامين' : 'Insurance', insuranceDeduction),
                       pdfRow(ar ? 'جزاءات' : 'Penalties', penaltyDeduction),
                       pdfRow(ar ? 'اقساط' : 'Installments', installmentDeduction),
@@ -422,6 +427,8 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
     final lateDeduction      = (d['late_deduction'] as num?)?.toDouble() ?? 0.0;
     final absenceDeduction   = (d['absence_deduction'] as num?)?.toDouble() ?? 0.0;
     final insuranceDeduction = (d['insurance_deduction'] as num?)?.toDouble() ?? 0.0;
+    final socialInsEmp       = (d['social_insurance_employee'] as num?)?.toDouble() ?? 0.0;
+    final medicalInsEmp      = (d['medical_insurance_employee'] as num?)?.toDouble() ?? 0.0;
     final taxDeduction       = (d['tax_deduction'] as num?)?.toDouble() ?? 0.0;
     final penaltyDeduction   = (d['penalties_total'] as num?)?.toDouble() ?? 0.0;
     final installmentDeduction = (d['installments_total'] as num?)?.toDouble() ?? 0.0;
@@ -660,6 +667,18 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           _buildRow(ar ? 'ضريبة' : 'Tax',
                               taxDeduction, ar,
                               color: Colors.indigo),
+                          if (socialInsEmp > 0)
+                            _buildRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0627\u062c\u062a\u0645\u0627\u0639\u064a' : 'Social Insurance',
+                                socialInsEmp, ar,
+                                color: Colors.purple),
+                          if (medicalInsEmp > 0)
+                            _buildRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0637\u0628\u064a' : 'Medical Insurance',
+                                medicalInsEmp, ar,
+                                color: Colors.purple),
+                          if (insuranceDeduction > 0 && socialInsEmp == 0 && medicalInsEmp == 0)
+                            _buildRow(ar ? '\u062a\u0627\u0645\u064a\u0646' : 'Insurance',
+                                insuranceDeduction, ar,
+                                color: Colors.purple),
                           _buildRow(ar ? 'تامين' : 'Insurance',
                               insuranceDeduction, ar,
                               color: Colors.purple),
