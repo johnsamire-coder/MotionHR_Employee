@@ -23,21 +23,12 @@ class _EosPolicyScreenState extends State<EosPolicyScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _loading = true; _error = null; });
     try {
       final data = await EosPolicyService.listPolicies();
-      setState(() {
-        _policies = data;
-        _loading = false;
-      });
+      setState(() { _policies = data; _loading = false; });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      setState(() { _error = e.toString(); _loading = false; });
     }
   }
 
@@ -57,254 +48,140 @@ class _EosPolicyScreenState extends State<EosPolicyScreen> {
     if (result == true) _load();
   }
 
-  Future<void> _confirmDelete(Map<String, dynamic> policy) async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isAr ? '????? ?????' : 'Confirm Delete'),
-        content: Text(isAr
-            ? '?? ???? ??? ????? "${policy['name']}"?'
-            : 'Delete policy "${policy['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(isAr ? '?????' : 'Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(isAr ? '???' : 'Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      try {
-        await EosPolicyService.deletePolicy(policy['id']);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '?? ?????' : 'Deleted'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _load();
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '??? ?????' : 'Failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  String _salaryBaseLabel(String? code, bool isAr) {
-    switch (code) {
-      case 'last_basic': return isAr ? '??? ???? ?????' : 'Last basic';
-      case 'last_gross': return isAr ? '??? ???? ??????' : 'Last gross';
-      case 'avg_3_months': return isAr ? '????? 3 ????' : 'Avg 3 months';
-      case 'avg_12_months': return isAr ? '????? 12 ???' : 'Avg 12 months';
-      default: return code ?? '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
     return Directionality(
-      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(isAr ? '?????? ????? ??????' : 'End of Service'),
+          title: const Text('مكافأة نهاية الخدمة'),
           backgroundColor: kEosColor,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          ],
         ),
-        body: _buildBody(isAr),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _openCreate,
           backgroundColor: kEosColor,
+          foregroundColor: Colors.white,
           icon: const Icon(Icons.add),
-          label: Text(isAr ? '????? ?????' : 'New Policy'),
+          label: const Text('إنشاء سياسة'),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBody(bool isAr) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(isAr ? '???? ?????' : 'Error',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: Text(isAr ? '????? ????????' : 'Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final active = _policies.where((p) => p['is_superseded'] != true).toList();
-
-    if (active.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.card_giftcard, size: 72, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(isAr ? '?? ???? ????? ??????' : 'No EOS policy',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(isAr ? '???? + ?????? ??? ?????' : 'Tap + to create',
-                style: TextStyle(color: Colors.grey.shade600)),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: active.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) => _policyCard(active[i], isAr),
-      ),
-    );
-  }
-
-  Widget _policyCard(Map<String, dynamic> policy, bool isAr) {
-    final tiers = (policy['service_tiers'] as List?) ?? [];
-    final baseType = policy['salary_base_type'] as String?;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: kEosColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.card_giftcard, color: kEosColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      policy['name'] ?? '',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _salaryBaseLabel(baseType, isAr),
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kEosColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  isAr ? '${tiers.length} ?????' : '${tiers.length} tiers',
-                  style: const TextStyle(fontSize: 11, color: kEosColor, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          if (tiers.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF8E1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isAr ? '????? ??????:' : 'Service Tiers:',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kEosColor),
-                  ),
-                  const SizedBox(height: 6),
-                  ...tiers.take(3).map((t) => Padding(
-                        padding: const EdgeInsets.only(bottom: 3),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${t['from_year'] ?? 0} - ${t['to_year'] ?? '?'} ' + (isAr ? '???' : 'yr'),
-                                style: const TextStyle(fontSize: 12),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 8),
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      ElevatedButton(onPressed: _load, child: const Text('إعادة المحاولة')),
+                    ]),
+                  )
+                : _policies.isEmpty
+                    ? Center(
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.workspace_premium, size: 64, color: Colors.grey),
+                          const SizedBox(height: 12),
+                          const Text('لا توجد سياسة مكافأة نهاية الخدمة',
+                              style: TextStyle(fontSize: 16, color: Colors.grey)),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _openCreate,
+                            icon: const Icon(Icons.add),
+                            label: const Text('إنشاء سياسة مكافأة'),
+                            style: ElevatedButton.styleFrom(backgroundColor: kEosColor, foregroundColor: Colors.white),
+                          ),
+                        ]),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _policies.length,
+                        itemBuilder: (_, i) {
+                          final p = _policies[i];
+                          final tiers = (p['service_tiers'] as List?) ?? [];
+                          final isSuperseded = p['is_superseded'] ?? false;
+                          return Opacity(
+                            opacity: isSuperseded ? 0.6 : 1.0,
+                            child: Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: Color(0xFFFFCC80)),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Row(children: [
+                                    Expanded(
+                                      child: Text(p['name'] ?? '',
+                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF3E0),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text('${tiers.length} شرائح',
+                                          style: const TextStyle(fontSize: 11, color: kEosColor, fontWeight: FontWeight.bold)),
+                                    ),
+                                    if (isSuperseded) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade100,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text('مقفلة', style: TextStyle(fontSize: 11, color: Colors.orange)),
+                                      ),
+                                    ],
+                                  ]),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'أساس الحساب: ${p['salary_base_type'] ?? ''}  |  نسخة ${p['version_number'] ?? 1}',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ...tiers.take(3).map((t) => Container(
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF8E1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${t['from_year'] ?? 0} — ${t['to_year']?.toString() ?? '∞'} سنة',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                      Text('${t['months_per_year']} شهر/سنة',
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kEosColor)),
+                                    ]),
+                                  )),
+                                  const SizedBox(height: 10),
+                                  Row(children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _openEdit(Map<String, dynamic>.from(p)),
+                                        icon: const Icon(Icons.edit, size: 16),
+                                        label: const Text('تعديل'),
+                                        style: OutlinedButton.styleFrom(foregroundColor: kEosColor),
+                                      ),
+                                    ),
+                                  ]),
+                                ]),
                               ),
                             ),
-                            Text(
-                              '${t['months_per_year'] ?? 0} ' + (isAr ? '???/???' : 'mo/yr'),
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kEosColor),
-                            ),
-                          ],
-                        ),
-                      )),
-                  if (tiers.length > 3)
-                    Text(
-                      isAr ? '+ ${tiers.length - 3} ????? ????' : '+ ${tiers.length - 3} more',
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                    ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _openEdit(policy),
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text(isAr ? '?????' : 'Edit'),
-                  style: OutlinedButton.styleFrom(foregroundColor: kEosColor),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () => _confirmDelete(policy),
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
-            ],
-          ),
-        ],
+                          );
+                        },
+                      ),
       ),
     );
   }

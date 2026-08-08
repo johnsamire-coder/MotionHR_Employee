@@ -3,8 +3,8 @@ import '../../../services/insurance_policy_service.dart';
 import 'create_edit_insurance_policy_screen.dart';
 
 const Color kInsuranceColor = Color(0xFF00838F);
-const Color kSocialColor = Color(0xFF1976D2);
-const Color kMedicalColor = Color(0xFF388E3C);
+const Color kSocialColor    = Color(0xFF1976D2);
+const Color kMedicalColor   = Color(0xFF388E3C);
 
 class InsurancePoliciesScreen extends StatefulWidget {
   const InsurancePoliciesScreen({super.key});
@@ -34,21 +34,12 @@ class _InsurancePoliciesScreenState extends State<InsurancePoliciesScreen>
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _loading = true; _error = null; });
     try {
       final data = await InsurancePolicyService.listPolicies();
-      setState(() {
-        _policies = data;
-        _loading = false;
-      });
+      setState(() { _policies = data; _loading = false; });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      setState(() { _error = e.toString(); _loading = false; });
     }
   }
 
@@ -68,280 +59,186 @@ class _InsurancePoliciesScreenState extends State<InsurancePoliciesScreen>
     if (result == true) _load();
   }
 
-  Future<void> _confirmDelete(Map<String, dynamic> policy) async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isAr ? '????? ?????' : 'Confirm Delete'),
-        content: Text(isAr
-            ? '?? ???? ??? ????? "${policy['name']}"?'
-            : 'Delete policy "${policy['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(isAr ? '?????' : 'Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(isAr ? '???' : 'Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      try {
-        await InsurancePolicyService.deletePolicy(policy['id']);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '?? ?????' : 'Deleted'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _load();
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '??? ?????' : 'Failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+  List<dynamic> get _socialPolicies => _policies.where((p) => p['insurance_type'] == 'social').toList();
+  List<dynamic> get _medicalPolicies => _policies.where((p) => p['insurance_type'] == 'medical').toList();
 
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final active = _policies.where((p) => p['is_superseded'] != true).toList();
-    final social = active.where((p) => p['insurance_type'] == 'social').toList();
-    final medical = active.where((p) => p['insurance_type'] == 'medical').toList();
+    final socialCount  = _policies.where((p) => p['insurance_type'] == 'social'  && !(p['is_superseded'] ?? false)).length;
+    final medicalCount = _policies.where((p) => p['insurance_type'] == 'medical' && !(p['is_superseded'] ?? false)).length;
 
     return Directionality(
-      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(isAr ? '?????? ?????????' : 'Insurance Policies'),
+          title: const Text('سياسات التأمين'),
           backgroundColor: kInsuranceColor,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          ],
           bottom: TabBar(
             controller: _tab,
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             tabs: [
-              Tab(text: isAr ? '???? (${active.length})' : 'All (${active.length})'),
-              Tab(text: isAr ? '??????? (${social.length})' : 'Social (${social.length})'),
-              Tab(text: isAr ? '??? (${medical.length})' : 'Medical (${medical.length})'),
+              Tab(text: 'الكل (${_policies.length})'),
+              Tab(text: 'اجتماعي ($socialCount)'),
+              Tab(text: 'طبي ($medicalCount)'),
             ],
           ),
         ),
-        body: _buildBody(isAr, active, social, medical),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _openCreate,
           backgroundColor: kInsuranceColor,
+          foregroundColor: Colors.white,
           icon: const Icon(Icons.add),
-          label: Text(isAr ? '????? ?????' : 'New Policy'),
+          label: const Text('إضافة سياسة'),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBody(bool isAr, List active, List social, List medical) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(isAr ? '???? ?????' : 'Error',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: Text(isAr ? '????? ????????' : 'Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return TabBarView(
-      controller: _tab,
-      children: [
-        _list(active, isAr),
-        _list(social, isAr),
-        _list(medical, isAr),
-      ],
-    );
-  }
-
-  Widget _list(List policies, bool isAr) {
-    if (policies.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shield, size: 72, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(isAr ? '?? ???? ??????' : 'No policies',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: policies.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) => _policyCard(policies[i], isAr),
-      ),
-    );
-  }
-
-  Widget _policyCard(Map<String, dynamic> policy, bool isAr) {
-    final isSocial = policy['insurance_type'] == 'social';
-    final color = isSocial ? kSocialColor : kMedicalColor;
-    final companyShare = policy['company_share'] ?? 0;
-    final employeeShare = policy['employee_share'] ?? 0;
-    final companyType = policy['company_share_type'] ?? 'percent';
-    final employeeType = policy['employee_share_type'] ?? 'percent';
-    final base = policy['calculation_base'] ?? 'basic';
-    final minSalary = policy['min_salary'] ?? 0;
-    final maxSalary = policy['max_salary'] ?? 0;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(isSocial ? Icons.shield : Icons.medical_services, color: color),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      policy['name'] ?? '',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            isSocial
-                                ? (isAr ? '????? ???????' : 'Social')
-                                : (isAr ? '????? ???' : 'Medical'),
-                            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                _row(
-                  isAr ? '??? ??????' : 'Company Share',
-                  '$companyShare${companyType == "percent" ? "%" : " EGP"}',
-                  color,
-                ),
-                const Divider(height: 12),
-                _row(
-                  isAr ? '??? ??????' : 'Employee Share',
-                  '$employeeShare${employeeType == "percent" ? "%" : " EGP"}',
-                  color,
-                ),
-                const Divider(height: 12),
-                _row(
-                  isAr ? '???? ??????' : 'Base',
-                  base == 'basic' ? (isAr ? '?????' : 'Basic')
-                      : base == 'gross' ? (isAr ? '??????' : 'Gross')
-                      : (isAr ? '???? ??????' : 'Employee custom'),
-                  color,
-                ),
-                if (minSalary > 0 || maxSalary > 0) ...[
-                  const Divider(height: 12),
-                  _row(
-                    isAr ? '?????' : 'Range',
-                    '$minSalary - ${maxSalary > 0 ? maxSalary : "?"} EGP',
-                    color,
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 8),
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      ElevatedButton(onPressed: _load, child: const Text('إعادة المحاولة')),
+                    ]),
+                  )
+                : TabBarView(
+                    controller: _tab,
+                    children: [
+                      _buildList(_policies),
+                      _buildList(_socialPolicies),
+                      _buildList(_medicalPolicies),
+                    ],
                   ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _openEdit(policy),
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text(isAr ? '?????' : 'Edit'),
-                  style: OutlinedButton.styleFrom(foregroundColor: color),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () => _confirmDelete(policy),
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
 
-  Widget _row(String label, String value, Color color) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
-        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
-      ],
+  Widget _buildList(List<dynamic> items) {
+    if (items.isEmpty) {
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.shield_outlined, size: 64, color: Colors.grey),
+          const SizedBox(height: 12),
+          const Text('لا توجد سياسات تأمين',
+              style: TextStyle(fontSize: 16, color: Colors.grey)),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _openCreate,
+            icon: const Icon(Icons.add),
+            label: const Text('إضافة سياسة تأمين'),
+            style: ElevatedButton.styleFrom(backgroundColor: kInsuranceColor, foregroundColor: Colors.white),
+          ),
+        ]),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      itemBuilder: (_, i) {
+        final p = items[i];
+        final isSocial     = p['insurance_type'] == 'social';
+        final typeColor    = isSocial ? kSocialColor : kMedicalColor;
+        final typeBg       = isSocial ? const Color(0xFFE3F2FD) : const Color(0xFFE8F5E9);
+        final isSuperseded = p['is_superseded'] ?? false;
+
+        return Opacity(
+          opacity: isSuperseded ? 0.6 : 1.0,
+          child: Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: typeColor.withValues(alpha: 0.3)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Container(
+                    width: 36, height: 36,
+                    decoration: BoxDecoration(color: typeBg, borderRadius: BorderRadius.circular(8)),
+                    child: Icon(isSocial ? Icons.shield : Icons.medical_services, color: typeColor, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(p['name_ar'] ?? '',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      Text(
+                        '${isSocial ? "تأمين اجتماعي" : "تأمين طبي"}  ·  نسخة ${p['version_number'] ?? 1}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      ),
+                    ]),
+                  ),
+                  if (isSuperseded)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('مقفلة', style: TextStyle(fontSize: 11, color: Colors.orange)),
+                    ),
+                ]),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8)),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('حصة الشركة', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                        Text(
+                          '${p['company_share_value']}${p['company_share_type'] == 'percent' ? '%' : ' EGP'}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ]),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8)),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('حصة الموظف', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                        Text(
+                          '${p['employee_share_value']}${p['employee_share_type'] == 'percent' ? '%' : ' EGP'}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ]),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 8),
+                Text(
+                  'من ${p['start_date'] ?? ''}${p['end_date'] != null ? '  إلى  ${p['end_date']}' : ''}',
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openEdit(Map<String, dynamic>.from(p)),
+                      icon: const Icon(Icons.edit, size: 16),
+                      label: const Text('تعديل'),
+                      style: OutlinedButton.styleFrom(foregroundColor: typeColor),
+                    ),
+                  ),
+                ]),
+              ]),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -23,21 +23,12 @@ class _PayrollCycleScreenState extends State<PayrollCycleScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _loading = true; _error = null; });
     try {
       final data = await PayrollCycleService.listPolicies();
-      setState(() {
-        _policies = data;
-        _loading = false;
-      });
+      setState(() { _policies = data; _loading = false; });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      setState(() { _error = e.toString(); _loading = false; });
     }
   }
 
@@ -57,254 +48,161 @@ class _PayrollCycleScreenState extends State<PayrollCycleScreen> {
     if (r == true) _load();
   }
 
-  Future<void> _confirmDelete(Map<String, dynamic> policy) async {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isAr ? '????? ?????' : 'Confirm Delete'),
-        content: Text(isAr
-            ? '?? ???? ??? "${policy['name']}"?'
-            : 'Delete "${policy['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(isAr ? '?????' : 'Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(isAr ? '???' : 'Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      try {
-        await PayrollCycleService.deletePolicy(policy['id']);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '?? ?????' : 'Deleted'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _load();
-      } catch (_) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isAr ? '??? ?????' : 'Failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  String _cycleTypeLabel(String? c, bool isAr) {
-    switch (c) {
-      case 'calendar_month': return isAr ? '??? ??????' : 'Calendar Month';
-      case 'custom_month': return isAr ? '???? ?????' : 'Custom Cycle';
-      case 'weekly': return isAr ? '??????' : 'Weekly';
-      case 'bi_weekly': return isAr ? '??? ????' : 'Bi-Weekly';
-      default: return c ?? '';
+  String _cycleLabel(String? type) {
+    switch (type) {
+      case 'calendar_month': return 'شهر ميلادي';
+      case 'custom_month':   return 'شهر مخصص';
+      case 'weekly':         return 'أسبوعي';
+      case 'bi_weekly':      return 'كل أسبوعين';
+      default:               return type ?? '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
     return Directionality(
-      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(isAr ? '???? ???????' : 'Payroll Cycle'),
+          title: const Text('دورة الرواتب'),
           backgroundColor: kCycleColor,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          ],
         ),
-        body: _buildBody(isAr),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _openCreate,
           backgroundColor: kCycleColor,
+          foregroundColor: Colors.white,
           icon: const Icon(Icons.add),
-          label: Text(isAr ? '????? ????' : 'New Cycle'),
+          label: const Text('إنشاء سياسة'),
         ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 8),
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      ElevatedButton(onPressed: _load, child: const Text('إعادة المحاولة')),
+                    ]),
+                  )
+                : _policies.isEmpty
+                    ? Center(
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.calendar_month, size: 64, color: Colors.grey),
+                          const SizedBox(height: 12),
+                          const Text('لا توجد سياسة دورة رواتب',
+                              style: TextStyle(fontSize: 16, color: Colors.grey)),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _openCreate,
+                            icon: const Icon(Icons.add),
+                            label: const Text('إنشاء سياسة دورة رواتب'),
+                            style: ElevatedButton.styleFrom(backgroundColor: kCycleColor, foregroundColor: Colors.white),
+                          ),
+                        ]),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _policies.length,
+                        itemBuilder: (_, i) {
+                          final p = _policies[i];
+                          final isSuperseded = p['is_superseded'] ?? false;
+                          return Opacity(
+                            opacity: isSuperseded ? 0.6 : 1.0,
+                            child: Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: Color(0xFFCE93D8)),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Row(children: [
+                                    Container(
+                                      width: 36, height: 36,
+                                      decoration: BoxDecoration(
+                                        color: kCycleColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.calendar_month, color: kCycleColor, size: 20),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                        Text(_cycleLabel(p['cycle_type']),
+                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                        Text(
+                                          'نسخة ${p['version_number'] ?? 1}  ·  ${p['default_currency'] ?? 'EGP'}',
+                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                        ),
+                                      ]),
+                                    ),
+                                    if (isSuperseded)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade100,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text('مقفلة', style: TextStyle(fontSize: 11, color: Colors.orange)),
+                                      ),
+                                  ]),
+                                  const SizedBox(height: 10),
+                                  Row(children: [
+                                    Expanded(
+                                      child: _infoChip(Icons.calendar_today, 'يوم الصرف', '${p['pay_day'] ?? '-'}'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _infoChip(Icons.check_circle_outline, 'الموافقة', p['approval_level'] ?? ''),
+                                    ),
+                                  ]),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'من ${p['start_date'] ?? ''}${p['end_date'] != null ? '  إلى  ${p['end_date']}' : ''}',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _openEdit(Map<String, dynamic>.from(p)),
+                                        icon: const Icon(Icons.edit, size: 16),
+                                        label: const Text('تعديل'),
+                                        style: OutlinedButton.styleFrom(foregroundColor: kCycleColor),
+                                      ),
+                                    ),
+                                  ]),
+                                ]),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
       ),
     );
   }
 
-  Widget _buildBody(bool isAr) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(isAr ? '???? ?????' : 'Error',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: Text(isAr ? '????? ????????' : 'Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final active = _policies.where((p) => p['is_superseded'] != true).toList();
-
-    if (active.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.calendar_month, size: 72, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(isAr ? '?? ???? ???? ?????' : 'No payroll cycle',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(isAr ? '???? + ?????? ????' : 'Tap + to create',
-                style: TextStyle(color: Colors.grey.shade600)),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: active.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) => _policyCard(active[i], isAr),
-      ),
-    );
-  }
-
-  Widget _policyCard(Map<String, dynamic> policy, bool isAr) {
-    final currency = policy['default_currency'] ?? 'EGP';
-    final cutoffDay = policy['cutoff_day'];
-    final payDay = policy['pay_day'];
-
+  Widget _infoChip(IconData icon, String label, String value) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: kCycleColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.calendar_month, color: kCycleColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      policy['name'] ?? '',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _cycleTypeLabel(policy['cycle_type'], isAr),
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kCycleColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  currency,
-                  style: const TextStyle(fontSize: 11, color: kCycleColor, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEDE7F6),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                _row(isAr ? '??? ?????' : 'Cutoff Day', cutoffDay?.toString() ?? '-', isAr),
-                const Divider(height: 12),
-                _row(isAr ? '??? ?????' : 'Pay Day', payDay?.toString() ?? '-', isAr),
-                const Divider(height: 12),
-                _row(
-                  isAr ? '?????? ???????' : 'Holiday Handling',
-                  _holidayLabel(policy['holiday_handling'], isAr),
-                  isAr,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _openEdit(policy),
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text(isAr ? '?????' : 'Edit'),
-                  style: OutlinedButton.styleFrom(foregroundColor: kCycleColor),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () => _confirmDelete(policy),
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _holidayLabel(String? h, bool isAr) {
-    switch (h) {
-      case 'before': return isAr ? '????? ??? ??????' : 'Pay Before';
-      case 'after': return isAr ? '????? ??? ??????' : 'Pay After';
-      case 'same': return isAr ? '??? ?????' : 'Same Day';
-      default: return '-';
-    }
-  }
-
-  Widget _row(String label, String value, bool isAr) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
-        Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: kCycleColor)),
-      ],
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8)),
+      child: Row(children: [
+        Icon(icon, size: 14, color: Colors.grey.shade500),
+        const SizedBox(width: 6),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+          Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis),
+        ])),
+      ]),
     );
   }
 }
