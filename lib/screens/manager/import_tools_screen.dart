@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -138,7 +138,7 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
     } catch (e) {
       setState(() {
         _resultSuccess = false;
-        _resultMessage = e.toString();
+        _resultMessage = e.toString().replaceFirst("Exception: ", "");
       });
     } finally {
       setState(() => _uploading = false);

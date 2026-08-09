@@ -1,4 +1,4 @@
-name: motionhr_employee
+﻿name: motionhr_employee
 description: MotionHR Employee & Manager App
 publish_to: 'none'
 version: 1.0.0+1
@@ -58,3 +58,37 @@ flutter:
         - asset: assets/fonts/Cairo-Regular.ttf
         - asset: assets/fonts/Cairo-Bold.ttf
           weight: 700
+
+# ═══════════════════════════════════════════
+# App Launcher Icons Configuration
+# ═══════════════════════════════════════════
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/branding/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#4A148C"
+  adaptive_icon_foreground: "assets/branding/app_icon.png"
+  remove_alpha_ios: true
+  web:
+    generate: false
+
+# ═══════════════════════════════════════════
+# Native Splash Screen Configuration
+# ═══════════════════════════════════════════
+flutter_native_splash:
+  color: "#4A148C"
+  image: "assets/branding/icon_white.png"
+  color_dark: "#1a0033"
+  image_dark: "assets/branding/icon_white.png"
+  android_12:
+    image: "assets/branding/icon_white.png"
+    color: "#4A148C"
+    image_dark: "assets/branding/icon_white.png"
+    color_dark: "#1a0033"
+  android: true
+  ios: true
+  web: false
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center
