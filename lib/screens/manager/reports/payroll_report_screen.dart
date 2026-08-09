@@ -441,9 +441,13 @@ class _PayrollReportScreenState extends State<PayrollReportScreen> {
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 14),
         ),
-        subtitle: Text(
-          dept.isNotEmpty ? dept : '',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (dept.isNotEmpty) Text(dept, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            if ((emp['job_title'] ?? '').toString().isNotEmpty)
+              Text((emp['job_title'] ?? '').toString(), style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+          ],
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -504,6 +508,18 @@ class _PayrollReportScreenState extends State<PayrollReportScreen> {
                 _row(_isAr ? 'تأمينات' : 'Insurance',
                     '${_fmt(emp['insurance_deduction'])} $currency',
                     valueColor: Colors.red),
+                if ((emp['tax_deduction'] ?? 0) > 0)
+                  _row(_isAr ? '\u0636\u0631\u064a\u0628\u0629' : 'Tax',
+                      '${_fmt(emp['tax_deduction'])} $currency',
+                      valueColor: Colors.red),
+                if ((emp['early_leave_deduction'] ?? 0) > 0)
+                  _row(_isAr ? '\u0627\u0646\u0635\u0631\u0627\u0641 \u0645\u0628\u0643\u0631' : 'Early Leave',
+                      '${_fmt(emp['early_leave_deduction'])} $currency',
+                      valueColor: Colors.red),
+                if ((emp['unpaid_leave_deduction'] ?? 0) > 0)
+                  _row(_isAr ? '\u0628\u062f\u0648\u0646 \u0631\u0627\u062a\u0628' : 'Unpaid Leave',
+                      '${_fmt(emp['unpaid_leave_deduction'])} $currency',
+                      valueColor: Colors.red),
                 if ((emp['flex_shortage_deduction'] ?? 0) > 0)
                   _row(
                       _isAr ? 'نقص مرن' : 'Flex Shortage',
@@ -544,6 +560,9 @@ class _PayrollReportScreenState extends State<PayrollReportScreen> {
                     '${emp['late_days'] ?? 0}'),
                 _row(_isAr ? 'إجمالي دقائق التأخير' : 'Late Minutes',
                     '${emp['total_late_minutes'] ?? 0}'),
+                if ((emp['policy_name'] ?? '').toString().isNotEmpty)
+                  _row(_isAr ? '\u0627\u0644\u0633\u064a\u0627\u0633\u0629' : 'Policy',
+                      (emp['policy_name'] ?? '').toString()),
               ],
             ),
           ),
