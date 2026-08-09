@@ -616,7 +616,7 @@ class _SplashScreenState extends State<SplashScreen> {
       } else if (appMode == 'manager') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const ManagerShell()),
+          MaterialPageRoute(builder: (_) => const ManagerHomeRouter()),
         );
       } else {
         Navigator.pushReplacement(
@@ -754,7 +754,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (appMode == 'manager') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const ManagerShell()),
+        MaterialPageRoute(builder: (_) => const ManagerHomeRouter()),
       );
     } else {
       Navigator.pushReplacement(
@@ -943,7 +943,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else if (appMode == 'manager') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const ManagerShell()),
+            MaterialPageRoute(builder: (_) => const ManagerHomeRouter()),
           );
         } else {
           Navigator.pushReplacement(
@@ -1473,7 +1473,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         if (appMode == 'manager') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const ManagerShell()),
+            MaterialPageRoute(builder: (_) => const ManagerHomeRouter()),
           );
         } else {
           Navigator.pushReplacement(
@@ -4510,7 +4510,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'new_request':
       case 'new_leave':
       case 'new_permission':
-        page = const ManagerShell(initialIndex: 1);
+        page = const ManagerHomeRouter(initialIndex: 1);
         break;
       case 'attendance':
       case 'check_in':
@@ -4518,18 +4518,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'partial_checkout':
       case 'resume_checkin':
         page = appMode == 'manager'
-            ? const ManagerShell(initialIndex: 0)
+            ? const ManagerHomeRouter(initialIndex: 0)
             : const EmployeeShell(initialIndex: 0);
         break;
       case 'manager_attendance':
-        page = const ManagerShell(initialIndex: 1);
+        page = const ManagerHomeRouter(initialIndex: 1);
         break;
       case 'request_approved':
       case 'request_rejected':
       case 'leave_approved':
       case 'leave_rejected':
         page = appMode == 'manager'
-            ? const ManagerShell(initialIndex: 2)
+            ? const ManagerHomeRouter(initialIndex: 2)
             : const EmployeeShell(initialIndex: 3);
         break;
       case 'charter_acceptance':
@@ -4537,7 +4537,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       default:
         page = appMode == 'manager'
-            ? const ManagerShell(initialIndex: 0)
+            ? const ManagerHomeRouter(initialIndex: 0)
             : const EmployeeShell(initialIndex: 0);
     }
     if (!mounted) return;
@@ -4777,7 +4777,7 @@ class _CharterScreenState extends State<CharterScreen> {
             context,
             MaterialPageRoute(
                 builder: (_) => widget.appMode == 'manager'
-                    ? const ManagerShell()
+                    ? const ManagerHomeRouter()
                     : const EmployeeShell()));
       } else {
         if (mounted)
@@ -6663,9 +6663,63 @@ Future<void> _loadGeofence() async {
   }
 }
 
+class ManagerHomeRouter extends StatefulWidget {
+  final int initialIndex;
+  const ManagerHomeRouter({super.key, this.initialIndex = 0});
+
+  @override
+  State<ManagerHomeRouter> createState() => _ManagerHomeRouterState();
+}
+
+class _ManagerHomeRouterState extends State<ManagerHomeRouter> {
+  String? _userRole;
+
+  String get _normalizedRole => (_userRole ?? '').trim().toLowerCase();
+
+  bool get _useCompanyDashboardForHome =>
+      widget.initialIndex == 0 &&
+      const {
+        'company_admin',
+        'super_admin',
+        'owner',
+        'company_owner',
+        'admin',
+        'hr_manager',
+      }.contains(_normalizedRole);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final role = prefs.getString('role') ?? '';
+    debugPrint('ManagerHomeRouter role = $role | initialIndex = ${widget.initialIndex}');
+    setState(() => _userRole = role);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_userRole == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return ManagerShell(
+      initialIndex: widget.initialIndex,
+      useCompanyDashboardHome: _useCompanyDashboardForHome,
+    );
+  }
+}
+
 class ManagerShell extends StatefulWidget {
   final int initialIndex;
-  const ManagerShell({super.key, this.initialIndex = 0});
+  final bool useCompanyDashboardHome;
+  const ManagerShell({super.key, this.initialIndex = 0, this.useCompanyDashboardHome = false});
 
   @override
   State<ManagerShell> createState() => _ManagerShellState();
@@ -6682,7 +6736,9 @@ class _ManagerShellState extends State<ManagerShell> {
   }
 
   List<Widget> get _pages => [
-        const EmployeeHomeScreen(),
+        widget.useCompanyDashboardHome
+            ? const ManagerDashboard()
+            : const EmployeeHomeScreen(),
         const ManagerTeamScreen(),
         const ManagerMyRequestsHubScreen(),
         ManagerMoreScreen(onLogout: _logout),
@@ -7392,7 +7448,18 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   String _firstName = '';
   String _companyName = '';
   String _userRole = '';
-  bool get _canSeePayroll => _userRole == 'company_admin' || _userRole == 'hr_manager' || _userRole == 'super_admin';
+
+  String get _normalizedRole => _userRole.trim().toLowerCase();
+
+  bool get _isCompanyLevel => const {
+    'company_admin',
+    'super_admin',
+    'owner',
+    'company_owner',
+    'admin',
+  }.contains(_normalizedRole);
+
+  bool get _canSeePayroll => _isCompanyLevel || _normalizedRole == 'hr_manager';
 
   @override
   void initState() {
@@ -7410,6 +7477,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           '';
       _companyName = prefs.getString('company_name') ?? '';
       _userRole = prefs.getString('role') ?? '';
+      debugPrint('MotionHR role = $_userRole');
     });
   }
 
@@ -7474,10 +7542,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     final displayName = _firstName.isNotEmpty
         ? _firstName
         : (isAr
-            ? (_userRole == 'company_admin' || _userRole == 'super_admin'
+            ? (_isCompanyLevel
                 ? 'لوحة تحكم الشركة'
                 : 'لوحة المدير')
-            : (_userRole == 'company_admin' || _userRole == 'super_admin'
+            : (_isCompanyLevel
                 ? 'Company Panel'
                 : 'Manager Panel'));
 
