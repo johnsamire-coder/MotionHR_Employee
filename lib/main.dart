@@ -7370,7 +7370,13 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         : '${days[now.weekday % 7]}, ${now.day} ${months[now.month - 1]} ${now.year}';
     final displayName = _firstName.isNotEmpty
         ? _firstName
-        : (isAr ? 'المدير' : 'Manager');
+        : (isAr
+            ? (_userRole == 'company_admin' || _userRole == 'super_admin'
+                ? 'لوحة تحكم الشركة'
+                : 'لوحة المدير')
+            : (_userRole == 'company_admin' || _userRole == 'super_admin'
+                ? 'Company Panel'
+                : 'Manager Panel'));
 
     return RefreshIndicator(
       onRefresh: _load,
