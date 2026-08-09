@@ -1,3 +1,4 @@
+import 'screens/employee_missions_screen.dart';
 import 'services/api_client.dart';
 import 'services/api_service.dart';
 import 'dart:async';
@@ -50,7 +51,8 @@ import 'screens/manager/permissions_management_screen.dart';
 import 'screens/manager/departments_management_screen.dart';
 import 'screens/manager/leave_recall_screen.dart';
 import 'screens/manager/offboarding_screen.dart';
-import 'screens/employee_missions_screen.dart';
+import 'screens/manager/branches_screen.dart';
+import 'screens/manager/job_titles_screen.dart';
 import 'screens/employee/field_visits_screen.dart';
 import 'services/field_visits_service.dart';
 import 'screens/employee/my_work_locations_screen.dart';
@@ -1674,6 +1676,26 @@ class _EmployeeShellState extends State<EmployeeShell> {
           actions: [
             const NotificationBellButton(),
             IconButton(
+              icon: const Icon(Icons.description),
+              tooltip: isAr ? 'لائحة الشركة' : 'Company Charter',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CharterScreen(appMode: 'employee'),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.account_tree),
+              tooltip: isAr ? 'الهيكل التنظيمي' : 'Organization Chart',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const OrganizationTreeScreen(),
+                ),
+              ),
+            ),
+            IconButton(
               icon: const Icon(Icons.campaign),
               tooltip: context.l10n.announcements,
               onPressed: () => Navigator.push(context,
@@ -3115,7 +3137,8 @@ String localizedTypeName(String name, bool isAr) {
 }
 
 class LeavesScreen extends StatefulWidget {
-  const LeavesScreen({super.key});
+  final int initialTabIndex;
+  const LeavesScreen({super.key, this.initialTabIndex = 0});
   @override
   State<LeavesScreen> createState() => _LeavesScreenState();
 }
@@ -3133,7 +3156,11 @@ class _LeavesScreenState extends State<LeavesScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex.clamp(0, 1),
+    );
     _load();
     _loadPermissions();
   }
@@ -7163,6 +7190,46 @@ class _ManagerPreviousRequestsWrapperScreen extends StatelessWidget {
   }
 }
 
+class _ManagerMyMissionsWrapperScreen extends StatelessWidget {
+  const _ManagerMyMissionsWrapperScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isAr ? 'مهماتي' : 'My Missions'),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const EmployeeMissionsScreen(),
+      ),
+    );
+  }
+}
+
+class _ManagerMyPermissionsWrapperScreen extends StatelessWidget {
+  const _ManagerMyPermissionsWrapperScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isAr ? 'أذوناتي' : 'My Permissions'),
+          backgroundColor: kManagerColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const LeavesScreen(initialTabIndex: 1),
+      ),
+    );
+  }
+}
+
 class ManagerMoreScreen extends StatelessWidget {
   final Future<void> Function() onLogout;
   const ManagerMoreScreen({super.key, required this.onLogout});
@@ -7202,6 +7269,42 @@ class ManagerMoreScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+        _managerMoreTile(
+          context,
+          icon: Icons.task_alt,
+          title: isAr ? 'مهماتي' : 'My Missions',
+          color: const Color(0xFF6C3FC5),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const _ManagerMyMissionsWrapperScreen(),
+            ),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.shield,
+          title: isAr ? 'أذوناتي' : 'My Permissions',
+          color: kManagerColor,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const _ManagerMyPermissionsWrapperScreen(),
+            ),
+          ),
+        ),
+        _managerMoreTile(
+          context,
+          icon: Icons.map,
+          title: isAr ? 'زياراتي الميدانية' : 'My Field Visits',
+          color: Colors.deepPurple,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const FieldVisitsScreen(),
+            ),
+          ),
+        ),
         _managerMoreTile(
           context,
           icon: Icons.person,
@@ -7551,6 +7654,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const ManagerLiveLocationsScreen()))),
+                                
                 _gridCard(
                     isAr ? 'مواقع العمل' : 'Work Locations',
                     Icons.map,
@@ -7560,6 +7664,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const WorkLocationsApprovalScreen()))),
+                                
                 _gridCard(
                     isAr ? 'الموظفين' : 'Employees',
                     Icons.people,
@@ -7569,6 +7674,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const ManagerEmployeesListScreen()))),
+                                
                 _gridCard(
                     context.l10n.addEmployee,
                     Icons.person_add,
@@ -7757,6 +7863,24 @@ _gridCard(
                         MaterialPageRoute(
                             builder: (_) =>
                                 const PermissionsManagementScreen()))),
+                _gridCard(
+                    isAr ? 'الفروع' : 'Branches',
+                    Icons.location_city,
+                    Colors.blueGrey,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const BranchesScreen()))),
+                _gridCard(
+                    isAr ? 'المسميات الوظيفية' : 'Job Titles',
+                    Icons.work,
+                    const Color(0xFF00838F),
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const JobTitlesScreen()))),
               ],
             ),
           ),
