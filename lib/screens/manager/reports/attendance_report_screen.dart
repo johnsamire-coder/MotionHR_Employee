@@ -90,8 +90,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  '${_isAr ? 'خطأ في الطباعة' : 'Print error'}: $e')),
+            content: Text(
+                '${_isAr ? 'خطأ في الطباعة' : 'Print error'}: $e'),
+          ),
         );
       }
     }
@@ -116,12 +117,44 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  '${_isAr ? 'خطأ في التصدير' : 'Export error'}: $e')),
+            content: Text(
+                '${_isAr ? 'خطأ في التصدير' : 'Export error'}: $e'),
+          ),
         );
       }
     }
     if (mounted) setState(() => _exporting = false);
+  }
+
+  // ─── إحصائيات محسوبة من البيانات ───
+  int get _totalEmployees =>
+      (_data?['total_employees'] as num?)?.toInt() ??
+      (_data?['employees'] as List?)?.length ??
+      0;
+
+  int get _presentCount {
+    final list = (_data?['employees'] as List?) ?? [];
+    return list.where((e) {
+      final days = (e['working_days'] as num?)?.toInt() ?? 0;
+      return days > 0;
+    }).length;
+  }
+
+  int get _absentCount {
+    final list = (_data?['employees'] as List?) ?? [];
+    return list.where((e) {
+      final days = (e['working_days'] as num?)?.toInt() ?? 0;
+      final absent = (e['absent_days'] as num?)?.toInt() ?? 0;
+      return days == 0 || absent > 0;
+    }).length;
+  }
+
+  int get _lateCount {
+    final list = (_data?['employees'] as List?) ?? [];
+    return list.where((e) {
+      final late = (e['late_days'] as num?)?.toInt() ?? 0;
+      return late > 0;
+    }).length;
   }
 
   List<Map<String, dynamic>> get _filtered {
@@ -132,8 +165,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     if (_search.trim().isEmpty) return all;
     final s = _search.toLowerCase().trim();
     return all.where((row) {
-      final name =
-          (row['employee_name'] ?? '').toString().toLowerCase();
+      final name = (row['employee_name'] ?? '').toString().toLowerCase();
       final dept = (row['department'] ?? '').toString().toLowerCase();
       return name.contains(s) || dept.contains(s);
     }).toList();
@@ -141,12 +173,34 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   String _monthName(int m) {
     const ar = [
-      '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+      '',
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر'
     ];
     const en = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return _isAr ? ar[m] : en[m];
   }
@@ -285,9 +339,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                       hintText: _isAr
                           ? 'بحث بالاسم أو القسم...'
                           : 'Search by name or dept...',
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon:
-                          const Icon(Icons.search, color: Colors.white70),
+                      hintStyle:
+                          const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(Icons.search,
+                          color: Colors.white70),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.15),
                       border: OutlineInputBorder(
@@ -301,23 +356,44 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Stats
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _chip(
-                          _isAr ? 'الموظفين' : 'Employees',
-                          '${_data?['total_employees'] ?? 0}',
-                        ),
-                        const SizedBox(width: 8),
-                        _chip(
-                          _isAr ? 'النتائج' : 'Results',
-                          '${filtered.length}',
-                        ),
-                      ],
+                  // ─── إحصائيات ───
+                  if (!_loading)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _chip(
+                            _isAr ? 'الإجمالي' : 'Total',
+                            '$_totalEmployees',
+                            Icons.people,
+                          ),
+                          const SizedBox(width: 8),
+                          _chip(
+                            _isAr ? 'حاضر' : 'Present',
+                            '$_presentCount',
+                            Icons.check_circle_outline,
+                          ),
+                          const SizedBox(width: 8),
+                          _chip(
+                            _isAr ? 'غائب' : 'Absent',
+                            '$_absentCount',
+                            Icons.cancel_outlined,
+                          ),
+                          const SizedBox(width: 8),
+                          _chip(
+                            _isAr ? 'متأخر' : 'Late',
+                            '$_lateCount',
+                            Icons.watch_later_outlined,
+                          ),
+                          const SizedBox(width: 8),
+                          _chip(
+                            _isAr ? 'النتائج' : 'Results',
+                            '${filtered.length}',
+                            Icons.filter_list,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -337,9 +413,13 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                                   size: 64, color: Colors.grey[300]),
                               const SizedBox(height: 16),
                               Text(
-                                _isAr
-                                    ? 'لا توجد بيانات'
-                                    : 'No data found',
+                                _search.isNotEmpty
+                                    ? (_isAr
+                                        ? 'لا توجد نتائج'
+                                        : 'No results found')
+                                    : (_isAr
+                                        ? 'لا توجد بيانات'
+                                        : 'No data found'),
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 16,
@@ -367,9 +447,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     );
   }
 
-  Widget _chip(String label, String value) {
+  Widget _chip(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(30),
@@ -377,6 +458,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(icon, color: Colors.white70, size: 13),
+          const SizedBox(width: 4),
           Text(
             value,
             style: const TextStyle(
@@ -385,10 +468,13 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 11,
+            ),
           ),
         ],
       ),
@@ -397,10 +483,16 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   Widget _buildCard(Map<String, dynamic> emp) {
     final name = (emp['employee_name'] ?? '').toString();
-    final workDays = emp['working_days'] ?? 0;
-    final absent = emp['absent_days'] ?? 0;
-    final checkins = emp['total_checkins'] ?? 0;
-    final checkouts = emp['total_checkouts'] ?? 0;
+    final workDays = (emp['working_days'] as num?)?.toInt() ?? 0;
+    final absent = (emp['absent_days'] as num?)?.toInt() ?? 0;
+    final late = (emp['late_days'] as num?)?.toInt() ?? 0;
+    final checkins = (emp['total_checkins'] as num?)?.toInt() ?? 0;
+    final checkouts = (emp['total_checkouts'] as num?)?.toInt() ?? 0;
+
+    // لون الكارت بناءً على الحالة
+    Color statusColor = Colors.green;
+    if (absent > 0) statusColor = Colors.red;
+    if (late > 0 && absent == 0) statusColor = Colors.orange;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -408,17 +500,21 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       shadowColor: Colors.black.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: statusColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: ExpansionTile(
         tilePadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         childrenPadding: EdgeInsets.zero,
         leading: CircleAvatar(
-          backgroundColor: _color.withValues(alpha: 0.1),
+          backgroundColor: statusColor.withValues(alpha: 0.1),
           child: Text(
             name.isNotEmpty ? name[0] : '?',
-            style: const TextStyle(
-              color: _color,
+            style: TextStyle(
+              color: statusColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -430,23 +526,48 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             fontSize: 14,
           ),
         ),
-        subtitle: Text(
-          _isAr
-              ? 'حضور: $workDays يوم | غياب: $absent'
-              : 'Attended: $workDays days | Absent: $absent',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        subtitle: Row(
+          children: [
+            Icon(Icons.check_circle, size: 12, color: Colors.green[600]),
+            const SizedBox(width: 2),
+            Text(
+              '$workDays',
+              style: TextStyle(
+                  fontSize: 11, color: Colors.green[600]),
+            ),
+            const SizedBox(width: 8),
+            if (absent > 0) ...[
+              Icon(Icons.cancel, size: 12, color: Colors.red[400]),
+              const SizedBox(width: 2),
+              Text(
+                '$absent',
+                style:
+                    TextStyle(fontSize: 11, color: Colors.red[400]),
+              ),
+              const SizedBox(width: 8),
+            ],
+            if (late > 0) ...[
+              Icon(Icons.watch_later, size: 12, color: Colors.orange[400]),
+              const SizedBox(width: 2),
+              Text(
+                '$late',
+                style: TextStyle(
+                    fontSize: 11, color: Colors.orange[400]),
+              ),
+            ],
+          ],
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: _color.withValues(alpha: 0.1),
+            color: statusColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             '$workDays',
-            style: const TextStyle(
-              color: _color,
+            style: TextStyle(
+              color: statusColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
@@ -461,12 +582,19 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                 _detailRow(
                   _isAr ? 'أيام الحضور' : 'Working Days',
                   '$workDays',
+                  valueColor: Colors.green[700],
                 ),
                 _detailRow(
                   _isAr ? 'أيام الغياب' : 'Absent Days',
                   '$absent',
-                  valueColor: absent > 0 ? Colors.red : null,
+                  valueColor: absent > 0 ? Colors.red : Colors.grey,
                 ),
+                if (late > 0)
+                  _detailRow(
+                    _isAr ? 'أيام التأخر' : 'Late Days',
+                    '$late',
+                    valueColor: Colors.orange,
+                  ),
                 _detailRow(
                   _isAr ? 'مرات الحضور' : 'Check-ins',
                   '$checkins',

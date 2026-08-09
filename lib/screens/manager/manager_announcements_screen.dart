@@ -23,6 +23,7 @@ class _ManagerAnnouncementsScreenState
   List<dynamic> _announcements = [];
   bool _loading = true;
   String? _error;
+  String _search = '';
 
   @override
   void initState() {
@@ -30,16 +31,12 @@ class _ManagerAnnouncementsScreenState
     _load();
   }
 
-  Future<String> _getToken() async =>
-      await AuthStorageService.getSavedToken() ?? '';
-
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final token = await _getToken();
       final res = await http.get(
         Uri.parse('$_kBase/attendance/api/mobile/announcements/list/'),
         headers: await ApiClient.buildHeaders(),
@@ -52,7 +49,9 @@ class _ManagerAnnouncementsScreenState
         });
       } else {
         setState(() {
-          _error = isAr ? 'خطأ في تحميل الإعلانات' : 'Failed to load announcements';
+          _error = isAr
+              ? 'خطأ في تحميل الإعلانات'
+              : 'Failed to load announcements';
           _loading = false;
         });
       }
@@ -62,6 +61,35 @@ class _ManagerAnnouncementsScreenState
         _loading = false;
       });
     }
+  }
+
+  // ─── الإحصائيات ───
+  int get _totalCount => _announcements.length;
+
+  int get _todayCount {
+    final today = DateTime.now();
+    return _announcements.where((a) {
+      final raw = (a['publish_at'] ?? '').toString();
+      try {
+        final d = DateTime.parse(raw);
+        return d.year == today.year &&
+            d.month == today.month &&
+            d.day == today.day;
+      } catch (_) {
+        return false;
+      }
+    }).length;
+  }
+
+  // ─── فلترة البحث ───
+  List<dynamic> get _filtered {
+    if (_search.trim().isEmpty) return _announcements;
+    final s = _search.toLowerCase().trim();
+    return _announcements.where((a) {
+      final title = (a['title'] ?? '').toString().toLowerCase();
+      final msg = (a['message'] ?? '').toString().toLowerCase();
+      return title.contains(s) || msg.contains(s);
+    }).toList();
   }
 
   Future<void> _delete(Map<String, dynamic> ann) async {
@@ -90,7 +118,6 @@ class _ManagerAnnouncementsScreenState
     if (confirm != true) return;
 
     try {
-      final token = await _getToken();
       final res = await http.delete(
         Uri.parse(
           '$_kBase/attendance/api/mobile/manager/announcements/${ann['id']}/delete/',
@@ -115,7 +142,9 @@ class _ManagerAnnouncementsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              (data['error'] ?? (isAr ? 'حدث خطأ' : 'An error occurred')).toString(),
+              (data['error'] ??
+                      (isAr ? 'حدث خطأ' : 'An error occurred'))
+                  .toString(),
             ),
             backgroundColor: Colors.red,
           ),
@@ -156,6 +185,8 @@ class _ManagerAnnouncementsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filtered;
+
     return Directionality(
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
@@ -177,20 +208,103 @@ class _ManagerAnnouncementsScreenState
             ),
           ],
         ),
-        body: _loading
-            ? const Center(child: CircularProgressIndicator(color: _kColor))
-            : _error != null
-                ? _buildError()
-                : _announcements.isEmpty
-                    ? _buildEmpty()
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(12),
-                          itemCount: _announcements.length,
-                          itemBuilder: (_, i) => _buildCard(_announcements[i]),
+        body: Column(
+          children: [
+            // ─── Header: إحصائيات + بحث ───
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+              decoration: BoxDecoration(
+                color: _kColor,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _kColor.withValues(alpha: 0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // إحصائيات
+                  if (!_loading)
+                    Row(
+                      children: [
+                        _chip(
+                          isAr ? 'الإجمالي' : 'Total',
+                          '$_totalCount',
+                          Icons.campaign,
                         ),
+                        const SizedBox(width: 8),
+                        _chip(
+                          isAr ? 'اليوم' : 'Today',
+                          '$_todayCount',
+                          Icons.today,
+                        ),
+                        const SizedBox(width: 8),
+                        _chip(
+                          isAr ? 'النتائج' : 'Results',
+                          '${filtered.length}',
+                          Icons.filter_list,
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  // بحث
+                  TextField(
+                    onChanged: (v) => setState(() => _search = v),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: isAr
+                          ? 'بحث في الإعلانات...'
+                          : 'Search announcements...',
+                      hintStyle:
+                          const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white70,
                       ),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ─── القائمة ───
+            Expanded(
+              child: _loading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: _kColor),
+                    )
+                  : _error != null
+                      ? _buildError()
+                      : filtered.isEmpty
+                          ? _buildEmpty()
+                          : RefreshIndicator(
+                              onRefresh: _load,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(12),
+                                itemCount: filtered.length,
+                                itemBuilder: (_, i) =>
+                                    _buildCard(filtered[i]),
+                              ),
+                            ),
+            ),
+          ],
+        ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
             final result = await Navigator.push(
@@ -212,6 +326,41 @@ class _ManagerAnnouncementsScreenState
     );
   }
 
+  Widget _chip(String label, String value, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white70, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCard(Map<String, dynamic> ann) {
     final priority = (ann['priority'] ?? 'medium').toString();
     final type = (ann['type'] ?? 'general').toString();
@@ -220,7 +369,8 @@ class _ManagerAnnouncementsScreenState
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -231,7 +381,8 @@ class _ManagerAnnouncementsScreenState
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: color.withValues(alpha: 0.15),
-                  child: Icon(_getTypeIcon(type), color: color, size: 20),
+                  child:
+                      Icon(_getTypeIcon(type), color: color, size: 20),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -305,7 +456,10 @@ class _ManagerAnnouncementsScreenState
               const SizedBox(height: 10),
               Text(
                 (ann['message'] ?? '').toString(),
-                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[700],
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -342,7 +496,10 @@ class _ManagerAnnouncementsScreenState
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    (ann['target_type_display'] ?? ann['target_type'] ?? '').toString(),
+                    (ann['target_type_display'] ??
+                            ann['target_type'] ??
+                            '')
+                        .toString(),
                     style: const TextStyle(
                       fontSize: 11,
                       color: Colors.blue,
@@ -385,19 +542,26 @@ class _ManagerAnnouncementsScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.campaign_outlined, size: 80, color: Colors.grey.shade300),
+          Icon(
+            Icons.campaign_outlined,
+            size: 80,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           Text(
-            isAr ? 'لا توجد إعلانات' : 'No announcements',
+            _search.isNotEmpty
+                ? (isAr ? 'لا توجد نتائج' : 'No results found')
+                : (isAr ? 'لا توجد إعلانات' : 'No announcements'),
             style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 8),
-          Text(
-            isAr
-                ? 'اضغط + لإنشاء إعلان جديد'
-                : 'Press + to create a new announcement',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
-          ),
+          if (_search.isEmpty)
+            Text(
+              isAr
+                  ? 'اضغط + لإنشاء إعلان جديد'
+                  : 'Press + to create a new announcement',
+              style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            ),
         ],
       ),
     );
