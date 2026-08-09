@@ -613,7 +613,7 @@ class _SplashScreenState extends State<SplashScreen> {
             builder: (_) => CharterScreen(appMode: appMode),
           ),
         );
-      } else if (appMode == 'manager') {
+      } else if ((appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const ManagerShell()),
@@ -751,7 +751,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final prefs = await SharedPreferences.getInstance();
     final appMode = prefs.getString('app_mode') ?? 'employee';
     if (!mounted) return;
-    if (appMode == 'manager') {
+    if ((appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ManagerShell()),
@@ -940,7 +940,7 @@ class _LoginScreenState extends State<LoginScreen> {
               builder: (_) => CharterScreen(appMode: appMode),
             ),
           );
-        } else if (appMode == 'manager') {
+        } else if ((appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const ManagerShell()),
@@ -1470,7 +1470,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        if (appMode == 'manager') {
+        if ((appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const ManagerShell()),
@@ -4517,7 +4517,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'check_out':
       case 'partial_checkout':
       case 'resume_checkin':
-        page = appMode == 'manager'
+        page = (appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')
             ? const ManagerShell(initialIndex: 0)
             : const EmployeeShell(initialIndex: 0);
         break;
@@ -4528,7 +4528,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'request_rejected':
       case 'leave_approved':
       case 'leave_rejected':
-        page = appMode == 'manager'
+        page = (appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')
             ? const ManagerShell(initialIndex: 2)
             : const EmployeeShell(initialIndex: 3);
         break;
@@ -4536,7 +4536,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         page = const ManagerCharterScreen();
         break;
       default:
-        page = appMode == 'manager'
+        page = (appMode == 'manager' || appMode == 'hr_manager' || appMode == 'company_admin')
             ? const ManagerShell(initialIndex: 0)
             : const EmployeeShell(initialIndex: 0);
     }
@@ -4776,7 +4776,7 @@ class _CharterScreenState extends State<CharterScreen> {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (_) => widget.appMode == 'manager'
+                builder: (_) => (widget.appMode == 'manager' || widget.appMode == 'hr_manager' || widget.appMode == 'company_admin')
                     ? const ManagerShell()
                     : const EmployeeShell()));
       } else {
