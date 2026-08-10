@@ -1,0 +1,63 @@
+{
+  "departments": [
+    {
+      "id": null,
+      "name": "تكنولوجيا المعلومات",
+      "code": "IT"
+    },
+    {
+      "id": null,
+      "name": "الدعم الفني",
+      "code": "SUPPORT"
+    },
+    {
+      "id": null,
+      "name": "التسويق",
+      "code": "MKT"
+    },
+    {
+      "id": null,
+      "name": "العمليات",
+      "code": "OPS"
+    },
+    {
+      "id": null,
+      "name": "التوصيل",
+      "code": "DEL"
+    }
+  ],
+  "job_titles": [],
+  "shifts": [
+    {
+      "id": 67,
+      "name": "الشيفت الصباحي"
+    },
+    {
+      "id": 68,
+      "name": "الشيفت المسائي"
+    },
+    {
+      "id": 69,
+      "name": "الشيفت المرن"
+    }
+  ],
+  "geofence": {
+    "latitude": 30.0444,
+    "longitude": 31.2357,
+    "radius": 200,
+    "enabled": true,
+    "address": "القاهرة، مصر"
+  },
+  "errors": [
+    {
+      "name": "Add Department: المبيعات",
+      "status": 400,
+      "error": "{\"error\":\"القسم موجود بالفعل\"}"
+    },
+    {
+      "name": "Add Department: الموارد البشرية",
+      "status": 400,
+      "error": "{\"error\":\"القسم موجود بالفعل\"}"
+    }
+  ]
+}
