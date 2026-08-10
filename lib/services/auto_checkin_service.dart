@@ -83,13 +83,38 @@ class AutoCheckinService {
       final token = await _getToken();
       if (token == null) return;
 
+      // جيب الـ Smart Policy
+      final policy = await _getSmartPolicy(token);
+      final triggerMode = policy['trigger_mode'] as String;
+
+      // لو يدوي: مانعملش أي حاجة تلقائية
+      if (triggerMode == 'manual') return;
+
+      // جيب الشيفت وتحقق من النافذة
+      final shiftData = await _getMyShift(token);
+      final preWindow = (policy['pre_shift_window'] as int?) ?? 15;
+      final withinWindow = _isWithinShiftWindow(shiftData, preWindow);
+
+      // لو برا نافذة الشيفت: مانعملش حاجة
+      if (!withinWindow) return;
+
       // جيب الـ Geofence من الـ API
       final geofence = await _getGeofence(token);
       if (geofence == null) return;
 
       // جيب الموقع الحالي
       final position = await _getCurrentPosition();
-      if (position == null) return;
+      if (position == null) {
+        // لو الموقع مش متاح
+        if (!_checkedInToday) {
+          onError?.call(
+            _lang == 'ar'
+                ? 'يرجى تفعيل الموقع لإتمام تسجيل الحضور والانصراف'
+                : 'Please enable location to complete attendance registration',
+          );
+        }
+        return;
+      }
 
       // احسب المسافة
       final distance = Geolocator.distanceBetween(
@@ -102,17 +127,29 @@ class AutoCheckinService {
       final radius = (geofence['radius'] ?? 100).toDouble();
       final isInsideGeofence = distance <= radius;
 
-      // قرر الإجراء
-      if (isInsideGeofence && !_checkedInToday) {
-        await _performAutoCheckin(token, position);
-      } else if (!isInsideGeofence && _checkedInToday && !_checkedOutToday) {
-        await _performAutoCheckout(token, position);
+      // تصرف حسب الـ mode
+      if (triggerMode == 'auto') {
+        // تسجيل تلقائي كامل
+        if (isInsideGeofence && !_checkedInToday) {
+          await _performAutoCheckin(token, position);
+        } else if (!isInsideGeofence && _checkedInToday && !_checkedOutToday) {
+          await _performAutoCheckout(token, position);
+        }
+      } else if (triggerMode == 'notification') {
+        // إشعار فقط - مش تسجيل تلقائي
+        if (isInsideGeofence && !_checkedInToday) {
+          onAutoCheckin?.call(
+            _lang == 'ar'
+                ? 'أنت داخل موقع العمل، يمكنك تسجيل الحضور الآن'
+                : 'You are at work location, you can check in now',
+          );
+        }
       }
     } catch (e) {
       onError?.call(
         _lang == 'ar'
-            ? 'خطأ في المراقبة التلقائية'
-            : 'Auto monitoring error',
+            ? 'خطأ في المراقبة'
+            : 'Monitoring error',
       );
     }
   }
@@ -254,4 +291,74 @@ class AutoCheckinService {
       _checkedOutToday = status['checked_out'] ?? false;
     }
   }
+
+  // ── جلب سياسة الحضور الذكي ─────────────────────────────
+  static Future<Map<String, dynamic>> _getSmartPolicy(String token) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_baseUrl/attendance/api/mobile/manager/work-policy/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+      ).timeout(const Duration(seconds: 10));
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
+        return {
+          'trigger_mode': data['attendance_trigger_mode'] ?? 'notification',
+          'pre_shift_window': data['pre_shift_checkin_window'] ?? 15,
+          'require_live_location': data['require_live_location'] ?? true,
+          'location_loss_action': data['location_loss_action'] ?? 'alert_only',
+          'location_loss_grace_minutes': data['location_loss_grace_minutes'] ?? 5,
+        };
+      }
+    } catch (_) {}
+    return {
+      'trigger_mode': 'notification',
+      'pre_shift_window': 15,
+      'require_live_location': true,
+      'location_loss_action': 'alert_only',
+      'location_loss_grace_minutes': 5,
+    };
+  }
+
+  // ── جلب الشيفت الحالي للموظف ────────────────────────────
+  static Future<Map<String, dynamic>?> _getMyShift(String token) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_baseUrl/attendance/api/mobile/employee/my-shift/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+      ).timeout(const Duration(seconds: 10));
+
+      if (res.statusCode == 200) {
+        return jsonDecode(utf8.decode(res.bodyBytes));
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  // ── التحقق من نافذة الشيفت ──────────────────────────────
+  static bool _isWithinShiftWindow(
+    Map<String, dynamic>? shiftData,
+    int preShiftWindowMinutes,
+  ) {
+    if (shiftData == null) return true; // لو مفيش شيفت، نسمح
+
+    try {
+      final startTimeStr = shiftData['start_time'] as String?;
+      if (startTimeStr == null) return true;
+
+      final parts = startTimeStr.split(':');
+      final shiftHour = int.parse(parts[0]);
+      final shiftMinute = int.parse(parts[1]);
+
+      final now = DateTime.now();
+      final shiftStart = DateTime(now.year, now.month, now.day, shiftHour, shiftMinute);
+      final allowedFrom = shiftStart.subtract(Duration(minutes: preShiftWindowMinutes));
+      final allowedTo = shiftStart.add(const Duration(hours: 4)); // حد أقصى 4 ساعات بعد الشيفت
+
+      return now.isAfter(allowedFrom) && now.isBefore(allowedTo);
+    } catch (_) {
+      return true;
+    }
+  }
+
 }
