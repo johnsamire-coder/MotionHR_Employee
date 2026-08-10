@@ -1,0 +1,2615 @@
+{
+  "summary": {
+    "web_total_apis": 197,
+    "mobile_total_apis": 165,
+    "in_both": 12,
+    "only_web": 185,
+    "only_mobile": 153,
+    "web_pages": 91,
+    "mobile_screens": 100
+  },
+  "in_both": [
+    "/branches",
+    "/change-password",
+    "/employee/missions",
+    "/employee/partial-checkout",
+    "/employee/payslip",
+    "/employee/permission-balance",
+    "/employee/resume-checkin",
+    "/employee/summary",
+    "/job-titles",
+    "/manager/action",
+    "/manager/live-locations",
+    "/manager/pending"
+  ],
+  "only_web": [
+    "/announcements",
+    "/attendance/daily",
+    "/auth/login",
+    "/auth/signup",
+    "/company/info",
+    "/company/payroll-settings",
+    "/company/upload-logo",
+    "/dashboard",
+    "/departments",
+    "/employee/announcements",
+    "/employee/attendance",
+    "/employee/attendance-history",
+    "/employee/attendance-status",
+    "/employee/cancel-leave",
+    "/employee/checkin",
+    "/employee/field-visits",
+    "/employee/field-visits/types",
+    "/employee/field-visits/{id}/end",
+    "/employee/history",
+    "/employee/leave-types",
+    "/employee/mission-end",
+    "/employee/mission-request",
+    "/employee/mission-start",
+    "/employee/my-leaves",
+    "/employee/my-missions",
+    "/employee/my-payslip",
+    "/employee/my-permissions",
+    "/employee/my-requests",
+    "/employee/my-shift",
+    "/employee/my-work-locations",
+    "/employee/notifications",
+    "/employee/request-types",
+    "/employee/status",
+    "/employee/submit-leave",
+    "/employee/submit-request",
+    "/employee/today-sessions",
+    "/employee/work-locations",
+    "/employees/import",
+    "/employees/list",
+    "/employees/managers",
+    "/employees/template",
+    "/employees/{id}",
+    "/geocode",
+    "/hierarchy",
+    "/hr/all-employees",
+    "/hr/announcements/{id}",
+    "/hr/charter",
+    "/hr/charter/acceptances",
+    "/hr/charter/update",
+    "/hr/departments",
+    "/hr/departments/{id}",
+    "/hr/employees/create",
+    "/hr/employees/{id}",
+    "/hr/employees/{id}/documents",
+    "/hr/employees/{id}/movements",
+    "/hr/employees/{id}/offboard",
+    "/hr/employees/{id}/reset-password",
+    "/hr/employees/{id}/summary",
+    "/hr/flex-adjustments",
+    "/hr/flex-adjustments/{id}/review",
+    "/hr/geofence",
+    "/hr/geofence-set",
+    "/hr/leave-recall",
+    "/hr/leave-recall-create",
+    "/hr/leave-recall/{id}/review",
+    "/hr/leave-recalls",
+    "/hr/manual-entries/allowance",
+    "/hr/manual-entries/allowance/{id}",
+    "/hr/manual-entries/allowance/{id}/approve",
+    "/hr/manual-entries/allowance/{id}/reject",
+    "/hr/manual-entries/bonus",
+    "/hr/manual-entries/bonus/{id}",
+    "/hr/manual-entries/bonus/{id}/approve",
+    "/hr/manual-entries/bonus/{id}/reject",
+    "/hr/manual-entries/penalty",
+    "/hr/manual-entries/penalty/{id}",
+    "/hr/manual-entries/penalty/{id}/approve",
+    "/hr/manual-entries/penalty/{id}/reject",
+    "/hr/manual-entries/summary",
+    "/hr/offboarding-list",
+    "/hr/payroll-runs",
+    "/hr/payroll-runs/{id}",
+    "/hr/payroll-runs/{id}/approve",
+    "/hr/payroll/employee-detail",
+    "/hr/permissions-assign",
+    "/hr/permissions-available",
+    "/hr/permissions-defaults",
+    "/hr/permissions-export",
+    "/hr/permissions-override",
+    "/hr/permissions-role-create",
+    "/hr/permissions-role-delete/{id}",
+    "/hr/permissions-role-update/{id}",
+    "/hr/permissions-roles",
+    "/hr/permissions-users",
+    "/hr/policies-allowance",
+    "/hr/policies-attendance",
+    "/hr/policies-bonus",
+    "/hr/policies-deduction",
+    "/hr/policies-leave",
+    "/hr/policies-work",
+    "/hr/policies/allowance-policies",
+    "/hr/policies/allowance-policies/{id}",
+    "/hr/policies/attendance-policy",
+    "/hr/policies/attendance-policy/{id}",
+    "/hr/policies/attendance-policy/{id}/approve",
+    "/hr/policies/attendance-policy/{id}/clone",
+    "/hr/policies/bonus-policies",
+    "/hr/policies/bonus-policies/{id}",
+    "/hr/policies/deduction-policies",
+    "/hr/policies/deduction-policies/{id}",
+    "/hr/policies/insurance-policies",
+    "/hr/policies/insurance-policies/{id}",
+    "/hr/policies/leave-policy",
+    "/hr/policies/leave-policy/{id}",
+    "/hr/policies/leave-policy/{id}/approve",
+    "/hr/policies/official-holidays",
+    "/hr/policies/official-holidays/{id}",
+    "/hr/policies/payroll-cycle-policies",
+    "/hr/policies/payroll-cycle-policies/{id}",
+    "/hr/policies/rules-allowance",
+    "/hr/policies/rules-allowance/{id}",
+    "/hr/policies/rules-bonus",
+    "/hr/policies/rules-bonus/{id}",
+    "/hr/policies/rules-leave",
+    "/hr/policies/rules-leave/{id}",
+    "/hr/policies/rules-penalty",
+    "/hr/policies/rules-penalty/{id}",
+    "/hr/policies/work-policy",
+    "/hr/policies/work-policy/save",
+    "/hr/propose-location",
+    "/hr/reactivate",
+    "/hr/reminders",
+    "/hr/shifts/overrides",
+    "/hr/shifts/overrides/{id}",
+    "/hr/shifts/rotations",
+    "/hr/shifts/rotations/{id}",
+    "/hr/shifts/rotations/{id}/assign",
+    "/hr/shifts/rotations/{id}/assignments",
+    "/hr/terminate",
+    "/hr/work-location-types",
+    "/hr/work-locations",
+    "/hr/work-locations/{id}",
+    "/leaves/enhanced",
+    "/leaves/hr-create",
+    "/leaves/types",
+    "/leaves/{id}/cancel",
+    "/locations/live",
+    "/manager/create-mission",
+    "/manager/dashboard-stats",
+    "/manager/mission-approve",
+    "/manager/mission-requests",
+    "/manager/missions",
+    "/manager/shift-change-action",
+    "/manager/shift-changes",
+    "/manager/team",
+    "/manager/team-attendance",
+    "/manager/team-simple",
+    "/manager/withdraw-requests",
+    "/manager/withdraw-respond",
+    "/missions",
+    "/missions/feedback",
+    "/missions/pending",
+    "/payroll/summary",
+    "/profile",
+    "/reports/absence",
+    "/reports/daily-attendance",
+    "/reports/export/excel",
+    "/reports/export/pdf",
+    "/reports/hub-stats",
+    "/reports/late",
+    "/reports/leaves-basic",
+    "/reports/leaves-enhanced",
+    "/reports/location-tracking",
+    "/reports/monthly-attendance",
+    "/reports/payroll",
+    "/reports/permissions",
+    "/reports/requests-report",
+    "/reports/shifts-report",
+    "/reports/work-hours",
+    "/requests/pending",
+    "/requests/report",
+    "/requests/types",
+    "/reverse-geocode",
+    "/shifts",
+    "/subscription/status"
+  ],
+  "only_mobile": [
+    "/activate-account",
+    "/announcements/list",
+    "/announcements/mark-read",
+    "/attachments/list",
+    "/attachments/upload",
+    "/attachments/{id}/delete",
+    "/attachments/{id}/download",
+    "/attendance",
+    "/charter",
+    "/charter/accept",
+    "/employee/auto-check-in",
+    "/employee/auto-check-out",
+    "/employee/auto-checkin-status",
+    "/employee/documents",
+    "/employee/missions/assignments/{id}/end",
+    "/employee/missions/assignments/{id}/locations",
+    "/employee/missions/assignments/{id}/respond",
+    "/employee/missions/assignments/{id}/start",
+    "/employee/missions/assignments/{id}/update-location",
+    "/employee/missions/assignments/{id}/upload",
+    "/employee/missions/assignments/{id}/withdraw",
+    "/employee/missions/request",
+    "/employee/movements",
+    "/employee/profile",
+    "/employee/save-location",
+    "/fcm-token",
+    "/geofence",
+    "/geofence/set",
+    "/history",
+    "/import-excel",
+    "/import-logs",
+    "/import-template",
+    "/leave-recall/create",
+    "/leave-recall/list",
+    "/leave-recall/{id}/review",
+    "/leave-request",
+    "/leave-types",
+    "/login",
+    "/manager",
+    "/manager/announcements/create",
+    "/manager/attendance",
+    "/manager/attendance-policy",
+    "/manager/attendance-policy/{id}",
+    "/manager/attendance-policy/{id}/approve",
+    "/manager/attendance-policy/{id}/assign",
+    "/manager/attendance-policy/{id}/disciplinary-rules",
+    "/manager/attendance-policy/{id}/disciplinary-rules/{id}",
+    "/manager/branches",
+    "/manager/charter/acceptances",
+    "/manager/charter/update",
+    "/manager/company-info",
+    "/manager/company-info/update",
+    "/manager/company-info/upload-logo",
+    "/manager/departments",
+    "/manager/departments/add",
+    "/manager/departments/list",
+    "/manager/disciplinary/actions",
+    "/manager/disciplinary/actions/{id}/review",
+    "/manager/employees",
+    "/manager/employees/create",
+    "/manager/employees/simple",
+    "/manager/employees/{id}",
+    "/manager/employees/{id}/effective-shift",
+    "/manager/employees/{id}/flex-adjustments",
+    "/manager/employees/{id}/permission-balance",
+    "/manager/employees/{id}/permission-grant",
+    "/manager/employees/{id}/permission-rollback",
+    "/manager/employees/{id}/reset-password",
+    "/manager/employees/{id}/shifts",
+    "/manager/employees/{id}/summary",
+    "/manager/employees/{id}/transfer",
+    "/manager/employees/{id}/update",
+    "/manager/entries",
+    "/manager/eos/calculate",
+    "/manager/eos/policies",
+    "/manager/flex-adjustments",
+    "/manager/flex-adjustments/{id}/review",
+    "/manager/geofence",
+    "/manager/job-titles",
+    "/manager/leave-balance-adjustments",
+    "/manager/leave-policy",
+    "/manager/leave-policy/apply-to-existing",
+    "/manager/leave-policy/{id}",
+    "/manager/leave-policy/{id}/approve",
+    "/manager/location-report",
+    "/manager/offboarding/list",
+    "/manager/offboarding/{id}",
+    "/manager/offboarding/{id}/reactivate",
+    "/manager/official-holidays",
+    "/manager/official-holidays/{id}",
+    "/manager/organization-tree",
+    "/manager/payroll-cycle-policies",
+    "/manager/payroll/employee",
+    "/manager/payroll/settings",
+    "/manager/payroll/summary",
+    "/manager/permissions/assign-role",
+    "/manager/permissions/available",
+    "/manager/permissions/defaults",
+    "/manager/permissions/export",
+    "/manager/permissions/override/bulk",
+    "/manager/permissions/override/remove",
+    "/manager/permissions/override/set",
+    "/manager/permissions/roles",
+    "/manager/permissions/roles/create",
+    "/manager/permissions/roles/{id}/delete",
+    "/manager/permissions/roles/{id}/update",
+    "/manager/permissions/summary",
+    "/manager/permissions/users",
+    "/manager/reminders/trigger",
+    "/manager/reports/daily-attendance",
+    "/manager/reports/leaves-enhanced",
+    "/manager/reports/payroll",
+    "/manager/reports/permissions",
+    "/manager/reports/shifts",
+    "/manager/reports/{id}",
+    "/manager/rotations",
+    "/manager/rotations/{id}",
+    "/manager/rotations/{id}/assign",
+    "/manager/rotations/{id}/assignments",
+    "/manager/rules/allowance",
+    "/manager/rules/bonus",
+    "/manager/rules/leave",
+    "/manager/rules/penalty",
+    "/manager/shifts",
+    "/manager/shifts/assign",
+    "/manager/shifts/assignments",
+    "/manager/shifts/assignments/{id}/delete",
+    "/manager/shifts/assignments/{id}/update",
+    "/manager/shifts/change-requests",
+    "/manager/shifts/change-requests/{id}/action",
+    "/manager/shifts/create",
+    "/manager/shifts/override/create",
+    "/manager/shifts/override/{id}/delete",
+    "/manager/shifts/overrides",
+    "/manager/shifts/{id}/delete",
+    "/manager/shifts/{id}/employees",
+    "/manager/shifts/{id}/update",
+    "/manager/tax/calculate",
+    "/manager/tax/policies",
+    "/manager/work-policy",
+    "/manager/work-policy/save",
+    "/my-leaves/{id}/cancel",
+    "/my-requests",
+    "/my-requests/{id}/cancel",
+    "/my-shift",
+    "/notifications",
+    "/notifications/mark-read",
+    "/permissions/my",
+    "/request-types",
+    "/requests/{id}/respond",
+    "/status/{id}",
+    "/submit-request",
+    "/{id}"
+  ],
+  "modules_comparison": {
+    "activate-account": {
+      "web": [],
+      "mobile": [
+        "/activate-account"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/activate-account"
+      ]
+    },
+    "announcements": {
+      "web": [
+        "/announcements"
+      ],
+      "mobile": [
+        "/announcements/list",
+        "/announcements/mark-read"
+      ],
+      "only_web": [
+        "/announcements"
+      ],
+      "only_mobile": [
+        "/announcements/list",
+        "/announcements/mark-read"
+      ]
+    },
+    "attachments": {
+      "web": [],
+      "mobile": [
+        "/attachments/list",
+        "/attachments/upload",
+        "/attachments/{id}/delete",
+        "/attachments/{id}/download"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/attachments/list",
+        "/attachments/upload",
+        "/attachments/{id}/delete",
+        "/attachments/{id}/download"
+      ]
+    },
+    "attendance": {
+      "web": [
+        "/attendance/daily"
+      ],
+      "mobile": [
+        "/attendance"
+      ],
+      "only_web": [
+        "/attendance/daily"
+      ],
+      "only_mobile": [
+        "/attendance"
+      ]
+    },
+    "auth": {
+      "web": [
+        "/auth/login",
+        "/auth/signup"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/auth/login",
+        "/auth/signup"
+      ],
+      "only_mobile": []
+    },
+    "branches": {
+      "web": [
+        "/branches"
+      ],
+      "mobile": [
+        "/branches"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "change-password": {
+      "web": [
+        "/change-password"
+      ],
+      "mobile": [
+        "/change-password"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "charter": {
+      "web": [],
+      "mobile": [
+        "/charter",
+        "/charter/accept"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/charter",
+        "/charter/accept"
+      ]
+    },
+    "company": {
+      "web": [
+        "/company/info",
+        "/company/payroll-settings",
+        "/company/upload-logo"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/company/info",
+        "/company/payroll-settings",
+        "/company/upload-logo"
+      ],
+      "only_mobile": []
+    },
+    "dashboard": {
+      "web": [
+        "/dashboard"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/dashboard"
+      ],
+      "only_mobile": []
+    },
+    "departments": {
+      "web": [
+        "/departments"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/departments"
+      ],
+      "only_mobile": []
+    },
+    "employee/announcements": {
+      "web": [
+        "/employee/announcements"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/announcements"
+      ],
+      "only_mobile": []
+    },
+    "employee/attendance": {
+      "web": [
+        "/employee/attendance"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/attendance"
+      ],
+      "only_mobile": []
+    },
+    "employee/attendance-history": {
+      "web": [
+        "/employee/attendance-history"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/attendance-history"
+      ],
+      "only_mobile": []
+    },
+    "employee/attendance-status": {
+      "web": [
+        "/employee/attendance-status"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/attendance-status"
+      ],
+      "only_mobile": []
+    },
+    "employee/auto-check-in": {
+      "web": [],
+      "mobile": [
+        "/employee/auto-check-in"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/auto-check-in"
+      ]
+    },
+    "employee/auto-check-out": {
+      "web": [],
+      "mobile": [
+        "/employee/auto-check-out"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/auto-check-out"
+      ]
+    },
+    "employee/auto-checkin-status": {
+      "web": [],
+      "mobile": [
+        "/employee/auto-checkin-status"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/auto-checkin-status"
+      ]
+    },
+    "employee/cancel-leave": {
+      "web": [
+        "/employee/cancel-leave"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/cancel-leave"
+      ],
+      "only_mobile": []
+    },
+    "employee/checkin": {
+      "web": [
+        "/employee/checkin"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/checkin"
+      ],
+      "only_mobile": []
+    },
+    "employee/documents": {
+      "web": [],
+      "mobile": [
+        "/employee/documents"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/documents"
+      ]
+    },
+    "employee/field-visits": {
+      "web": [
+        "/employee/field-visits",
+        "/employee/field-visits/types",
+        "/employee/field-visits/{id}/end"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/field-visits",
+        "/employee/field-visits/types",
+        "/employee/field-visits/{id}/end"
+      ],
+      "only_mobile": []
+    },
+    "employee/history": {
+      "web": [
+        "/employee/history"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/history"
+      ],
+      "only_mobile": []
+    },
+    "employee/leave-types": {
+      "web": [
+        "/employee/leave-types"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/leave-types"
+      ],
+      "only_mobile": []
+    },
+    "employee/mission-end": {
+      "web": [
+        "/employee/mission-end"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/mission-end"
+      ],
+      "only_mobile": []
+    },
+    "employee/mission-request": {
+      "web": [
+        "/employee/mission-request"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/mission-request"
+      ],
+      "only_mobile": []
+    },
+    "employee/mission-start": {
+      "web": [
+        "/employee/mission-start"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/mission-start"
+      ],
+      "only_mobile": []
+    },
+    "employee/missions": {
+      "web": [
+        "/employee/missions"
+      ],
+      "mobile": [
+        "/employee/missions",
+        "/employee/missions/assignments/{id}/end",
+        "/employee/missions/assignments/{id}/locations",
+        "/employee/missions/assignments/{id}/respond",
+        "/employee/missions/assignments/{id}/start",
+        "/employee/missions/assignments/{id}/update-location",
+        "/employee/missions/assignments/{id}/upload",
+        "/employee/missions/assignments/{id}/withdraw",
+        "/employee/missions/request"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/missions/assignments/{id}/end",
+        "/employee/missions/assignments/{id}/locations",
+        "/employee/missions/assignments/{id}/respond",
+        "/employee/missions/assignments/{id}/start",
+        "/employee/missions/assignments/{id}/update-location",
+        "/employee/missions/assignments/{id}/upload",
+        "/employee/missions/assignments/{id}/withdraw",
+        "/employee/missions/request"
+      ]
+    },
+    "employee/movements": {
+      "web": [],
+      "mobile": [
+        "/employee/movements"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/movements"
+      ]
+    },
+    "employee/my-leaves": {
+      "web": [
+        "/employee/my-leaves"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-leaves"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-missions": {
+      "web": [
+        "/employee/my-missions"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-missions"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-payslip": {
+      "web": [
+        "/employee/my-payslip"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-payslip"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-permissions": {
+      "web": [
+        "/employee/my-permissions"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-permissions"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-requests": {
+      "web": [
+        "/employee/my-requests"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-requests"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-shift": {
+      "web": [
+        "/employee/my-shift"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-shift"
+      ],
+      "only_mobile": []
+    },
+    "employee/my-work-locations": {
+      "web": [
+        "/employee/my-work-locations"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/my-work-locations"
+      ],
+      "only_mobile": []
+    },
+    "employee/notifications": {
+      "web": [
+        "/employee/notifications"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/notifications"
+      ],
+      "only_mobile": []
+    },
+    "employee/partial-checkout": {
+      "web": [
+        "/employee/partial-checkout"
+      ],
+      "mobile": [
+        "/employee/partial-checkout"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "employee/payslip": {
+      "web": [
+        "/employee/payslip"
+      ],
+      "mobile": [
+        "/employee/payslip"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "employee/permission-balance": {
+      "web": [
+        "/employee/permission-balance"
+      ],
+      "mobile": [
+        "/employee/permission-balance"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "employee/profile": {
+      "web": [],
+      "mobile": [
+        "/employee/profile"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/profile"
+      ]
+    },
+    "employee/request-types": {
+      "web": [
+        "/employee/request-types"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/request-types"
+      ],
+      "only_mobile": []
+    },
+    "employee/resume-checkin": {
+      "web": [
+        "/employee/resume-checkin"
+      ],
+      "mobile": [
+        "/employee/resume-checkin"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "employee/save-location": {
+      "web": [],
+      "mobile": [
+        "/employee/save-location"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/employee/save-location"
+      ]
+    },
+    "employee/status": {
+      "web": [
+        "/employee/status"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/status"
+      ],
+      "only_mobile": []
+    },
+    "employee/submit-leave": {
+      "web": [
+        "/employee/submit-leave"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/submit-leave"
+      ],
+      "only_mobile": []
+    },
+    "employee/submit-request": {
+      "web": [
+        "/employee/submit-request"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/submit-request"
+      ],
+      "only_mobile": []
+    },
+    "employee/summary": {
+      "web": [
+        "/employee/summary"
+      ],
+      "mobile": [
+        "/employee/summary"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "employee/today-sessions": {
+      "web": [
+        "/employee/today-sessions"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/today-sessions"
+      ],
+      "only_mobile": []
+    },
+    "employee/work-locations": {
+      "web": [
+        "/employee/work-locations"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employee/work-locations"
+      ],
+      "only_mobile": []
+    },
+    "employees": {
+      "web": [
+        "/employees/import",
+        "/employees/list",
+        "/employees/managers",
+        "/employees/template",
+        "/employees/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/employees/import",
+        "/employees/list",
+        "/employees/managers",
+        "/employees/template",
+        "/employees/{id}"
+      ],
+      "only_mobile": []
+    },
+    "fcm-token": {
+      "web": [],
+      "mobile": [
+        "/fcm-token"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/fcm-token"
+      ]
+    },
+    "geocode": {
+      "web": [
+        "/geocode"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/geocode"
+      ],
+      "only_mobile": []
+    },
+    "geofence": {
+      "web": [],
+      "mobile": [
+        "/geofence",
+        "/geofence/set"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/geofence",
+        "/geofence/set"
+      ]
+    },
+    "hierarchy": {
+      "web": [
+        "/hierarchy"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hierarchy"
+      ],
+      "only_mobile": []
+    },
+    "history": {
+      "web": [],
+      "mobile": [
+        "/history"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/history"
+      ]
+    },
+    "hr/all-employees": {
+      "web": [
+        "/hr/all-employees"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/all-employees"
+      ],
+      "only_mobile": []
+    },
+    "hr/announcements": {
+      "web": [
+        "/hr/announcements/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/announcements/{id}"
+      ],
+      "only_mobile": []
+    },
+    "hr/charter": {
+      "web": [
+        "/hr/charter",
+        "/hr/charter/acceptances",
+        "/hr/charter/update"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/charter",
+        "/hr/charter/acceptances",
+        "/hr/charter/update"
+      ],
+      "only_mobile": []
+    },
+    "hr/departments": {
+      "web": [
+        "/hr/departments",
+        "/hr/departments/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/departments",
+        "/hr/departments/{id}"
+      ],
+      "only_mobile": []
+    },
+    "hr/employees": {
+      "web": [
+        "/hr/employees/create",
+        "/hr/employees/{id}",
+        "/hr/employees/{id}/documents",
+        "/hr/employees/{id}/movements",
+        "/hr/employees/{id}/offboard",
+        "/hr/employees/{id}/reset-password",
+        "/hr/employees/{id}/summary"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/employees/create",
+        "/hr/employees/{id}",
+        "/hr/employees/{id}/documents",
+        "/hr/employees/{id}/movements",
+        "/hr/employees/{id}/offboard",
+        "/hr/employees/{id}/reset-password",
+        "/hr/employees/{id}/summary"
+      ],
+      "only_mobile": []
+    },
+    "hr/flex-adjustments": {
+      "web": [
+        "/hr/flex-adjustments",
+        "/hr/flex-adjustments/{id}/review"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/flex-adjustments",
+        "/hr/flex-adjustments/{id}/review"
+      ],
+      "only_mobile": []
+    },
+    "hr/geofence": {
+      "web": [
+        "/hr/geofence"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/geofence"
+      ],
+      "only_mobile": []
+    },
+    "hr/geofence-set": {
+      "web": [
+        "/hr/geofence-set"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/geofence-set"
+      ],
+      "only_mobile": []
+    },
+    "hr/leave-recall": {
+      "web": [
+        "/hr/leave-recall",
+        "/hr/leave-recall/{id}/review"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/leave-recall",
+        "/hr/leave-recall/{id}/review"
+      ],
+      "only_mobile": []
+    },
+    "hr/leave-recall-create": {
+      "web": [
+        "/hr/leave-recall-create"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/leave-recall-create"
+      ],
+      "only_mobile": []
+    },
+    "hr/leave-recalls": {
+      "web": [
+        "/hr/leave-recalls"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/leave-recalls"
+      ],
+      "only_mobile": []
+    },
+    "hr/manual-entries": {
+      "web": [
+        "/hr/manual-entries/allowance",
+        "/hr/manual-entries/allowance/{id}",
+        "/hr/manual-entries/allowance/{id}/approve",
+        "/hr/manual-entries/allowance/{id}/reject",
+        "/hr/manual-entries/bonus",
+        "/hr/manual-entries/bonus/{id}",
+        "/hr/manual-entries/bonus/{id}/approve",
+        "/hr/manual-entries/bonus/{id}/reject",
+        "/hr/manual-entries/penalty",
+        "/hr/manual-entries/penalty/{id}",
+        "/hr/manual-entries/penalty/{id}/approve",
+        "/hr/manual-entries/penalty/{id}/reject",
+        "/hr/manual-entries/summary"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/manual-entries/allowance",
+        "/hr/manual-entries/allowance/{id}",
+        "/hr/manual-entries/allowance/{id}/approve",
+        "/hr/manual-entries/allowance/{id}/reject",
+        "/hr/manual-entries/bonus",
+        "/hr/manual-entries/bonus/{id}",
+        "/hr/manual-entries/bonus/{id}/approve",
+        "/hr/manual-entries/bonus/{id}/reject",
+        "/hr/manual-entries/penalty",
+        "/hr/manual-entries/penalty/{id}",
+        "/hr/manual-entries/penalty/{id}/approve",
+        "/hr/manual-entries/penalty/{id}/reject",
+        "/hr/manual-entries/summary"
+      ],
+      "only_mobile": []
+    },
+    "hr/offboarding-list": {
+      "web": [
+        "/hr/offboarding-list"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/offboarding-list"
+      ],
+      "only_mobile": []
+    },
+    "hr/payroll": {
+      "web": [
+        "/hr/payroll/employee-detail"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/payroll/employee-detail"
+      ],
+      "only_mobile": []
+    },
+    "hr/payroll-runs": {
+      "web": [
+        "/hr/payroll-runs",
+        "/hr/payroll-runs/{id}",
+        "/hr/payroll-runs/{id}/approve"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/payroll-runs",
+        "/hr/payroll-runs/{id}",
+        "/hr/payroll-runs/{id}/approve"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-assign": {
+      "web": [
+        "/hr/permissions-assign"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-assign"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-available": {
+      "web": [
+        "/hr/permissions-available"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-available"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-defaults": {
+      "web": [
+        "/hr/permissions-defaults"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-defaults"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-export": {
+      "web": [
+        "/hr/permissions-export"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-export"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-override": {
+      "web": [
+        "/hr/permissions-override"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-override"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-role-create": {
+      "web": [
+        "/hr/permissions-role-create"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-role-create"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-role-delete": {
+      "web": [
+        "/hr/permissions-role-delete/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-role-delete/{id}"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-role-update": {
+      "web": [
+        "/hr/permissions-role-update/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-role-update/{id}"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-roles": {
+      "web": [
+        "/hr/permissions-roles"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-roles"
+      ],
+      "only_mobile": []
+    },
+    "hr/permissions-users": {
+      "web": [
+        "/hr/permissions-users"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/permissions-users"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies": {
+      "web": [
+        "/hr/policies/allowance-policies",
+        "/hr/policies/allowance-policies/{id}",
+        "/hr/policies/attendance-policy",
+        "/hr/policies/attendance-policy/{id}",
+        "/hr/policies/attendance-policy/{id}/approve",
+        "/hr/policies/attendance-policy/{id}/clone",
+        "/hr/policies/bonus-policies",
+        "/hr/policies/bonus-policies/{id}",
+        "/hr/policies/deduction-policies",
+        "/hr/policies/deduction-policies/{id}",
+        "/hr/policies/insurance-policies",
+        "/hr/policies/insurance-policies/{id}",
+        "/hr/policies/leave-policy",
+        "/hr/policies/leave-policy/{id}",
+        "/hr/policies/leave-policy/{id}/approve",
+        "/hr/policies/official-holidays",
+        "/hr/policies/official-holidays/{id}",
+        "/hr/policies/payroll-cycle-policies",
+        "/hr/policies/payroll-cycle-policies/{id}",
+        "/hr/policies/rules-allowance",
+        "/hr/policies/rules-allowance/{id}",
+        "/hr/policies/rules-bonus",
+        "/hr/policies/rules-bonus/{id}",
+        "/hr/policies/rules-leave",
+        "/hr/policies/rules-leave/{id}",
+        "/hr/policies/rules-penalty",
+        "/hr/policies/rules-penalty/{id}",
+        "/hr/policies/work-policy",
+        "/hr/policies/work-policy/save"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies/allowance-policies",
+        "/hr/policies/allowance-policies/{id}",
+        "/hr/policies/attendance-policy",
+        "/hr/policies/attendance-policy/{id}",
+        "/hr/policies/attendance-policy/{id}/approve",
+        "/hr/policies/attendance-policy/{id}/clone",
+        "/hr/policies/bonus-policies",
+        "/hr/policies/bonus-policies/{id}",
+        "/hr/policies/deduction-policies",
+        "/hr/policies/deduction-policies/{id}",
+        "/hr/policies/insurance-policies",
+        "/hr/policies/insurance-policies/{id}",
+        "/hr/policies/leave-policy",
+        "/hr/policies/leave-policy/{id}",
+        "/hr/policies/leave-policy/{id}/approve",
+        "/hr/policies/official-holidays",
+        "/hr/policies/official-holidays/{id}",
+        "/hr/policies/payroll-cycle-policies",
+        "/hr/policies/payroll-cycle-policies/{id}",
+        "/hr/policies/rules-allowance",
+        "/hr/policies/rules-allowance/{id}",
+        "/hr/policies/rules-bonus",
+        "/hr/policies/rules-bonus/{id}",
+        "/hr/policies/rules-leave",
+        "/hr/policies/rules-leave/{id}",
+        "/hr/policies/rules-penalty",
+        "/hr/policies/rules-penalty/{id}",
+        "/hr/policies/work-policy",
+        "/hr/policies/work-policy/save"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-allowance": {
+      "web": [
+        "/hr/policies-allowance"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-allowance"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-attendance": {
+      "web": [
+        "/hr/policies-attendance"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-attendance"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-bonus": {
+      "web": [
+        "/hr/policies-bonus"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-bonus"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-deduction": {
+      "web": [
+        "/hr/policies-deduction"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-deduction"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-leave": {
+      "web": [
+        "/hr/policies-leave"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-leave"
+      ],
+      "only_mobile": []
+    },
+    "hr/policies-work": {
+      "web": [
+        "/hr/policies-work"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/policies-work"
+      ],
+      "only_mobile": []
+    },
+    "hr/propose-location": {
+      "web": [
+        "/hr/propose-location"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/propose-location"
+      ],
+      "only_mobile": []
+    },
+    "hr/reactivate": {
+      "web": [
+        "/hr/reactivate"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/reactivate"
+      ],
+      "only_mobile": []
+    },
+    "hr/reminders": {
+      "web": [
+        "/hr/reminders"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/reminders"
+      ],
+      "only_mobile": []
+    },
+    "hr/shifts": {
+      "web": [
+        "/hr/shifts/overrides",
+        "/hr/shifts/overrides/{id}",
+        "/hr/shifts/rotations",
+        "/hr/shifts/rotations/{id}",
+        "/hr/shifts/rotations/{id}/assign",
+        "/hr/shifts/rotations/{id}/assignments"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/shifts/overrides",
+        "/hr/shifts/overrides/{id}",
+        "/hr/shifts/rotations",
+        "/hr/shifts/rotations/{id}",
+        "/hr/shifts/rotations/{id}/assign",
+        "/hr/shifts/rotations/{id}/assignments"
+      ],
+      "only_mobile": []
+    },
+    "hr/terminate": {
+      "web": [
+        "/hr/terminate"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/terminate"
+      ],
+      "only_mobile": []
+    },
+    "hr/work-location-types": {
+      "web": [
+        "/hr/work-location-types"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/work-location-types"
+      ],
+      "only_mobile": []
+    },
+    "hr/work-locations": {
+      "web": [
+        "/hr/work-locations",
+        "/hr/work-locations/{id}"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/hr/work-locations",
+        "/hr/work-locations/{id}"
+      ],
+      "only_mobile": []
+    },
+    "import-excel": {
+      "web": [],
+      "mobile": [
+        "/import-excel"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/import-excel"
+      ]
+    },
+    "import-logs": {
+      "web": [],
+      "mobile": [
+        "/import-logs"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/import-logs"
+      ]
+    },
+    "import-template": {
+      "web": [],
+      "mobile": [
+        "/import-template"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/import-template"
+      ]
+    },
+    "job-titles": {
+      "web": [
+        "/job-titles"
+      ],
+      "mobile": [
+        "/job-titles"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "leave-recall": {
+      "web": [],
+      "mobile": [
+        "/leave-recall/create",
+        "/leave-recall/list",
+        "/leave-recall/{id}/review"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/leave-recall/create",
+        "/leave-recall/list",
+        "/leave-recall/{id}/review"
+      ]
+    },
+    "leave-request": {
+      "web": [],
+      "mobile": [
+        "/leave-request"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/leave-request"
+      ]
+    },
+    "leave-types": {
+      "web": [],
+      "mobile": [
+        "/leave-types"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/leave-types"
+      ]
+    },
+    "leaves": {
+      "web": [
+        "/leaves/enhanced",
+        "/leaves/hr-create",
+        "/leaves/types",
+        "/leaves/{id}/cancel"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/leaves/enhanced",
+        "/leaves/hr-create",
+        "/leaves/types",
+        "/leaves/{id}/cancel"
+      ],
+      "only_mobile": []
+    },
+    "locations": {
+      "web": [
+        "/locations/live"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/locations/live"
+      ],
+      "only_mobile": []
+    },
+    "login": {
+      "web": [],
+      "mobile": [
+        "/login"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/login"
+      ]
+    },
+    "manager": {
+      "web": [],
+      "mobile": [
+        "/manager"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager"
+      ]
+    },
+    "manager/action": {
+      "web": [
+        "/manager/action"
+      ],
+      "mobile": [
+        "/manager/action"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "manager/announcements": {
+      "web": [],
+      "mobile": [
+        "/manager/announcements/create"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/announcements/create"
+      ]
+    },
+    "manager/attendance": {
+      "web": [],
+      "mobile": [
+        "/manager/attendance"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/attendance"
+      ]
+    },
+    "manager/attendance-policy": {
+      "web": [],
+      "mobile": [
+        "/manager/attendance-policy",
+        "/manager/attendance-policy/{id}",
+        "/manager/attendance-policy/{id}/approve",
+        "/manager/attendance-policy/{id}/assign",
+        "/manager/attendance-policy/{id}/disciplinary-rules",
+        "/manager/attendance-policy/{id}/disciplinary-rules/{id}"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/attendance-policy",
+        "/manager/attendance-policy/{id}",
+        "/manager/attendance-policy/{id}/approve",
+        "/manager/attendance-policy/{id}/assign",
+        "/manager/attendance-policy/{id}/disciplinary-rules",
+        "/manager/attendance-policy/{id}/disciplinary-rules/{id}"
+      ]
+    },
+    "manager/branches": {
+      "web": [],
+      "mobile": [
+        "/manager/branches"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/branches"
+      ]
+    },
+    "manager/charter": {
+      "web": [],
+      "mobile": [
+        "/manager/charter/acceptances",
+        "/manager/charter/update"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/charter/acceptances",
+        "/manager/charter/update"
+      ]
+    },
+    "manager/company-info": {
+      "web": [],
+      "mobile": [
+        "/manager/company-info",
+        "/manager/company-info/update",
+        "/manager/company-info/upload-logo"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/company-info",
+        "/manager/company-info/update",
+        "/manager/company-info/upload-logo"
+      ]
+    },
+    "manager/create-mission": {
+      "web": [
+        "/manager/create-mission"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/create-mission"
+      ],
+      "only_mobile": []
+    },
+    "manager/dashboard-stats": {
+      "web": [
+        "/manager/dashboard-stats"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/dashboard-stats"
+      ],
+      "only_mobile": []
+    },
+    "manager/departments": {
+      "web": [],
+      "mobile": [
+        "/manager/departments",
+        "/manager/departments/add",
+        "/manager/departments/list"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/departments",
+        "/manager/departments/add",
+        "/manager/departments/list"
+      ]
+    },
+    "manager/disciplinary": {
+      "web": [],
+      "mobile": [
+        "/manager/disciplinary/actions",
+        "/manager/disciplinary/actions/{id}/review"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/disciplinary/actions",
+        "/manager/disciplinary/actions/{id}/review"
+      ]
+    },
+    "manager/employees": {
+      "web": [],
+      "mobile": [
+        "/manager/employees",
+        "/manager/employees/create",
+        "/manager/employees/simple",
+        "/manager/employees/{id}",
+        "/manager/employees/{id}/effective-shift",
+        "/manager/employees/{id}/flex-adjustments",
+        "/manager/employees/{id}/permission-balance",
+        "/manager/employees/{id}/permission-grant",
+        "/manager/employees/{id}/permission-rollback",
+        "/manager/employees/{id}/reset-password",
+        "/manager/employees/{id}/shifts",
+        "/manager/employees/{id}/summary",
+        "/manager/employees/{id}/transfer",
+        "/manager/employees/{id}/update"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/employees",
+        "/manager/employees/create",
+        "/manager/employees/simple",
+        "/manager/employees/{id}",
+        "/manager/employees/{id}/effective-shift",
+        "/manager/employees/{id}/flex-adjustments",
+        "/manager/employees/{id}/permission-balance",
+        "/manager/employees/{id}/permission-grant",
+        "/manager/employees/{id}/permission-rollback",
+        "/manager/employees/{id}/reset-password",
+        "/manager/employees/{id}/shifts",
+        "/manager/employees/{id}/summary",
+        "/manager/employees/{id}/transfer",
+        "/manager/employees/{id}/update"
+      ]
+    },
+    "manager/entries": {
+      "web": [],
+      "mobile": [
+        "/manager/entries"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/entries"
+      ]
+    },
+    "manager/eos": {
+      "web": [],
+      "mobile": [
+        "/manager/eos/calculate",
+        "/manager/eos/policies"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/eos/calculate",
+        "/manager/eos/policies"
+      ]
+    },
+    "manager/flex-adjustments": {
+      "web": [],
+      "mobile": [
+        "/manager/flex-adjustments",
+        "/manager/flex-adjustments/{id}/review"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/flex-adjustments",
+        "/manager/flex-adjustments/{id}/review"
+      ]
+    },
+    "manager/geofence": {
+      "web": [],
+      "mobile": [
+        "/manager/geofence"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/geofence"
+      ]
+    },
+    "manager/job-titles": {
+      "web": [],
+      "mobile": [
+        "/manager/job-titles"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/job-titles"
+      ]
+    },
+    "manager/leave-balance-adjustments": {
+      "web": [],
+      "mobile": [
+        "/manager/leave-balance-adjustments"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/leave-balance-adjustments"
+      ]
+    },
+    "manager/leave-policy": {
+      "web": [],
+      "mobile": [
+        "/manager/leave-policy",
+        "/manager/leave-policy/apply-to-existing",
+        "/manager/leave-policy/{id}",
+        "/manager/leave-policy/{id}/approve"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/leave-policy",
+        "/manager/leave-policy/apply-to-existing",
+        "/manager/leave-policy/{id}",
+        "/manager/leave-policy/{id}/approve"
+      ]
+    },
+    "manager/live-locations": {
+      "web": [
+        "/manager/live-locations"
+      ],
+      "mobile": [
+        "/manager/live-locations"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "manager/location-report": {
+      "web": [],
+      "mobile": [
+        "/manager/location-report"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/location-report"
+      ]
+    },
+    "manager/mission-approve": {
+      "web": [
+        "/manager/mission-approve"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/mission-approve"
+      ],
+      "only_mobile": []
+    },
+    "manager/mission-requests": {
+      "web": [
+        "/manager/mission-requests"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/mission-requests"
+      ],
+      "only_mobile": []
+    },
+    "manager/missions": {
+      "web": [
+        "/manager/missions"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/missions"
+      ],
+      "only_mobile": []
+    },
+    "manager/offboarding": {
+      "web": [],
+      "mobile": [
+        "/manager/offboarding/list",
+        "/manager/offboarding/{id}",
+        "/manager/offboarding/{id}/reactivate"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/offboarding/list",
+        "/manager/offboarding/{id}",
+        "/manager/offboarding/{id}/reactivate"
+      ]
+    },
+    "manager/official-holidays": {
+      "web": [],
+      "mobile": [
+        "/manager/official-holidays",
+        "/manager/official-holidays/{id}"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/official-holidays",
+        "/manager/official-holidays/{id}"
+      ]
+    },
+    "manager/organization-tree": {
+      "web": [],
+      "mobile": [
+        "/manager/organization-tree"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/organization-tree"
+      ]
+    },
+    "manager/payroll": {
+      "web": [],
+      "mobile": [
+        "/manager/payroll/employee",
+        "/manager/payroll/settings",
+        "/manager/payroll/summary"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/payroll/employee",
+        "/manager/payroll/settings",
+        "/manager/payroll/summary"
+      ]
+    },
+    "manager/payroll-cycle-policies": {
+      "web": [],
+      "mobile": [
+        "/manager/payroll-cycle-policies"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/payroll-cycle-policies"
+      ]
+    },
+    "manager/pending": {
+      "web": [
+        "/manager/pending"
+      ],
+      "mobile": [
+        "/manager/pending"
+      ],
+      "only_web": [],
+      "only_mobile": []
+    },
+    "manager/permissions": {
+      "web": [],
+      "mobile": [
+        "/manager/permissions/assign-role",
+        "/manager/permissions/available",
+        "/manager/permissions/defaults",
+        "/manager/permissions/export",
+        "/manager/permissions/override/bulk",
+        "/manager/permissions/override/remove",
+        "/manager/permissions/override/set",
+        "/manager/permissions/roles",
+        "/manager/permissions/roles/create",
+        "/manager/permissions/roles/{id}/delete",
+        "/manager/permissions/roles/{id}/update",
+        "/manager/permissions/summary",
+        "/manager/permissions/users"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/permissions/assign-role",
+        "/manager/permissions/available",
+        "/manager/permissions/defaults",
+        "/manager/permissions/export",
+        "/manager/permissions/override/bulk",
+        "/manager/permissions/override/remove",
+        "/manager/permissions/override/set",
+        "/manager/permissions/roles",
+        "/manager/permissions/roles/create",
+        "/manager/permissions/roles/{id}/delete",
+        "/manager/permissions/roles/{id}/update",
+        "/manager/permissions/summary",
+        "/manager/permissions/users"
+      ]
+    },
+    "manager/reminders": {
+      "web": [],
+      "mobile": [
+        "/manager/reminders/trigger"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/reminders/trigger"
+      ]
+    },
+    "manager/reports": {
+      "web": [],
+      "mobile": [
+        "/manager/reports/daily-attendance",
+        "/manager/reports/leaves-enhanced",
+        "/manager/reports/payroll",
+        "/manager/reports/permissions",
+        "/manager/reports/shifts",
+        "/manager/reports/{id}"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/reports/daily-attendance",
+        "/manager/reports/leaves-enhanced",
+        "/manager/reports/payroll",
+        "/manager/reports/permissions",
+        "/manager/reports/shifts",
+        "/manager/reports/{id}"
+      ]
+    },
+    "manager/rotations": {
+      "web": [],
+      "mobile": [
+        "/manager/rotations",
+        "/manager/rotations/{id}",
+        "/manager/rotations/{id}/assign",
+        "/manager/rotations/{id}/assignments"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/rotations",
+        "/manager/rotations/{id}",
+        "/manager/rotations/{id}/assign",
+        "/manager/rotations/{id}/assignments"
+      ]
+    },
+    "manager/rules": {
+      "web": [],
+      "mobile": [
+        "/manager/rules/allowance",
+        "/manager/rules/bonus",
+        "/manager/rules/leave",
+        "/manager/rules/penalty"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/rules/allowance",
+        "/manager/rules/bonus",
+        "/manager/rules/leave",
+        "/manager/rules/penalty"
+      ]
+    },
+    "manager/shift-change-action": {
+      "web": [
+        "/manager/shift-change-action"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/shift-change-action"
+      ],
+      "only_mobile": []
+    },
+    "manager/shift-changes": {
+      "web": [
+        "/manager/shift-changes"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/shift-changes"
+      ],
+      "only_mobile": []
+    },
+    "manager/shifts": {
+      "web": [],
+      "mobile": [
+        "/manager/shifts",
+        "/manager/shifts/assign",
+        "/manager/shifts/assignments",
+        "/manager/shifts/assignments/{id}/delete",
+        "/manager/shifts/assignments/{id}/update",
+        "/manager/shifts/change-requests",
+        "/manager/shifts/change-requests/{id}/action",
+        "/manager/shifts/create",
+        "/manager/shifts/override/create",
+        "/manager/shifts/override/{id}/delete",
+        "/manager/shifts/overrides",
+        "/manager/shifts/{id}/delete",
+        "/manager/shifts/{id}/employees",
+        "/manager/shifts/{id}/update"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/shifts",
+        "/manager/shifts/assign",
+        "/manager/shifts/assignments",
+        "/manager/shifts/assignments/{id}/delete",
+        "/manager/shifts/assignments/{id}/update",
+        "/manager/shifts/change-requests",
+        "/manager/shifts/change-requests/{id}/action",
+        "/manager/shifts/create",
+        "/manager/shifts/override/create",
+        "/manager/shifts/override/{id}/delete",
+        "/manager/shifts/overrides",
+        "/manager/shifts/{id}/delete",
+        "/manager/shifts/{id}/employees",
+        "/manager/shifts/{id}/update"
+      ]
+    },
+    "manager/tax": {
+      "web": [],
+      "mobile": [
+        "/manager/tax/calculate",
+        "/manager/tax/policies"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/tax/calculate",
+        "/manager/tax/policies"
+      ]
+    },
+    "manager/team": {
+      "web": [
+        "/manager/team"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/team"
+      ],
+      "only_mobile": []
+    },
+    "manager/team-attendance": {
+      "web": [
+        "/manager/team-attendance"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/team-attendance"
+      ],
+      "only_mobile": []
+    },
+    "manager/team-simple": {
+      "web": [
+        "/manager/team-simple"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/team-simple"
+      ],
+      "only_mobile": []
+    },
+    "manager/withdraw-requests": {
+      "web": [
+        "/manager/withdraw-requests"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/withdraw-requests"
+      ],
+      "only_mobile": []
+    },
+    "manager/withdraw-respond": {
+      "web": [
+        "/manager/withdraw-respond"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/manager/withdraw-respond"
+      ],
+      "only_mobile": []
+    },
+    "manager/work-policy": {
+      "web": [],
+      "mobile": [
+        "/manager/work-policy",
+        "/manager/work-policy/save"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/manager/work-policy",
+        "/manager/work-policy/save"
+      ]
+    },
+    "missions": {
+      "web": [
+        "/missions",
+        "/missions/feedback",
+        "/missions/pending"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/missions",
+        "/missions/feedback",
+        "/missions/pending"
+      ],
+      "only_mobile": []
+    },
+    "my-leaves": {
+      "web": [],
+      "mobile": [
+        "/my-leaves/{id}/cancel"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/my-leaves/{id}/cancel"
+      ]
+    },
+    "my-requests": {
+      "web": [],
+      "mobile": [
+        "/my-requests",
+        "/my-requests/{id}/cancel"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/my-requests",
+        "/my-requests/{id}/cancel"
+      ]
+    },
+    "my-shift": {
+      "web": [],
+      "mobile": [
+        "/my-shift"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/my-shift"
+      ]
+    },
+    "notifications": {
+      "web": [],
+      "mobile": [
+        "/notifications",
+        "/notifications/mark-read"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/notifications",
+        "/notifications/mark-read"
+      ]
+    },
+    "payroll": {
+      "web": [
+        "/payroll/summary"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/payroll/summary"
+      ],
+      "only_mobile": []
+    },
+    "permissions": {
+      "web": [],
+      "mobile": [
+        "/permissions/my"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/permissions/my"
+      ]
+    },
+    "profile": {
+      "web": [
+        "/profile"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/profile"
+      ],
+      "only_mobile": []
+    },
+    "reports": {
+      "web": [
+        "/reports/absence",
+        "/reports/daily-attendance",
+        "/reports/export/excel",
+        "/reports/export/pdf",
+        "/reports/hub-stats",
+        "/reports/late",
+        "/reports/leaves-basic",
+        "/reports/leaves-enhanced",
+        "/reports/location-tracking",
+        "/reports/monthly-attendance",
+        "/reports/payroll",
+        "/reports/permissions",
+        "/reports/requests-report",
+        "/reports/shifts-report",
+        "/reports/work-hours"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/reports/absence",
+        "/reports/daily-attendance",
+        "/reports/export/excel",
+        "/reports/export/pdf",
+        "/reports/hub-stats",
+        "/reports/late",
+        "/reports/leaves-basic",
+        "/reports/leaves-enhanced",
+        "/reports/location-tracking",
+        "/reports/monthly-attendance",
+        "/reports/payroll",
+        "/reports/permissions",
+        "/reports/requests-report",
+        "/reports/shifts-report",
+        "/reports/work-hours"
+      ],
+      "only_mobile": []
+    },
+    "request-types": {
+      "web": [],
+      "mobile": [
+        "/request-types"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/request-types"
+      ]
+    },
+    "requests": {
+      "web": [
+        "/requests/pending",
+        "/requests/report",
+        "/requests/types"
+      ],
+      "mobile": [
+        "/requests/{id}/respond"
+      ],
+      "only_web": [
+        "/requests/pending",
+        "/requests/report",
+        "/requests/types"
+      ],
+      "only_mobile": [
+        "/requests/{id}/respond"
+      ]
+    },
+    "reverse-geocode": {
+      "web": [
+        "/reverse-geocode"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/reverse-geocode"
+      ],
+      "only_mobile": []
+    },
+    "shifts": {
+      "web": [
+        "/shifts"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/shifts"
+      ],
+      "only_mobile": []
+    },
+    "status": {
+      "web": [],
+      "mobile": [
+        "/status/{id}"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/status/{id}"
+      ]
+    },
+    "submit-request": {
+      "web": [],
+      "mobile": [
+        "/submit-request"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/submit-request"
+      ]
+    },
+    "subscription": {
+      "web": [
+        "/subscription/status"
+      ],
+      "mobile": [],
+      "only_web": [
+        "/subscription/status"
+      ],
+      "only_mobile": []
+    },
+    "{id}": {
+      "web": [],
+      "mobile": [
+        "/{id}"
+      ],
+      "only_web": [],
+      "only_mobile": [
+        "/{id}"
+      ]
+    }
+  },
+  "web_pages": [
+    "/",
+    "/employee/announcements",
+    "/employee/attendance",
+    "/employee/dashboard",
+    "/employee/field-visits",
+    "/employee/leaves",
+    "/employee/missions",
+    "/employee/notifications",
+    "/employee/org-chart",
+    "/employee/payslip",
+    "/employee/permissions",
+    "/employee/profile",
+    "/employee/regulations",
+    "/employee/requests",
+    "/hr/announcements",
+    "/hr/attendance",
+    "/hr/branches",
+    "/hr/company",
+    "/hr/company-policies",
+    "/hr/dashboard",
+    "/hr/departments",
+    "/hr/employees",
+    "/hr/employees/[id]",
+    "/hr/employees/import",
+    "/hr/flex-shift",
+    "/hr/geofence",
+    "/hr/job-titles",
+    "/hr/leave-recall",
+    "/hr/leaves",
+    "/hr/locations",
+    "/hr/manual-entries",
+    "/hr/missions",
+    "/hr/org-chart",
+    "/hr/payroll",
+    "/hr/payroll-runs",
+    "/hr/permissions",
+    "/hr/permissions/assign",
+    "/hr/permissions/defaults",
+    "/hr/permissions/exceptions",
+    "/hr/permissions/export",
+    "/hr/permissions/roles",
+    "/hr/policies",
+    "/hr/policies/allowance",
+    "/hr/policies/attendance",
+    "/hr/policies/bonus",
+    "/hr/policies/deduction",
+    "/hr/policies/leave",
+    "/hr/policies/work",
+    "/hr/regulations",
+    "/hr/reminders",
+    "/hr/reports",
+    "/hr/reports/absence",
+    "/hr/reports/daily-attendance",
+    "/hr/reports/late",
+    "/hr/reports/leaves-basic",
+    "/hr/reports/leaves-enhanced",
+    "/hr/reports/location-tracking",
+    "/hr/reports/monthly-attendance",
+    "/hr/reports/payroll",
+    "/hr/reports/permissions",
+    "/hr/reports/requests",
+    "/hr/reports/shifts",
+    "/hr/reports/work-hours",
+    "/hr/requests",
+    "/hr/settings",
+    "/hr/shifts",
+    "/hr/shifts/exceptions",
+    "/hr/shifts/rotations",
+    "/hr/termination",
+    "/hr/work-locations",
+    "/login",
+    "/manager/announcements",
+    "/manager/attendance",
+    "/manager/dashboard",
+    "/manager/locations",
+    "/manager/missions",
+    "/manager/my-attendance",
+    "/manager/my-field-visits",
+    "/manager/my-leaves",
+    "/manager/my-missions",
+    "/manager/my-payslip",
+    "/manager/my-permissions",
+    "/manager/my-profile",
+    "/manager/my-requests",
+    "/manager/notifications",
+    "/manager/org-chart",
+    "/manager/regulations",
+    "/manager/reports",
+    "/manager/requests",
+    "/manager/team",
+    "/signup"
+  ],
+  "mobile_screens": [
+    "auth/activate_account_screen.dart",
+    "common/location_picker_screen.dart",
+    "employee/announcement_detail_screen.dart",
+    "employee/announcements_screen.dart",
+    "employee/employee_documents_screen.dart",
+    "employee/employee_movements_screen.dart",
+    "employee/employee_payslip_screen.dart",
+    "employee/employee_profile_screen.dart",
+    "employee/employee_summary_screen.dart",
+    "employee/field_visits_screen.dart",
+    "employee/item_detail_screen.dart",
+    "employee/my_shift_screen.dart",
+    "employee/my_work_locations_screen.dart",
+    "employee/requests_screen.dart",
+    "employee_mission_detail_screen.dart",
+    "employee_missions_screen.dart",
+    "first_launch_language_screen.dart",
+    "main.dart",
+    "manager/attendance_policy_screen.dart",
+    "manager/branches_screen.dart",
+    "manager/company_edit_screen.dart",
+    "manager/company_info_screen.dart",
+    "manager/create_announcement_screen.dart",
+    "manager/create_employee_screen.dart",
+    "manager/create_mission_screen.dart",
+    "manager/department_detail_screen.dart",
+    "manager/departments_management_screen.dart",
+    "manager/employee_permissions_screen.dart",
+    "manager/flex_adjustments_screen.dart",
+    "manager/import_tools_screen.dart",
+    "manager/job_titles_screen.dart",
+    "manager/leave_policy_screen.dart",
+    "manager/leave_recall_screen.dart",
+    "manager/location_report_screen.dart",
+    "manager/manager_announcements_screen.dart",
+    "manager/manager_employee_detail_screen.dart",
+    "manager/manager_employees_list_screen.dart",
+    "manager/manager_missions_screen.dart",
+    "manager/mission_detail_screen.dart",
+    "manager/offboarding_screen.dart",
+    "manager/official_holidays_screen.dart",
+    "manager/organization_tree_screen.dart",
+    "manager/payroll/allowance_rules_screen.dart",
+    "manager/payroll/bonus_rules_screen.dart",
+    "manager/payroll/company_policies_screen.dart",
+    "manager/payroll/create_edit_allowance_rule_screen.dart",
+    "manager/payroll/create_edit_bonus_rule_screen.dart",
+    "manager/payroll/create_edit_eos_policy_screen.dart",
+    "manager/payroll/create_edit_insurance_policy_screen.dart",
+    "manager/payroll/create_edit_leave_rule_screen.dart",
+    "manager/payroll/create_edit_payroll_cycle_screen.dart",
+    "manager/payroll/create_edit_penalty_rule_screen.dart",
+    "manager/payroll/create_edit_tax_policy_screen.dart",
+    "manager/payroll/eos_policy_screen.dart",
+    "manager/payroll/insurance_policies_screen.dart",
+    "manager/payroll/leave_rules_screen.dart",
+    "manager/payroll/manual_entries_screen.dart",
+    "manager/payroll/payroll_bonus_penalty_screen.dart",
+    "manager/payroll/payroll_cycle_screen.dart",
+    "manager/payroll/payroll_employee_detail_screen.dart",
+    "manager/payroll/payroll_hub_screen.dart",
+    "manager/payroll/payroll_payslip_screen.dart",
+    "manager/payroll/payroll_run_detail_screen.dart",
+    "manager/payroll/payroll_run_screen.dart",
+    "manager/payroll/payroll_settings_screen.dart",
+    "manager/payroll/payroll_summary_screen.dart",
+    "manager/payroll/penalty_rules_screen.dart",
+    "manager/payroll/tax_policy_screen.dart",
+    "manager/payroll_policy_screen.dart",
+    "manager/permissions_assign_screen.dart",
+    "manager/permissions_export_screen.dart",
+    "manager/permissions_hub_screen.dart",
+    "manager/permissions_management_screen.dart",
+    "manager/permissions_overrides_screen.dart",
+    "manager/permissions_roles_screen.dart",
+    "manager/policies_hub_screen.dart",
+    "manager/reminder_settings_screen.dart",
+    "manager/reports/absence_report_screen.dart",
+    "manager/reports/attendance_report_screen.dart",
+    "manager/reports/base_report_screen.dart",
+    "manager/reports/daily_attendance_report_screen.dart",
+    "manager/reports/late_report_screen.dart",
+    "manager/reports/leaves_enhanced_report_screen.dart",
+    "manager/reports/leaves_report_screen.dart",
+    "manager/reports/payroll_report_screen.dart",
+    "manager/reports/permissions_report_screen.dart",
+    "manager/reports/reports_hub_screen.dart",
+    "manager/reports/requests_report_screen.dart",
+    "manager/reports/shifts_report_screen.dart",
+    "manager/reports/work_hours_report_screen.dart",
+    "manager/role_detail_screen.dart",
+    "manager/shifts/assign_shift_screen.dart",
+    "manager/shifts/assignment_detail_screen.dart",
+    "manager/shifts/create_edit_shift_screen.dart",
+    "manager/shifts/shift_override_screen.dart",
+    "manager/shifts/shift_rotation_screen.dart",
+    "manager/shifts/shifts_screen.dart",
+    "manager/work_locations_approval_screen.dart",
+    "manager/work_policy_screen.dart",
+    "settings_screen.dart"
+  ]
+}
