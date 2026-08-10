@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../services/work_locations_service.dart';
 
 class WorkLocationsApprovalScreen extends StatefulWidget {
-  const WorkLocationsApprovalScreen({super.key});
+  /// role: 'manager' or 'hr'
+  final String role;
+  const WorkLocationsApprovalScreen({super.key, this.role = 'manager'});
 
   @override
   State<WorkLocationsApprovalScreen> createState() =>
@@ -22,6 +24,24 @@ class _WorkLocationsApprovalScreenState
   List<dynamic> _allLocations = [];
 
   bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+  bool get isHr => widget.role == 'hr';
+
+  String get _screenTitle {
+    if (isHr) return isAr ? 'اعتماد المواقع - HR' : 'HR Location Approval';
+    return isAr ? 'مراجعة مواقع العمل' : 'Work Locations Review';
+  }
+
+  String get _pendingLabel {
+    if (isHr) return isAr ? 'قيد اعتماد HR' : 'Pending HR';
+    return isAr ? 'قيد موافقة المدير' : 'Pending Manager';
+  }
+
+  String get _approveLabel {
+    if (isHr) return isAr ? 'اعتماد نهائي' : 'Final Approve';
+    return isAr ? 'قبول وإرسال لـ HR' : 'Accept → HR';
+  }
+
+  Color get _approveColor => isHr ? Colors.deepPurple : Colors.green;
 
   @override
   void initState() {
@@ -39,7 +59,12 @@ class _WorkLocationsApprovalScreenState
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final pending = await _service.getPendingLocations();
+      final Map<String, dynamic> pending;
+      if (isHr) {
+        pending = await _service.getHrPendingLocations();
+      } else {
+        pending = await _service.getPendingLocations();
+      }
       final all = await _service.getAllLocations();
       if (mounted) {
         setState(() {
@@ -72,10 +97,12 @@ class _WorkLocationsApprovalScreenState
     final notes = await showDialog<String>(
       context: context,
       builder: (_) => _ApprovalDialog(
-        title: isAr ? 'اعتماد الموقع' : 'Approve Location',
+        title: isHr
+            ? (isAr ? 'اعتماد نهائي' : 'Final Approval')
+            : (isAr ? 'قبول الموقع' : 'Accept Location'),
         locationName: loc['name'] ?? '',
-        buttonLabel: isAr ? 'اعتماد' : 'Approve',
-        buttonColor: Colors.green,
+        buttonLabel: _approveLabel,
+        buttonColor: _approveColor,
         promptLabel: isAr ? 'ملاحظات (اختياري)' : 'Notes (optional)',
         required: false,
       ),
@@ -90,10 +117,13 @@ class _WorkLocationsApprovalScreenState
         notes: notes,
       );
       if (r['success'] == true) {
-        _showSuccess(isAr ? 'تم الاعتماد' : 'Approved');
+        final msg = isHr
+            ? (isAr ? 'تم الاعتماد النهائي ✅' : 'Finally Approved ✅')
+            : (isAr ? 'تم القبول وإرساله لـ HR ✅' : 'Accepted → Sent to HR ✅');
+        _showSuccess(msg);
         await _load();
       } else {
-        _showError(r['message'] ?? 'فشل الاعتماد');
+        _showError(r['message'] ?? (isAr ? 'فشل' : 'Failed'));
       }
     } finally {
       if (mounted) setState(() => _processing = false);
@@ -125,7 +155,7 @@ class _WorkLocationsApprovalScreenState
         _showSuccess(isAr ? 'تم الرفض' : 'Rejected');
         await _load();
       } else {
-        _showError(r['message'] ?? 'فشل الرفض');
+        _showError(r['message'] ?? (isAr ? 'فشل' : 'Failed'));
       }
     } finally {
       if (mounted) setState(() => _processing = false);
@@ -134,14 +164,21 @@ class _WorkLocationsApprovalScreenState
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'approved':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
+      case 'approved': return Colors.green;
+      case 'pending_manager': return Colors.orange;
+      case 'pending_hr': return Colors.deepPurple;
+      case 'rejected': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'approved': return isAr ? 'معتمد' : 'Approved';
+      case 'pending_manager': return isAr ? 'انتظار مدير' : 'Pending Manager';
+      case 'pending_hr': return isAr ? 'انتظار HR' : 'Pending HR';
+      case 'rejected': return isAr ? 'مرفوض' : 'Rejected';
+      default: return status;
     }
   }
 
@@ -149,8 +186,8 @@ class _WorkLocationsApprovalScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'مواقع العمل' : 'Work Locations'),
-        backgroundColor: Colors.deepPurple,
+        title: Text(_screenTitle),
+        backgroundColor: isHr ? Colors.deepPurple : Colors.teal,
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
@@ -162,9 +199,9 @@ class _WorkLocationsApprovalScreenState
               icon: Badge(
                 label: Text(_pending.length.toString()),
                 isLabelVisible: _pending.isNotEmpty,
-                child: const Icon(Icons.hourglass_empty),
+                child: Icon(isHr ? Icons.verified_outlined : Icons.hourglass_empty),
               ),
-              text: isAr ? 'قيد الموافقة' : 'Pending',
+              text: _pendingLabel,
             ),
             Tab(
               icon: const Icon(Icons.list),
@@ -194,8 +231,8 @@ class _WorkLocationsApprovalScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline,
-                size: 80, color: Colors.green[300]),
+            Icon(Icons.check_circle_outline, size: 80,
+                color: isHr ? Colors.deepPurple[300] : Colors.green[300]),
             const SizedBox(height: 12),
             Text(
               isAr ? 'مفيش طلبات معلقة' : 'No pending requests',
@@ -218,9 +255,7 @@ class _WorkLocationsApprovalScreenState
 
   Widget _buildAllTab() {
     if (_allLocations.isEmpty) {
-      return Center(
-        child: Text(isAr ? 'مفيش مواقع' : 'No locations'),
-      );
+      return Center(child: Text(isAr ? 'مفيش مواقع' : 'No locations'));
     }
 
     return RefreshIndicator(
@@ -248,11 +283,13 @@ class _WorkLocationsApprovalScreenState
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.orange[100],
+                    color: (isHr ? Colors.deepPurple : Colors.orange).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.hourglass_empty,
-                      color: Colors.orange),
+                  child: Icon(
+                    isHr ? Icons.verified_outlined : Icons.hourglass_empty,
+                    color: isHr ? Colors.deepPurple : Colors.orange,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -260,36 +297,39 @@ class _WorkLocationsApprovalScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(loc['name'] ?? '',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       Text(loc['location_type_display'] ?? '',
-                          style: TextStyle(
-                              color: Colors.grey[600], fontSize: 11)),
+                          style: TextStyle(color: Colors.grey[600], fontSize: 11)),
                     ],
                   ),
                 ),
               ],
             ),
             const Divider(height: 20),
-            _infoRow(Icons.person,
-                isAr ? 'الموظف:' : 'Employee:', loc['employee_name'] ?? ''),
+            _infoRow(Icons.person, isAr ? 'الموظف:' : 'Employee:', loc['employee_name'] ?? ''),
             const SizedBox(height: 6),
             if ((loc['address'] ?? '').toString().isNotEmpty)
-              _infoRow(Icons.place, isAr ? 'الموقع:' : 'Location:',
-                  loc['address']),
+              _infoRow(Icons.place, isAr ? 'الموقع:' : 'Location:', loc['address']),
             if ((loc['client_name'] ?? '').toString().isNotEmpty) ...[
               const SizedBox(height: 6),
-              _infoRow(Icons.business,
-                  isAr ? 'العميل:' : 'Client:', loc['client_name']),
-            ],
-            if ((loc['project_code'] ?? '').toString().isNotEmpty) ...[
-              const SizedBox(height: 6),
-              _infoRow(Icons.code,
-                  isAr ? 'كود المشروع:' : 'Code:', loc['project_code']),
+              _infoRow(Icons.business, isAr ? 'العميل:' : 'Client:', loc['client_name']),
             ],
             const SizedBox(height: 6),
-            _infoRow(Icons.radar,
-                isAr ? 'النطاق:' : 'Radius:', '${loc['radius']} m'),
+            _infoRow(Icons.radar, isAr ? 'النطاق:' : 'Radius:', '${loc['radius']} m'),
+            if (isHr) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  isAr ? '✅ وافق عليه المدير - ينتظر اعتمادك' : '✅ Manager approved - awaiting your final approval',
+                  style: const TextStyle(color: Colors.deepPurple, fontSize: 11),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [
@@ -309,10 +349,10 @@ class _WorkLocationsApprovalScreenState
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _processing ? null : () => _approve(loc),
-                    icon: const Icon(Icons.check),
-                    label: Text(isAr ? 'اعتماد' : 'Approve'),
+                    icon: Icon(isHr ? Icons.verified : Icons.check),
+                    label: Text(_approveLabel),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: _approveColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
@@ -327,7 +367,7 @@ class _WorkLocationsApprovalScreenState
   }
 
   Widget _buildAllCard(Map<String, dynamic> loc) {
-    final status = loc['status'] ?? 'pending';
+    final status = loc['status'] ?? 'pending_manager';
     final color = _statusColor(status);
 
     return Card(
@@ -346,15 +386,13 @@ class _WorkLocationsApprovalScreenState
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(loc['employee_name'] ?? '',
-                style: const TextStyle(fontSize: 12)),
+            Text(loc['employee_name'] ?? '', style: const TextStyle(fontSize: 12)),
             Text(loc['location_type_display'] ?? '',
                 style: TextStyle(color: Colors.grey[600], fontSize: 11)),
           ],
         ),
         trailing: Chip(
-          label: Text(loc['status_display'] ?? '',
-              style: const TextStyle(fontSize: 10)),
+          label: Text(_statusLabel(status), style: const TextStyle(fontSize: 10)),
           backgroundColor: color.withValues(alpha: 0.2),
           padding: EdgeInsets.zero,
         ),
@@ -367,21 +405,17 @@ class _WorkLocationsApprovalScreenState
       children: [
         Icon(icon, size: 15, color: Colors.grey[700]),
         const SizedBox(width: 6),
-        Text(label,
-            style: TextStyle(color: Colors.grey[700], fontSize: 12)),
+        Text(label, style: TextStyle(color: Colors.grey[700], fontSize: 12)),
         const SizedBox(width: 4),
         Expanded(
           child: Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w500, fontSize: 12)),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
         ),
       ],
     );
   }
 }
 
-// ═══════════════════════════════════════════════════
-// Approval/Rejection Dialog
 // ═══════════════════════════════════════════════════
 class _ApprovalDialog extends StatefulWidget {
   final String title;
@@ -406,7 +440,6 @@ class _ApprovalDialog extends StatefulWidget {
 
 class _ApprovalDialogState extends State<_ApprovalDialog> {
   final _ctrl = TextEditingController();
-
   bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
 
   @override
@@ -438,11 +471,7 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
           onPressed: () {
             if (widget.required && _ctrl.text.trim().isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isAr
-                      ? 'الحقل مطلوب'
-                      : 'Field required'),
-                ),
+                SnackBar(content: Text(isAr ? 'الحقل مطلوب' : 'Field required')),
               );
               return;
             }

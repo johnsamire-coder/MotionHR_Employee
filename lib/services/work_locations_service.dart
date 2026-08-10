@@ -183,4 +183,17 @@ class WorkLocationsService {
     if (response.statusCode == 200) return data;
     return {'success': false, ...data};
   }
+
+  /// GET الطلبات قيد اعتماد HR (pending_hr)
+  Future<Map<String, dynamic>> getHrPendingLocations() async {
+    final headers = await _headers();
+    final url = '$_base/manager/work-locations/hr-pending/';
+    final response = await http.get(Uri.parse(url), headers: headers);
+
+    if (response.statusCode == 200) {
+      return json.decode(utf8.decode(response.bodyBytes));
+    }
+    throw Exception('Error ${response.statusCode}');
+  }
+
 }
