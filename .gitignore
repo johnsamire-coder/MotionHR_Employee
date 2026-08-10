@@ -97,3 +97,11 @@ mobile_all_screens.txt
 section_*.txt
 mobile_all_screens.txt
 *.bak_*
+
+# API test data
+_data_*.json
+_token.txt
+_login_response.json
+_sample_employee.json
+_branches.json
+_job_titles.json
