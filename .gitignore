@@ -92,3 +92,8 @@ MotionHR_Employee/
 # Analysis outputs
 section_*.txt
 mobile_all_screens.txt
+
+# Analysis outputs
+section_*.txt
+mobile_all_screens.txt
+*.bak_*
