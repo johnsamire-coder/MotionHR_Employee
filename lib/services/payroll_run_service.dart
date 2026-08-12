@@ -4,7 +4,7 @@ import 'api_client.dart';
 
 class PayrollRunService {
   static const String _base =
-      'https://motion.jssolutions-eg.com/attendance/api/mobile/manager';
+      'https://jssolutions-eg.com/attendance/api/mobile/manager';
 
   static Future<Map<String, String>> _headers({bool includeContentType = true}) async {
     return ApiClient.buildHeaders(includeContentType: includeContentType);
@@ -93,7 +93,7 @@ class PayrollRunService {
     required int month,
   }) async {
     final uri = Uri.parse(
-        'https://motion.jssolutions-eg.com/attendance/api/mobile/manager'
+        'https://jssolutions-eg.com/attendance/api/mobile/manager'
         '/payroll/employee/?employee_id=$employeeId&year=$year&month=$month');
     try {
       final res = await http

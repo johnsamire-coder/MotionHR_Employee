@@ -71,6 +71,32 @@ const String kBaseUrl = 'https://jssolutions-eg.com';
 // NavigatorKey للـ deep navigation من الإشعارات
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 const Color kPrimaryColor = Color(0xFF1976D2);
+
+String formatTime24h(dynamic raw) {
+  final text = (raw ?? '').toString().trim();
+  if (text.isEmpty || text == 'null') return '-';
+  String t = text;
+  if (t.contains('T')) t = t.split('T').last;
+  if (t.contains('.')) t = t.split('.').first;
+  final upper = t.toUpperCase();
+  if (t.contains(' ') && !(upper.endsWith('AM') || upper.endsWith('PM'))) t = t.split(' ').last;
+  t = t.trim();
+  final m12 = RegExp(r'^(\d{1,2}):(\d{2})\s*([APap][Mm])$').firstMatch(t);
+  if (m12 != null) {
+    int h = int.parse(m12.group(1)!);
+    final m = m12.group(2)!;
+    final p = m12.group(3)!.toUpperCase();
+    if (p == 'PM' && h < 12) h += 12;
+    if (p == 'AM' && h == 12) h = 0;
+    return '${h.toString().padLeft(2, '0')}:$m';
+  }
+  final m24 = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(t);
+  if (m24 != null) {
+    return '${int.parse(m24.group(1)!).toString().padLeft(2, '0')}:${m24.group(2)}';
+  }
+  return text;
+}
+
 String formatTime12h(dynamic raw) {
   final text = (raw ?? '').toString().trim();
   if (text.isEmpty || text == 'null') return '-';
@@ -582,9 +608,11 @@ class _SplashScreenState extends State<SplashScreen> {
       await prefs.setString('token', token);
       await AuthStorageService.refreshLoginTime();
 
-      saveFCMTokenToServer();
-      fetchUnreadCount();
-      AutoCheckinService.startMonitoring();
+      await saveTrackingFlag(true);
+      await startBackgroundTrackingIfNeeded();
+      await saveFCMTokenToServer();
+      await fetchUnreadCount();
+      await AutoCheckinService.startMonitoring();
 
       bool needsCharter = false;
       if (appMode != 'manager') {
@@ -749,6 +777,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _navigateByToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
+
+    await AuthStorageService.saveToken(token);
+    await prefs.setString('token', token);
+    await AuthStorageService.refreshLoginTime();
+
+    await saveTrackingFlag(true);
+    await startBackgroundTrackingIfNeeded();
+    await saveFCMTokenToServer();
+    await fetchUnreadCount();
+    OfflineQueueService.startAutoSync();
+    OfflineQueueService.syncAll();
+    await AutoCheckinService.startMonitoring();
+
     final appMode = prefs.getString('app_mode') ?? 'employee';
     if (!mounted) return;
     if (appMode == 'manager') {
@@ -891,11 +932,13 @@ class _LoginScreenState extends State<LoginScreen> {
           await prefs2.setBool('biometric_enabled', true);
         }
 
-        saveFCMTokenToServer();
-        fetchUnreadCount();
+        await saveTrackingFlag(true);
+        await startBackgroundTrackingIfNeeded();
+        await saveFCMTokenToServer();
+        await fetchUnreadCount();
         OfflineQueueService.startAutoSync();
         OfflineQueueService.syncAll();
-        AutoCheckinService.startMonitoring();
+        await AutoCheckinService.startMonitoring();
 
         final mustChange = data['must_change_password'] == true;
         final appMode = data['app_mode'] ?? 'employee';
@@ -1622,6 +1665,144 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 }
 
+
+class AppReAuthLockScreen extends StatefulWidget {
+  const AppReAuthLockScreen({super.key});
+
+  @override
+  State<AppReAuthLockScreen> createState() => _AppReAuthLockScreenState();
+}
+
+class _AppReAuthLockScreenState extends State<AppReAuthLockScreen> {
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _unlockWithBiometric();
+    });
+  }
+
+  Future<void> _unlockWithBiometric() async {
+    if (_loading || !mounted) return;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
+    setState(() => _loading = true);
+    try {
+      final available = await BiometricAuthService.isBiometricAvailable();
+      if (!available) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isAr
+                  ? 'البصمة غير متاحة على هذا الجهاز'
+                  : 'Biometrics are not available on this device',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final auth = await BiometricAuthService.authenticate(
+        reason: isAr ? 'افتح التطبيق بالبصمة' : 'Unlock app with biometrics',
+      );
+
+      if (auth && mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  void _goToPasswordLogin() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock, size: 72, color: kPrimaryColor),
+                    const SizedBox(height: 16),
+                    Text(
+                      isAr ? 'التطبيق مقفول' : 'App Locked',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isAr
+                          ? 'افتح التطبيق بالبصمة أو سجل دخولك بكلمة المرور'
+                          : 'Unlock with biometrics or sign in with password',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: _loading ? null : _unlockWithBiometric,
+                        icon: const Icon(Icons.fingerprint),
+                        label: Text(
+                          isAr ? 'فتح بالبصمة' : 'Unlock with Biometrics',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPrimaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: _loading ? null : _goToPasswordLogin,
+                        icon: const Icon(Icons.password),
+                        label: Text(
+                          isAr ? 'الدخول بكلمة المرور' : 'Sign in with Password',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class EmployeeShell extends StatefulWidget {
   final int initialIndex;
   const EmployeeShell({super.key, this.initialIndex = 0});
@@ -1630,14 +1811,55 @@ class EmployeeShell extends StatefulWidget {
   State<EmployeeShell> createState() => _EmployeeShellState();
 }
 
-class _EmployeeShellState extends State<EmployeeShell> {
+class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserver {
   int _index = 0;
+  bool _needsReauth = false;
+  bool _reauthShowing = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_reauthShowing) return;
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _needsReauth = true;
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed && _needsReauth) {
+      _needsReauth = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showReauthLock();
+      });
+    }
+  }
+
+  Future<void> _showReauthLock() async {
+    if (_reauthShowing || !mounted) return;
+
+    _reauthShowing = true;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AppReAuthLockScreen(),
+        fullscreenDialog: true,
+      ),
+    );
+    _reauthShowing = false;
   }
 
   List<Widget> get _pages => [
@@ -1803,6 +2025,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+
+    AutoCheckinService.onAutoCheckin = (message) async {
+      if (!mounted) return;
+      await _loadData();
+    };
+
+    AutoCheckinService.onAutoCheckout = (message) async {
+      if (!mounted) return;
+      await _loadData();
+    };
+
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _now = DateTime.now());
     });
@@ -1810,6 +2043,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
 
   @override
   void dispose() {
+    AutoCheckinService.onAutoCheckin = null;
+    AutoCheckinService.onAutoCheckout = null;
     _locationTimer?.cancel();
     _clockTimer?.cancel();
     super.dispose();
@@ -1821,36 +2056,32 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     _companyName = prefs.getString('company_name') ?? '';
     _firstName = prefs.getString('first_name') ?? '';
     _gender = prefs.getString('gender') ?? 'male';
-    // نجيب الموقع الحالي (لو مسموح)
+
+    try {
+      final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/'));
+      if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
+    } catch (_) {}
+    if (mounted) setState(() {});
+
     String locationParams = '';
     try {
       final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse) {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 5),
-        );
+      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+        final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 5));
         _lastLatitude = position.latitude;
         _lastLongitude = position.longitude;
         locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
       } else if (_lastLatitude != null && _lastLongitude != null) {
-        // نستخدم آخر موقع معروف
         locationParams = '?latitude=$_lastLatitude&longitude=$_lastLongitude';
       }
     } catch (_) {}
-    
-    try {
-      final res = await ApiClient.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
-        );
-      if (res.statusCode == 200) {
-        if (mounted) setState(() => _status = jsonDecode(res.body));
-      }
-    } catch (_) {}
-    if (mounted) setState(() {});
-    
-    // نبدأ Timer لو مش بدأ
+
+    if (locationParams.isNotEmpty) {
+      try {
+        final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'));
+        if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
+      } catch (_) {}
+    }
     _startLocationWatcher();
   }
   
@@ -2377,6 +2608,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     final checkedOut = _status?['checked_out'] == true;
     final canCheckOut = _status?['can_check_out'] == true;
     final hasEarlyLeave = _status?['has_early_leave_permission'] == true;
+    final isLate = _status?['is_late'] == true ||
+        (_status?['attendance_status'] ?? '').toString() == 'late';
+    final lateMinutesValue = _status?['late_minutes'];
+    final lateMinutes = lateMinutesValue is num
+        ? lateMinutesValue.toInt()
+        : int.tryParse('${lateMinutesValue ?? 0}') ?? 0;
     final shiftName = _status?['shift_name'] ?? '';
     final shiftStart = _status?['shift_start'] ?? '';
     final shiftEnd = _status?['shift_end'] ?? '';
@@ -2558,7 +2795,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${isAr ? 'شيفت' : 'Shift'}: $shiftName ($shiftStart - $shiftEnd)',
+                        '${isAr ? 'شيفت' : 'Shift'}: $shiftName (${formatTime24h(shiftStart)} - ${formatTime24h(shiftEnd)})',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -2737,6 +2974,34 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   ),
                 ],
               ]),
+            ),
+          if (checkedIn && !checkedOut && isLate && lateMinutes > 0)
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange[300]!),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.access_time_filled, color: Colors.orange),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isAr
+                          ? 'أنت متأخر اليوم $lateMinutes دقيقة'
+                          : 'You are late today by $lateMinutes minutes',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           const SizedBox(height: 20),
           if (checkedOut)
@@ -6725,14 +6990,55 @@ class ManagerShell extends StatefulWidget {
   State<ManagerShell> createState() => _ManagerShellState();
 }
 
-class _ManagerShellState extends State<ManagerShell> {
+class _ManagerShellState extends State<ManagerShell> with WidgetsBindingObserver {
   int _index = 0;
+  bool _needsReauth = false;
+  bool _reauthShowing = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_reauthShowing) return;
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _needsReauth = true;
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed && _needsReauth) {
+      _needsReauth = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showReauthLock();
+      });
+    }
+  }
+
+  Future<void> _showReauthLock() async {
+    if (_reauthShowing || !mounted) return;
+
+    _reauthShowing = true;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AppReAuthLockScreen(),
+        fullscreenDialog: true,
+      ),
+    );
+    _reauthShowing = false;
   }
 
   List<Widget> get _pages => [

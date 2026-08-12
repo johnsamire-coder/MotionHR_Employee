@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBaseSh = 'https://motion.jssolutions-eg.com';
+const String _kBaseSh = 'https://jssolutions-eg.com';
 
 class ShiftsReportScreen extends StatefulWidget {
   const ShiftsReportScreen({super.key});

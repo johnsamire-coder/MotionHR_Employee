@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBase = 'https://motion.jssolutions-eg.com';
+const String _kBase = 'https://jssolutions-eg.com';
 const Color _kColor = Color(0xFF1565C0);
 
 class EmployeePermissionsScreen extends StatefulWidget {

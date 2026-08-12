@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBase = 'https://motion.jssolutions-eg.com';
+const String _kBase = 'https://jssolutions-eg.com';
 const Color _kColor = Color(0xFF6750A4);
 
 class RequestsScreen extends StatefulWidget {

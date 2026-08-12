@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PayrollService {
-  static const String _base = 'https://motion.jssolutions-eg.com/attendance';
+  static const String _base = 'https://jssolutions-eg.com/attendance';
 
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();

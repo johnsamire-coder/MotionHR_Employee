@@ -1,4 +1,5 @@
 import 'package:motionhr_employee/services/api_client.dart';
+import 'package:motionhr_employee/services/auto_checkin_service.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
@@ -89,6 +90,8 @@ void backgroundServiceOnStart(ServiceInstance service) async {
           'accuracy': position.accuracy,
         }),
       );
+
+      await AutoCheckinService.runSingleBackgroundTick();
 
       if (service is AndroidServiceInstance) {
         if (await service.isForegroundService()) {

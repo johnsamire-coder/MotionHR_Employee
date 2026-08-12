@@ -29,6 +29,10 @@ class AutoCheckinService {
   static bool get isRunning => _isRunning;
   static bool get checkedInToday => _checkedInToday;
 
+  static Future<void> runSingleBackgroundTick() async {
+    await _checkAndProcess();
+  }
+
   // â”€â”€ Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -40,14 +44,19 @@ class AutoCheckinService {
 
   // ── بدء المراقبة ───────────────────────────────────────
   static Future<void> startMonitoring() async {
+    print('[AUTO CHECK-IN] startMonitoring CALLED | isRunning=$_isRunning');
     if (_isRunning) return;
 
     // تحقق من الصلاحيات أولاً
     final hasPermission = await _checkPermissions();
+    print('[AUTO CHECK-IN] hasPermission=$hasPermission');
     if (!hasPermission) return;
 
     _isRunning = true;
     _resetDailyState();
+
+    // مزامنة الحالة من السيرفر قبل أول فحص
+    await syncStateFromBackend();
 
     // فحص فوري عند البدء
     await _checkAndProcess();
@@ -78,79 +87,54 @@ class AutoCheckinService {
   // ── الفحص الرئيسي ──────────────────────────────────────
   static Future<void> _checkAndProcess() async {
     try {
+      print('=== [AUTO CHECK-IN] TICK START ===');
       _resetDailyState();
 
       final token = await _getToken();
-      if (token == null) return;
+      if (token == null) { print('[AUTO CHECK-IN] No token'); return; }
 
-      // جيب الـ Smart Policy
+      await syncStateFromBackend();
+      print('[AUTO CHECK-IN] CheckedIn: $_checkedInToday | CheckedOut: $_checkedOutToday');
+
       final policy = await _getSmartPolicy(token);
       final triggerMode = policy['trigger_mode'] as String;
-
-      // لو يدوي: مانعملش أي حاجة تلقائية
+      print('[AUTO CHECK-IN] Trigger Mode: $triggerMode');
       if (triggerMode == 'manual') return;
 
-      // جيب الشيفت وتحقق من النافذة
       final shiftData = await _getMyShift(token);
       final preWindow = (policy['pre_shift_window'] as int?) ?? 15;
       final withinWindow = _isWithinShiftWindow(shiftData, preWindow);
-
-      // لو برا نافذة الشيفت: مانعملش حاجة
+      print('[AUTO CHECK-IN] Within Shift Window: $withinWindow');
       if (!withinWindow) return;
 
-      // جيب الـ Geofence من الـ API
       final geofence = await _getGeofence(token);
-      if (geofence == null) return;
-
-      // جيب الموقع الحالي
+      if (geofence == null) { print('[AUTO CHECK-IN] Geofence is null'); return; }
+      
       final position = await _getCurrentPosition();
-      if (position == null) {
-        // لو الموقع مش متاح
-        if (!_checkedInToday) {
-          onError?.call(
-            _lang == 'ar'
-                ? 'يرجى تفعيل الموقع لإتمام تسجيل الحضور والانصراف'
-                : 'Please enable location to complete attendance registration',
-          );
-        }
-        return;
-      }
-
-      // احسب المسافة
+      if (position == null) { print('[AUTO CHECK-IN] Position is null (GPS off/No perm)'); return; }
+      
       final distance = Geolocator.distanceBetween(
-        position.latitude,
-        position.longitude,
-        geofence['latitude'],
-        geofence['longitude'],
+        position.latitude, position.longitude,
+        geofence['latitude'], geofence['longitude'],
       );
-
       final radius = (geofence['radius'] ?? 100).toDouble();
-      final isInsideGeofence = distance <= radius;
+      final isInside = distance <= radius;
+      
+      print('[AUTO CHECK-IN] Distance: ${distance.toStringAsFixed(2)}m | Radius: ${radius}m | Inside: $isInside');
 
-      // تصرف حسب الـ mode
       if (triggerMode == 'auto') {
-        // تسجيل تلقائي كامل
-        if (isInsideGeofence && !_checkedInToday) {
+        if (isInside && !_checkedInToday) {
+          print('[AUTO CHECK-IN] 🚀 TRIGGERING CHECK-IN NOW!');
           await _performAutoCheckin(token, position);
-        } else if (!isInsideGeofence && _checkedInToday && !_checkedOutToday) {
+        } else if (!isInside && _checkedInToday && !_checkedOutToday) {
+          print('[AUTO CHECK-IN] 🚀 TRIGGERING CHECK-OUT NOW!');
           await _performAutoCheckout(token, position);
-        }
-      } else if (triggerMode == 'notification') {
-        // إشعار فقط - مش تسجيل تلقائي
-        if (isInsideGeofence && !_checkedInToday) {
-          onAutoCheckin?.call(
-            _lang == 'ar'
-                ? 'أنت داخل موقع العمل، يمكنك تسجيل الحضور الآن'
-                : 'You are at work location, you can check in now',
-          );
+        } else {
+          print('[AUTO CHECK-IN] No action needed (Inside=$isInside, CheckedIn=$_checkedInToday)');
         }
       }
     } catch (e) {
-      onError?.call(
-        _lang == 'ar'
-            ? 'خطأ في المراقبة'
-            : 'Monitoring error',
-      );
+      print('[AUTO CHECK-IN] ❌ ERROR: $e');
     }
   }
 
@@ -194,14 +178,40 @@ class AutoCheckinService {
         }),
       ).timeout(const Duration(seconds: 15));
 
+      final responseText = utf8.decode(res.bodyBytes);
+      print('[AUTO CHECK-IN] حالة الرد: ${res.statusCode}');
+      print('[AUTO CHECK-IN] محتوى الرد: $responseText');
+
+      Map<String, dynamic> data = {};
+      try {
+        final decoded = jsonDecode(responseText);
+        if (decoded is Map<String, dynamic>) {
+          data = decoded;
+        } else if (decoded is Map) {
+          data = Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {}
+
+      final serverMessage = (data['message'] ?? '').toString().trim();
+      final status = (data['status'] ?? '').toString().trim();
+
       if (res.statusCode == 200) {
         _checkedInToday = true;
-        final msg = _lang == 'ar'
-            ? '✅ تم تسجيل حضورك تلقائياً'
-            : 'âœ… Auto check-in recorded';
+        final msg = serverMessage.isNotEmpty
+            ? serverMessage
+            : (_lang == 'ar'
+                ? '✅ تم تسجيل حضورك تلقائياً'
+                : '✅ Auto check-in recorded');
         onAutoCheckin?.call(msg);
+      } else if (status == 'already_checked_in') {
+        _checkedInToday = true;
+        if (serverMessage.isNotEmpty) {
+          onAutoCheckin?.call(serverMessage);
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      print('[AUTO CHECK-IN] خطأ داخل تنفيذ الحضور التلقائي: ' + e.toString());
+    }
   }
 
   // ── تسجيل الانصراف التلقائي ────────────────────────────
@@ -340,24 +350,74 @@ class AutoCheckinService {
     Map<String, dynamic>? shiftData,
     int preShiftWindowMinutes,
   ) {
-    if (shiftData == null) return true; // لو مفيش شيفت، نسمح
+    if (shiftData == null) return true;
 
     try {
-      final startTimeStr = shiftData['start_time'] as String?;
-      if (startTimeStr == null) return true;
+      final todayShift = shiftData['today_shift'] is Map
+          ? Map<String, dynamic>.from(shiftData['today_shift'])
+          : null;
+      final firstScheduleItem =
+          shiftData['schedule'] is List && (shiftData['schedule'] as List).isNotEmpty
+              ? Map<String, dynamic>.from((shiftData['schedule'] as List).first)
+              : null;
 
-      final parts = startTimeStr.split(':');
-      final shiftHour = int.parse(parts[0]);
-      final shiftMinute = int.parse(parts[1]);
+      final rawStart = (
+        shiftData['start_time'] ??
+        shiftData['shift_start'] ??
+        todayShift?['start_time'] ??
+        todayShift?['shift_start'] ??
+        firstScheduleItem?['start_time'] ??
+        firstScheduleItem?['shift_start'] ??
+        ''
+      ).toString().trim();
+
+      if (rawStart.isEmpty || rawStart == 'null') {
+        print('[AUTO CHECK-IN] لم يتم العثور على وقت بداية الشيفت داخل بيانات الشيفت');
+        return false;
+      }
+
+      String timeText = rawStart;
+      if (timeText.contains('T')) timeText = timeText.split('T').last;
+      if (timeText.contains('.')) timeText = timeText.split('.').first;
+      timeText = timeText.trim();
+
+      int shiftHour;
+      int shiftMinute;
+
+      final match12 = RegExp(r'^(\d{1,2}):(\d{2})\s*([APap][Mm])$').firstMatch(timeText);
+      if (match12 != null) {
+        shiftHour = int.parse(match12.group(1)!);
+        shiftMinute = int.parse(match12.group(2)!);
+        final period = match12.group(3)!.toUpperCase();
+        if (period == 'PM' && shiftHour < 12) shiftHour += 12;
+        if (period == 'AM' && shiftHour == 12) shiftHour = 0;
+      } else {
+        final match24 = RegExp(r'^(\d{1,2}):(\d{2})(?::\d{2})?$').firstMatch(timeText);
+        if (match24 == null) return false;
+        shiftHour = int.parse(match24.group(1)!);
+        shiftMinute = int.parse(match24.group(2)!);
+      }
 
       final now = DateTime.now();
-      final shiftStart = DateTime(now.year, now.month, now.day, shiftHour, shiftMinute);
-      final allowedFrom = shiftStart.subtract(Duration(minutes: preShiftWindowMinutes));
-      final allowedTo = shiftStart.add(const Duration(hours: 4)); // حد أقصى 4 ساعات بعد الشيفت
 
-      return now.isAfter(allowedFrom) && now.isBefore(allowedTo);
-    } catch (_) {
-      return true;
+      // نجرب اليوم الحالي واليوم السابق (شيفت بعد نص الليل)
+      for (int dayOffset in [0, -1]) {
+        final baseDay = now.add(Duration(days: dayOffset));
+        final shiftStart = DateTime(baseDay.year, baseDay.month, baseDay.day, shiftHour, shiftMinute);
+        final allowedFrom = shiftStart.subtract(Duration(minutes: preShiftWindowMinutes));
+        final allowedTo = shiftStart.add(const Duration(hours: 4));
+
+        print('[AUTO CHECK-IN] جرب: shiftStart=' + shiftStart.toString() + ' | from=' + allowedFrom.toString() + ' | to=' + allowedTo.toString());
+
+        if (now.isAfter(allowedFrom) && now.isBefore(allowedTo)) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      print('[AUTO CHECK-IN] فشل قراءة وقت الشيفت: ' + e.toString());
+      return false;
     }
   }
 
