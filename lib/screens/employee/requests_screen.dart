@@ -414,6 +414,14 @@ class _RequestFormScreenState extends State<RequestFormScreen> {
   @override
   void initState() {
     super.initState();
+
+    final autoTitle = _isAr
+        ? (_type['name'] as String? ?? '')
+        : (_type['name_en'] as String? ?? _type['name'] as String? ?? '');
+    if (autoTitle.trim().isNotEmpty) {
+      _titleCtrl.text = autoTitle.trim();
+    }
+
     for (final field in _fields) {
       if (field is Map) {
         final key = field['key'] as String? ?? '';

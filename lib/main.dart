@@ -4,6 +4,7 @@ import 'services/api_service.dart';
 import 'dart:async';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
 import 'package:geocoding/geocoding.dart';
@@ -340,40 +341,84 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
 }
 
 
-void handleNotificationNavigation(Map<String, dynamic> data) {
+Future<void> handleNotificationNavigation(Map<String, dynamic> data) async {
   final context = navigatorKey.currentContext;
   if (context == null) return;
+
   final type = data['type']?.toString() ?? '';
+  final prefs = await SharedPreferences.getInstance();
+  final appMode = prefs.getString('app_mode') ?? 'employee';
+
   try {
+    Widget? page;
+
     switch (type) {
       case 'announcement':
       case 'announcement_deleted':
       case 'announcement_updated':
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => const AnnouncementsScreen(),
-        ));
+        page = const AnnouncementsScreen();
         break;
+
       case 'shift_changed':
       case 'shift_assigned':
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => const ShiftsScreen(),
-        ));
+        page = const ShiftsScreen();
         break;
+
       case 'mission':
       case 'mission_assigned':
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => const ManagerMissionsScreen(),
-        ));
+        page = const ManagerMissionsScreen();
         break;
+
       case 'payslip':
       case 'payroll':
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => const PayrollHubScreen(),
-        ));
+        page = const PayrollHubScreen();
         break;
+
+      case 'new_request':
+      case 'new_leave':
+      case 'new_permission':
+      case 'manager_attendance':
+      case 'reminder_checkin_manager':
+      case 'work_location_proposed':
+        page = const ManagerHomeRouter(initialIndex: 1);
+        break;
+
+      case 'attendance':
+      case 'check_in':
+      case 'check_out':
+      case 'partial_checkout':
+      case 'resume_checkin':
+        page = appMode == 'manager'
+            ? const ManagerHomeRouter(initialIndex: 0)
+            : const EmployeeShell(initialIndex: 0);
+        break;
+
+      case 'request_approved':
+      case 'request_rejected':
+      case 'leave_approved':
+      case 'leave_rejected':
+        page = appMode == 'manager'
+            ? const ManagerHomeRouter(initialIndex: 2)
+            : const EmployeeShell(initialIndex: 3);
+        break;
+
+      case 'charter_acceptance':
+      case 'reminder_charter_manager':
+        page = appMode == 'manager'
+            ? const ManagerCharterScreen()
+            : CharterScreen(appMode: appMode);
+        break;
+
       default:
         navigatorKey.currentState?.popUntil((route) => route.isFirst);
         break;
+    }
+
+    if (page != null) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => page!),
+      );
     }
   } catch (e) {
     print('Navigation error: $e');
@@ -2000,6 +2045,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   DateTime _now = DateTime.now();
   String? _motivationMessage;
   bool _isEveningMessage = false;
+  bool _gpsDisabled = false;
+  bool _networkUnavailable = false;
 
   final List<String> _arabicDays = [
     'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس',
@@ -2057,34 +2104,61 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     _firstName = prefs.getString('first_name') ?? '';
     _gender = prefs.getString('gender') ?? 'male';
 
-    try {
-      final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/'));
-      if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
-    } catch (_) {}
-    if (mounted) setState(() {});
+    final hasInternet = await ConnectivityService.hasInternetConnection();
+    if (mounted) {
+      setState(() => _networkUnavailable = !hasInternet);
+    }
 
+    if (hasInternet) {
+      try {
+        final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/'));
+        if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
+      } catch (_) {
+        if (mounted) setState(() => _networkUnavailable = true);
+      }
+    }
+
+    bool gpsDisabled = false;
     String locationParams = '';
     try {
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
-        final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 5));
-        _lastLatitude = position.latitude;
-        _lastLongitude = position.longitude;
-        locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
-      } else if (_lastLatitude != null && _lastLongitude != null) {
-        locationParams = '?latitude=$_lastLatitude&longitude=$_lastLongitude';
+      final locationEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!locationEnabled) {
+        gpsDisabled = true;
+      } else {
+        final permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+          final position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+            timeLimit: const Duration(seconds: 5),
+          );
+          _lastLatitude = position.latitude;
+          _lastLongitude = position.longitude;
+          locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
+        } else if (_lastLatitude != null && _lastLongitude != null) {
+          gpsDisabled = true;
+          locationParams = '?latitude=$_lastLatitude&longitude=$_lastLongitude';
+        } else {
+          gpsDisabled = true;
+        }
       }
-    } catch (_) {}
+    } catch (_) {
+      gpsDisabled = true;
+    }
 
-    if (locationParams.isNotEmpty) {
+    if (mounted) {
+      setState(() => _gpsDisabled = gpsDisabled);
+    }
+
+    if (hasInternet && locationParams.isNotEmpty) {
       try {
         final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'));
         if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
-      } catch (_) {}
+      } catch (_) {
+        if (mounted) setState(() => _networkUnavailable = true);
+      }
     }
     _startLocationWatcher();
   }
-  
   void _startLocationWatcher() {
     if (_locationTimer != null && _locationTimer!.isActive) return;
     _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -2093,10 +2167,22 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   }
   
   Future<void> _refreshStatusWithLocation() async {
-    // بس ندي refresh للـ status من غير ما نغير _fullName إلخ
-    final prefs = await SharedPreferences.getInstance();
+    final hasInternet = await ConnectivityService.hasInternetConnection();
+    if (!hasInternet) {
+      if (mounted) setState(() => _networkUnavailable = true);
+      return;
+    }
+
+    if (mounted) setState(() => _networkUnavailable = false);
+
     String locationParams = '';
     try {
+      final locationEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!locationEnabled) {
+        if (mounted) setState(() => _gpsDisabled = true);
+        return;
+      }
+
       final permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse) {
@@ -2107,11 +2193,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         _lastLatitude = position.latitude;
         _lastLongitude = position.longitude;
         locationParams = '?latitude=${position.latitude}&longitude=${position.longitude}';
+        if (mounted) setState(() => _gpsDisabled = false);
+      } else {
+        if (mounted) setState(() => _gpsDisabled = true);
+        return;
       }
     } catch (_) {
-      return; // Silent fail
+      if (mounted) setState(() => _gpsDisabled = true);
+      return;
     }
-    
+
     try {
       final res = await ApiClient.get(
         Uri.parse('$kBaseUrl/attendance/api/mobile/status/$locationParams'),
@@ -2119,9 +2210,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       if (res.statusCode == 200) {
         if (mounted) setState(() => _status = jsonDecode(res.body));
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) setState(() => _networkUnavailable = true);
+    }
   }
-
   Future<void> _attendanceAction(String action) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     setState(() => _loading = true);
@@ -2635,6 +2727,62 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (_networkUnavailable)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.red[300]!),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.wifi_off, color: Colors.red),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isAr
+                          ? 'لا يوجد اتصال بالإنترنت أو الشبكة ضعيفة'
+                          : 'No internet connection or weak network',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (!_networkUnavailable && _gpsDisabled)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange[300]!),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_off, color: Colors.orange),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isAr
+                          ? 'الـ GPS أو صلاحية الموقع غير متاحة، وبعض مزايا الحضور قد لا تعمل'
+                          : 'GPS or location permission is unavailable, and some attendance features may not work',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -4775,6 +4923,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'new_request':
       case 'new_leave':
       case 'new_permission':
+      case 'reminder_checkin_manager':
+      case 'work_location_proposed':
         page = const ManagerHomeRouter(initialIndex: 1);
         break;
       case 'attendance':
@@ -4798,6 +4948,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             : const EmployeeShell(initialIndex: 3);
         break;
       case 'charter_acceptance':
+      case 'reminder_charter_manager':
         page = const ManagerCharterScreen();
         break;
       default:
@@ -4829,7 +4980,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'manager_attendance':
         return Icons.access_time;
       case 'charter_acceptance':
+      case 'reminder_charter_manager':
         return Icons.description;
+      case 'reminder_checkin_manager':
+        return Icons.warning_amber;
+      case 'work_location_proposed':
+        return Icons.location_on;
       default:
         return Icons.notifications;
     }
@@ -4839,6 +4995,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (type.contains('approved')) return Colors.green;
     if (type.contains('rejected')) return Colors.red;
     if (type.contains('geofence')) return Colors.orange;
+    if (type == 'reminder_checkin_manager') return Colors.orange;
+    if (type == 'work_location_proposed') return Colors.indigo;
     if (type.contains('new_')) return Colors.blue;
     if (type.contains('attendance')) return Colors.teal;
     if (type.contains('charter')) return kManagerColor;
@@ -7750,6 +7908,7 @@ class ManagerDashboard extends StatefulWidget {
 
 class _ManagerDashboardState extends State<ManagerDashboard> {
   int _pending = 0, _present = 0, _fieldWorkers = 0;
+  int _totalEmployees = 0;
   bool _loading = true;
   String _firstName = '';
   String _companyName = '';
@@ -7828,8 +7987,144 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         _fieldWorkers =
             ((d['locations'] as List?) ?? []).length;
       }
+      final r4 = await ApiClient.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/employees/'),
+      );
+      if (r4.statusCode == 200) {
+        final d = jsonDecode(r4.body);
+        final emps = (d['employees'] as List?) ?? [];
+        _totalEmployees = d['total'] is num ? (d['total'] as num).toInt() : emps.length;
+      }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
+  }
+
+  Widget _buildPieCharts(bool isAr) {
+    if (_loading || _totalEmployees == 0) return const SizedBox();
+
+    final absent = (_totalEmployees - _present).clamp(0, _totalEmployees);
+    final office = (_present - _fieldWorkers).clamp(0, _present);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isAr ? 'نظرة سريعة' : 'Quick Insights',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF4A148C),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _miniPie(
+                isAr ? 'الحضور' : 'Attendance',
+                _present,
+                _totalEmployees,
+                Colors.green,
+                Colors.green.withValues(alpha: 0.15),
+              ),
+              _miniPie(
+                isAr ? 'الغياب' : 'Absent',
+                absent,
+                _totalEmployees,
+                Colors.red,
+                Colors.red.withValues(alpha: 0.15),
+              ),
+              _miniPie(
+                isAr ? 'ميداني' : 'Field',
+                _fieldWorkers,
+                _present > 0 ? _present : 1,
+                const Color(0xFF7B1FA2),
+                const Color(0xFF7B1FA2).withValues(alpha: 0.15),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniPie(String label, int value, int total, Color color, Color bgColor) {
+    final ratio = total > 0 ? (value / total).clamp(0.0, 1.0) : 0.0;
+    final percent = (ratio * 100).toStringAsFixed(0);
+
+    return Column(
+      children: [
+        SizedBox(
+          width: 90,
+          height: 90,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PieChart(
+                PieChartData(
+                  startDegreeOffset: -90,
+                  sectionsSpace: 0,
+                  centerSpaceRadius: 28,
+                  sections: [
+                    PieChartSectionData(
+                      value: ratio,
+                      color: color,
+                      radius: 14,
+                      showTitle: false,
+                    ),
+                    PieChartSectionData(
+                      value: 1 - ratio,
+                      color: bgColor,
+                      radius: 14,
+                      showTitle: false,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$value',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    '$percent%',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: color.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -7975,7 +8270,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          _buildPieCharts(isAr),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 4),
@@ -8788,7 +9085,6 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
-
 
 
 

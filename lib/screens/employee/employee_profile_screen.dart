@@ -1,7 +1,10 @@
 import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/services/employee_pdf_service.dart';
 import 'employee_movements_screen.dart';
 import 'employee_documents_screen.dart';
 import 'employee_summary_screen.dart';
@@ -18,6 +21,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   Map<String, dynamic>? _profile;
   bool _loading = true;
   String? _error;
+  String _username = '';
 
   @override
   void initState() {
@@ -27,6 +31,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
+    final prefs = await SharedPreferences.getInstance();
+    final savedUsername = prefs.getString('username') ?? '';
     try {
       final response = await http.get(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/employee/profile/'),
@@ -36,16 +42,19 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       if (response.statusCode == 200) {
         setState(() {
           _profile = json.decode(utf8.decode(response.bodyBytes));
+          _username = savedUsername;
           _loading = false;
         });
       } else {
         setState(() {
+          _username = savedUsername;
           _error = 'تعذر تحميل البيانات (${response.statusCode})';
           _loading = false;
         });
       }
     } catch (e) {
       setState(() {
+        _username = savedUsername;
         _error = 'خطأ في الاتصال';
         _loading = false;
       });
@@ -162,6 +171,133 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
+  Widget _buildActivationCard(bool isAr) {
+    final employeeCode = (_profile?['employee_code'] ?? '').toString();
+    final jobTitle = (_profile?['job_title'] ?? '').toString();
+    final hireDate = (
+      _profile?['hire_date'] ??
+      _profile?['join_date'] ??
+      _profile?['date_joined'] ??
+      ''
+    ).toString();
+    final fullName = (
+      _profile?['full_name_ar'] ??
+      _profile?['full_name_en'] ??
+      ''
+    ).toString();
+    const loginUrl = 'https://jssolutions-eg.com/login/';
+
+    final loginText = '''
+${isAr ? 'الاسم' : 'Name'}: $fullName
+${isAr ? 'اسم المستخدم' : 'Username'}: ${_username.isNotEmpty ? _username : '-'}
+${isAr ? 'الكود الوظيفي' : 'Employee Code'}: ${employeeCode.isNotEmpty ? employeeCode : '-'}
+${isAr ? 'المسمى الوظيفي' : 'Job Title'}: ${jobTitle.isNotEmpty ? jobTitle : '-'}
+${isAr ? 'تاريخ التعيين' : 'Hire Date'}: ${hireDate.isNotEmpty ? hireDate : '-'}
+${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
+'''.trim();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.indigo.withValues(alpha: 0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.verified_user, color: Colors.indigo, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isAr ? 'بطاقة الدخول والتفعيل' : 'Access & Activation Card',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.indigo),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: loginText));
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(isAr ? 'تم نسخ بيانات الدخول' : 'Login details copied'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: Text(isAr ? 'نسخ' : 'Copy'),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        final phone = (_profile?['phone'] ?? '').toString();
+                        if (phone.isEmpty) return;
+                        EmployeePdfService.openWhatsApp(phone, message: loginText);
+                      },
+                      icon: const Icon(Icons.chat, size: 16, color: Colors.green),
+                      label: Text(
+                        isAr ? 'واتساب' : 'WhatsApp',
+                        style: const TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                _infoRow(isAr ? 'اسم المستخدم' : 'Username', _username, icon: Icons.person_outline),
+                _infoRow(isAr ? 'الكود الوظيفي' : 'Employee Code', employeeCode, icon: Icons.badge),
+                _infoRow(isAr ? 'المسمى الوظيفي' : 'Job Title', jobTitle, icon: Icons.work_outline),
+                _infoRow(isAr ? 'تاريخ التعيين' : 'Hire Date', hireDate, icon: Icons.calendar_month),
+                _infoRow(isAr ? 'رابط الدخول' : 'Login URL', loginUrl, icon: Icons.link),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.35)),
+                  ),
+                  child: Text(
+                    isAr
+                        ? 'لو محتاج إعادة تفعيل أو تحديث كلمة المرور، تواصل مع الموارد البشرية.'
+                        : 'If you need reactivation or password reset, contact HR.',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _actionButton({
     required String label,
     required IconData icon,
@@ -226,6 +362,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     onRefresh: _load,
                     child: ListView(children: [
                       _buildHeader(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                        child: _buildActivationCard(isAr),
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(children: [
