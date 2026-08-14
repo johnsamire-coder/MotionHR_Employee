@@ -47,6 +47,7 @@ import 'screens/employee/item_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/manager/company_info_screen.dart';
 import 'screens/manager/organization_tree_screen.dart';
+import 'screens/common/hierarchy_tree_screen.dart';
 import 'screens/manager/permissions_management_screen.dart';
 import 'screens/manager/departments_management_screen.dart';
 import 'screens/manager/leave_recall_screen.dart';
@@ -584,7 +585,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
       saveFCMTokenToServer();
       fetchUnreadCount();
-      AutoCheckinService.startMonitoring();
+      if (appMode != 'manager') {
+        await saveTrackingFlag(true);
+        await startBackgroundTrackingIfNeeded();
+        AutoCheckinService.startMonitoring();
+      }
 
       bool needsCharter = false;
       if (appMode != 'manager') {
@@ -895,7 +900,12 @@ class _LoginScreenState extends State<LoginScreen> {
         fetchUnreadCount();
         OfflineQueueService.startAutoSync();
         OfflineQueueService.syncAll();
-        AutoCheckinService.startMonitoring();
+        final currentAppMode = data['app_mode'] ?? 'employee';
+        if (currentAppMode != 'manager') {
+          await saveTrackingFlag(true);
+          await startBackgroundTrackingIfNeeded();
+          AutoCheckinService.startMonitoring();
+        }
 
         final mustChange = data['must_change_password'] == true;
         final appMode = data['app_mode'] ?? 'employee';
@@ -7894,7 +7904,7 @@ _gridCard(
                         context,
                         MaterialPageRoute(
                             builder: (_) =>
-                                const OrganizationTreeScreen()))),
+                                const HierarchyTreeScreen()))),
                 _gridCard(
                     isAr ? 'إدارة الأقسام' : 'Departments',
                     Icons.apartment,
@@ -8482,6 +8492,9 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
+
+
 
 
 

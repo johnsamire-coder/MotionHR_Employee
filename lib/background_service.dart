@@ -1,4 +1,5 @@
 import 'package:motionhr_employee/services/api_client.dart';
+import 'package:motionhr_employee/services/auto_checkin_service.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
@@ -80,6 +81,7 @@ void backgroundServiceOnStart(ServiceInstance service) async {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // ── Location Tracking ──
       await http.post(
         Uri.parse(kLocationApiUrl),
         headers: await ApiClient.buildHeaders(includeContentType: true),
@@ -89,6 +91,9 @@ void backgroundServiceOnStart(ServiceInstance service) async {
           'accuracy': position.accuracy,
         }),
       );
+
+      // ── Auto Check-in / Check-out ──
+      await AutoCheckinService.checkAndProcessFromBackground();
 
       if (service is AndroidServiceInstance) {
         if (await service.isForegroundService()) {

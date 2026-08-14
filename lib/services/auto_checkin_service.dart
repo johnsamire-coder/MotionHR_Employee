@@ -283,6 +283,11 @@ class AutoCheckinService {
     return {'success': false, 'checked_in': false, 'checked_out': false};
   }
 
+  // ── استدعاء من الـ Background Service ────────────────────
+  static Future<void> checkAndProcessFromBackground() async {
+    await _checkAndProcess();
+  }
+
   // ── مزامنة الحالة مع الـ Backend ───────────────────────
   static Future<void> syncStateFromBackend() async {
     final status = await getCheckinStatus();
@@ -362,3 +367,4 @@ class AutoCheckinService {
   }
 
 }
+
