@@ -445,6 +445,12 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
                     itemBuilder: (context, index) {
                       final emp = _offboarded[index] as Map<String, dynamic>;
                       final statusColor = _statusColor(emp['status'] ?? '');
+                      final status = (emp['status'] ?? '').toString();
+                      final terminationReason = (emp['termination_reason'] ?? '').toString().trim();
+                      final displayStatusLabel =
+                          (status == 'terminated' && terminationReason == 'أضيف بالغلط')
+                              ? 'أضيف بالغلط'
+                              : '${emp['status_label']}';
 
                       return Container(
                         padding: const EdgeInsets.all(14),
@@ -501,7 +507,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      '${emp['status_label']}',
+                                      displayStatusLabel,
                                       style: TextStyle(
                                         fontSize: 11,
                                         color: statusColor,

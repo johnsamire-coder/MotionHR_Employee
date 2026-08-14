@@ -1,8 +1,8 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:motionhr_employee/services/api_client.dart';
 
 class FlexAdjustmentService {
-  static const String baseUrl = "https://motion.jssolutions-eg.com";
+  static const String baseUrl = "https://jssolutions-eg.com";
 
   // 1) List Flex Adjustments
   static Future<List<Map<String, dynamic>>> getFlexAdjustments({

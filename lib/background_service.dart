@@ -81,7 +81,6 @@ void backgroundServiceOnStart(ServiceInstance service) async {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // ── Location Tracking ──
       await http.post(
         Uri.parse(kLocationApiUrl),
         headers: await ApiClient.buildHeaders(includeContentType: true),
@@ -92,8 +91,7 @@ void backgroundServiceOnStart(ServiceInstance service) async {
         }),
       );
 
-      // ── Auto Check-in / Check-out ──
-      await AutoCheckinService.checkAndProcessFromBackground();
+      await AutoCheckinService.runSingleBackgroundTick();
 
       if (service is AndroidServiceInstance) {
         if (await service.isForegroundService()) {

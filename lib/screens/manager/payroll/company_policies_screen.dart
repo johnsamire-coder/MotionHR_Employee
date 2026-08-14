@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Color kCompanyPoliciesColor = Color(0xFF1565C0);
-const String _base = 'https://motion.jssolutions-eg.com/attendance/api/mobile/manager';
+const String _base = 'https://jssolutions-eg.com/attendance/api/mobile/manager';
 
 class CompanyPoliciesScreen extends StatefulWidget {
   const CompanyPoliciesScreen({super.key});

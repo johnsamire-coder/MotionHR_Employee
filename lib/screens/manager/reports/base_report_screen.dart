@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBase = 'https://motion.jssolutions-eg.com';
+const String _kBase = 'https://jssolutions-eg.com';
 
 class BaseReportScreen extends StatefulWidget {
   final String title;

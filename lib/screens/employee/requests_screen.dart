@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBase = 'https://motion.jssolutions-eg.com';
+const String _kBase = 'https://jssolutions-eg.com';
 const Color _kColor = Color(0xFF6750A4);
 
 class RequestsScreen extends StatefulWidget {
@@ -414,6 +414,14 @@ class _RequestFormScreenState extends State<RequestFormScreen> {
   @override
   void initState() {
     super.initState();
+
+    final autoTitle = _isAr
+        ? (_type['name'] as String? ?? '')
+        : (_type['name_en'] as String? ?? _type['name'] as String? ?? '');
+    if (autoTitle.trim().isNotEmpty) {
+      _titleCtrl.text = autoTitle.trim();
+    }
+
     for (final field in _fields) {
       if (field is Map) {
         final key = field['key'] as String? ?? '';

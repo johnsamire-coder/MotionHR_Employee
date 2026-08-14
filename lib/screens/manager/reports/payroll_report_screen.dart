@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../widgets/report_month_picker.dart';
 
-const String _kBase = 'https://motion.jssolutions-eg.com';
+const String _kBase = 'https://jssolutions-eg.com';
 
 class PayrollReportScreen extends StatefulWidget {
   const PayrollReportScreen({super.key});

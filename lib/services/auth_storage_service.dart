@@ -85,6 +85,7 @@ class AuthStorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyLastLoginTime);
     await prefs.setBool(_keyStayLoggedIn, false);
+    await prefs.remove('token');
     // لا تمسح auth_token هنا لأن البصمة تعتمد عليه
   }
 
@@ -103,6 +104,7 @@ class AuthStorageService {
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyAuthToken);
+    await prefs.remove('token');
     await prefs.remove(_keyLastLoginTime);
     await prefs.setBool(_keyStayLoggedIn, false);
     // ⚠️ biometric_enabled محتاج يفضل موجود عشان البصمة تشتغل بعد الـ Logout

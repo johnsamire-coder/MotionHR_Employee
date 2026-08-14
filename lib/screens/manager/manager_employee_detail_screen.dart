@@ -11,6 +11,7 @@ import '../../widgets/empty_state_widget.dart';
 import '../../services/employee_management_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'employee_permissions_screen.dart';
+import 'offboarding_screen.dart';
 
 
 class ManagerEmployeeDetailScreen extends StatefulWidget {
@@ -213,6 +214,302 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         ),
       ),
     );
+  }
+
+  Future<void> _toggleEmployeeStatus() async {
+    final statusText = (_profile?['status'] ?? '').toString().trim().toLowerCase();
+    final isActiveNow = statusText.contains('نشط') || statusText == 'active';
+    final actionLabel = isActiveNow
+        ? (Localizations.localeOf(context).languageCode == 'ar' ? 'إيقاف' : 'Suspend')
+        : (Localizations.localeOf(context).languageCode == 'ar' ? 'تفعيل' : 'Activate');
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: Text(actionLabel),
+          content: Text(
+            isActiveNow
+                ? 'هل تريد إيقاف الموظف "${widget.employeeName}"؟'
+                : 'هل تريد تفعيل الموظف "${widget.employeeName}"؟',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isActiveNow ? Colors.orange : Colors.green,
+              ),
+              child: Text(
+                actionLabel,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final newStatus = isActiveNow ? 'suspended' : 'active';
+      final response = await http.post(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/toggle-status/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+        body: json.encode({'status': newStatus}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      final data = response.body.isNotEmpty
+          ? jsonDecode(utf8.decode(response.bodyBytes))
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200 && (data['success'] == true || data['message'] != null)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'تم تحديث الحالة بنجاح'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _loadAll();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error'] ?? data['message'] ?? 'فشل تحديث الحالة'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خطأ في الاتصال'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _terminateEmployee() async {
+    String selectedType = 'terminated';
+    final reasonCtrl = TextEditingController();
+    final dateCtrl = TextEditingController(
+      text: DateTime.now().toIso8601String().substring(0, 10),
+    );
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.exit_to_app, color: Colors.red),
+                SizedBox(width: 8),
+                Text('إنهاء الخدمة'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('نوع الإنهاء:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: selectedType,
+                    decoration: const InputDecoration(border: OutlineInputBorder()),
+                    items: const [
+                      DropdownMenuItem(value: 'terminated', child: Text('مفصول')),
+                      DropdownMenuItem(value: 'resigned', child: Text('مستقيل')),
+                      DropdownMenuItem(value: 'retired', child: Text('متقاعد')),
+                    ],
+                    onChanged: (v) => setS(() => selectedType = v ?? 'terminated'),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('تاريخ الإنهاء:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: dateCtrl,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: () async {
+                      final d = await showDatePicker(
+                        context: ctx,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (d != null) {
+                        dateCtrl.text = d.toIso8601String().substring(0, 10);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('سبب الإنهاء:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: reasonCtrl,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'اكتب السبب...',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('إلغاء'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('إنهاء الخدمة', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/offboarding/${widget.employeeId}/web/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+        body: json.encode({
+          'termination_type': selectedType,
+          'termination_date': dateCtrl.text,
+          'termination_reason': reasonCtrl.text.trim(),
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      final data = response.body.isNotEmpty
+          ? jsonDecode(utf8.decode(response.bodyBytes))
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'تم إنهاء الخدمة بنجاح'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error'] ?? data['message'] ?? 'فشل إنهاء الخدمة'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خطأ في الاتصال'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteEmployee() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('أضيف بالغلط؟'),
+            ],
+          ),
+          content: Text(
+            'سيتم تسجيل الموظف "${widget.employeeName}" كمنتهي الخدمة بسبب "أضيف بالغلط".\n\nلن يتمكن من الدخول للنظام وسيظهر في قائمة إنهاء الخدمة.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const Text('تأكيد', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+      final response = await http.post(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/offboarding/${widget.employeeId}/web/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+        body: json.encode({
+          'termination_type': 'terminated',
+          'termination_date': today,
+          'termination_reason': 'أضيف بالغلط',
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      final data = response.body.isNotEmpty
+          ? jsonDecode(utf8.decode(response.bodyBytes))
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم تسجيل الموظف كمنتهي الخدمة بسبب إضافة خاطئة'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OffboardingScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error'] ?? data['message'] ?? 'فشلت العملية'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خطأ في الاتصال'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // ── تعديل بيانات الموظف ──
@@ -838,7 +1135,70 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           title: Text(widget.employeeName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           actions: [
-            IconButton(onPressed: _loadAll, icon: Icon(Icons.refresh)),
+            IconButton(onPressed: _loadAll, icon: const Icon(Icons.refresh)),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onSelected: (value) {
+                if (value == 'reset_password') {
+                  _resetPassword();
+                } else if (value == 'toggle_status') {
+                  _toggleEmployeeStatus();
+                } else if (value == 'terminate_employee') {
+                  _terminateEmployee();
+                } else if (value == 'delete_employee') {
+                  _deleteEmployee();
+                }
+              },
+              itemBuilder: (context) {
+                final statusText = (_profile?['status'] ?? '').toString().trim().toLowerCase();
+                final isActiveNow = statusText.contains('نشط') || statusText == 'active';
+                return [
+                  const PopupMenuItem<String>(
+                    value: 'reset_password',
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock_reset, color: Color(0xFF6A1B9A)),
+                        SizedBox(width: 8),
+                        Text('إعادة تعيين كلمة المرور'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'toggle_status',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isActiveNow ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                          color: isActiveNow ? Colors.orange : Colors.green,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(isActiveNow ? 'إيقاف الموظف' : 'تفعيل الموظف'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'terminate_employee',
+                    child: Row(
+                      children: [
+                        Icon(Icons.exit_to_app, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('إنهاء الخدمة'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'delete_employee',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_forever, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('حذف نهائي (أضيف بالغلط)'),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+            ),
           ],
           bottom: TabBar(
             controller: _tabController,

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _kBaseD = 'https://motion.jssolutions-eg.com';
+const String _kBaseD = 'https://jssolutions-eg.com';
 
 class DailyAttendanceReportScreen extends StatefulWidget {
   const DailyAttendanceReportScreen({super.key});
