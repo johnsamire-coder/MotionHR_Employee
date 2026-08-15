@@ -1,4 +1,4 @@
-// lib/services/report_excel_service.dart
+﻿// lib/services/report_excel_service.dart
 // Phase 16 — Excel Export Service
 // Fixed: share_plus API compatibility
 
@@ -550,5 +550,70 @@ class ReportExcelService {
           ? 'مسير رواتب $monthName $year'
           : 'Payroll Run $monthName $year',
     );
+  }
+  static Future<void> exportBranchComparisonReport({
+    required List<Map<String, dynamic>> rows,
+    required bool isAr,
+  }) async {
+    final excel = Excel.createExcel();
+    final sheetName = isAr ? 'مقارنة الفروع' : 'Branch Comparison';
+    final sheet = excel[sheetName];
+
+    // Title
+    sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('J1'));
+    final titleCell = sheet.cell(CellIndex.indexByString('A1'));
+    titleCell.value = TextCellValue(isAr ? 'تقرير مقارنة الفروع - آخر 30 يوم' : 'Branch Comparison Report - Last 30 days');
+    titleCell.cellStyle = CellStyle(
+      bold: true, fontSize: 14,
+      horizontalAlign: HorizontalAlign.Center,
+      backgroundColorHex: ExcelColor.fromHexString('#00838F'),
+      fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
+    );
+
+    // Headers
+    final headers = isAr
+        ? ['الفرع', 'الموظفين', 'إجمالي الرواتب', 'متوسط الراتب', 'أعلى راتب', 'أقل راتب', 'أيام الحضور', 'أيام الغياب', 'دقائق التأخير', 'ساعات الأوفر تايم']
+        : ['Branch', 'Employees', 'Total Salary', 'Avg Salary', 'Max Salary', 'Min Salary', 'Present Days', 'Absent Days', 'Late Minutes', 'Overtime Hours'];
+
+    final headerStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#E0F7FA'), horizontalAlign: HorizontalAlign.Center);
+    for (var i = 0; i < headers.length; i++) {
+      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1));
+      cell.value = TextCellValue(headers[i]);
+      cell.cellStyle = headerStyle;
+    }
+
+    // Data
+    for (var i = 0; i < rows.length; i++) {
+      final r = rows[i];
+      final row = i + 2;
+      final rowStyle = CellStyle(backgroundColorHex: ExcelColor.fromHexString(i.isEven ? '#FFFFFF' : '#F5F5F5'));
+      void setCell(int col, CellValue val) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row));
+        cell.value = val;
+        cell.cellStyle = rowStyle;
+      }
+      setCell(0, TextCellValue(r['branch_name']?.toString() ?? ''));
+      setCell(1, IntCellValue((r['employees_count'] as num?)?.toInt() ?? 0));
+      setCell(2, DoubleCellValue((r['total_salary'] as num?)?.toDouble() ?? 0));
+      setCell(3, DoubleCellValue((r['avg_salary'] as num?)?.toDouble() ?? 0));
+      setCell(4, DoubleCellValue((r['max_salary'] as num?)?.toDouble() ?? 0));
+      setCell(5, DoubleCellValue((r['min_salary'] as num?)?.toDouble() ?? 0));
+      setCell(6, IntCellValue((r['present_days'] as num?)?.toInt() ?? 0));
+      setCell(7, IntCellValue((r['absent_days'] as num?)?.toInt() ?? 0));
+      setCell(8, IntCellValue((r['total_late_minutes'] as num?)?.toInt() ?? 0));
+      setCell(9, DoubleCellValue((r['total_overtime_hours'] as num?)?.toDouble() ?? 0));
+    }
+
+    // Column Widths
+    sheet.setColumnWidth(0, 25);
+    for (var i = 1; i <= 9; i++) { sheet.setColumnWidth(i, 18); }
+
+    // Save & Share
+    final bytes = excel.encode();
+    if (bytes == null) return;
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/branch_comparison.xlsx');
+    await file.writeAsBytes(bytes);
+    await Share.shareXFiles([XFile(file.path)], text: isAr ? 'مقارنة الفروع' : 'Branch Comparison');
   }
 }

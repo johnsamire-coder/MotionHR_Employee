@@ -3879,6 +3879,31 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   String _halfDayType = 'morning';
   bool get _isOther => _selectedValue == 'other';
 
+  // البديل
+  List<dynamic> _substitutes = [];
+  String? _selectedSubstituteId;
+  bool _loadingSubstitutes = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubstitutes();
+  }
+
+  Future<void> _loadSubstitutes() async {
+    setState(() => _loadingSubstitutes = true);
+    try {
+      final res = await ApiClient.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/leave-substitutes/'),
+      );
+      final data = jsonDecode(res.body);
+      if (data['success'] == true && mounted) {
+        setState(() => _substitutes = data['substitutes'] ?? []);
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loadingSubstitutes = false);
+  }
+
   Future<void> _pickDate(TextEditingController c) async {
     final d = await showDatePicker(
         context: context,
@@ -3917,6 +3942,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         body['half_day'] = true;
         body['half_day_type'] = _halfDayType;
         body['end_date'] = body['start_date'];
+      }
+      if (_selectedSubstituteId != null && _selectedSubstituteId!.isNotEmpty) {
+        body['substitute_employee_id'] = _selectedSubstituteId;
       }
       final res = await ApiClient.post(
           Uri.parse('$kBaseUrl/attendance/api/mobile/leave-request/'),
@@ -4053,6 +4081,22 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                     decoration: InputDecoration(
                         labelText: isAr ? 'السبب' : 'Reason',
                         border: const OutlineInputBorder())),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                        labelText: isAr ? 'الموظف البديل (اختياري)' : 'Substitute Employee (Optional)',
+                        border: const OutlineInputBorder()),
+                    value: _selectedSubstituteId,
+                    items: _substitutes
+                        .map((s) => DropdownMenuItem<String>(
+                              value: s['id'].toString(),
+                              child: Text((s['name'] ?? '').toString()),
+                            ))
+                        .toList(),
+                    onChanged: _loadingSubstitutes
+                        ? null
+                        : (v) => setState(() => _selectedSubstituteId = v),
+                  ),
                 const SizedBox(height: 20),
                 SizedBox(
                     width: double.infinity,
@@ -4097,6 +4141,8 @@ class _RequestsScreenState extends State<OldRequestsScreen> {
   final _endDateCtrl = TextEditingController();
   bool _submitting = false;
   bool get _isOther => _selectedValue == 'other';
+
+
 
   Map<String, dynamic>? get _selectedType {
     try {
@@ -8767,10 +8813,68 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
     reasonCtrl.dispose();
   }
 
-  Future<void> _action(dynamic item, String action,
-      {String notes = ''}) async {
+  Future<List<Map<String, dynamic>>> _loadSubstitutes({int? excludeEmployeeId}) async {
+    try {
+      final uri = excludeEmployeeId != null
+          ? Uri.parse('$kBaseUrl/attendance/api/mobile/leave-substitutes/?exclude_employee_id=$excludeEmployeeId')
+          : Uri.parse('$kBaseUrl/attendance/api/mobile/leave-substitutes/');
+      final res = await ApiClient.get(uri);
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return List<Map<String, dynamic>>.from(data['substitutes'] ?? []);
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  Future<void> _showSubstituteDialog(dynamic item) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    final prefs = await SharedPreferences.getInstance();
+    final empId = (item['employee_id'] as num?)?.toInt();
+    final substitutes = await _loadSubstitutes(excludeEmployeeId: empId);
+    if (!mounted) return;
+    String? selectedSubstituteId;
+    await showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => Directionality(
+          textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+          child: AlertDialog(
+            title: Row(children: [const Icon(Icons.person_add, color: Colors.green), const SizedBox(width: 8), Text(isAr ? 'تحديد موظف بديل' : 'Select Substitute')]),
+            content: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(isAr ? 'الإجازة المرضية تحتاج تحديد بديل قبل الاعتماد' : 'Sick leave requires a substitute before approval'),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: isAr ? 'الموظف البديل' : 'Substitute Employee', border: const OutlineInputBorder()),
+                value: selectedSubstituteId,
+                items: substitutes.map((s) {
+                  final dept = (s['department'] ?? '').toString();
+                  final name = (s['name'] ?? '').toString();
+                  final label = dept.isNotEmpty ? '$name — $dept' : name;
+                  return DropdownMenuItem<String>(
+                    value: s['id'].toString(),
+                    child: Text(label),
+                  );
+                }).toList(),
+                onChanged: (v) => setStateDialog(() => selectedSubstituteId = v),
+              ),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.l10n.cancel)),
+              ElevatedButton(
+                onPressed: selectedSubstituteId == null ? null : () { Navigator.pop(ctx); _action(item, 'approve', substituteId: selectedSubstituteId ?? ''); },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                child: Text(isAr ? 'اعتماد مع البديل' : 'Approve with Substitute'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _action(dynamic item, String action,
+      {String notes = '', String substituteId = ''}) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     try {
       final body = {
         'id': item['id'],
@@ -8778,6 +8882,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
         'action': action,
       };
       if (notes.isNotEmpty) body['notes'] = notes;
+      if (substituteId.isNotEmpty) body['substitute_employee_id'] = substituteId;
       final res = await ApiClient.post(
           Uri.parse(
               '$kBaseUrl/attendance/api/mobile/manager/action/'),
@@ -8844,8 +8949,15 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
                             Row(children: [
                               Expanded(
                                   child: ElevatedButton.icon(
-                                      onPressed: () =>
-                                          _action(item, 'approve'),
+                      onPressed: () {
+                        final cat = (item['leave_type_category'] ?? '').toString();
+                        final hasSub = item['substitute_employee_id'] != null;
+                        if (cat == 'sick' && !hasSub) {
+                          _showSubstituteDialog(item);
+                        } else {
+                          _action(item, 'approve');
+                        }
+                      },
                                       icon: const Icon(Icons.check),
                                       label: Text(isAr
                                           ? 'موافقة'
@@ -8891,7 +9003,6 @@ class _ManagerAttendanceScreenState
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
     try {
       final res = await ApiClient.get(
           Uri.parse(
@@ -8970,7 +9081,6 @@ class _ManagerLiveLocationsScreenState
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
     try {
       final res = await ApiClient.get(
           Uri.parse(

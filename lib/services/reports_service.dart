@@ -1,4 +1,4 @@
-import 'package:motionhr_employee/services/api_client.dart';
+﻿import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -110,5 +110,9 @@ class ReportsService {
     final y = year ?? DateTime.now().year;
     final m = month ?? DateTime.now().month;
     return _get(_buildUrl('work-hours', year: y, month: m, employeeId: employeeId));
+  }
+  Future<Map<String, dynamic>> getBranchComparisonReport() async {
+    final url = '$_base/api/mobile/manager/reports/branch-comparison/';
+    return _get(url);
   }
 }
