@@ -33,13 +33,16 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   Map<String, dynamic>? _profile;
   List<dynamic> _documents = [];
   List<dynamic> _movements = [];
+  List<dynamic> _attendance = [];
+  List<dynamic> _leaves = [];
+  List<dynamic> _requests = [];
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     _loadAll();
   }
 
@@ -61,6 +64,9 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
         http.get(Uri.parse('$base/profile/'), headers: headers).timeout(const Duration(seconds: 15)),
         http.get(Uri.parse('$base/documents/'), headers: headers).timeout(const Duration(seconds: 15)),
         http.get(Uri.parse('$base/movements/'), headers: headers).timeout(const Duration(seconds: 15)),
+        http.get(Uri.parse('$base/attendance/'), headers: headers).timeout(const Duration(seconds: 15)),
+        http.get(Uri.parse('$base/leaves/'), headers: headers).timeout(const Duration(seconds: 15)),
+        http.get(Uri.parse('$base/requests/'), headers: headers).timeout(const Duration(seconds: 15)),
       ]);
 
       if (results[0].statusCode == 200) {
@@ -73,6 +79,18 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
       if (results[2].statusCode == 200) {
         final d = json.decode(utf8.decode(results[2].bodyBytes));
         _movements = d['movements'] ?? [];
+      }
+      if (results[3].statusCode == 200) {
+        final d = json.decode(utf8.decode(results[3].bodyBytes));
+        _attendance = d['results'] ?? d['attendance'] ?? [];
+      }
+      if (results[4].statusCode == 200) {
+        final d = json.decode(utf8.decode(results[4].bodyBytes));
+        _leaves = d['results'] ?? d['leaves'] ?? [];
+      }
+      if (results[5].statusCode == 200) {
+        final d = json.decode(utf8.decode(results[5].bodyBytes));
+        _requests = d['results'] ?? d['requests'] ?? [];
       }
       setState(() => _loading = false);
     } catch (e) {
@@ -1210,6 +1228,9 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               Tab(icon: Icon(Icons.folder), text: 'المستندات'),
               Tab(icon: Icon(Icons.history), text: context.l10n.date),
               Tab(icon: Icon(Icons.access_time), text: isAr ? 'الأذونات' : 'Permissions'),
+              Tab(icon: Icon(Icons.fingerprint), text: isAr ? 'الحضور' : 'Attendance'),
+              Tab(icon: Icon(Icons.beach_access), text: isAr ? 'الإجازات' : 'Leaves'),
+              Tab(icon: Icon(Icons.inbox), text: isAr ? 'الطلبات' : 'Requests'),
             ],
           ),
         ),
@@ -1233,9 +1254,126 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
   employeeId: widget.employeeId,
   employeeName: widget.employeeName,
 ),
+                      _buildAttendanceTab(),
+                      _buildLeavesTab(),
+                      _buildRequestsTab(),
                     ],
                   ),
       ),
+    );
+  }
+
+  // ── تبويب الحضور ──
+  Widget _buildAttendanceTab() {
+    if (_attendance.isEmpty) {
+      return Center(child: Text('لا توجد سجلات حضور'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _attendance.length,
+      itemBuilder: (_, i) {
+        final att = _attendance[i] as Map<String, dynamic>;
+        final status = att['status'] ?? '';
+        Color statusColor = Colors.grey;
+        if (status == 'present') statusColor = Colors.green;
+        else if (status == 'late') statusColor = Colors.orange;
+        else if (status == 'absent') statusColor = Colors.red;
+        else if (status == 'on_leave') statusColor = Colors.blue;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: statusColor.withOpacity(0.15),
+              child: Icon(Icons.fingerprint, color: statusColor, size: 20),
+            ),
+            title: Text(att['date']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('${att['check_in'] ?? '--'} → ${att['check_out'] ?? '--'}'),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: statusColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                  child: Text(status, style: TextStyle(color: statusColor, fontSize: 11)),
+                ),
+                if ((att['late_minutes'] ?? 0) > 0)
+                  Text('تأخير: ${att['late_minutes']} د', style: const TextStyle(fontSize: 11, color: Colors.orange)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── تبويب الإجازات ──
+  Widget _buildLeavesTab() {
+    if (_leaves.isEmpty) {
+      return Center(child: Text('لا توجد إجازات'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _leaves.length,
+      itemBuilder: (_, i) {
+        final lv = _leaves[i] as Map<String, dynamic>;
+        final status = lv['status'] ?? '';
+        Color statusColor = Colors.grey;
+        if (status == 'approved') statusColor = Colors.green;
+        else if (status == 'pending') statusColor = Colors.orange;
+        else if (status == 'rejected') statusColor = Colors.red;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: statusColor.withOpacity(0.15),
+              child: Icon(Icons.beach_access, color: statusColor, size: 20),
+            ),
+            title: Text(lv['leave_type']?.toString() ?? lv['type']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('${lv['start_date'] ?? ''} → ${lv['end_date'] ?? ''}'),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: statusColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+              child: Text(status, style: TextStyle(color: statusColor, fontSize: 11)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── تبويب الطلبات ──
+  Widget _buildRequestsTab() {
+    if (_requests.isEmpty) {
+      return Center(child: Text('لا توجد طلبات'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _requests.length,
+      itemBuilder: (_, i) {
+        final req = _requests[i] as Map<String, dynamic>;
+        final status = req['status'] ?? '';
+        Color statusColor = Colors.grey;
+        if (status == 'approved') statusColor = Colors.green;
+        else if (status == 'pending') statusColor = Colors.orange;
+        else if (status == 'rejected') statusColor = Colors.red;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: statusColor.withOpacity(0.15),
+              child: Icon(Icons.inbox, color: statusColor, size: 20),
+            ),
+            title: Text(req['title']?.toString() ?? req['request_type']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(req['created_at']?.toString().substring(0, 10) ?? ''),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: statusColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+              child: Text(status, style: TextStyle(color: statusColor, fontSize: 11)),
+            ),
+          ),
+        );
+      },
     );
   }
 }
