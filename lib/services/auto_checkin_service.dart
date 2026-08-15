@@ -175,6 +175,7 @@ class AutoCheckinService {
           'timestamp': now.toIso8601String(),
           'lang': _lang,
           'source': 'auto',
+          'device_id': (await SharedPreferences.getInstance()).getString('device_id') ?? '',
         }),
       ).timeout(const Duration(seconds: 15));
 
@@ -231,6 +232,7 @@ class AutoCheckinService {
           'timestamp': now.toIso8601String(),
           'lang': _lang,
           'source': 'auto',
+          'device_id': (await SharedPreferences.getInstance()).getString('device_id') ?? '',
         }),
       ).timeout(const Duration(seconds: 15));
 

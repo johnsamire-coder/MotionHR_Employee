@@ -10,6 +10,7 @@ import 'dart:math';
 import 'package:geocoding/geocoding.dart';
 import 'screens/first_launch_language_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'screens/auth/activate_account_screen.dart';
 import 'screens/manager/reports/reports_hub_screen.dart';
 import 'screens/manager/payroll/payroll_hub_screen.dart';
@@ -29,6 +30,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'services/offline_queue_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/auth_storage_service.dart';
@@ -902,12 +904,22 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      String deviceId = '';
+      final platform = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      final deviceName = platform == 'ios' ? 'iPhone' : 'Android Phone';
+      try {
+        deviceId = await FlutterUdid.udid;
+      } catch (_) {}
+
       final res = await http.post(
         Uri.parse('$kBaseUrl/attendance/api/mobile/login/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': _userCtrl.text.trim(),
           'password': _passCtrl.text,
+          'device_id': deviceId,
+          'device_name': deviceName,
+          'platform': platform,
         }),
       );
 
@@ -926,6 +938,41 @@ class _LoginScreenState extends State<LoginScreen> {
         if (data['refresh'] != null) {
           await prefs.setString('jwt_refresh', data['refresh']);
         }
+
+        await prefs.setString('device_id', deviceId);
+        await prefs.setString('device_name', deviceName);
+        await prefs.setString('device_platform', platform);
+
+        try {
+          final deviceRes = await http.post(
+            Uri.parse('$kBaseUrl/attendance/api/mobile/device/register/'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Token ${data['token']}',
+            },
+            body: jsonEncode({
+              'device_id': deviceId,
+              'device_name': deviceName,
+              'platform': platform,
+            }),
+          );
+
+          final deviceData = jsonDecode(deviceRes.body);
+          if (deviceData is Map) {
+            await prefs.setString(
+              'device_status',
+              (deviceData['status'] ?? '').toString(),
+            );
+            await prefs.setBool(
+              'device_auto_attendance_enabled',
+              deviceData['auto_attendance_enabled'] == true,
+            );
+            await prefs.setBool(
+              'device_is_first_device',
+              deviceData['is_first_device'] == true,
+            );
+          }
+        } catch (_) {}
 
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
@@ -9195,6 +9242,8 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
+
 
 
 
