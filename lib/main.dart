@@ -25,6 +25,7 @@ import 'screens/manager/create_employee_screen.dart';
 import 'screens/manager/manager_employees_list_screen.dart';
 import 'screens/manager/manager_missions_screen.dart';
 import 'screens/manager/shifts/shifts_screen.dart';
+import 'screens/manager/trusted_devices_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -383,6 +384,10 @@ Future<void> handleNotificationNavigation(Map<String, dynamic> data) async {
       case 'reminder_checkin_manager':
       case 'work_location_proposed':
         page = const ManagerHomeRouter(initialIndex: 1);
+        break;
+
+      case 'shift_coverage_gap':
+        page = const ShiftsScreen();
         break;
 
       case 'attendance':
@@ -5020,6 +5025,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'work_location_proposed':
         page = const ManagerHomeRouter(initialIndex: 1);
         break;
+
+      case 'shift_coverage_gap':
+        page = const ShiftsScreen();
+        break;
       case 'attendance':
       case 'check_in':
       case 'check_out':
@@ -8454,6 +8463,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                     const Color(0xFF00838F),
                     () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShiftsScreen()))),
                 _gridCard(
+                    isAr ? 'الأجهزة المعتمدة' : 'Trusted Devices',
+                    Icons.phone_android,
+                    const Color(0xFF4A148C),
+                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrustedDevicesScreen()))),
+                _gridCard(
                     context.l10n.missions,
                     Icons.assignment,
                     const Color(0xFF6C3FC5),
@@ -9242,6 +9256,8 @@ class _ManagerLiveLocationsScreenState
         });
   }
 }
+
+
 
 
 
