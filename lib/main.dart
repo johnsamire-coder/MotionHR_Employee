@@ -1968,7 +1968,15 @@ class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserv
       ];
 
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final token = await AuthStorageService.getSavedToken();
+      if (token != null && token.isNotEmpty) {
+        await http.post(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/logout/'),
+          headers: {'Authorization': 'Token $token'},
+        ).timeout(const Duration(seconds: 5));
+      }
+    } catch (_) {}
     await AuthStorageService.clearAll();
     await stopBackgroundTracking();
     unreadNotificationsCount.value = 0;
@@ -2380,6 +2388,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             });
             LocationTrackingService.stopTracking();
           }
+          // Late warning popup
+          if (action == 'check_in' && data['late_warning'] != null && data['late_warning']['show'] == true) {
+            _showLateWarningDialog(data['late_warning']);
+          }
           _showMotivationDialog();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -2417,6 +2429,115 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  void _showLateWarningDialog(Map<String, dynamic> warning) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final shouldDeduct = warning['should_deduct'] == true;
+    final incidentNumber = warning['incident_number'] ?? 0;
+    final threshold = warning['threshold'] ?? 2;
+    final deductionDays = (warning['deduction_days'] ?? 0).toDouble();
+    final messageAr = warning['message_ar'] ?? '';
+    final messageEn = warning['message_en'] ?? '';
+    final message = isAr ? messageAr : messageEn;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Directionality(
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                shouldDeduct ? Icons.warning_amber_rounded : Icons.notification_important,
+                color: shouldDeduct ? Colors.red : Colors.orange,
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  shouldDeduct
+                      ? (isAr ? 'تنبيه بالخصم' : 'Deduction Alert')
+                      : (isAr ? 'تنبيه هام' : 'Important Warning'),
+                  style: TextStyle(
+                    color: shouldDeduct ? Colors.red : Colors.orange[800],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: shouldDeduct ? Colors.red.withOpacity(0.08) : Colors.orange.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: shouldDeduct ? Colors.red.withOpacity(0.3) : Colors.orange.withOpacity(0.3),
+                  ),
+                ),
+                child: Text(
+                  message,
+                  style: const TextStyle(fontSize: 14, height: 1.6),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isAr
+                          ? 'الإنذار \ / \'
+                          : 'Warning \ / \',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  if (shouldDeduct) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.red[100],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        isAr ? 'خصم \ يوم' : '\ day deducted',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red[800]),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: shouldDeduct ? Colors.red : Colors.orange,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+              ),
+              child: Text(
+                isAr ? 'فهمت' : 'Understood',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showMotivationDialog() {
@@ -7327,6 +7448,15 @@ class _ManagerShellState extends State<ManagerShell> with WidgetsBindingObserver
   }
 
   Future<void> _logout() async {
+    try {
+      final token = await AuthStorageService.getSavedToken();
+      if (token != null && token.isNotEmpty) {
+        await http.post(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/logout/'),
+          headers: {'Authorization': 'Token $token'},
+        ).timeout(const Duration(seconds: 5));
+      }
+    } catch (_) {}
     await AuthStorageService.clearAll();
     await stopBackgroundTracking();
     unreadNotificationsCount.value = 0;
