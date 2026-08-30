@@ -1763,142 +1763,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 }
 
 
-class AppReAuthLockScreen extends StatefulWidget {
-  const AppReAuthLockScreen({super.key});
-
-  @override
-  State<AppReAuthLockScreen> createState() => _AppReAuthLockScreenState();
-}
-
-class _AppReAuthLockScreenState extends State<AppReAuthLockScreen> {
-  bool _loading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _unlockWithBiometric();
-    });
-  }
-
-  Future<void> _unlockWithBiometric() async {
-    if (_loading || !mounted) return;
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
-    setState(() => _loading = true);
-    try {
-      final available = await BiometricAuthService.isBiometricAvailable();
-      if (!available) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isAr
-                  ? 'البصمة غير متاحة على هذا الجهاز'
-                  : 'Biometrics are not available on this device',
-            ),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
-
-      final auth = await BiometricAuthService.authenticate(
-        reason: isAr ? 'افتح التطبيق بالبصمة' : 'Unlock app with biometrics',
-      );
-
-      if (auth && mounted) {
-        Navigator.of(context).pop(true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
-  }
-
-  void _goToPasswordLogin() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Directionality(
-        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.lock, size: 72, color: kPrimaryColor),
-                    const SizedBox(height: 16),
-                    Text(
-                      isAr ? 'التطبيق مقفول' : 'App Locked',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isAr
-                          ? 'افتح التطبيق بالبصمة أو سجل دخولك بكلمة المرور'
-                          : 'Unlock with biometrics or sign in with password',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        onPressed: _loading ? null : _unlockWithBiometric,
-                        icon: const Icon(Icons.fingerprint),
-                        label: Text(
-                          isAr ? 'فتح بالبصمة' : 'Unlock with Biometrics',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimaryColor,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: OutlinedButton.icon(
-                        onPressed: _loading ? null : _goToPasswordLogin,
-                        icon: const Icon(Icons.password),
-                        label: Text(
-                          isAr ? 'الدخول بكلمة المرور' : 'Sign in with Password',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class EmployeeShell extends StatefulWidget {
   final int initialIndex;
@@ -1908,55 +1772,13 @@ class EmployeeShell extends StatefulWidget {
   State<EmployeeShell> createState() => _EmployeeShellState();
 }
 
-class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserver {
+class _EmployeeShellState extends State<EmployeeShell> {
   int _index = 0;
-  bool _needsReauth = false;
-  bool _reauthShowing = false;
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_reauthShowing) return;
-
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      _needsReauth = true;
-      return;
-    }
-
-    if (state == AppLifecycleState.resumed && _needsReauth) {
-      _needsReauth = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showReauthLock();
-      });
-    }
-  }
-
-  Future<void> _showReauthLock() async {
-    if (_reauthShowing || !mounted) return;
-
-    _reauthShowing = true;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AppReAuthLockScreen(),
-        fullscreenDialog: true,
-      ),
-    );
-    _reauthShowing = false;
   }
 
   List<Widget> get _pages => [
@@ -7371,55 +7193,13 @@ class ManagerShell extends StatefulWidget {
   State<ManagerShell> createState() => _ManagerShellState();
 }
 
-class _ManagerShellState extends State<ManagerShell> with WidgetsBindingObserver {
+class _ManagerShellState extends State<ManagerShell> {
   int _index = 0;
-  bool _needsReauth = false;
-  bool _reauthShowing = false;
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_reauthShowing) return;
-
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      _needsReauth = true;
-      return;
-    }
-
-    if (state == AppLifecycleState.resumed && _needsReauth) {
-      _needsReauth = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showReauthLock();
-      });
-    }
-  }
-
-  Future<void> _showReauthLock() async {
-    if (_reauthShowing || !mounted) return;
-
-    _reauthShowing = true;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AppReAuthLockScreen(),
-        fullscreenDialog: true,
-      ),
-    );
-    _reauthShowing = false;
   }
 
   List<Widget> get _pages => [
