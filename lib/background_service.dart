@@ -143,7 +143,6 @@ Future<void> requestLocationPermissionsForTracking() async {
   }
 
   var permission = await Geolocator.checkPermission();
-
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
   }

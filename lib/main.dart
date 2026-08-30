@@ -2325,8 +2325,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                     ),
                     child: Text(
                       isAr
-                          ? 'الإنذار \ / \'
-                          : 'Warning \ / \',
+                          ? 'الإنذار'
+                          : 'Warning',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
