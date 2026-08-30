@@ -147,12 +147,15 @@ Future<void> requestLocationPermissionsForTracking() async {
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
   }
-
   if (permission == LocationPermission.denied) {
     throw Exception('Location permission denied');
   }
-
   if (permission == LocationPermission.deniedForever) {
     throw Exception('Location permission permanently denied');
+  }
+  // على أندرويد، الموافقة الأولى بترجع "whileInUse" بس.
+  // لازم نطلب ترقية منفصلة للحصول على "always" (تتبع في الخلفية).
+  if (permission == LocationPermission.whileInUse) {
+    permission = await Geolocator.requestPermission();
   }
 }

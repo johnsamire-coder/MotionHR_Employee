@@ -1,6 +1,7 @@
 import 'screens/employee_missions_screen.dart';
 import 'services/api_client.dart';
 import 'services/api_service.dart';
+import 'firebase_options.dart';
 import 'dart:async';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
@@ -550,11 +551,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LanguageService.loadSavedLanguage();
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     await initLocalNotifications();
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
     await initFirebaseMessaging();
-  } catch (_) {}
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+  }
   await configureBackgroundTracking();
   runApp(const MotionHRApp());
 }
