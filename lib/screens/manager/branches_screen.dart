@@ -32,7 +32,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
     if (mounted) setState(() => _loading = true);
     try {
       final res = await ApiClient.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/branches/'),
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/branches/'),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -124,7 +124,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                         setS(() => saving = true);
                         try {
                           final res = await ApiClient.post(
-                            Uri.parse('$kBaseUrl/attendance/api/mobile/branches/'),
+                            Uri.parse('$kBaseUrl/attendance/api/mobile/manager/branches/'),
                             body: jsonEncode({
                               'name_ar': nameArCtrl.text.trim(),
                               'name_en': nameEnCtrl.text.trim(),

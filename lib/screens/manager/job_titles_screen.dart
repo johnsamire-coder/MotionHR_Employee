@@ -32,7 +32,7 @@ class _JobTitlesScreenState extends State<JobTitlesScreen> {
     if (mounted) setState(() => _loading = true);
     try {
       final res = await ApiClient.get(
-        Uri.parse('$kBaseUrl/attendance/api/mobile/job-titles/'),
+        Uri.parse('$kBaseUrl/attendance/api/mobile/manager/job-titles/'),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -52,6 +52,7 @@ class _JobTitlesScreenState extends State<JobTitlesScreen> {
     final nameEnCtrl = TextEditingController();
     final descCtrl = TextEditingController();
     bool saving = false;
+    bool isManager = false;
 
     await showDialog(
       context: context,
@@ -90,6 +91,16 @@ class _JobTitlesScreenState extends State<JobTitlesScreen> {
                       border: const OutlineInputBorder(),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    value: isManager,
+                    onChanged: (v) => setS(() => isManager = v ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      isAr ? 'هل هذا المسمى مدير؟' : 'Is this job title a manager?',
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -115,11 +126,12 @@ class _JobTitlesScreenState extends State<JobTitlesScreen> {
                         try {
                           final res = await ApiClient.post(
                             Uri.parse(
-                                '$kBaseUrl/attendance/api/mobile/job-titles/'),
+                                '$kBaseUrl/attendance/api/mobile/manager/job-titles/'),
                             body: jsonEncode({
                               'name_ar': nameArCtrl.text.trim(),
                               'name_en': nameEnCtrl.text.trim(),
                               'description': descCtrl.text.trim(),
+                              'is_manager': isManager,
                             }),
                           );
                           final data = jsonDecode(res.body);
