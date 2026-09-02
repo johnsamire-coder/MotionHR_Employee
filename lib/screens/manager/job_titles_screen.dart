@@ -98,9 +98,7 @@ class _JobTitlesScreenState extends State<JobTitlesScreen> {
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      isAr
-                          ? 'هل هذا المسمى مدير؟'
-                          : 'Is this job title a manager?',
+                      isAr ? 'هل هذا المسمى مدير؟' : 'Is this job title a manager?',
                     ),
                   ),
                 ],

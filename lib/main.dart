@@ -2,6 +2,7 @@ import 'screens/employee_missions_screen.dart';
 import 'services/api_client.dart';
 import 'services/api_service.dart';
 import 'firebase_options.dart';
+import 'services/theme_service.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:motionhr_employee/l10n/l10n.dart';
@@ -158,8 +159,13 @@ Future<void> fetchUnreadCount() async {
 
 Future<void> initLocalNotifications() async {
   const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const darwin = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
   await _localNotif.initialize(
-    const InitializationSettings(android: android),
+    const InitializationSettings(android: android, iOS: darwin),
     onDidReceiveNotificationResponse: (NotificationResponse response) {
       final payload = response.payload;
       if (payload != null && payload.isNotEmpty) {
@@ -172,16 +178,18 @@ Future<void> initLocalNotifications() async {
       }
     },
   );
-  await _localNotif
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(
-        const AndroidNotificationChannel(
-          'motionhr_channel',
-          'MotionHR Notifications',
-          importance: Importance.max,
-        ),
-      );
+  final androidPlugin = _localNotif.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>();
+  if (androidPlugin != null) {
+    await androidPlugin.requestNotificationsPermission();
+    await androidPlugin.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'motionhr_channel',
+        'MotionHR Notifications',
+        importance: Importance.max,
+      ),
+    );
+  }
 }
 
 Future<void> showLocalNotification(String title, String body, {Map<String, dynamic>? data}) async {
@@ -551,6 +559,7 @@ class NotificationBellButton extends StatelessWidget {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LanguageService.loadSavedLanguage();
+  await ThemeService.loadSavedTheme();
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -596,11 +605,15 @@ class _MotionHRAppState extends State<MotionHRApp> {
     return ValueListenableBuilder<Locale>(
       valueListenable: LanguageService.currentLocale,
       builder: (context, locale, _) {
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: ThemeService.themeModeNotifier,
+          builder: (context, themeMode, __) {
         return MaterialApp(
           navigatorKey: navigatorKey,
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
+          themeMode: themeMode,
           locale: locale,
           supportedLocales: const [
             Locale('ar'),
@@ -631,6 +644,8 @@ class _MotionHRAppState extends State<MotionHRApp> {
                       },
                     )
                   : const SplashScreen(),
+        );
+          },
         );
       },
     );
