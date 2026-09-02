@@ -3,6 +3,7 @@ import 'services/api_client.dart';
 import 'services/api_service.dart';
 import 'firebase_options.dart';
 import 'dart:async';
+import 'dart:io';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
@@ -1769,6 +1770,60 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
 
 
+class MandatoryAnnouncementDialog extends StatelessWidget {
+  final Map<String, dynamic> announcement;
+  const MandatoryAnnouncementDialog({super.key, required this.announcement});
+
+  @override
+  Widget build(BuildContext context) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final title = announcement['title'] ?? '';
+    final message = announcement['message'] ?? '';
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.campaign, color: kPrimaryColor, size: 28),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(message, style: const TextStyle(fontSize: 15)),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(isAr ? 'تم' : 'OK'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class EmployeeShell extends StatefulWidget {
   final int initialIndex;
   const EmployeeShell({super.key, this.initialIndex = 0});
@@ -1784,6 +1839,48 @@ class _EmployeeShellState extends State<EmployeeShell> {
     super.initState();
     _index = widget.initialIndex;
     fetchUnreadCount();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingAnnouncements();
+    });
+  }
+
+  Future<void> _checkPendingAnnouncements() async {
+    try {
+      final token = await AuthStorageService.getSavedToken();
+      if (token == null || token.isEmpty) return;
+      final res = await http.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/my-pending-announcements/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+      if (res.statusCode != 200) return;
+      final data = jsonDecode(res.body);
+      final List<dynamic> announcements = data['announcements'] ?? [];
+      if (announcements.isEmpty || !mounted) return;
+      await _showNextAnnouncement(announcements, 0, token);
+    } catch (_) {}
+  }
+
+  Future<void> _showNextAnnouncement(
+      List<dynamic> announcements, int index, String token) async {
+    if (index >= announcements.length || !mounted) return;
+    final ann = announcements[index];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => MandatoryAnnouncementDialog(announcement: ann),
+    );
+    if (confirmed == true) {
+      try {
+        await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/announcements/${ann['id']}/confirm-read/'),
+          headers: {'Authorization': 'Token $token'},
+        );
+      } catch (_) {}
+    }
+    if (mounted) {
+      await _showNextAnnouncement(announcements, index + 1, token);
+    }
   }
 
   List<Widget> get _pages => [
@@ -7205,6 +7302,48 @@ class _ManagerShellState extends State<ManagerShell> {
     super.initState();
     _index = widget.initialIndex;
     fetchUnreadCount();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingAnnouncements();
+    });
+  }
+
+  Future<void> _checkPendingAnnouncements() async {
+    try {
+      final token = await AuthStorageService.getSavedToken();
+      if (token == null || token.isEmpty) return;
+      final res = await http.get(
+        Uri.parse('$kBaseUrl/attendance/api/mobile/my-pending-announcements/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+      if (res.statusCode != 200) return;
+      final data = jsonDecode(res.body);
+      final List<dynamic> announcements = data['announcements'] ?? [];
+      if (announcements.isEmpty || !mounted) return;
+      await _showNextAnnouncement(announcements, 0, token);
+    } catch (_) {}
+  }
+
+  Future<void> _showNextAnnouncement(
+      List<dynamic> announcements, int index, String token) async {
+    if (index >= announcements.length || !mounted) return;
+    final ann = announcements[index];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => MandatoryAnnouncementDialog(announcement: ann),
+    );
+    if (confirmed == true) {
+      try {
+        await http.post(
+          Uri.parse(
+              '$kBaseUrl/attendance/api/mobile/announcements/${ann['id']}/confirm-read/'),
+          headers: {'Authorization': 'Token $token'},
+        );
+      } catch (_) {}
+    }
+    if (mounted) {
+      await _showNextAnnouncement(announcements, index + 1, token);
+    }
   }
 
   List<Widget> get _pages => [
