@@ -489,6 +489,22 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         ),
                       ],
                     ),
+                    if (mission['status'] == 'pending_approval') ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _handleApproveMission,
+                          icon: const Icon(Icons.check_circle),
+                          label: Text(isAr ? 'قبول' : 'Approve'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -700,6 +716,27 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
       return '${d.day}/${d.month}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       return dt;
+    }
+  }
+
+  void _handleApproveMission() async {
+    final result = await MissionsService.approveMissionRequest(widget.missionId);
+    if (!mounted) return;
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم قبول المهمة'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']?.toString() ?? 'حدث خطأ'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

@@ -42,6 +42,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
       {'key': 'today', 'label': isAr ? 'اليوم' : 'Today'},
       {'key': 'upcoming', 'label': isAr ? 'القادمة' : 'Upcoming'},
       {'key': 'completed', 'label': isAr ? 'المكتملة' : 'Completed'},
+      {'key': 'pending_approval', 'label': isAr ? 'حالة الطلب' : 'Approval Status'},
     ];
   }
 

@@ -144,6 +144,18 @@ class MissionsService {
     return json.decode(utf8.decode(response.bodyBytes));
   }
 
+  static Future<Map<String, dynamic>> approveMissionRequest(
+    int missionId,
+  ) async {
+    final headers = await _headers();
+    final response = await http.post(
+      Uri.parse('$_baseUrl/manager/action/'),
+      headers: headers,
+      body: json.encode({'type': 'mission', 'id': missionId, 'action': 'approve'}),
+    );
+    return json.decode(utf8.decode(response.bodyBytes));
+  }
+
   static Future<Map<String, dynamic>> reassignEmployee(
     int missionId, {
     required int oldEmployeeId,
