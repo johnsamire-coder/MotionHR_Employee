@@ -489,22 +489,6 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         ),
                       ],
                     ),
-                    if (mission['status'] == 'pending_approval') ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _handleApproveMission,
-                          icon: const Icon(Icons.check_circle),
-                          label: Text(isAr ? 'قبول' : 'Approve'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -532,17 +516,31 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _handleManagerAction('force_cancel'),
-                        icon: Icon(Icons.cancel, color: Colors.red),
-                        label: Text(context.l10n.cancelMission, style: TextStyle(color: Colors.red)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.red),
+                    if (mission['status'] == 'pending_approval')
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _handleApproveMission,
+                          icon: const Icon(Icons.check_circle),
+                          label: Text(isAr ? 'موافقة' : 'Approve'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _handleManagerAction('force_cancel'),
+                          icon: Icon(Icons.cancel, color: Colors.red),
+                          label: Text(context.l10n.cancelMission, style: TextStyle(color: Colors.red)),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.red),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

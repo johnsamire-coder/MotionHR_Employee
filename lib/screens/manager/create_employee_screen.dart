@@ -777,6 +777,10 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
               child: TextFormField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(11),
+                ],
                 decoration: _dec(
                   isAr
                       ? 'رقم الموبايل * (واتساب)'
@@ -784,11 +788,12 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
                   Icons.phone_android,
                 ),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) {
+                  final digits = (v ?? '').trim().replaceAll(RegExp(r'\D'), '');
+                  if (digits.isEmpty) {
                     return isAr ? 'مطلوب' : 'Required';
                   }
-                  if (v.trim().replaceAll(RegExp(r'\D'), '').length < 7) {
-                    return isAr ? 'رقم غير صحيح' : 'Invalid number';
+                  if (digits.length != 11) {
+                    return isAr ? 'رقم الموبايل لازم يكون 11 رقم بالظبط' : 'Mobile number must be exactly 11 digits';
                   }
                   return null;
                 },
@@ -1580,11 +1585,30 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
             Colors.blue,
           ),
           const SizedBox(height: 8),
-          _credTile(
-            isAr ? 'رابط تفعيل الحساب' : 'Account Activation Link',
-            activationLink,
-            Icons.link,
-            Colors.green,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Icon(Icons.info_outline, color: Colors.blue, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  isAr ? 'خطوات تفعيل الحساب' : 'Account Activation Steps',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              Text(
+                isAr
+                    ? '١) يفتح التطبيق ويدوس على "تفعيل الحساب لأول مرة"\n٢) يكتب رقم موبايله وآخر 4 أرقام من رقمه القومي\n٣) يظهر له اليوزر بتاعه ويكتب الباسورد المبدئي: 123456\n٤) بعد الدخول، النظام هيطلب منه يغيّر الباسورد فورًا'
+                    : '1) Open the app and tap "Activate Account"\n2) Enter phone number and last 4 digits of national ID\n3) The username appears, enter default password: 123456\n4) After login, the app will require setting a new password',
+                style: const TextStyle(fontSize: 12, color: Colors.black87, height: 1.6),
+              ),
+            ]),
           ),
           const SizedBox(height: 6),
           Container(
@@ -1703,8 +1727,8 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
             final name = emp['full_name_ar'] ?? '';
             final username = cred['username'] ?? '';
             final msg = isAr
-                ? 'مرحباً $name 👋\n\nتم إنشاء حسابك في تطبيق MotionHR\n\n👤 اسم المستخدم: $username\n\n🔗 رابط تفعيل حسابك وتعيين كلمة المرور:\n$activationLink\n\n⚠️ الرابط صالح 48 ساعة فقط\n\nبعد التفعيل حمّل التطبيق:\nhttps://jssolutions-eg.com/app/download\n\nشكراً!'
-                : 'Hello $name 👋\n\nYour MotionHR account has been created\n\n👤 Username: $username\n\n🔗 Activate your account and set your password:\n$activationLink\n\n⚠️ Link valid for 48 hours only\n\nAfter activation download the app:\nhttps://jssolutions-eg.com/app/download\n\nThank you!';
+                ? 'مرحباً $name 👋\n\nتم إنشاء حسابك في تطبيق MotionHR\n\n👤 اسم المستخدم: $username\n\nلتفعيل حسابك:\n١) حمّل التطبيق: https://jssolutions-eg.com/app/download\n٢) ادخل على "تفعيل الحساب لأول مرة"\n٣) اكتب رقم موبايلك وآخر 4 أرقام من رقمك القومي\n٤) هيظهرلك اليوزر بتاعك، اكتب الباسورد المبدئي: 123456\n٥) بعد الدخول هتقدر تغيّر الباسورد\n\nشكراً!'
+                : 'Hello $name 👋\n\nYour MotionHR account has been created\n\n👤 Username: $username\n\nTo activate your account:\n1) Download the app: https://jssolutions-eg.com/app/download\n2) Tap "Activate Account"\n3) Enter your phone number and last 4 digits of national ID\n4) Your username will appear, enter default password: 123456\n5) You can change your password after logging in\n\nThank you!';
             try {
               await EmployeePdfService.openWhatsApp(phone, message: msg);
             } catch (e) {
