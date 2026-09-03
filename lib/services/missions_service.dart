@@ -347,6 +347,7 @@ class MissionsService {
     double? locationLng,
     String clientName = '',
     String clientPhone = '',
+    String backdatedReason = '',
   }) async {
     final headers = await _headers();
     final body = {
@@ -360,6 +361,7 @@ class MissionsService {
       if (locationLng != null) 'location_lng': locationLng,
       'client_name': clientName,
       'client_phone': clientPhone,
+      'backdated_reason': backdatedReason,
     };
 
     final response = await http.post(
