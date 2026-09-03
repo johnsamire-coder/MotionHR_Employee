@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
 import 'common/location_picker_screen.dart';
@@ -475,6 +476,10 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
           TextField(
             controller: clientPhoneCtrl,
             keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+            ],
             decoration: InputDecoration(
               labelText: context.l10n.clientPhone,
               border: const OutlineInputBorder(),
