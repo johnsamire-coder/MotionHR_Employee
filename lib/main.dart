@@ -7421,12 +7421,31 @@ class _ManagerShellState extends State<ManagerShell> {
                 height: 28,
               ),
               const SizedBox(width: 10),
-              Text(_title(context)),
             ],
           ),
           backgroundColor: kManagerColor,
           foregroundColor: Colors.white,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.account_tree),
+              tooltip: isAr ? '\u0627\u0644\u0647\u064A\u0643\u0644 \u0627\u0644\u062A\u0646\u0638\u064A\u0645\u064A' : 'Organization Chart',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const OrganizationTreeScreen(),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.account_tree),
+              tooltip: isAr ? '\u0627\u0644\u0647\u064A\u0643\u0644 \u0627\u0644\u062A\u0646\u0638\u064A\u0645\u064A' : 'Organization Chart',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const OrganizationTreeScreen(),
+                ),
+              ),
+            ),
             const NotificationBellButton(),
             IconButton(
               icon: const Icon(Icons.logout),
