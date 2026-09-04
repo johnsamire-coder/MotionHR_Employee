@@ -7420,22 +7420,11 @@ class _ManagerShellState extends State<ManagerShell> {
                 'assets/branding/icon_white.png',
                 height: 28,
               ),
-              const SizedBox(width: 10),
             ],
           ),
           backgroundColor: kManagerColor,
           foregroundColor: Colors.white,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.account_tree),
-              tooltip: isAr ? '\u0627\u0644\u0647\u064A\u0643\u0644 \u0627\u0644\u062A\u0646\u0638\u064A\u0645\u064A' : 'Organization Chart',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const OrganizationTreeScreen(),
-                ),
-              ),
-            ),
             IconButton(
               icon: const Icon(Icons.account_tree),
               tooltip: isAr ? '\u0627\u0644\u0647\u064A\u0643\u0644 \u0627\u0644\u062A\u0646\u0638\u064A\u0645\u064A' : 'Organization Chart',
@@ -9213,7 +9202,6 @@ class _ManagerLiveLocationsScreenState
     extends State<ManagerLiveLocationsScreen> {
   List<dynamic> _items = [];
   bool _loading = true;
-  bool _showMap = true;
   Timer? _timer;
 
   @override
@@ -9250,47 +9238,109 @@ class _ManagerLiveLocationsScreenState
       await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
+  void _openEmployeeList() {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.55,
+        minChildSize: 0.25,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                isAr ? '\u0627\u0644\u0645\u0648\u0638\u0641\u0648\u0646 \u0639\u0644\u0649 \u0627\u0644\u062E\u0627\u0631\u0637\u0629' : 'Employees on Map',
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: _items.length,
+                itemBuilder: (_, i) {
+                  final item = _items[i];
+                  final lat =
+                      (item['latitude'] as num?)?.toDouble() ?? 0;
+                  final lng =
+                      (item['longitude'] as num?)?.toDouble() ?? 0;
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.person_pin_circle,
+                          color: Colors.red),
+                      title: Text(item['employee_name'] ?? ''),
+                      subtitle:
+                          Text(item['address'] ?? '$lat, $lng'),
+                      trailing: IconButton(
+                          icon: const Icon(Icons.map,
+                              color: kPrimaryColor),
+                          onPressed: () => _openMap(lat, lng))),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_items.isEmpty) {
       return EmptyStateWidget(
-        title: isAr ? 'لا توجد مواقع لحظية' : 'No Live Locations',
+        title: isAr ? '\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0648\u0627\u0642\u0639 \u0644\u062D\u0638\u064A\u0629' : 'No Live Locations',
         description: isAr
-            ? 'لعرض المواقع، تأكد من:\n• وجود موظفين ميدانيين\n• تفعيل التتبع لهم\n• تشغيل تطبيقاتهم'
-            : 'To view locations, make sure:\n• Field employees exist\n• Tracking is enabled\n• Their apps are running',
+            ? '\u0644\u0639\u0631\u0636 \u0627\u0644\u0645\u0648\u0627\u0642\u0639\u060C \u062A\u0623\u0643\u062F \u0645\u0646:\n\u2022 \u0648\u062C\u0648\u062F \u0645\u0648\u0638\u0641\u064A\u0646 \u0645\u064A\u062F\u0627\u0646\u064A\u064A\u0646\n\u2022 \u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u062A\u062A\u0628\u0639 \u0644\u0647\u0645\n\u2022 \u062A\u0634\u063A\u064A\u0644 \u062A\u0637\u0628\u064A\u0642\u0627\u062A\u0647\u0645'
+            : 'To view locations, make sure:\n\u2022 Field employees exist\n\u2022 Tracking is enabled\n\u2022 Their apps are running',
         icon: Icons.location_off_outlined,
         iconColor: Colors.orange,
         onRefresh: _load,
       );
     }
-    return Column(children: [
-      Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(children: [
-            Expanded(
-                child: ElevatedButton.icon(
-                    onPressed: () => setState(() => _showMap = true),
-                    icon: const Icon(Icons.map),
-                    label: Text(isAr ? 'خريطة' : 'Map'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _showMap ? kManagerColor : Colors.grey,
-                        foregroundColor: Colors.white))),
-            const SizedBox(width: 8),
-            Expanded(
-                child: ElevatedButton.icon(
-                    onPressed: () => setState(() => _showMap = false),
-                    icon: const Icon(Icons.list),
-                    label: Text(isAr ? 'قائمة' : 'List'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            !_showMap ? kManagerColor : Colors.grey,
-                        foregroundColor: Colors.white))),
-          ])),
-      Expanded(child: _showMap ? _buildMap() : _buildList()),
-    ]);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildMap(),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: ElevatedButton.icon(
+            onPressed: _openEmployeeList,
+            icon: const Icon(Icons.list),
+            label: Text(isAr ? '\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646' : 'Employee List'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kManagerColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildMap() {
@@ -9299,12 +9349,52 @@ class _ManagerLiveLocationsScreenState
       final lat = (item['latitude'] as num?)?.toDouble();
       final lng = (item['longitude'] as num?)?.toDouble();
       if (lat == null || lng == null) continue;
+      final name = item['employee_name'] ?? '';
+      final address = item['address'] ?? '';
       markers.add(Marker(
-          point: LatLng(lat, lng),
-          width: 40,
-          height: 40,
-          child: const Icon(Icons.location_on,
-              color: Colors.red, size: 40)));
+        point: LatLng(lat, lng),
+        width: 200,
+        height: 90,
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(name,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87)),
+                  if (address.isNotEmpty)
+                    Text(address,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 10, color: Colors.black54)),
+                ],
+              ),
+            ),
+            const Icon(Icons.location_on,
+                color: Colors.red, size: 32),
+          ],
+        ),
+      ));
     }
     final center = markers.isNotEmpty
         ? markers.first.point
@@ -9319,29 +9409,6 @@ class _ManagerLiveLocationsScreenState
               userAgentPackageName: 'com.motionhr.app'),
           MarkerLayer(markers: markers),
         ]);
-  }
-
-  Widget _buildList() {
-    return ListView.builder(
-        itemCount: _items.length,
-        itemBuilder: (_, i) {
-          final item = _items[i];
-          final lat =
-              (item['latitude'] as num?)?.toDouble() ?? 0;
-          final lng =
-              (item['longitude'] as num?)?.toDouble() ?? 0;
-          return Card(
-              child: ListTile(
-                  leading: const Icon(Icons.person_pin_circle,
-                      color: Colors.red),
-                  title: Text(item['employee_name'] ?? ''),
-                  subtitle:
-                      Text(item['address'] ?? '$lat, $lng'),
-                  trailing: IconButton(
-                      icon: const Icon(Icons.map,
-                          color: kPrimaryColor),
-                      onPressed: () => _openMap(lat, lng))));
-        });
   }
 }
 
