@@ -17,7 +17,7 @@ class _BranchComparisonReportScreenState extends State<BranchComparisonReportScr
   bool _exporting = false;
 
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
-  static const _color = Color(0xFF00838F);
+  static const _color = Color(0xFF00C688);
 
   @override
   void initState() {
@@ -211,7 +211,7 @@ class _BranchComparisonReportScreenState extends State<BranchComparisonReportScr
               _row(Icons.check_circle_outline, _isAr ? 'أيام الحضور (30 يوم)' : 'Present Days (30d)', '$presentDays', color: Colors.green),
               _row(Icons.cancel_outlined, _isAr ? 'أيام الغياب (30 يوم)' : 'Absent Days (30d)', '$absentDays', color: Colors.red),
               _row(Icons.alarm, _isAr ? 'دقائق التأخير' : 'Late Minutes', '$lateMinutes', color: Colors.orange),
-              _row(Icons.more_time, _isAr ? 'ساعات الأوفر تايم' : 'Overtime Hours', '$overtimeHours', color: Colors.blue),
+              _row(Icons.more_time, _isAr ? 'ساعات الأوفر تايم' : 'Overtime Hours', '$overtimeHours', color: Color(0xFF382483)),
             ]),
           ),
         ],

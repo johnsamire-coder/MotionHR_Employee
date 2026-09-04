@@ -137,7 +137,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
+          colors: [Color(0xFF1A0A3E), Color(0xFF1A0A3E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -152,7 +152,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   ? NetworkImage('https://jssolutions-eg.com$photo')
                   : null,
               child: (photo == null || photo.toString().isEmpty)
-                  ? const Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
+                  ? const Icon(Icons.person, size: 50, color: Color(0xFF1A0A3E))
                   : null,
             ),
             Positioned(
@@ -163,7 +163,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF1976D2),
+                    color: Color(0xFF1A0A3E),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
@@ -243,7 +243,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.indigo.withValues(alpha: 0.08),
+              color: Color(0xFF1A0A3E).withValues(alpha: 0.08),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -251,12 +251,12 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
             ),
             child: Row(
               children: [
-                const Icon(Icons.verified_user, color: Colors.indigo, size: 20),
+                const Icon(Icons.verified_user, color: Color(0xFF1A0A3E), size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     isAr ? 'بطاقة الدخول والتفعيل' : 'Access & Activation Card',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A0A3E)),
                   ),
                 ),
                 Row(
@@ -367,7 +367,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1976D2),
+          backgroundColor: const Color(0xFF1A0A3E),
           foregroundColor: Colors.white,
           title: Text(context.l10n.profile,
               style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -404,7 +404,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
                           _section(
                             isAr ? 'البيانات الشخصية' : 'Personal Info',
                             Icons.person,
-                            const Color(0xFF1976D2),
+                            const Color(0xFF1A0A3E),
                             [
                               _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
                               _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
@@ -445,7 +445,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
                           _section(
                             isAr ? 'البيانات البنكية' : 'Bank Info',
                             Icons.account_balance,
-                            const Color(0xFF6A1B9A),
+                            const Color(0xFF382483),
                             [
                               _infoRow(isAr ? 'البنك' : 'Bank', _profile!['bank_name']),
                               _infoRow(isAr ? 'رقم الحساب' : 'Account Number', _profile!['bank_account']),
@@ -470,7 +470,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
                           _actionButton(
                             label: isAr ? 'الملخص' : 'Summary',
                             icon: Icons.analytics,
-                            color: const Color(0xFF6A1B9A),
+                            color: const Color(0xFF382483),
                             onTap: () => Navigator.push(context,
                               MaterialPageRoute(builder: (_) => const EmployeeSummaryScreen())),
                           ),

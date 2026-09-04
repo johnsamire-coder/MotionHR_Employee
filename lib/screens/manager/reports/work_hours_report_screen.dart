@@ -24,7 +24,7 @@ class _WorkHoursReportScreenState extends State<WorkHoursReportScreen> {
 
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
 
-  static const _color = Color(0xFF283593);
+  static const _color = Color(0xFF1A0A3E);
 
   @override
   void initState() {

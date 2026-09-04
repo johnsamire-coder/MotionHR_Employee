@@ -225,7 +225,7 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
           actions: [
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF382483)),
               child: Text(context.l10n.ok, style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -821,7 +821,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, selected),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF382483)),
                 child: const Text('حفظ', style: TextStyle(color: Colors.white)),
               ),
             ],
@@ -871,7 +871,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
+            gradient: const LinearGradient(colors: [Color(0xFF382483), Color(0xFF1A0A3E)]),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(children: [
@@ -882,7 +882,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                   ? NetworkImage('https://jssolutions-eg.com${_profile!['photo']}')
                   : null,
               child: (_profile!['photo'] == null || _profile!['photo'].toString().isEmpty)
-                  ? Icon(Icons.person, size: 34, color: Color(0xFF6A1B9A))
+                  ? Icon(Icons.person, size: 34, color: Color(0xFF382483))
                   : null,
             ),
             SizedBox(width: 12),
@@ -925,7 +925,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 icon: Icon(Icons.analytics, color: Colors.white, size: 18),
                 label: Text('الملخص', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A),
+                  backgroundColor: const Color(0xFF382483),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -938,7 +938,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 icon: Icon(Icons.edit, color: Colors.white, size: 18),
                 label: Text(context.l10n.edit, style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Color(0xFF382483),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -956,7 +956,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 icon: Icon(Icons.swap_horiz, color: Colors.white, size: 18),
                 label: Text('نقل', style: TextStyle(color: Colors.white, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
+                  backgroundColor: Color(0xFF00C688),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -979,7 +979,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
         ),
         SizedBox(height: 12),
 
-        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات الشخصية' : 'Personal Info', Icons.person, const Color(0xFF1976D2), [
+        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات الشخصية' : 'Personal Info', Icons.person, const Color(0xFF1A0A3E), [
           _infoRow(context.l10n.nationalId, _profile!['national_id'], icon: Icons.badge),
           _infoRow(context.l10n.birthDate, _profile!['birth_date'], icon: Icons.cake),
           _infoRow(context.l10n.gender, _profile!['gender']),
@@ -999,19 +999,19 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           _infoRow('نوع العقد', _profile!['contract_type']),
           _infoRow(context.l10n.status, _profile!['status']),
         ]),
-        _sectionCard('تصنيف الموظف', Icons.work_outline, const Color(0xFF0288D1), [
+        _sectionCard('تصنيف الموظف', Icons.work_outline, const Color(0xFF382483), [
           Row(
             children: [
               Expanded(child: _infoRow('التصنيف الحالي', _profile!['worker_type_display'] ?? '-', icon: Icons.person_pin)),
               IconButton(
-                icon: const Icon(Icons.edit, color: Color(0xFF0288D1)),
+                icon: const Icon(Icons.edit, color: Color(0xFF382483)),
                 tooltip: 'تغيير التصنيف',
                 onPressed: _changeWorkerType,
               ),
             ],
           ),
         ]),
-        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF6A1B9A), [
+        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF382483), [
           _infoRow('البنك', _profile!['bank_name']),
           _infoRow('رقم الحساب', _profile!['bank_account']),
           _infoRow('IBAN', _profile!['iban']),
@@ -1148,7 +1148,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           title: Text(widget.employeeName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
@@ -1175,7 +1175,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                     value: 'reset_password',
                     child: Row(
                       children: [
-                        Icon(Icons.lock_reset, color: Color(0xFF6A1B9A)),
+                        Icon(Icons.lock_reset, color: Color(0xFF382483)),
                         SizedBox(width: 8),
                         Text('إعادة تعيين كلمة المرور'),
                       ],
@@ -1514,7 +1514,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Icon(Icons.edit, color: Color(0xFF6A1B9A)),
+                  Icon(Icons.edit, color: Color(0xFF382483)),
                   SizedBox(width: 8),
                   Text(context.l10n.editEmployee,
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -1548,7 +1548,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                       _field(context.l10n.address, _addressCtrl),
                       SizedBox(height: 8),
                       Text(isAr ? 'البيانات البنكية' : 'Bank Info',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A))),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF382483))),
                       SizedBox(height: 8),
                       _field('اسم البنك', _bankNameCtrl),
                       _field('رقم الحساب', _bankAccountCtrl),
@@ -1569,7 +1569,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                         child: ElevatedButton(
                           onPressed: _saving ? null : _save,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6A1B9A),
+                            backgroundColor: const Color(0xFF382483),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           child: _saving

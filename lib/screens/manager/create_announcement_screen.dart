@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
 
-const _kColor = Color(0xFF6C63FF);
+const _kColor = Color(0xFF5A43B5);
 const _kBase = 'https://jssolutions-eg.com';
 
 class CreateAnnouncementScreen extends StatefulWidget {
@@ -421,7 +421,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
               const SizedBox(height: 12),
               Card(
                 elevation: 0,
-                color: const Color(0xFFF6F2FF),
+                color: const Color(0xFFEDEAF7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(color: _kColor.withValues(alpha: 0.2)),

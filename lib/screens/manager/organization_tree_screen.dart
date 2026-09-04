@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/employee_management_service.dart';
 
-const Color kOrgPrimary = Color(0xFF4A148C);
-const Color kOrgBranch = Color(0xFF6A1B9A);
-const Color kOrgDept = Color(0xFF1565C0);
+const Color kOrgPrimary = Color(0xFF1A0A3E);
+const Color kOrgBranch = Color(0xFF382483);
+const Color kOrgDept = Color(0xFF00C688);
 const Color kOrgManager = Color(0xFF2E7D32);
 const Color kOrgEmployee = Color(0xFFE65100);
 
@@ -111,7 +111,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [kOrgPrimary, Color(0xFF7B1FA2)],
+            colors: [kOrgPrimary, Color(0xFF382483)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -267,7 +267,7 @@ class _OrganizationTreeScreenState extends State<OrganizationTreeScreen> {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: Color(0xFFEDEAF7),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: kOrgDept.withValues(alpha: 0.2)),
       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/insurance_policy_service.dart';
 import '../../../services/lookups_service.dart';
 
-const Color kInsCreateColor = Color(0xFF00838F);
+const Color kInsCreateColor = Color(0xFF00C688);
 
 class CreateEditInsurancePolicyScreen extends StatefulWidget {
   final Map<String, dynamic>? existing;
@@ -201,7 +201,7 @@ class _CreateEditInsurancePolicyScreenState extends State<CreateEditInsurancePol
   @override
   Widget build(BuildContext context) {
     final isSocial   = _insuranceType == 'social';
-    final typeColor  = isSocial ? const Color(0xFF1976D2) : const Color(0xFF388E3C);
+    final typeColor  = isSocial ? const Color(0xFF1A0A3E) : const Color(0xFF388E3C);
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -232,7 +232,7 @@ class _CreateEditInsurancePolicyScreenState extends State<CreateEditInsurancePol
                         Expanded(child: _typeCard(
                           label: 'تأمين اجتماعي',
                           icon: Icons.shield,
-                          color: const Color(0xFF1976D2),
+                          color: const Color(0xFF1A0A3E),
                           selected: _insuranceType == 'social',
                           onTap: _isEdit ? null : () => setState(() => _insuranceType = 'social'),
                         )),

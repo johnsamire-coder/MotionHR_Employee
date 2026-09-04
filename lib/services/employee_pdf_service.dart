@@ -64,7 +64,7 @@ class EmployeePdfService {
                       pw.Radius.circular(10),
                     ),
                     border: pw.Border.all(
-                      color: const PdfColor.fromInt(0xFF6A1B9A),
+                      color: const PdfColor.fromInt(0xFF382483),
                       width: 1.5,
                     ),
                   ),

@@ -297,7 +297,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                   selectedRoleId == null
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
-                  color: const Color(0xFF4A148C),
+                  color: const Color(0xFF1A0A3E),
                 ),
                 title: Text(isAr ? 'بدون دور' : 'No role'),
                 onTap: () {
@@ -312,7 +312,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                     selectedRoleId == role['id']
                         ? Icons.radio_button_checked
                         : Icons.radio_button_off,
-                    color: const Color(0xFF4A148C),
+                    color: const Color(0xFF1A0A3E),
                   ),
                   title: Text('${role['name']}'),
                   subtitle: Text(
@@ -405,12 +405,12 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4A148C)
+                          color: const Color(0xFF1A0A3E)
                               .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.business,
-                            color: Color(0xFF4A148C), size: 20),
+                            color: Color(0xFF1A0A3E), size: 20),
                       ),
                       title: Text('${d['name_ar']}'),
                       subtitle: Text(
@@ -482,7 +482,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${_dept['name_ar']}'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
         actions: [
           PopupMenuButton<String>(
@@ -530,7 +530,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: hasRole
-                      ? [const Color(0xFF4A148C), const Color(0xFF7B1FA2)]
+                      ? [const Color(0xFF1A0A3E), const Color(0xFF382483)]
                       : [Colors.orange.shade700, Colors.orange.shade400],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -578,7 +578,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                     onPressed: _showRoleSheet,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF4A148C),
+                      foregroundColor: const Color(0xFF1A0A3E),
                     ),
                     child: Text(isAr ? 'تغيير' : 'Change'),
                   ),
@@ -603,7 +603,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: const Color(0xFFEDEAF7),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -611,7 +611,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4A148C),
+                      color: Color(0xFF1A0A3E),
                     ),
                   ),
                 ),
@@ -665,7 +665,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFF4A148C)
+                        backgroundColor: const Color(0xFF1A0A3E)
                             .withValues(alpha: 0.1),
                         child: Text(
                           (e['full_name'] ?? '?')
@@ -673,7 +673,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                               .characters
                               .first,
                           style: const TextStyle(
-                            color: Color(0xFF4A148C),
+                            color: Color(0xFF1A0A3E),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -718,7 +718,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
                             child: Row(
                               children: [
                                 const Icon(Icons.swap_horiz,
-                                    size: 18, color: Color(0xFF4A148C)),
+                                    size: 18, color: Color(0xFF1A0A3E)),
                                 const SizedBox(width: 8),
                                 Text(
                                   isAr

@@ -97,7 +97,7 @@ class _ActivateAccountScreenState extends State<ActivateAccountScreen> {
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(12),
-                color: Colors.blue.withAlpha(20),
+                color: Color(0xFF382483).withAlpha(20),
                 child: Text('${isAr ? "اسم المستخدم الخاص بك هو" : "Your username is"}: $_username',
                   style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
               ),

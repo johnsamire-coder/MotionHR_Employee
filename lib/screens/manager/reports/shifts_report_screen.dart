@@ -101,11 +101,11 @@ class _ShiftsReportScreenState extends State<ShiftsReportScreen> {
   Color _shiftColor(String type) {
     switch (type.toLowerCase()) {
       case 'morning': return Colors.orange;
-      case 'night': return Colors.indigo;
-      case 'evening': return Colors.purple;
+      case 'night': return Color(0xFF1A0A3E);
+      case 'evening': return Color(0xFF382483);
       case 'flex_fixed':
-      case 'flex_split': return Colors.teal;
-      case 'split_fixed': return Colors.blue;
+      case 'flex_split': return Color(0xFF00C688);
+      case 'split_fixed': return Color(0xFF382483);
       default: return _color;
     }
   }

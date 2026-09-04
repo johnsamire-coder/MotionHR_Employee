@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kBase = 'https://jssolutions-eg.com';
-const Color _kColor = Color(0xFF1565C0);
+const Color _kColor = Color(0xFF00C688);
 
 class EmployeePermissionsScreen extends StatefulWidget {
   final int employeeId;
@@ -338,7 +338,7 @@ class _EmployeePermissionsScreenState
             const SizedBox(height: 12),
             Row(children: [
               _box(isAr ? 'المتاح' : 'Total',
-                  '${((monthlyMinutes) / 60).toStringAsFixed(1)}h', Colors.blue),
+                  '${((monthlyMinutes) / 60).toStringAsFixed(1)}h', Color(0xFF382483)),
               const SizedBox(width: 8),
               _box(isAr ? 'المستخدم' : 'Used',
                   '${(usedMinutes / 60).toStringAsFixed(1)}h', Colors.orange),

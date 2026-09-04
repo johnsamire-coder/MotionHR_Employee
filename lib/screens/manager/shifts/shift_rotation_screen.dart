@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 import '../../../services/employee_management_service.dart';
 
-const Color kRotationColor = Color(0xFF1565C0);
+const Color kRotationColor = Color(0xFF00C688);
 
 class ShiftRotationScreen extends StatefulWidget {
   const ShiftRotationScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/shifts_service.dart';
 
-const Color kPrimaryColor = Color(0xFF6A1B9A);
+const Color kPrimaryColor = Color(0xFF382483);
 
 class MyShiftScreen extends StatefulWidget {
   const MyShiftScreen({super.key});

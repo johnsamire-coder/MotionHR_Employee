@@ -29,7 +29,7 @@ class _DailyAttendanceReportScreenState
 
   bool get _isAr =>
       Localizations.localeOf(context).languageCode == 'ar';
-  static const _color = Color(0xFF00838F);
+  static const _color = Color(0xFF00C688);
 
   bool _didInit = false;
 
@@ -238,11 +238,11 @@ class _DailyAttendanceReportScreenState
       case 'absent':
         return Colors.red;
       case 'on_leave':
-        return Colors.blue;
+        return Color(0xFF382483);
       case 'weekend':
-        return Colors.purple;
+        return Color(0xFF382483);
       case 'mission':
-        return Colors.teal;
+        return Color(0xFF00C688);
       default:
         return Colors.grey;
     }
@@ -666,10 +666,10 @@ class _DailyAttendanceReportScreenState
                 ),
               if (isNight)
                 Text('${_isAr ? '\u0644\u064a\u0644\u064a': 'Night'}  ',
-                  style: const TextStyle(fontSize: 10, color: Colors.indigo)),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFF1A0A3E))),
               if (isWeekend)
                 Text('${_isAr ? '\u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0623\u0633\u0628\u0648\u0639': 'Weekend'}  ',
-                  style: const TextStyle(fontSize: 10, color: Colors.purple)),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFF382483))),
             ]),
           ],
         ),

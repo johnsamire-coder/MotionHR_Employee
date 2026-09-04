@@ -71,7 +71,7 @@ class ReportPdfService {
                     // Header Row
                     pw.TableRow(
                       decoration: const pw.BoxDecoration(
-                        color: PdfColor.fromInt(0xFF4A148C),
+                        color: PdfColor.fromInt(0xFF1A0A3E),
                       ),
                       children: headers.map((h) => _headerCell(h)).toList(),
                     ),
@@ -83,7 +83,7 @@ class ReportPdfService {
                         decoration: pw.BoxDecoration(
                           color: idx % 2 == 0
                               ? PdfColors.white
-                              : PdfColor.fromInt(0xFFF3E5F5),
+                              : PdfColor.fromInt(0xFFEDEAF7),
                         ),
                         children: row.map((cell) => _dataCell(cell)).toList(),
                       );

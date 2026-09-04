@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 import '../../../services/employee_management_service.dart';
 
-const Color kShiftColor = Color(0xFF6A1B9A);
+const Color kShiftColor = Color(0xFF382483);
 
 class AssignShiftScreen extends StatefulWidget {
   final Map<String, dynamic> shift;
@@ -753,7 +753,7 @@ class _AssignShiftScreenState extends State<AssignShiftScreen>
                   '';
           return Chip(
             label: Text('🏙️ $name'),
-            backgroundColor: Colors.blue.withValues(alpha: 0.1),
+            backgroundColor: Color(0xFF382483).withValues(alpha: 0.1),
             deleteIcon: const Icon(Icons.close, size: 16),
             onDeleted: () => setState(() {
               _selectedBranchIds.remove(id);

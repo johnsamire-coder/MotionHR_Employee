@@ -52,7 +52,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(context.l10n.companyInfo),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           actions: [
             IconButton(
@@ -116,9 +116,9 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFF4A148C),
-                  Color(0xFF7B1FA2),
-                  Color(0xFF9C27B0),
+                  Color(0xFF1A0A3E),
+                  Color(0xFF382483),
+                  Color(0xFF382483),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -154,14 +154,14 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                             errorBuilder: (_, __, ___) => const Icon(
                               Icons.business,
                               size: 60,
-                              color: Color(0xFF6A1B9A),
+                              color: Color(0xFF382483),
                             ),
                           ),
                         )
                       : const Icon(
                           Icons.business,
                           size: 60,
-                          color: Color(0xFF6A1B9A),
+                          color: Color(0xFF382483),
                         ),
                 ),
                 const SizedBox(height: 16),
@@ -213,7 +213,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                   '${stats['branches'] ?? 0}',
                   context.l10n.branches,
                   Icons.business,
-                  Colors.blue,
+                  Color(0xFF382483),
                 ),
                 const SizedBox(width: 10),
                 _statCard(
@@ -239,7 +239,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           _section(
             isAr ? 'بيانات الاتصال' : 'Contact Info',
             Icons.phone,
-            Colors.blue,
+            Color(0xFF382483),
             [
               if ((c['phone'] ?? '').toString().isNotEmpty)
                 _infoRow(Icons.phone, isAr ? 'الهاتف' : 'Phone', c['phone'].toString()),
@@ -256,7 +256,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           _section(
             isAr ? 'البيانات القانونية' : 'Legal Info',
             Icons.gavel,
-            Colors.purple,
+            Color(0xFF382483),
             [
               if ((c['commercial_register'] ?? '').toString().isNotEmpty)
                 _infoRow(

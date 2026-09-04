@@ -163,7 +163,7 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
   Color _statusColor(String s) {
     switch (s) {
       case 'draft': return Colors.orange;
-      case 'approved': return Colors.blue;
+      case 'approved': return Color(0xFF382483);
       case 'locked': return Colors.green;
       default: return Colors.grey;
     }
@@ -302,7 +302,7 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _statItem(Icons.people, ar ? 'الموظفون' : 'Employees', '$count', Colors.blue),
+                _statItem(Icons.people, ar ? 'الموظفون' : 'Employees', '$count', Color(0xFF382483)),
                 _statItem(Icons.attach_money, ar ? 'اجمالي الصافي' : 'Total Net',
                     '${total.toStringAsFixed(0)} ${ar ? 'ج.م' : 'EGP'}', Colors.green),
               ],
@@ -339,7 +339,7 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
                   const SizedBox(width: 4),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, foregroundColor: Colors.white,
+                      backgroundColor: Color(0xFF382483), foregroundColor: Colors.white,
                     ),
                     onPressed: () => _approveRun(runId),
                     icon: const Icon(Icons.check, size: 18),

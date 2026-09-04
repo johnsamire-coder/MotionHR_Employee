@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const Color kCompanyPoliciesColor = Color(0xFF1565C0);
+const Color kCompanyPoliciesColor = Color(0xFF00C688);
 const String _base = 'https://jssolutions-eg.com/attendance/api/mobile/manager';
 
 class CompanyPoliciesScreen extends StatefulWidget {
@@ -266,7 +266,7 @@ class _PolicyTabState extends State<_PolicyTab>
             ),
             if (item['is_monthly'] == true) ...[
               const SizedBox(width: 6),
-              _chip(isAr ? 'شهري' : 'Monthly', Colors.teal),
+              _chip(isAr ? 'شهري' : 'Monthly', Color(0xFF00C688)),
             ],
           ]),
           const SizedBox(height: 4),

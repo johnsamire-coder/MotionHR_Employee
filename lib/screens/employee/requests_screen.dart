@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kBase = 'https://jssolutions-eg.com';
-const Color _kColor = Color(0xFF6750A4);
+const Color _kColor = Color(0xFF382483);
 
 class RequestsScreen extends StatefulWidget {
   const RequestsScreen({super.key});
@@ -313,8 +313,8 @@ class _RequestsScreenState extends State<RequestsScreen>
     final status = req['status'] as String? ?? 'pending';
     final statusColors = {
       'pending': Colors.orange,
-      'manager_approved': Colors.blue,
-      'hr_approved': Colors.blue,
+      'manager_approved': Color(0xFF382483),
+      'hr_approved': Color(0xFF382483),
       'approved': Colors.green,
       'rejected': Colors.red,
       'cancelled': Colors.grey,

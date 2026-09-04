@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 import '../../../services/employee_management_service.dart';
 
-const Color kAssignColor = Color(0xFF6A1B9A);
+const Color kAssignColor = Color(0xFF382483);
 
 class AssignmentDetailScreen extends StatefulWidget {
   final Map<String, dynamic> assignment;

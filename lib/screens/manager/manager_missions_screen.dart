@@ -21,18 +21,18 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
   String _search = '';
 
   final Map<String, Color> _statusColors = {
-    'approved': Colors.blue,
+    'approved': Color(0xFF382483),
     'in_progress': Colors.orange,
     'completed': Colors.green,
     'cancelled': Colors.red,
-    'pending_approval': Colors.purple,
+    'pending_approval': Color(0xFF382483),
     'draft': Colors.grey,
   };
 
   final Map<String, Color> _priorityColors = {
     'urgent': Colors.red,
     'high': Colors.orange,
-    'normal': Colors.blue,
+    'normal': Color(0xFF382483),
   };
 
   final Map<String, IconData> _priorityIcons = {
@@ -112,7 +112,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
@@ -157,7 +157,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             );
             if (result == true) _loadMissions();
           },
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(
             context.l10n.newMission,
@@ -176,7 +176,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
       children: [
         // ─── Header: بحث + فلتر ───
         Container(
-          color: const Color(0xFF6C3FC5),
+          color: const Color(0xFF382483),
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: Column(
             children: [
@@ -232,7 +232,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                             entry.value,
                             style: TextStyle(
                               color: isSelected
-                                  ? const Color(0xFF6C3FC5)
+                                  ? const Color(0xFF382483)
                                   : Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -253,7 +253,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
           child: _loading
               ? const Center(
                   child: CircularProgressIndicator(
-                      color: Color(0xFF6C3FC5)))
+                      color: Color(0xFF382483)))
               : _error != null
                   ? _buildError()
                   : filtered.isEmpty
@@ -277,7 +277,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
     final status = mission['status'] ?? '';
     final priority = mission['priority'] ?? 'normal';
     final statusColor = _statusColors[status] ?? Colors.grey;
-    final priorityColor = _priorityColors[priority] ?? Colors.blue;
+    final priorityColor = _priorityColors[priority] ?? Color(0xFF382483);
     final assignments = mission['assignments'] as List? ?? [];
 
     // ─── Feedback Badge ───
@@ -465,7 +465,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(
               child: CircularProgressIndicator(
-                  color: Color(0xFF6C3FC5)));
+                  color: Color(0xFF382483)));
         }
         if (!snap.hasData || snap.data == null) {
           return Center(child: Text(context.l10n.noData));
@@ -493,13 +493,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                   context.l10n.interested,
                   '${summary['interested'] ?? 0}',
                   Icons.sentiment_satisfied,
-                  Colors.blue,
+                  Color(0xFF382483),
                 ),
                 _statCard(
                   isAr ? 'عقود موقعة' : 'Contracts Signed',
                   '${summary['contracts_signed'] ?? 0}',
                   Icons.handshake,
-                  Colors.purple,
+                  Color(0xFF382483),
                 ),
                 _statCard(
                   isAr ? 'يحتاج متابعة' : 'Needs Follow-up',
@@ -541,7 +541,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               Row(
                 children: [
                   const Icon(Icons.assignment,
-                      size: 16, color: Color(0xFF6C3FC5)),
+                      size: 16, color: Color(0xFF382483)),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -593,13 +593,13 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
+                      color: Color(0xFF382483).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       fb['interest_level_display'],
                       style: const TextStyle(
-                          fontSize: 11, color: Colors.blue),
+                          fontSize: 11, color: Color(0xFF382483)),
                     ),
                   ),
                 ),
@@ -620,7 +620,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              const Icon(Icons.feedback, color: Color(0xFF6C3FC5)),
+              const Icon(Icons.feedback, color: Color(0xFF382483)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -775,7 +775,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
             icon: const Icon(Icons.refresh),
             label: Text(context.l10n.retry),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C3FC5),
+              backgroundColor: const Color(0xFF382483),
               foregroundColor: Colors.white,
             ),
           ),
@@ -884,7 +884,7 @@ class _ManagerMissionsScreenState extends State<ManagerMissionsScreen>
                                 horizontal: 12, vertical: 4),
                             child: ListTile(
                               leading: const CircleAvatar(
-                                backgroundColor: Color(0xFF6C3FC5),
+                                backgroundColor: Color(0xFF382483),
                                 child: Icon(Icons.assignment,
                                     color: Colors.white, size: 20),
                               ),

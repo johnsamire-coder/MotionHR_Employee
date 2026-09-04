@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 
-const Color kShiftColor = Color(0xFF6A1B9A);
+const Color kShiftColor = Color(0xFF382483);
 
 class CreateEditShiftScreen extends StatefulWidget {
   final Map<String, dynamic>? existingShift;
@@ -561,20 +561,20 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withAlpha(13),
+                color: Color(0xFF382483).withAlpha(13),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.blue.withAlpha(50)),
+                border: Border.all(color: Color(0xFF382483).withAlpha(50)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const Icon(Icons.info_outline, color: Color(0xFF382483)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       isAr
                           ? 'لكل يوم: إجازة أو توقيت خاص أو التوقيت الافتراضي. وفي المتغير الأسبوعي المرن تقدر تخلي اليوم مرن بعدد ساعات فقط.'
                           : 'For each day: Off, custom timing, or default timing. In weekly flex mode, a day can be flexible with hours only.',
-                      style: const TextStyle(fontSize: 12, color: Colors.blue),
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF382483)),
                     ),
                   ),
                 ],
@@ -1129,7 +1129,7 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
                         min: 0,
                         max: 120,
                         divisions: 12,
-                        activeColor: Colors.blue,
+                        activeColor: Color(0xFF382483),
                         label: '$_earlyCheckinMinutes',
                         onChanged: (v) => setState(() => _earlyCheckinMinutes = v.round()),
                       ),

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const kPrimaryColor = Color(0xFF6C63FF);
+const kPrimaryColor = Color(0xFF5A43B5);
 const kBaseUrl = 'https://jssolutions-eg.com';
 
 class AnnouncementDetailScreen extends StatefulWidget {

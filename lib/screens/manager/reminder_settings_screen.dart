@@ -48,7 +48,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
             : 'Requests pending for more than 24 hours',
         'time': isAr ? '11:00 صباحًا' : '11:00 AM',
         'icon': Icons.pending_actions,
-        'color': const Color(0xFF2196F3),
+        'color': const Color(0xFF382483),
         'locked': false,
       },
       {
@@ -59,7 +59,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
             : 'Employees who have not accepted the charter',
         'time': isAr ? '9:30 صباحًا' : '9:30 AM',
         'icon': Icons.fact_check,
-        'color': const Color(0xFF9C27B0),
+        'color': const Color(0xFF382483),
         'locked': false,
       },
       {
@@ -70,7 +70,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
             : 'Documents expiring within 30 days',
         'time': isAr ? '8:00 صباحًا' : '8:00 AM',
         'icon': Icons.folder_open,
-        'color': const Color(0xFF607D8B),
+        'color': const Color(0xFF455A64),
         'locked': true,
       },
     ];

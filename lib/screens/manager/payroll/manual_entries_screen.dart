@@ -363,7 +363,7 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
       case 'pending':  color = Colors.orange; label = 'قيد الموافقة'; break;
       case 'approved': color = Colors.green;  label = 'تمت الموافقة'; break;
       case 'rejected': color = Colors.red;    label = 'مرفوض';        break;
-      case 'applied':  color = Colors.blue;   label = 'مطبق';         break;
+      case 'applied':  color = Color(0xFF382483);   label = 'مطبق';         break;
       default:         color = Colors.grey;   label = status;
     }
     return Container(

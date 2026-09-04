@@ -290,7 +290,7 @@ class _PayrollReportScreenState extends State<PayrollReportScreen> {
                             child: _summaryItem(
                           _isAr ? 'إجمالي الرواتب' : 'Gross Total',
                           _fmt(totals['gross_salary']),
-                          Colors.blue,
+                          Color(0xFF382483),
                         )),
                         Expanded(
                             child: _summaryItem(
@@ -493,7 +493,7 @@ class _PayrollReportScreenState extends State<PayrollReportScreen> {
                   _isAr ? 'الإجمالي' : 'Gross',
                   '$gross $currency',
                   bold: true,
-                  valueColor: Colors.blue[700],
+                  valueColor: Color(0xFF382483),
                 ),
                 const SizedBox(height: 8),
                 // الخصومات

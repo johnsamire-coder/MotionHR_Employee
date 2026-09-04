@@ -107,7 +107,7 @@ class AdaptiveAttendanceButtons extends StatelessWidget {
           child: _bigButton(
             onPressed:
                 (loading || hasActiveVisit) ? null : onStartVisit,
-            color: hasActiveVisit ? Colors.grey.shade400 : Colors.blue,
+            color: hasActiveVisit ? Colors.grey.shade400 : Color(0xFF382483),
             icon: Icons.add_location,
             label: ar ? 'تسجيل زيارة' : 'Start Visit',
             disabled: hasActiveVisit,
@@ -220,7 +220,7 @@ class AdaptiveAttendanceButtons extends StatelessWidget {
                         : onStartVisit,
                 color: (hasActiveVisit || !isInApprovedLocation)
                     ? Colors.grey.shade400
-                    : Colors.blue,
+                    : Color(0xFF382483),
                 icon: Icons.add_location,
                 label: ar ? 'تسجيل زيارة' : 'Start Visit',
                 disabled: hasActiveVisit || !isInApprovedLocation,
@@ -232,7 +232,7 @@ class AdaptiveAttendanceButtons extends StatelessWidget {
                     currentLocName,
                     style: TextStyle(
                       fontSize: 10,
-                      color: Colors.blue.shade700,
+                      color: Color(0xFF382483),
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,

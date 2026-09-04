@@ -29,7 +29,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5)],
+            colors: [Color(0xFF1A0A3E), Color(0xFF1A0A3E), Color(0xFF7963CB)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -100,7 +100,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                     onPressed: _selected == null ? null : _confirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0D47A1),
+                      foregroundColor: const Color(0xFF1A0A3E),
                       disabledBackgroundColor: Colors.white.withValues(alpha: 0.3),
                       disabledForegroundColor: Colors.white70,
                       shape: RoundedRectangleBorder(
@@ -173,7 +173,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? const Color(0xFF0D47A1) : Colors.white,
+                      color: isSelected ? const Color(0xFF1A0A3E) : Colors.white,
                     ),
                   ),
                   Text(
@@ -192,7 +192,7 @@ class _FirstLaunchLanguageScreenState extends State<FirstLaunchLanguageScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF0D47A1),
+                  color: Color(0xFF1A0A3E),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.check, color: Colors.white, size: 22),

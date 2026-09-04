@@ -87,7 +87,7 @@ class _PayrollRunDetailScreenState extends State<PayrollRunDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue[700]!, Colors.blue[500]!],
+          colors: [Color(0xFF382483), Color(0xFF5A43B5)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -146,10 +146,10 @@ class _PayrollRunDetailScreenState extends State<PayrollRunDetailScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.blue[100],
+                  backgroundColor: Color(0xFFD6CFF0),
                   child: Text(
                     name.isNotEmpty ? name[0] : '?',
-                    style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Color(0xFF382483), fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -166,7 +166,7 @@ class _PayrollRunDetailScreenState extends State<PayrollRunDetailScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                _lineItem(ar ? 'اساسي' : 'Basic', basic, Colors.blue),
+                _lineItem(ar ? 'اساسي' : 'Basic', basic, Color(0xFF382483)),
                 _lineItem(ar ? 'مكافات' : 'Bonus', bonus, Colors.green),
                 _lineItem(ar ? 'خصومات' : 'Deduct', deduction, Colors.red),
               ],

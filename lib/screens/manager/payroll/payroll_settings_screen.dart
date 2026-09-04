@@ -184,7 +184,7 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.calendar_month, color: Color(0xFF6A1B9A)),
+                const Icon(Icons.calendar_month, color: Color(0xFF382483)),
                 const SizedBox(width: 8),
                 _sectionTitle('دورة المرتب', 'Payroll Cycle'),
               ],
@@ -224,15 +224,15 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
+                  color: Color(0xFFEDEAF7),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.purple.shade200),
+                  border: Border.all(color: Color(0xFFB8AEE3)),
                 ),
                 child: Text(
                   isAr
                       ? 'مثال: يوم 20 → الدورة من 21 الشهر الفايت لـ 20 الشهر الحالي'
                       : 'Example: Day 20 → Period from 21st last month to 20th this month',
-                  style: TextStyle(color: Colors.purple.shade700, fontSize: 12),
+                  style: TextStyle(color: Color(0xFF382483), fontSize: 12),
                 ),
               ),
               const SizedBox(height: 14),
@@ -350,12 +350,12 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
             isAr ? 'إعدادات الرواتب' : 'Payroll Settings',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           elevation: 0,
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF6A1B9A)))
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF382483)))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -389,20 +389,20 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
                     const SizedBox(height: 12),
 
                     Card(
-                      color: Colors.blue.shade50,
+                      color: Color(0xFFEDEAF7),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline, color: Colors.blue.shade700, size: 18),
+                            Icon(Icons.info_outline, color: Color(0xFF382483), size: 18),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 isAr
                                     ? 'التغييرات تؤثر على حسابات الشهر الحالي فقط.'
                                     : 'Changes affect current month calculations only.',
-                                style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
+                                style: TextStyle(color: Color(0xFF2C1B69), fontSize: 13),
                               ),
                             ),
                           ],
@@ -422,7 +422,7 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A1B9A),
+                          backgroundColor: const Color(0xFF382483),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),

@@ -135,7 +135,7 @@ class _DepartmentsManagementScreenState
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A148C),
+                    backgroundColor: const Color(0xFF1A0A3E),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -178,12 +178,12 @@ class _DepartmentsManagementScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'إدارة الأقسام' : 'Departments'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddSheet,
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: RefreshIndicator(
@@ -255,12 +255,12 @@ class _DepartmentsManagementScreenState
                                     width: 50,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4A148C).withValues(alpha: 0.1),
+                                      color: const Color(0xFF1A0A3E).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: const Icon(
                                       Icons.business,
-                                      color: Color(0xFF4A148C),
+                                      color: Color(0xFF1A0A3E),
                                     ),
                                   ),
                                   const SizedBox(width: 14),
@@ -292,7 +292,7 @@ class _DepartmentsManagementScreenState
                                                 vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFEEF2FF),
+                                                color: const Color(0xFFEDEAF7),
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(
@@ -301,7 +301,7 @@ class _DepartmentsManagementScreenState
                                                     : '${dept['employees_count']} employees',
                                                 style: const TextStyle(
                                                   fontSize: 11,
-                                                  color: Color(0xFF4A148C),
+                                                  color: Color(0xFF1A0A3E),
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),

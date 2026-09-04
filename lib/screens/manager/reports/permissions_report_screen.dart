@@ -26,7 +26,7 @@ class _PermissionsReportScreenState
 
   bool get _isAr =>
       Localizations.localeOf(context).languageCode == 'ar';
-  static const _color = Color(0xFF4527A0);
+  static const _color = Color(0xFF1A0A3E);
 
   bool _didInit = false;
 

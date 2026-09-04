@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/official_holidays_service.dart';
 
-const Color kOfficialHolidayColor = Color(0xFF6A1B9A);
+const Color kOfficialHolidayColor = Color(0xFF382483);
 
 class OfficialHolidaysScreen extends StatefulWidget {
   const OfficialHolidaysScreen({super.key});
@@ -562,7 +562,7 @@ class _CreateEditOfficialHolidayScreenState
                       decoration: InputDecoration(
                         labelText: isAr ? 'من تاريخ *' : 'From *',
                         prefixIcon: const Icon(Icons.calendar_today,
-                            color: Colors.purple),
+                            color: Color(0xFF382483)),
                         border: const OutlineInputBorder(),
                       ),
                       child: Text(
@@ -580,7 +580,7 @@ class _CreateEditOfficialHolidayScreenState
                       decoration: InputDecoration(
                         labelText: isAr ? 'إلى تاريخ *' : 'To *',
                         prefixIcon: const Icon(Icons.calendar_today,
-                            color: Colors.purple),
+                            color: Color(0xFF382483)),
                         border: const OutlineInputBorder(),
                       ),
                       child: Text(

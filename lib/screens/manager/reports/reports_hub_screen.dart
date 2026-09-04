@@ -68,7 +68,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.people_alt_outlined,
-              const Color(0xFF00838F),
+              const Color(0xFF00C688),
               isAr ? 'التقرير اليومي للحضور' : 'Daily Attendance Report',
               isAr
                   ? 'حالة كل موظف في يوم محدد'
@@ -78,7 +78,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.calendar_month,
-              const Color(0xFF1565C0),
+              const Color(0xFF00C688),
               isAr ? 'تقرير الحضور الشهري' : 'Monthly Attendance Report',
               isAr ? 'عدد أيام الحضور لكل موظف' : 'Attendance days per employee',
               const AttendanceReportScreen(),
@@ -102,7 +102,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.access_time,
-              const Color(0xFF283593),
+              const Color(0xFF1A0A3E),
               isAr ? 'تقرير ساعات العمل' : 'Work Hours Report',
               isAr ? 'ساعات العمل الفعلية' : 'Actual work hours',
               const WorkHoursReportScreen(),
@@ -117,7 +117,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.beach_access,
-              const Color(0xFF00695C),
+              const Color(0xFF008A60),
               isAr ? 'تقرير الإجازات الشامل' : 'Enhanced Leaves Report',
               isAr
                   ? 'مع الأرصدة والتفاصيل الكاملة'
@@ -127,7 +127,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.beach_access_outlined,
-              const Color(0xFF00695C),
+              const Color(0xFF008A60),
               isAr ? 'تقرير الإجازات' : 'Leaves Report',
               isAr ? 'ملخص إجازات الموظفين' : 'Employee leaves summary',
               const LeavesReportScreen(),
@@ -135,7 +135,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.request_page,
-              const Color(0xFF6A1B9A),
+              const Color(0xFF382483),
               isAr ? 'تقرير الطلبات' : 'Requests Report',
               isAr ? 'كل الطلبات والحالات' : 'All requests and statuses',
               const RequestsReportScreen(),
@@ -143,7 +143,7 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
             _card(
               context,
               Icons.access_time_outlined,
-              const Color(0xFF4527A0),
+              const Color(0xFF1A0A3E),
               isAr ? 'تقرير الأذونات' : 'Permissions Report',
               isAr ? 'رصيد الأذونات والحركات' : 'Permission balance and movements',
               const PermissionsReportScreen(),

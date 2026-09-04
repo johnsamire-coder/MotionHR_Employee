@@ -26,7 +26,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
 
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
 
-  static const _color = Color(0xFF6A1B9A);
+  static const _color = Color(0xFF382483);
 
   @override
   void initState() {

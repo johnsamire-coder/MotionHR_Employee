@@ -159,14 +159,14 @@ Future<DateTime?> showReportMonthPicker(
                             child: Container(
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? const Color(0xFF6A1B9A)
+                                    ? const Color(0xFF382483)
                                     : disabled
                                         ? const Color(0xFFF1F5F9)
                                         : const Color(0xFFF8FAFC),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: selected
-                                      ? const Color(0xFF6A1B9A)
+                                      ? const Color(0xFF382483)
                                       : Colors.grey.shade300,
                                 ),
                               ),
@@ -212,7 +212,7 @@ Future<DateTime?> showReportMonthPicker(
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6A1B9A),
+                              backgroundColor: const Color(0xFF382483),
                               foregroundColor: Colors.white,
                             ),
                             child: Text(

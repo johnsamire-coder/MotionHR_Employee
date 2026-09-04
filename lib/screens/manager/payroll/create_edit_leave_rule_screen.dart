@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/leave_rule_service.dart';
 import '../../../services/lookups_service.dart';
 
-const Color kLeaveColor = Color(0xFF6A1B9A);
+const Color kLeaveColor = Color(0xFF382483);
 
 class CreateEditLeaveRuleScreen extends StatefulWidget {
   final Map<String, dynamic>? existing;
@@ -441,7 +441,7 @@ class _CreateEditLeaveRuleScreenState extends State<CreateEditLeaveRuleScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8EAF6),
+                        color: const Color(0xFFEDEAF7),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -454,7 +454,7 @@ class _CreateEditLeaveRuleScreenState extends State<CreateEditLeaveRuleScreen> {
                     // ═══ 1. السنوية ═══
                     _leaveSection(
                       id: 'annual', title: 'الإجازة السنوية',
-                      icon: Icons.wb_sunny, color: Colors.blue,
+                      icon: Icons.wb_sunny, color: Color(0xFF382483),
                       enabled: _annualEnabled, onToggle: (v) => _annualEnabled = v,
                       children: [
                         _numRow('عدد الأيام السنوية', _annualDays, (v) => setState(() => _annualDays = v)),
@@ -546,7 +546,7 @@ class _CreateEditLeaveRuleScreenState extends State<CreateEditLeaveRuleScreen> {
                     // ═══ 5. الأبوة ═══
                     _leaveSection(
                       id: 'paternity', title: 'إجازة الأبوة',
-                      icon: Icons.person, color: Colors.cyan,
+                      icon: Icons.person, color: Color(0xFF00C688),
                       enabled: _paternityEnabled, onToggle: (v) => _paternityEnabled = v,
                       children: [
                         _numRow('عدد الأيام', _paternityDays, (v) => setState(() => _paternityDays = v)),

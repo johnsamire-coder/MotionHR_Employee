@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../services/insurance_policy_service.dart';
 import 'create_edit_insurance_policy_screen.dart';
 
-const Color kInsuranceColor = Color(0xFF00838F);
-const Color kSocialColor    = Color(0xFF1976D2);
+const Color kInsuranceColor = Color(0xFF00C688);
+const Color kSocialColor    = Color(0xFF1A0A3E);
 const Color kMedicalColor   = Color(0xFF388E3C);
 
 class InsurancePoliciesScreen extends StatefulWidget {
@@ -147,7 +147,7 @@ class _InsurancePoliciesScreenState extends State<InsurancePoliciesScreen>
         final p = items[i];
         final isSocial     = p['insurance_type'] == 'social';
         final typeColor    = isSocial ? kSocialColor : kMedicalColor;
-        final typeBg       = isSocial ? const Color(0xFFE3F2FD) : const Color(0xFFE8F5E9);
+        final typeBg       = isSocial ? const Color(0xFFEDEAF7) : const Color(0xFFE8F5E9);
         final isSuperseded = p['is_superseded'] ?? false;
 
         return Opacity(

@@ -99,7 +99,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: selected
-                              ? const Color(0xFF6A1B9A)
+                              ? const Color(0xFF382483)
                               : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -157,7 +157,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
               onTap: () => Navigator.pop(ctx, 'ar'),
             ),
             ListTile(
-              leading: const Icon(Icons.language, color: Colors.blue),
+              leading: const Icon(Icons.language, color: Color(0xFF382483)),
               title: const Text('Print in English'),
               onTap: () => Navigator.pop(ctx, 'en'),
             ),
@@ -228,7 +228,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(isAr ? 'ملخص الرواتب' : 'Payroll Summary'),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           actions: [
             TextButton.icon(
@@ -274,7 +274,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                     // ── Grand Summary Card ──────────────────────
                     Card(
                       elevation: 3,
-                      color: Colors.purple.shade50,
+                      color: Color(0xFFEDEAF7),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -294,18 +294,18 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                                 _statCol(
                                   isAr ? 'موظفين' : 'Employees',
                                   '${_data?['total_employees'] ?? 0}',
-                                  Colors.blue,
+                                  Color(0xFF382483),
                                 ),
                                 _statCol(
                                   isAr ? 'إجمالي الرواتب' : 'Total Salary',
                                   _money(_data?['grand_total_salary']),
-                                  Colors.purple,
+                                  Color(0xFF382483),
                                   sub: currency,
                                 ),
                                 _statCol(
                                   isAr ? 'البدلات' : 'Allowances',
                                   _money(_data?['grand_total_allowances']),
-                                  Colors.teal,
+                                  Color(0xFF00C688),
                                   sub: currency,
                                 ),
                               ],
@@ -318,7 +318,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                                 _statCol(
                                   isAr ? 'الأوفرتايم' : 'Overtime',
                                   _money(_data?['grand_total_overtime']),
-                                  Colors.indigo,
+                                  Color(0xFF1A0A3E),
                                   sub: currency,
                                 ),
                                 _statCol(
@@ -376,7 +376,7 @@ class _PayrollSummaryScreenState extends State<PayrollSummaryScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: const CircleAvatar(
-                              backgroundColor: Color(0xFF6A1B9A),
+                              backgroundColor: Color(0xFF382483),
                               child: Icon(Icons.person,
                                   color: Colors.white, size: 20),
                             ),

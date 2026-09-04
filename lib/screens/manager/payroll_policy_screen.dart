@@ -110,11 +110,11 @@ class _PayrollPolicyScreenState extends State<PayrollPolicyScreen> {
           const SizedBox(height: 8),
           Wrap(spacing: 6, runSpacing: 4, children: [
             if (overtimeRules.isNotEmpty)
-              _chip(isAr ? '💪 أوفر تايم' : '💪 Overtime', Colors.blue),
+              _chip(isAr ? '💪 أوفر تايم' : '💪 Overtime', Color(0xFF382483)),
             if (nightRules.isNotEmpty)
-              _chip(isAr ? '🌙 بدل ليلي' : '🌙 Night', Colors.indigo),
+              _chip(isAr ? '🌙 بدل ليلي' : '🌙 Night', Color(0xFF1A0A3E)),
             if (weekendRules.isNotEmpty)
-              _chip(isAr ? '📅 يوم راحة' : '📅 Weekend', Colors.purple),
+              _chip(isAr ? '📅 يوم راحة' : '📅 Weekend', Color(0xFF382483)),
           ]),
           const Divider(height: 16),
           Row(children: [

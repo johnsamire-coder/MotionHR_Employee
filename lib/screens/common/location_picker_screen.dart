@@ -214,7 +214,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'اختر الموقع' : 'Pick Location'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
         actions: [
           TextButton.icon(
@@ -280,7 +280,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 itemBuilder: (_, i) {
                   final r = _searchResults[i];
                   return ListTile(
-                    leading: const Icon(Icons.location_on, color: Colors.deepPurple),
+                    leading: const Icon(Icons.location_on, color: Color(0xFF1A0A3E)),
                     title: Text(
                       r['display_name'],
                       maxLines: 2,
@@ -352,7 +352,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       ),
       floatingActionButton: FloatingActionButton.small(
         onPressed: _getCurrentLocation,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Color(0xFF1A0A3E),
         child: const Icon(Icons.my_location, color: Colors.white),
       ),
     );

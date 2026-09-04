@@ -228,7 +228,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                           isAr ? 'إجمالي الفروع' : 'Total Branches',
                           '${_branches.length}',
                           Icons.location_city,
-                          Colors.blue,
+                          Color(0xFF382483),
                         ),
                         const SizedBox(width: 12),
                         _statCard(

@@ -162,7 +162,7 @@ class _FieldVisitsScreenState extends State<FieldVisitsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'الزيارات الميدانية' : 'Field Visits'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
@@ -309,7 +309,7 @@ class _FieldVisitsScreenState extends State<FieldVisitsScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: Color(0xFF1A0A3E),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
@@ -330,7 +330,7 @@ class _FieldVisitsScreenState extends State<FieldVisitsScreen> {
               children: [
                 Icon(
                   isActive ? Icons.location_on : Icons.check_circle,
-                  color: isActive ? Colors.green : Colors.blue,
+                  color: isActive ? Colors.green : Color(0xFF382483),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -346,7 +346,7 @@ class _FieldVisitsScreenState extends State<FieldVisitsScreen> {
                     style: const TextStyle(fontSize: 10),
                   ),
                   padding: EdgeInsets.zero,
-                  backgroundColor: isActive ? Colors.green[100] : Colors.blue[100],
+                  backgroundColor: isActive ? Colors.green[100] : Color(0xFFD6CFF0),
                 ),
               ],
             ),
@@ -480,7 +480,7 @@ class _StartVisitDialogState extends State<_StartVisitDialog> {
             });
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
+            backgroundColor: Color(0xFF1A0A3E),
             foregroundColor: Colors.white,
           ),
           child: Text(isAr ? 'بدء' : 'Start'),
