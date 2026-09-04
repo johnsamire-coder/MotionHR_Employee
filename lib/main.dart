@@ -5413,6 +5413,7 @@ class _CharterScreenState extends State<CharterScreen> {
                                 if (_charter?['version'] != null) ...[
                                   const SizedBox(height: 8),
                                   Text(
+                                    (isAr ? 'الإصدار: ' : 'Version: ') + _charter!['version'].toString(),
                                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                                   ),
                                 ],
