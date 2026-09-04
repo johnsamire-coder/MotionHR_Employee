@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http_parser/http_parser.dart';
 
 class EmployeeDocumentsScreen extends StatefulWidget {
   const EmployeeDocumentsScreen({super.key});
@@ -218,7 +220,121 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
                       ),
                     ]),
                   ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _showUploadDialog,
+          backgroundColor: const Color(0xFF388E3C),
+          icon: const Icon(Icons.upload_file, color: Colors.white),
+          label: const Text('رفع مستند', style: TextStyle(color: Colors.white)),
+        ),
       ),
     );
+  }
+
+  Future<void> _showUploadDialog() async {
+    String docType = 'other';
+    final docTypes = {
+      'national_id': 'صورة البطاقة',
+      'passport': 'جواز السفر',
+      'contract': 'العقد',
+      'certificate': 'شهادة',
+      'cv': 'السيرة الذاتية',
+      'medical': 'ملف طبي',
+      'license': 'رخصة',
+      'insurance': 'وثيقة تأمين',
+      'other': 'أخرى',
+    };
+    final titleCtrl = TextEditingController();
+    String? pickedPath;
+    String? pickedName;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('رفع مستند جديد'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: docType,
+                  decoration: const InputDecoration(labelText: 'نوع المستند', border: OutlineInputBorder()),
+                  items: docTypes.entries
+                      .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => docType = v ?? 'other'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(labelText: 'عنوان المستند', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final result = await FilePicker.platform.pickFiles();
+                    if (result != null && result.files.single.path != null) {
+                      setDialogState(() {
+                        pickedPath = result.files.single.path;
+                        pickedName = result.files.single.name;
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.attach_file),
+                  label: Text(pickedName ?? 'اختر ملف'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+            ElevatedButton(
+              onPressed: () async {
+                if (pickedPath == null) return;
+                Navigator.pop(ctx);
+                await _uploadDocument(pickedPath!, docType, titleCtrl.text.trim());
+              },
+              child: const Text('رفع'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _uploadDocument(String filePath, String docType, String title) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/employee/upload-document/'),
+      );
+      request.headers.addAll(await ApiClient.buildHeaders());
+      request.fields['document_type'] = docType;
+      request.fields['title'] = title;
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        filePath,
+        contentType: MediaType('application', 'octet-stream'),
+      ));
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      if (!mounted) return;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم رفع المستند بنجاح'), backgroundColor: Colors.green),
+        );
+        _load();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل رفع المستند'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء الرفع'), backgroundColor: Colors.red),
+      );
+    }
   }
 }
