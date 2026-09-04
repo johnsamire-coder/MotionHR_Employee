@@ -1979,12 +1979,6 @@ class _EmployeeShellState extends State<EmployeeShell> {
                   MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
             ),
             IconButton(
-              icon: const Icon(Icons.lock),
-              tooltip: context.l10n.changePassword,
-              onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
-            ),
-            IconButton(
               icon: const Icon(Icons.settings),
               tooltip: context.l10n.settings,
               onPressed: () => Navigator.push(context,
