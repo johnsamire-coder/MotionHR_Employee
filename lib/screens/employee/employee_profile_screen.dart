@@ -614,8 +614,9 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/submit-request/'),
         headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({
-          'type_id': typeId,
-          'reason': newName,
+          'request_type_id': typeId,
+          'details': newName,
+          'subject': isAr ? 'طلب تعديل الاسم' : 'Name Change Request',
           'form_data': {},
         }),
       );
