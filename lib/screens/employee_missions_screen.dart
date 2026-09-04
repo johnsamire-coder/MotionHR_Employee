@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/missions_service.dart';
 import 'employee_mission_detail_screen.dart';
 import 'common/location_picker_screen.dart';
@@ -360,6 +361,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     final locationCtrl = TextEditingController();
     final clientNameCtrl = TextEditingController();
     final clientPhoneCtrl = TextEditingController();
+    final backdatedReasonCtrl = TextEditingController();
     double? locationLat;
     double? locationLng;
     DateTime? startTime;
@@ -475,6 +477,10 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
           TextField(
             controller: clientPhoneCtrl,
             keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+            ],
             decoration: InputDecoration(
               labelText: context.l10n.clientPhone,
               border: const OutlineInputBorder(),
@@ -487,7 +493,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               final d = await showDatePicker(
                 context: ctx,
                 initialDate: DateTime.now(),
-                firstDate: DateTime.now(),
+                firstDate: DateTime.now().subtract(const Duration(days: 30)),
                 lastDate: DateTime.now().add(const Duration(days: 365)),
               );
               if (d == null) return;
@@ -517,6 +523,38 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               ),
             ),
           ),
+          if (startTime != null && startTime!.isBefore(DateTime.now())) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange[200]!),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.warning_amber, color: Colors.orange, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    isAr ? 'اخترت تاريخ سابق' : 'You selected a past date',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 13),
+                  ),
+                ]),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: backdatedReasonCtrl,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: isAr ? 'سبب اختيار تاريخ سابق *' : 'Reason for past date *',
+                    border: const OutlineInputBorder(),
+                    fillColor: Colors.white,
+                    filled: true,
+                  ),
+                ),
+              ]),
+            ),
+          ],
           const SizedBox(height: 12),
           InkWell(
             onTap: () async {
@@ -566,6 +604,17 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                 );
                 return;
               }
+              final isBackdated = startTime!.isBefore(DateTime.now());
+              if (isBackdated && backdatedReasonCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isAr ? 'يرجى كتابة سبب اختيار التاريخ السابق' : 'Please provide a reason for the past date',
+                    ),
+                  ),
+                );
+                return;
+              }
               final result = await MissionsService.requestMission(
                 title: titleCtrl.text.trim(),
                 description: descCtrl.text.trim(),
@@ -577,6 +626,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                 locationLng: locationLng,
                 clientName: clientNameCtrl.text.trim(),
                 clientPhone: clientPhoneCtrl.text.trim(),
+                backdatedReason: backdatedReasonCtrl.text.trim(),
               );
               if (!mounted) return;
               if (result['success'] == true) {
