@@ -5285,6 +5285,7 @@ class _CharterScreenState extends State<CharterScreen> {
   bool _loading = true;
   bool _submitting = false;
   bool _agreed = false;
+  bool _accepted = false;
 
   @override
   void initState() {
@@ -5300,8 +5301,12 @@ class _CharterScreenState extends State<CharterScreen> {
           );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        if (data['success'] == true && data['has_charter'] == true)
-          setState(() => _charter = data['charter']);
+        if (data['success'] == true && data['has_charter'] == true) {
+          setState(() {
+            _charter = data['charter'];
+            _accepted = data['accepted'] == true;
+          });
+        }
       }
     } catch (_) {}
     setState(() => _loading = false);
@@ -5383,7 +5388,7 @@ class _CharterScreenState extends State<CharterScreen> {
               title: Text(isAr ? 'لائحة الشركة' : 'Company Charter'),
               backgroundColor: kPrimaryColor,
               foregroundColor: Colors.white,
-              automaticallyImplyLeading: false),
+              automaticallyImplyLeading: _accepted),
           body: _loading
               ? const Center(child: CircularProgressIndicator())
               : _charter == null
@@ -5391,7 +5396,31 @@ class _CharterScreenState extends State<CharterScreen> {
                       child: Text(isAr
                           ? 'لا توجد لائحة حالياً'
                           : 'No charter available'))
-                  : Column(children: [
+                  : _accepted
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.check_circle, color: Colors.green, size: 64),
+                                const SizedBox(height: 16),
+                                Text(
+                                  isAr ? 'تمت الموافقة على لائحة الشركة' : 'You have already agreed to the company charter',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                                if (_charter?['version'] != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        )
+                      : Column(children: [
                       Expanded(
                           child: SingleChildScrollView(
                               padding: const EdgeInsets.all(16),
