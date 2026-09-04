@@ -1014,137 +1014,137 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
       ),
     );
   }
-void _showReassignDialog() async {
-  final assignments = _mission!['assignments'] as List? ?? [];
-  if (assignments.isEmpty) return;
+    void _showReassignDialog() async {
+      final assignments = _mission!['assignments'] as List? ?? [];
+      if (assignments.isEmpty) return;
 
-  String? oldEmpId;
-  String? newEmpId;
-  String? newEmpName;
-  String reason = '';
+      String? oldEmpId;
+      String? newEmpId;
+      String? newEmpName;
+      String reason = '';
 
-  // جيب قائمة الموظفين
-  List<dynamic> allEmployees = [];
-  try {
-    final result = await EmployeeManagementService.getEmployeesSimple();
-    allEmployees = result;
-  } catch (_) {}
+      // جيب قائمة الموظفين
+      List<dynamic> allEmployees = [];
+      try {
+        final result = await EmployeeManagementService.getEmployeesSimple();
+        allEmployees = result;
+      } catch (_) {}
 
-  if (!mounted) return;
+      if (!mounted) return;
 
-  await showDialog(
-    context: context,
-    builder: (_) => Directionality(
-      textDirection: TextDirection.rtl,
-      child: StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text('استبدال موظف'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // الموظف الحالي
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'الموظف الحالي',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: assignments.map<DropdownMenuItem<String>>((a) {
-                    return DropdownMenuItem<String>(
-                      value: a['employee_id'].toString(),
-                      child: Text(a['employee_name'] ?? ''),
-                    );
-                  }).toList(),
-                  onChanged: (v) => setDialogState(() => oldEmpId = v),
-                ),
-                SizedBox(height: 12),
-                // الموظف الجديد
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'الموظف الجديد',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: allEmployees.map<DropdownMenuItem<String>>((e) {
-                    final alreadyAssigned = assignments.any(
-                      (a) => a['employee_id'].toString() == e['id'].toString(),
-                    );
-                    return DropdownMenuItem<String>(
-                      value: e['id'].toString(),
-                      enabled: !alreadyAssigned,
-                      child: Text(
-                        '${e['full_name_ar'] ?? e['username'] ?? ''}${alreadyAssigned ? ' (مُعيَّن)' : ''}',
-                        style: TextStyle(
-                          color: alreadyAssigned ? Colors.grey : Colors.black,
-                        ),
+      await showDialog(
+        context: context,
+        builder: (_) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: StatefulBuilder(
+            builder: (ctx, setDialogState) => AlertDialog(
+              title: Text('استبدال موظف'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // الموظف الحالي
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'الموظف الحالي',
+                        border: OutlineInputBorder(),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (v) {
-                    setDialogState(() {
-                      newEmpId = v;
-                      newEmpName = allEmployees.firstWhere(
-                        (e) => e['id'].toString() == v,
-                        orElse: () => {},
-                      )['full_name_ar'];
-                    });
-                  },
+                      items: assignments.map<DropdownMenuItem<String>>((a) {
+                        return DropdownMenuItem<String>(
+                          value: a['employee_id'].toString(),
+                          child: Text(a['employee_name'] ?? ''),
+                        );
+                      }).toList(),
+                      onChanged: (v) => setDialogState(() => oldEmpId = v),
+                    ),
+                    SizedBox(height: 12),
+                    // الموظف الجديد
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'الموظف الجديد',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: allEmployees.map<DropdownMenuItem<String>>((e) {
+                        final alreadyAssigned = assignments.any(
+                          (a) => a['employee_id'].toString() == e['id'].toString(),
+                        );
+                        return DropdownMenuItem<String>(
+                          value: e['id'].toString(),
+                          enabled: !alreadyAssigned,
+                          child: Text(
+                            '${e['full_name_ar'] ?? e['username'] ?? ''}${alreadyAssigned ? ' (مُعيَّن)' : ''}',
+                            style: TextStyle(
+                              color: alreadyAssigned ? Colors.grey : Colors.black,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (v) {
+                        setDialogState(() {
+                          newEmpId = v;
+                          newEmpName = allEmployees.firstWhere(
+                            (e) => e['id'].toString() == v,
+                            orElse: () => {},
+                          )['full_name_ar'];
+                        });
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    // السبب
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'سبب الاستبدال',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (v) => reason = v,
+                      maxLines: 2,
+                    ),
+                  ],
                 ),
-                SizedBox(height: 12),
-                // السبب
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'سبب الاستبدال',
-                    border: OutlineInputBorder(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(context.l10n.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: oldEmpId == null || newEmpId == null
+                      ? null
+                      : () async {
+                          Navigator.pop(context);
+                          final result = await MissionsService.reassignEmployee(
+                            widget.missionId,
+                            oldEmployeeId: int.parse(oldEmpId!),
+                            newEmployeeId: int.parse(newEmpId!),
+                            reason: reason,
+                          );
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result['success'] == true
+                                    ? '✅ تم استبدال الموظف بـ $newEmpName'
+                                    : result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred',
+                              ),
+                              backgroundColor: result['success'] == true
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                          );
+                          if (result['success'] == true) _loadMission();
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6C3FC5),
                   ),
-                  onChanged: (v) => reason = v,
-                  maxLines: 2,
+                  child: Text('تأكيد الاستبدال',
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.cancel),
-            ),
-            ElevatedButton(
-              onPressed: oldEmpId == null || newEmpId == null
-                  ? null
-                  : () async {
-                      Navigator.pop(context);
-                      final result = await MissionsService.reassignEmployee(
-                        widget.missionId,
-                        oldEmployeeId: int.parse(oldEmpId!),
-                        newEmployeeId: int.parse(newEmpId!),
-                        reason: reason,
-                      );
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            result['success'] == true
-                                ? '✅ تم استبدال الموظف بـ $newEmpName'
-                                : result['error'] ?? isAr ? 'حدث خطأ' : 'An error occurred',
-                          ),
-                          backgroundColor: result['success'] == true
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      );
-                      if (result['success'] == true) _loadMission();
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C3FC5),
-              ),
-              child: Text('تأكيد الاستبدال',
-                  style: TextStyle(color: Colors.white)),
-            ),
-          ],
         ),
-      ),
-    ),
-  );
-}
+      );
+    }
 
 
   void _showFeedbackDetail() async {
