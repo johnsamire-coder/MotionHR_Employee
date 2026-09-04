@@ -1,6 +1,9 @@
 import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -140,20 +143,49 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         ),
       ),
       child: Column(children: [
-        CircleAvatar(
-          radius: 45,
-          backgroundColor: Colors.white,
-          backgroundImage: (photo != null && photo.toString().isNotEmpty)
-              ? NetworkImage('https://jssolutions-eg.com$photo')
-              : null,
-          child: (photo == null || photo.toString().isEmpty)
-              ? const Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
-              : null,
+        Stack(
+          children: [
+            CircleAvatar(
+              radius: 45,
+              backgroundColor: Colors.white,
+              backgroundImage: (photo != null && photo.toString().isNotEmpty)
+                  ? NetworkImage('https://jssolutions-eg.com$photo')
+                  : null,
+              child: (photo == null || photo.toString().isEmpty)
+                  ? const Icon(Icons.person, size: 50, color: Color(0xFF1976D2))
+                  : null,
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: _pickAndUploadPhoto,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1976D2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
-        Text(name,
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(name,
+              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center),
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: _showEditNameDialog,
+              child: const Icon(Icons.edit, size: 16, color: Colors.white70),
+            ),
+          ],
+        ),
         const SizedBox(height: 4),
         Text(jobTitle,
           style: const TextStyle(color: Colors.white70, fontSize: 14)),
@@ -470,5 +502,135 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
                   ),
       ),
     );
+  }
+
+  Future<void> _pickAndUploadPhoto() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (picked == null) return;
+    final file = File(picked.path);
+    final sizeMB = (await file.length()) / (1024 * 1024);
+    if (sizeMB > 5) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? '\u062d\u062c\u0645 \u0627\u0644\u0635\u0648\u0631\u0629 \u0623\u0643\u0628\u0631 \u0645\u0646 5 \u0645\u064a\u062c\u0627\u0628\u0627\u064a\u062a' : 'Image too large (max 5MB)'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/employee/upload-photo/'),
+      );
+      request.headers.addAll(await ApiClient.buildHeaders());
+      final ext = picked.path.split('.').last.toLowerCase();
+      request.files.add(await http.MultipartFile.fromPath(
+        'photo',
+        picked.path,
+        contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+      ));
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      if (!mounted) return;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0635\u0648\u0631\u0629' : 'Photo updated'),
+          backgroundColor: Colors.green,
+        ));
+        _loadProfile();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? '\u0641\u0634\u0644 \u0631\u0641\u0639 \u0627\u0644\u0635\u0648\u0631\u0629' : 'Photo upload failed'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? '\u062d\u062f\u062b \u062e\u0637\u0623' : 'Error occurred'),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
+  Future<void> _showEditNameDialog() async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final currentName = (_profile?['full_name_ar'] ?? '').toString();
+    final ctrl = TextEditingController(text: currentName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isAr ? '\u0637\u0644\u0628 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0627\u0633\u0645' : 'Request Name Change'),
+        content: TextField(
+          controller: ctrl,
+          decoration: InputDecoration(
+            labelText: isAr ? '\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u062c\u062f\u064a\u062f' : 'New Name',
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAr ? '\u0625\u0644\u063a\u0627\u0621' : 'Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: Text(isAr ? '\u0625\u0631\u0633\u0627\u0644' : 'Send'),
+          ),
+        ],
+      ),
+    );
+    if (newName == null || newName.isEmpty || newName == currentName) return;
+    if (!mounted) return;
+    try {
+      final typesRes = await http.get(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/request-types/'),
+        headers: await ApiClient.buildHeaders(),
+      );
+      final typesData = json.decode(utf8.decode(typesRes.bodyBytes));
+      int? typeId;
+      if (typesData['categories'] is List) {
+        for (final cat in typesData['categories'] as List) {
+          if (cat['types'] is List) {
+            for (final t in cat['types'] as List) {
+              final tname = (t['name'] ?? '').toString();
+              if (tname.contains('\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0627\u0633\u0645')) {
+                typeId = t['id'];
+                break;
+              }
+            }
+          }
+          if (typeId != null) break;
+        }
+      }
+      if (typeId == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? '\u0647\u0630\u0647 \u0627\u0644\u062e\u062f\u0645\u0629 \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u062d\u0627\u0644\u064a\u0627\u064b' : 'Feature not available'),
+          backgroundColor: Colors.red,
+        ));
+        return;
+      }
+      final res = await http.post(
+        Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/submit-request/'),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+        body: json.encode({
+          'type_id': typeId,
+          'reason': newName,
+          'form_data': {},
+        }),
+      );
+      final data = json.decode(utf8.decode(res.bodyBytes));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(data['message'] ?? (isAr ? '\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0637\u0644\u0628' : 'Request sent')),
+        backgroundColor: data['success'] == true ? Colors.green : Colors.red,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? '\u062d\u062f\u062b \u062e\u0637\u0623' : 'Error occurred'),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 }
