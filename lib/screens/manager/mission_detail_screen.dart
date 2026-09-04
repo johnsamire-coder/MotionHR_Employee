@@ -233,6 +233,8 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
               _infoRow(Icons.stop_circle, 'الانتهاء المخطط', _formatDateTime(mission['planned_end_time'])),
               if ((mission['location_name'] ?? '').isNotEmpty)
                 _infoRow(Icons.location_on, 'الموقع', mission['location_name']),
+              if ((mission['requested_by_name'] ?? '').toString().isNotEmpty)
+                _infoRow(Icons.person_search, 'طلبها', mission['requested_by_name']),
             ],
           ),
 
@@ -1016,7 +1018,18 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   }
     void _showReassignDialog() async {
       final assignments = _mission!['assignments'] as List? ?? [];
-      if (assignments.isEmpty) return;
+      final requestedByName = (_mission!['requested_by_name'] ?? '').toString();
+      final requestedById = _mission!['requested_by_employee_id'];
+      if (assignments.isEmpty && requestedByName.isEmpty) return;
+      print('DEBUG reassign: assignments=${assignments.length} requestedByName= $requestedByName requestedById= $requestedById');
+      final currentList = assignments.isNotEmpty
+          ? assignments
+          : [
+              {
+                'employee_id': requestedById,
+                'employee_name': requestedByName,
+              }
+            ];
 
       String? oldEmpId;
       String? newEmpId;
@@ -1049,7 +1062,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         labelText: 'الموظف الحالي',
                         border: OutlineInputBorder(),
                       ),
-                      items: assignments.map<DropdownMenuItem<String>>((a) {
+                      items: currentList.map<DropdownMenuItem<String>>((a) {
                         return DropdownMenuItem<String>(
                           value: a['employee_id'].toString(),
                           child: Text(a['employee_name'] ?? ''),
@@ -1065,14 +1078,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         border: OutlineInputBorder(),
                       ),
                       items: allEmployees.map<DropdownMenuItem<String>>((e) {
-                        final alreadyAssigned = assignments.any(
+                        final alreadyAssigned = currentList.any(
                           (a) => a['employee_id'].toString() == e['id'].toString(),
                         );
                         return DropdownMenuItem<String>(
                           value: e['id'].toString(),
                           enabled: !alreadyAssigned,
                           child: Text(
-                            '${e['full_name_ar'] ?? e['username'] ?? ''}${alreadyAssigned ? ' (مُعيَّن)' : ''}',
+                            '${e['full_name'] ?? e['username'] ?? ''}${alreadyAssigned ? ' (مُعيَّن)' : ''}',
                             style: TextStyle(
                               color: alreadyAssigned ? Colors.grey : Colors.black,
                             ),
@@ -1084,8 +1097,8 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                           newEmpId = v;
                           newEmpName = allEmployees.firstWhere(
                             (e) => e['id'].toString() == v,
-                            orElse: () => {},
-                          )['full_name_ar'];
+                            orElse: () => <String, dynamic>{},
+                          )['full_name'];
                         });
                       },
                     ),
