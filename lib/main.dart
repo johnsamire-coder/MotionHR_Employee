@@ -1003,6 +1003,10 @@ class _LoginScreenState extends State<LoginScreen> {
         String username = data['username'] ?? '';
         String fullName = data['full_name'] ?? '';
         String companyName = data['company_name'] ?? '';
+        String jobTitle = '';
+        if (data['employee'] is Map) {
+          jobTitle = data['employee']['job_title'] ?? '';
+        }
         String firstName = data['first_name'] ?? '';
         String gender = data['gender'] ?? 'male';
 
@@ -1028,6 +1032,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('username', username);
         await prefs.setString('full_name', fullName);
         await prefs.setString('company_name', companyName);
+        await prefs.setString('job_title', jobTitle);
         await prefs.setString('first_name', firstName);
         await prefs.setString('gender', gender);
         await prefs.setString('role', data['role'] ?? 'employee');
@@ -2030,9 +2035,10 @@ class EmployeeHomeScreen extends StatefulWidget {
 class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   String _fullName = '';
   final _fieldVisitsService = FieldVisitsService();
-  bool _shiftPeriodsExpanded = false;
+  bool _shiftPeriodsExpanded = true;
   bool _missingPeriodsExpanded = false;
   String _companyName = '';
+  String _jobTitle = '';
   String _firstName = '';
   String _gender = 'male';
   Map<String, dynamic>? _status;
@@ -2100,6 +2106,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     _fullName = prefs.getString('full_name') ?? '';
     _companyName = prefs.getString('company_name') ?? '';
+    _jobTitle = prefs.getString('job_title') ?? '';
     _firstName = prefs.getString('first_name') ?? '';
     _gender = prefs.getString('gender') ?? 'male';
 
@@ -2937,6 +2944,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                           Text(_companyName,
                               style: const TextStyle(
                                   color: Colors.white70, fontSize: 14)),
+                        if (_jobTitle.isNotEmpty)
+                          Text(_jobTitle,
+                              style: const TextStyle(
+                                  color: Colors.white60, fontSize: 12)),
                       ])),
                 ]),
                 const Divider(color: Colors.white24, height: 24),
@@ -3042,28 +3053,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   ],
           const SizedBox(height: 16),
           if (shiftName.toString().isNotEmpty) ...[
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.schedule, color: kPrimaryColor),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${isAr ? 'شيفت' : 'Shift'}: $shiftName (${formatTime24h(shiftStart)} - ${formatTime24h(shiftEnd)})',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
             InkWell(
               onTap: () => Navigator.push(
                 context,
@@ -3498,7 +3487,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                         builder: (_) => const FieldVisitsScreen())),
                 icon: const Icon(Icons.add_location_alt),
                 label: Text(
-                  isAr ? 'الزيارات الميدانية' : 'Field Visits',
+                  isAr ? 'زيارات ميدانية / مهمة طارئة' : 'Field Visit / Emergency Task',
                   style: const TextStyle(fontSize: 16),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -7989,18 +7978,6 @@ class ManagerMoreScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (_) => const _ManagerMyPermissionsWrapperScreen(),
-            ),
-          ),
-        ),
-        _managerMoreTile(
-          context,
-          icon: Icons.map,
-          title: isAr ? 'زياراتي الميدانية' : 'My Field Visits',
-          color: Colors.deepPurple,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const FieldVisitsScreen(),
             ),
           ),
         ),
