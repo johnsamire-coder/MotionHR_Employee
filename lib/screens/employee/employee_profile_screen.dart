@@ -539,7 +539,7 @@ ${isAr ? 'رابط الدخول' : 'Login URL'}: $loginUrl
           content: Text(isAr ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0635\u0648\u0631\u0629' : 'Photo updated'),
           backgroundColor: Colors.green,
         ));
-        _loadProfile();
+        _load();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(isAr ? '\u0641\u0634\u0644 \u0631\u0641\u0639 \u0627\u0644\u0635\u0648\u0631\u0629' : 'Photo upload failed'),
