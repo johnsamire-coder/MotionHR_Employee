@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'package:motionhr_employee/screens/manager/location_report_screen.dart';
@@ -184,14 +184,6 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
               isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
               isAr ? 'أماكن تواجد الموظف خلال اليوم' : 'Employee locations during the day',
               const LocationReportScreen(),
-            ),
-            _card(
-              context,
-              Icons.compare_arrows,
-              const Color(0xFF00838F),
-              isAr ? 'مقارنة الفروع' : 'Branch Comparison',
-              isAr ? 'الرواتب والحضور والغياب لكل فرع' : 'Salary, attendance and absence per branch',
-              const BranchComparisonReportScreen(),
             ),
             const SizedBox(height: 20),
           ],

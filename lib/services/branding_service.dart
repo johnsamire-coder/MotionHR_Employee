@@ -15,9 +15,12 @@ class BrandingService {
   static Future<void> ensureFontsLoaded() async {
     if (_regularFont != null && _boldFont != null) return;
     try {
-      final regularData =
-          await rootBundle.load('assets/fonts/Cairo-Regular.ttf');
-      final boldData = await rootBundle.load('assets/fonts/Cairo-Bold.ttf');
+      final regularData = await rootBundle
+          .load('assets/fonts/Cairo-Regular.ttf')
+          .timeout(const Duration(seconds: 8));
+      final boldData = await rootBundle
+          .load('assets/fonts/Cairo-Bold.ttf')
+          .timeout(const Duration(seconds: 8));
       _regularFont = pw.Font.ttf(regularData);
       _boldFont = pw.Font.ttf(boldData);
     } catch (e) {
@@ -47,7 +50,8 @@ class BrandingService {
   static Future<Map<String, dynamic>> getCompany() async {
     if (cachedCompany != null) return cachedCompany!;
     try {
-      cachedCompany = await EmployeeManagementService.getCompanyInfo();
+      cachedCompany = await EmployeeManagementService.getCompanyInfo()
+          .timeout(const Duration(seconds: 8));
     } catch (_) {
       cachedCompany = {};
     }

@@ -147,15 +147,52 @@ class LocationTrackingService {
   }) async {
     final res = await http.get(
       Uri.parse(
-          '$baseUrl/attendance/api/mobile/manager/location-report/?employee_id=$employeeId&shift_date=$shiftDate'),
+          '$baseUrl/attendance/api/mobile/manager/reports/location-tracking/?date=$shiftDate'),
       headers: await ApiClient.buildHeaders(includeContentType: true),
-    ).timeout(const Duration(seconds: 15));
+    ).timeout(const Duration(seconds: 20));
 
     if (res.statusCode == 200) {
       final data = jsonDecode(utf8.decode(res.bodyBytes));
-      if (data['success'] == true) return data;
-      throw Exception(data['error'] ?? 'خطأ في جلب التقرير');
+      if (data['success'] == true) {
+        final employees = (data['employees'] as List?) ?? [];
+        for (final e in employees) {
+          if (e is Map && e['employee_id'] == employeeId) {
+            final logs = (e['logs'] as List?) ?? [];
+            final points = <Map<String, dynamic>>[];
+            for (final lg in logs) {
+              final m = Map<String, dynamic>.from(lg as Map);
+              points.add({
+                'id': points.length + 1,
+                'latitude': m['lat'],
+                'longitude': m['lng'],
+                'accuracy': m['accuracy'] ?? 0,
+                'recorded_at': m['timestamp']?.toString() ?? '',
+                'point_index': points.length + 1,
+                'address': m['address'] ?? '',
+              });
+            }
+            return {
+              'success': true,
+              'employee': {
+                'id': employeeId,
+                'name': e['employee_name']?.toString() ?? '',
+              },
+              'shift_date': shiftDate,
+              'total_points': points.length,
+              'points': points,
+            };
+          }
+        }
+        return {
+          'success': true,
+          'employee': {'id': employeeId, 'name': ''},
+          'shift_date': shiftDate,
+          'total_points': 0,
+          'points': <Map<String, dynamic>>[],
+        };
+      }
+      throw Exception(data['error'] ?? '\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u062a\u0642\u0631\u064a\u0631');
     }
-    throw Exception('خطأ: ${res.statusCode}');
+    throw Exception('\u062e\u0637\u0623: ${res.statusCode}');
   }
 }
