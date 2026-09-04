@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:motionhr_employee/services/report_pdf_service.dart';
+import 'package:motionhr_employee/services/report_excel_service.dart';
 
 const String _kBaseD = 'https://jssolutions-eg.com';
 
@@ -20,6 +22,8 @@ class _DailyAttendanceReportScreenState
   String _search = '';
   String? _error;
   String _statusFilter = 'all';
+  bool _printing = false;
+  bool _exporting = false;
 
   DateTime _selectedDate = DateTime.now();
 
@@ -89,6 +93,103 @@ class _DailyAttendanceReportScreenState
         _loading = false;
       });
     }
+  }
+
+  Future<void> _print() async {
+    if (_data == null) return;
+    setState(() => _printing = true);
+    try {
+      final rows = _filtered.map<List<String>>((e) {
+        final item = Map<String, dynamic>.from(e as Map);
+        return [
+          item['employee_name']?.toString() ?? '-',
+          item['department']?.toString() ?? '-',
+          _statusLabel(item['status']?.toString() ?? 'no_data'),
+          item['check_in']?.toString() ?? '-',
+          item['check_out']?.toString() ?? '-',
+          '${item['work_hours'] ?? 0}',
+        ];
+      }).toList();
+      await ReportPdfService.printReport(
+        title: _isAr
+            ? '\u0627\u0644\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u064a\u0648\u0645\u064a \u0644\u0644\u062d\u0636\u0648\u0631'
+            : 'Daily Attendance Report',
+        subtitle: _formatDate(_selectedDate),
+        headers: _isAr
+            ? [
+                '\u0627\u0644\u0645\u0648\u0638\u0641',
+                '\u0627\u0644\u0642\u0633\u0645',
+                '\u0627\u0644\u062d\u0627\u0644\u0629',
+                '\u0627\u0644\u062d\u0636\u0648\u0631',
+                '\u0627\u0644\u0627\u0646\u0635\u0631\u0627\u0641',
+                '\u0633\u0627\u0639\u0627\u062a \u0627\u0644\u0639\u0645\u0644'
+              ]
+            : ['Employee', 'Department', 'Status', 'Check-in', 'Check-out', 'Hours'],
+        rows: rows,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${_isAr ? '\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0637\u0628\u0627\u0639\u0629' : 'Print error'}: $e'),
+          ),
+        );
+      }
+    }
+    if (mounted) setState(() => _printing = false);
+  }
+
+  Future<void> _exportExcel() async {
+    if (_data == null) return;
+    setState(() => _exporting = true);
+    try {
+      final rows = _filtered.map<List<String>>((e) {
+        final item = Map<String, dynamic>.from(e as Map);
+        return [
+          item['employee_name']?.toString() ?? '-',
+          item['department']?.toString() ?? '-',
+          _statusLabel(item['status']?.toString() ?? 'no_data'),
+          item['check_in']?.toString() ?? '-',
+          item['check_out']?.toString() ?? '-',
+          '${item['work_hours'] ?? 0}',
+        ];
+      }).toList();
+      await ReportExcelService.exportAndShare(
+        fileName: 'daily_attendance_${_formatDate(_selectedDate)}.xlsx',
+        sheetName: _isAr
+            ? '\u0627\u0644\u062d\u0636\u0648\u0631 \u0627\u0644\u064a\u0648\u0645\u064a'
+            : 'Daily Attendance',
+        headers: _isAr
+            ? [
+                '\u0627\u0644\u0645\u0648\u0638\u0641',
+                '\u0627\u0644\u0642\u0633\u0645',
+                '\u0627\u0644\u062d\u0627\u0644\u0629',
+                '\u0627\u0644\u062d\u0636\u0648\u0631',
+                '\u0627\u0644\u0627\u0646\u0635\u0631\u0627\u0641',
+                '\u0633\u0627\u0639\u0627\u062a \u0627\u0644\u0639\u0645\u0644'
+              ]
+            : ['Employee', 'Department', 'Status', 'Check-in', 'Check-out', 'Hours'],
+        rows: rows,
+        title: _isAr
+            ? '\u0627\u0644\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u064a\u0648\u0645\u064a \u0644\u0644\u062d\u0636\u0648\u0631'
+            : 'Daily Attendance Report',
+        subtitle: _formatDate(_selectedDate),
+        shareText: _isAr
+            ? '\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u062d\u0636\u0648\u0631 \u0627\u0644\u064a\u0648\u0645\u064a - ${_formatDate(_selectedDate)}'
+            : 'Daily Attendance Report - ${_formatDate(_selectedDate)}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${_isAr ? '\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u062a\u0635\u062f\u064a\u0631' : 'Export error'}: $e'),
+          ),
+        );
+      }
+    }
+    if (mounted) setState(() => _exporting = false);
   }
 
   Future<void> _pickDate() async {
@@ -207,9 +308,47 @@ class _DailyAttendanceReportScreenState
           foregroundColor: Colors.white,
           elevation: 0,
           actions: [
+            if (!_loading && _data != null) ...[
+              _exporting
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: _exportExcel,
+                      icon: const Icon(Icons.table_chart_outlined),
+                      tooltip: _isAr
+                          ? '\u062a\u0635\u062f\u064a\u0631 Excel'
+                          : 'Export Excel',
+                    ),
+              _printing
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: _print,
+                      icon: const Icon(Icons.print),
+                    ),
+            ],
             IconButton(
-                onPressed: _load,
-                icon: const Icon(Icons.refresh)),
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
           ],
         ),
         body: Column(
@@ -526,10 +665,10 @@ class _DailyAttendanceReportScreenState
                   style: const TextStyle(fontSize: 10, color: Colors.green),
                 ),
               if (isNight)
-                Text('${_isAr ? '????????': 'Night'}  ',
+                Text('${_isAr ? '\u0644\u064a\u0644\u064a': 'Night'}  ',
                   style: const TextStyle(fontSize: 10, color: Colors.indigo)),
               if (isWeekend)
-                Text('${_isAr ? '??????????': 'Weekend'}  ',
+                Text('${_isAr ? '\u0646\u0647\u0627\u064a\u0629 \u0627\u0644\u0623\u0633\u0628\u0648\u0639': 'Weekend'}  ',
                   style: const TextStyle(fontSize: 10, color: Colors.purple)),
             ]),
           ],

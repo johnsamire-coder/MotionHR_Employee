@@ -165,10 +165,17 @@ class ReportPdfService {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-      name: title,
-    );
+    try {
+      await Printing.layoutPdf(
+        onLayout: (format) async => pdf.save(),
+        name: title,
+      ).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => false,
+      );
+    } on Exception {
+      rethrow;
+    }
   }
 
   // ─── Helper: Header Cell ─────────────────────────
