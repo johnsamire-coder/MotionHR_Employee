@@ -408,6 +408,14 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
           title: Text(isAr ? 'الإدخالات اليدوية' : 'Manual Entries'),
           backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
+          actions: [
+            if (_canApprove)
+              IconButton(
+                onPressed: _showApprovalSettingsDialog,
+                icon: const Icon(Icons.settings),
+                tooltip: isAr ? 'إعدادات الموافقة' : 'Approval Settings',
+              ),
+          ],
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: Colors.white,
@@ -450,6 +458,94 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(isAr ? 'إضافة' : 'Add', style: const TextStyle(color: Colors.white)),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showApprovalSettingsDialog() async {
+    List<dynamic> settings = [];
+    bool loading = true;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          if (loading) {
+            () async {
+              try {
+                final headers = await ApiClient.buildHeaders();
+                final res = await http.get(
+                  Uri.parse('$_kBase/attendance/api/mobile/manager/entries/approval-settings/'),
+                  headers: headers,
+                );
+                final data = jsonDecode(utf8.decode(res.bodyBytes));
+                setDialogState(() {
+                  settings = data['settings'] ?? [];
+                  loading = false;
+                });
+              } catch (_) {
+                setDialogState(() => loading = false);
+              }
+            }();
+          }
+          return AlertDialog(
+            title: Text(isAr ? 'إعدادات الموافقة' : 'Approval Settings'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: settings.map((s) {
+                          final isPenaltyType = s['entry_type'] == 'penalty';
+                          final categories = isPenaltyType ? _penaltyCategories : _bonusCategories;
+                          final label = categories[s['category']] ?? s['category'];
+                          final typeLabel = isPenaltyType
+                              ? (isAr ? 'جزاء' : 'Penalty')
+                              : (isAr ? 'مكافأة' : 'Bonus');
+                          return SwitchListTile(
+                            title: Text('$typeLabel - $label'),
+                            subtitle: Text(
+                              s['requires_approval'] == true
+                                  ? (isAr ? 'يحتاج موافقة' : 'Requires approval')
+                                  : (isAr ? 'يتطبق تلقائيًا' : 'Auto-applied'),
+                              style: TextStyle(
+                                color: s['requires_approval'] == true ? Colors.orange : Colors.green,
+                                fontSize: 12,
+                              ),
+                            ),
+                            value: s['requires_approval'] == true,
+                            onChanged: (v) => setDialogState(() => s['requires_approval'] = v),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAr ? 'إلغاء' : 'Cancel')),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    final headers = await ApiClient.buildHeaders(includeContentType: true);
+                    await http.post(
+                      Uri.parse('$_kBase/attendance/api/mobile/manager/entries/approval-settings/'),
+                      headers: headers,
+                      body: jsonEncode({'settings': settings}),
+                    );
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(isAr ? 'تم حفظ الإعدادات' : 'Settings saved'),
+                      backgroundColor: Colors.green,
+                    ));
+                  } catch (_) {}
+                },
+                child: Text(isAr ? 'حفظ' : 'Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
