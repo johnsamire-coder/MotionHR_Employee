@@ -350,11 +350,10 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAr ? 'إلغاء' : 'Cancel')),
             ElevatedButton(
               onPressed: () async {
-                final empId = int.tryParse(employeeIdCtrl.text.trim());
                 final amount = double.tryParse(amountCtrl.text.trim());
-                if (empId == null || amount == null) return;
+                if (selectedEmployeeId == null || amount == null) return;
                 Navigator.pop(ctx);
-                await _createEntry(isPenalty, empId, category, amount, reasonCtrl.text.trim(), targetMonth, targetYear);
+                await _createEntry(isPenalty, selectedEmployeeId!, category, amount, reasonCtrl.text.trim(), targetMonth, targetYear);
               },
               child: Text(isAr ? 'إرسال' : 'Submit'),
             ),
