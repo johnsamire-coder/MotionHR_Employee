@@ -679,8 +679,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
-
     final prefs = await SharedPreferences.getInstance();
     final stayData = await AuthStorageService.checkStayLoggedIn();
     final bool isValidSession = stayData['valid'] == true;
