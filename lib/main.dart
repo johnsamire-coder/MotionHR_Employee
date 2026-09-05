@@ -689,13 +689,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (isValidSession && token != null && token.isNotEmpty) {
       await prefs.setString('token', token);
-      await AuthStorageService.refreshLoginTime();
-
-      await saveTrackingFlag(true);
-      await startBackgroundTrackingIfNeeded();
-      await saveFCMTokenToServer();
-      await fetchUnreadCount();
-      await AutoCheckinService.startMonitoring();
+      // العمليات دي مش لازمة لقرار "أروح فين"، فتشتغل في الخلفية من غير ما تعطّل الانتقال
+      AuthStorageService.refreshLoginTime();
+      saveTrackingFlag(true);
+      startBackgroundTrackingIfNeeded();
+      saveFCMTokenToServer();
+      fetchUnreadCount();
+      AutoCheckinService.startMonitoring();
 
       bool needsCharter = false;
       if (appMode != 'manager') {
