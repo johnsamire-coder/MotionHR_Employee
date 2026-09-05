@@ -10,10 +10,44 @@ class ApiClient {
   // يمنع تعدد محاولات التجديد في نفس اللحظة لو كذا طلب فشلوا مع بعض
   static Future<bool>? _refreshFuture;
 
+  // يفك تشفير الـ JWT ويرجّع وقت الانتهاء (exp) بالثواني، أو null لو فشل
+  static int? _jwtExpiry(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return null;
+      var payload = parts[1];
+      payload = payload.replaceAll('-', '+').replaceAll('_', '/');
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
+      final decoded = utf8.decode(base64.decode(payload));
+      final data = jsonDecode(decoded);
+      return data['exp'] as int?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // يجدد التوكن استباقيًا لو منتهي أو قرّب ينتهي (أقل من دقيقة)، عشان أي مكان بيستخدم
+  // buildHeaders() ياخد توكن سليم دايمًا، حتى لو بعتين الطلب بـ http.get مباشرة
+  static Future<void> _ensureFreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jwtAccess = prefs.getString('jwt_access') ?? '';
+    if (jwtAccess.isEmpty) return;
+    final exp = _jwtExpiry(jwtAccess);
+    if (exp == null) return;
+    final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (exp - nowSeconds < 60) {
+      await _refreshToken();
+    }
+  }
+
   static Future<Map<String, String>> buildHeaders({
     bool includeContentType = false,
     Map<String, String>? extraHeaders,
   }) async {
+    await _ensureFreshToken();
+
     final result = <String, String>{
       ...?extraHeaders,
     };
