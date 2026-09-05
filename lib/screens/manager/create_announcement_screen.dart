@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
+import '../../services/employee_management_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const _kColor = Color(0xFF6C63FF);
 const _kBase = 'https://jssolutions-eg.com';
@@ -32,6 +34,12 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   bool _sendPush = true;
   bool _resendNotificationOnEdit = false;
   bool _loading = false;
+  String _userRole = '';
+  List<Map<String, dynamic>> _departments = [];
+  List<Map<String, dynamic>> _branches = [];
+  int? _selectedDepartmentId;
+  int? _selectedBranchId;
+  bool get _isPlainManager => _userRole == 'manager';
 
   List<Map<String, String>> get _types => [
         {'value': 'general', 'label': isAr ? '📢 إعلان عام' : '📢 General'},
@@ -70,6 +78,24 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
       _requiresConfirmation = ann['requires_confirmation'] == true;
       _sendPush = ann['send_push'] != false;
     }
+    _loadRoleAndOptions();
+  }
+
+  Future<void> _loadRoleAndOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role') ?? '';
+    if (mounted) setState(() => _userRole = role);
+    if (role == 'manager') return;
+    try {
+      final depts = await EmployeeManagementService.getDepartments();
+      final brnchs = await EmployeeManagementService.getBranches();
+      if (mounted) {
+        setState(() {
+          _departments = depts;
+          _branches = brnchs;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -105,6 +131,10 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
         'type': _type,
         'priority': _priority,
         'target_type': _targetType,
+        if (_targetType == 'by_department' && _selectedDepartmentId != null)
+          'department_ids': [_selectedDepartmentId],
+        if (_targetType == 'by_branch' && _selectedBranchId != null)
+          'branch_ids': [_selectedBranchId],
         'requires_confirmation': _requiresConfirmation,
         'send_push': _sendPush,
         'resend_notification': isEditing ? _resendNotificationOnEdit : false,
@@ -325,25 +355,93 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         },
                       ),
                       const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _targetType,
-                        decoration: InputDecoration(
-                          labelText: isAr ? 'المستهدفون' : 'Target',
-                          prefixIcon: const Icon(Icons.people),
-                          border: const OutlineInputBorder(),
-                        ),
-                        items: _targets
-                            .map(
-                              (item) => DropdownMenuItem<String>(
-                                value: item['value'],
-                                child: Text(item['label'] ?? ''),
+                      if (_isPlainManager)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.blue[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.groups, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  isAr ? 'سيتم الإرسال لفريقك المباشر فقط' : 'Will be sent to your direct team only',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
                               ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => _targetType = value ?? 'all');
-                        },
-                      ),
+                            ],
+                          ),
+                        )
+                      else ...[
+                        DropdownButtonFormField<String>(
+                          initialValue: _targetType,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'المستهدفون' : 'Target',
+                            prefixIcon: const Icon(Icons.people),
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: _targets
+                              .map(
+                                (item) => DropdownMenuItem<String>(
+                                  value: item['value'],
+                                  child: Text(item['label'] ?? ''),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _targetType = value ?? 'all';
+                              _selectedDepartmentId = null;
+                              _selectedBranchId = null;
+                            });
+                          },
+                        ),
+                        if (_targetType == 'by_department') ...[
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedDepartmentId,
+                            decoration: InputDecoration(
+                              labelText: isAr ? 'اختر الإدارة' : 'Select Department',
+                              prefixIcon: const Icon(Icons.apartment),
+                              border: const OutlineInputBorder(),
+                            ),
+                            items: _departments
+                                .map((d) => DropdownMenuItem<int>(
+                                      value: d['id'] as int,
+                                      child: Text((d['name'] ?? '').toString()),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() => _selectedDepartmentId = value);
+                            },
+                          ),
+                        ],
+                        if (_targetType == 'by_branch') ...[
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedBranchId,
+                            decoration: InputDecoration(
+                              labelText: isAr ? 'اختر الفرع' : 'Select Branch',
+                              prefixIcon: const Icon(Icons.store),
+                              border: const OutlineInputBorder(),
+                            ),
+                            items: _branches
+                                .map((b) => DropdownMenuItem<int>(
+                                      value: b['id'] as int,
+                                      child: Text((b['name'] ?? '').toString()),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() => _selectedBranchId = value);
+                            },
+                          ),
+                        ],
+                      ],
                     ],
                   ),
                 ),
