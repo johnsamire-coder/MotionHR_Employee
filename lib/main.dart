@@ -613,6 +613,17 @@ class _MotionHRAppState extends State<MotionHRApp> {
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.deepPurple, fontFamily: 'Arial'),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF100B28),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF00C688),
+              brightness: Brightness.dark,
+              primary: const Color(0xFF00C688),
+              secondary: const Color(0xFF382483),
+            ),
+            fontFamily: 'Arial',
+          ),
           themeMode: themeMode,
           locale: locale,
           supportedLocales: const [
