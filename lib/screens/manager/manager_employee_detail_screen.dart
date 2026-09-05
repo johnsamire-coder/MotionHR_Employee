@@ -38,14 +38,21 @@ class _ManagerEmployeeDetailScreenState extends State<ManagerEmployeeDetailScree
   List<dynamic> _requests = [];
   bool _loading = true;
   String? _error;
-
+  String _userRole = '';
+  bool get _canEditEmployee =>
+      const {'company_admin', 'hr_manager', 'super_admin'}.contains(_userRole);
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 7, vsync: this);
+    _loadUserRole();
     _loadAll();
   }
-
+  Future<void> _loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _userRole = prefs.getString('role') ?? '');
+  }
   @override
   void dispose() {
     _tabController.dispose();
@@ -931,6 +938,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                 ),
               ),
             ),
+            if (_canEditEmployee) ...[
             SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
