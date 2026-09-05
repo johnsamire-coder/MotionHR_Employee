@@ -8906,7 +8906,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
         setState(() => _items = [
               ...List.from(data['pending_requests'] ?? []),
               ...List.from(data['pending_leaves'] ?? []),
-              ...List.from(data['pending'] ?? []),
+              ...List.from(data['pending_missions'] ?? []),
             ]);
       }
     } catch (_) {}
