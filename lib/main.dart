@@ -1059,11 +1059,9 @@ class _LoginScreenState extends State<LoginScreen> {
           token: data['token'],
         );
         await AuthStorageService.saveToken(data['token']);
-        // لو البصمة متاحة → فعّلها تلقائياً بعد أول دخول ناجح
-        if (_biometricAvailable) {
-          final prefs2 = await SharedPreferences.getInstance();
-          await prefs2.setBool('biometric_enabled', true);
-        }
+        // فعّل البصمة بس لو المستخدم فعلاً اختارها (مش لمجرد إن الجهاز بيدعمها)
+        final prefs2 = await SharedPreferences.getInstance();
+        await prefs2.setBool('biometric_enabled', _biometricAvailable && _biometricEnabled);
 
         await saveTrackingFlag(true);
         await startBackgroundTrackingIfNeeded();
@@ -1409,6 +1407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         if (mounted) {
                                           setState(() {
                                             _biometricEnabled = value;
+                                            if (value) _stayLoggedIn = false;
                                           });
                                         }
                                       },
@@ -1437,8 +1436,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           isAr
-                                              ? 'يبقى الحساب مفتوحاً حتى 72 ساعة'
-                                              : 'Account stays open for up to 72 hours',
+                                              ? 'يفضل حسابك مفتوح تلقائيًا'
+                                              : 'Keeps your account open automatically',
                                           style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
@@ -1453,6 +1452,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onChanged: (value) {
                                       setState(() {
                                         _stayLoggedIn = value;
+                                        if (value) _biometricEnabled = false;
                                       });
                                     },
                                   ),
