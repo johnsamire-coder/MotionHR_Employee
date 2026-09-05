@@ -8107,6 +8107,8 @@ class ManagerDashboard extends StatefulWidget {
 class _ManagerDashboardState extends State<ManagerDashboard> {
   int _pending = 0, _present = 0, _fieldWorkers = 0;
   int _totalEmployees = 0;
+  bool _isOfficialHoliday = false;
+  int _onLeaveCount = 0;
   bool _loading = true;
   String _firstName = '';
   String _companyName = '';
@@ -8175,6 +8177,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         final total = d['total'];
         _present =
             total is num ? total.toInt() : items.length;
+        _isOfficialHoliday = d['is_official_holiday'] == true;
+        _onLeaveCount = d['on_leave_count'] is num ? (d['on_leave_count'] as num).toInt() : 0;
       }
       final r3 = await ApiClient.get(
         Uri.parse(
@@ -8200,7 +8204,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   Widget _buildPieCharts(bool isAr) {
     if (_loading || _totalEmployees == 0) return const SizedBox();
 
-    final absent = (_totalEmployees - _present).clamp(0, _totalEmployees);
+    final absent = _isOfficialHoliday
+        ? 0
+        : (_totalEmployees - _present - _onLeaveCount).clamp(0, _totalEmployees);
     final office = (_present - _fieldWorkers).clamp(0, _present);
 
     return Container(
