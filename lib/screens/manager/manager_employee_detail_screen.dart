@@ -1404,195 +1404,373 @@ class _EditEmployeeSheet extends StatefulWidget {
 
 class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
   bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
-
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _firstNameArCtrl;
+  late TextEditingController _middleNameArCtrl;
+  late TextEditingController _lastNameArCtrl;
+  late TextEditingController _firstNameEnCtrl;
+  late TextEditingController _lastNameEnCtrl;
   late TextEditingController _phoneCtrl;
+  late TextEditingController _phone2Ctrl;
   late TextEditingController _emailCtrl;
+  late TextEditingController _nationalIdCtrl;
   late TextEditingController _addressCtrl;
+  late TextEditingController _cityCtrl;
+  late TextEditingController _basicSalaryCtrl;
   late TextEditingController _bankNameCtrl;
   late TextEditingController _bankAccountCtrl;
   late TextEditingController _ibanCtrl;
+  late TextEditingController _instapayPhoneCtrl;
+  late TextEditingController _walletPhoneCtrl;
+  late TextEditingController _insuranceNumberCtrl;
+  late TextEditingController _birthDateCtrl;
+  late TextEditingController _hireDateCtrl;
+  late TextEditingController _contractEndDateCtrl;
+  String _gender = 'male';
+  String _maritalStatus = 'single';
+  String _workerType = 'office';
+  String _contractType = 'permanent';
+  String _salaryPaymentMethod = 'cash';
+  String _walletProvider = '';
+  bool _hasInsurance = false;
+  int? _branchId;
+  int? _departmentId;
+  int? _jobTitleId;
+  int? _directManagerId;
+  List<Map<String, dynamic>> _branches = [];
+  List<Map<String, dynamic>> _departments = [];
+  List<Map<String, dynamic>> _jobTitles = [];
+  List<Map<String, dynamic>> _employees = [];
+  bool _loadingLists = true;
   bool _saving = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _phoneCtrl = TextEditingController(text: widget.profile['phone'] ?? '');
-    _emailCtrl = TextEditingController(text: widget.profile['email'] ?? '');
-    _addressCtrl = TextEditingController(text: widget.profile['address'] ?? '');
-    _bankNameCtrl = TextEditingController(text: widget.profile['bank_name'] ?? '');
-    _bankAccountCtrl = TextEditingController(text: widget.profile['bank_account'] ?? '');
-    _ibanCtrl = TextEditingController(text: widget.profile['iban'] ?? '');
+    final p = widget.profile;
+    _firstNameArCtrl = TextEditingController(text: p['first_name_ar'] ?? '');
+    _middleNameArCtrl = TextEditingController(text: p['middle_name_ar'] ?? '');
+    _lastNameArCtrl = TextEditingController(text: p['last_name_ar'] ?? '');
+    _firstNameEnCtrl = TextEditingController(text: p['first_name_en'] ?? '');
+    _lastNameEnCtrl = TextEditingController(text: p['last_name_en'] ?? '');
+    _phoneCtrl = TextEditingController(text: p['phone'] ?? '');
+    _phone2Ctrl = TextEditingController(text: p['phone2'] ?? '');
+    _emailCtrl = TextEditingController(text: p['email'] ?? '');
+    _nationalIdCtrl = TextEditingController(text: p['national_id'] ?? '');
+    _addressCtrl = TextEditingController(text: p['address'] ?? '');
+    _cityCtrl = TextEditingController(text: p['city'] ?? '');
+    _basicSalaryCtrl = TextEditingController(text: (p['basic_salary'] ?? '').toString());
+    _bankNameCtrl = TextEditingController(text: p['bank_name'] ?? '');
+    _bankAccountCtrl = TextEditingController(text: p['bank_account'] ?? '');
+    _ibanCtrl = TextEditingController(text: p['iban'] ?? '');
+    _instapayPhoneCtrl = TextEditingController(text: p['instapay_phone'] ?? '');
+    _walletPhoneCtrl = TextEditingController(text: p['wallet_phone'] ?? '');
+    _insuranceNumberCtrl = TextEditingController(text: p['insurance_number'] ?? '');
+    _birthDateCtrl = TextEditingController(text: p['birth_date'] ?? '');
+    _hireDateCtrl = TextEditingController(text: p['hire_date'] ?? '');
+    _contractEndDateCtrl = TextEditingController(text: p['contract_end_date'] ?? '');
+    _gender = (p['gender'] ?? 'male').toString();
+    _maritalStatus = (p['marital_status'] ?? 'single').toString();
+    _workerType = (p['worker_type'] ?? 'office').toString();
+    _contractType = (p['contract_type'] ?? 'permanent').toString();
+    _salaryPaymentMethod = (p['salary_payment_method'] ?? 'cash').toString();
+    _walletProvider = (p['wallet_provider'] ?? '').toString();
+    _hasInsurance = p['has_insurance'] == true;
+    _branchId = p['branch_id'] is int ? p['branch_id'] : (p['branch'] is Map ? p['branch']['id'] : null);
+    _departmentId = p['department_id'] is int ? p['department_id'] : (p['department'] is Map ? p['department']['id'] : null);
+    _jobTitleId = p['job_title_id'] is int ? p['job_title_id'] : (p['job_title'] is Map ? p['job_title']['id'] : null);
+    _directManagerId = p['direct_manager_id'] is int ? p['direct_manager_id'] : null;
+    _loadLists();
+  }
+
+  Future<void> _loadLists() async {
+    try {
+      final results = await Future.wait([
+        EmployeeManagementService.getBranches(),
+        EmployeeManagementService.getDepartments(),
+        EmployeeManagementService.getJobTitles(),
+        EmployeeManagementService.getEmployeesSimple(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _branches = results[0];
+        _departments = results[1];
+        _jobTitles = results[2];
+        _employees = results[3];
+        _loadingLists = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingLists = false);
+    }
   }
 
   @override
   void dispose() {
+    _firstNameArCtrl.dispose();
+    _middleNameArCtrl.dispose();
+    _lastNameArCtrl.dispose();
+    _firstNameEnCtrl.dispose();
+    _lastNameEnCtrl.dispose();
     _phoneCtrl.dispose();
+    _phone2Ctrl.dispose();
     _emailCtrl.dispose();
+    _nationalIdCtrl.dispose();
     _addressCtrl.dispose();
+    _cityCtrl.dispose();
+    _basicSalaryCtrl.dispose();
     _bankNameCtrl.dispose();
     _bankAccountCtrl.dispose();
     _ibanCtrl.dispose();
+    _instapayPhoneCtrl.dispose();
+    _walletPhoneCtrl.dispose();
+    _insuranceNumberCtrl.dispose();
+    _birthDateCtrl.dispose();
+    _hireDateCtrl.dispose();
+    _contractEndDateCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDate(TextEditingController ctrl) async {
+    final initial = DateTime.tryParse(ctrl.text) ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1950),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      ctrl.text = picked.toIso8601String().split('T').first;
+      setState(() {});
+    }
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _saving = true; _error = null; });
-
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-
       final response = await http.patch(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/employees/${widget.employeeId}/update/'),
         headers: await ApiClient.buildHeaders(includeContentType: true),
         body: json.encode({
+          'first_name_ar': _firstNameArCtrl.text.trim(),
+          'middle_name_ar': _middleNameArCtrl.text.trim(),
+          'last_name_ar': _lastNameArCtrl.text.trim(),
+          'first_name_en': _firstNameEnCtrl.text.trim(),
+          'last_name_en': _lastNameEnCtrl.text.trim(),
           'phone': _phoneCtrl.text.trim(),
+          'phone2': _phone2Ctrl.text.trim(),
           'email': _emailCtrl.text.trim(),
+          'national_id': _nationalIdCtrl.text.trim(),
           'address': _addressCtrl.text.trim(),
+          'city': _cityCtrl.text.trim(),
+          'basic_salary': double.tryParse(_basicSalaryCtrl.text.trim()) ?? 0,
           'bank_name': _bankNameCtrl.text.trim(),
           'bank_account': _bankAccountCtrl.text.trim(),
           'iban': _ibanCtrl.text.trim(),
+          'instapay_phone': _instapayPhoneCtrl.text.trim(),
+          'wallet_phone': _walletPhoneCtrl.text.trim(),
+          'wallet_provider': _walletProvider,
+          'insurance_number': _insuranceNumberCtrl.text.trim(),
+          'birth_date': _birthDateCtrl.text.trim(),
+          'hire_date': _hireDateCtrl.text.trim(),
+          'contract_end_date': _contractEndDateCtrl.text.trim(),
+          'gender': _gender,
+          'marital_status': _maritalStatus,
+          'worker_type': _workerType,
+          'contract_type': _contractType,
+          'salary_payment_method': _salaryPaymentMethod,
+          'has_insurance': _hasInsurance,
+          if (_branchId != null) 'branch_id': _branchId,
+          if (_departmentId != null) 'department_id': _departmentId,
+          if (_jobTitleId != null) 'job_title_id': _jobTitleId,
+          if (_directManagerId != null) 'direct_manager_id': _directManagerId,
         }),
-      ).timeout(const Duration(seconds: 15));
-
+      ).timeout(const Duration(seconds: 20));
       if (!mounted) return;
-
+      final data = response.body.isNotEmpty ? json.decode(utf8.decode(response.bodyBytes)) : {};
       if (response.statusCode == 200) {
         Navigator.pop(context);
         widget.onSaved();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم حفظ التعديلات'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('تم حفظ التعديلات'), backgroundColor: Colors.green),
         );
       } else {
-        final d = json.decode(response.body);
-        setState(() => _error = d['message'] ?? 'فشل الحفظ');
+        setState(() => _error = data['error'] ?? data['message'] ?? 'فشل الحفظ');
       }
     } catch (e) {
-      setState(() => _error = 'خطأ في الاتصال');
+      if (mounted) setState(() => _error = 'خطأ في الاتصال');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
-  Widget _field(String label, TextEditingController ctrl, {TextInputType? keyboardType, bool required = false}) {
+  Widget _textField(TextEditingController ctrl, String label, {bool required = false, TextInputType? type}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: TextFormField(
         controller: ctrl,
-        keyboardType: keyboardType,
+        keyboardType: type,
+        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? (isAr ? 'مطلوب' : 'Required') : null : null,
+      ),
+    );
+  }
+
+  Widget _dateField(TextEditingController ctrl, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextFormField(
+        controller: ctrl,
+        readOnly: true,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          border: const OutlineInputBorder(),
+          suffixIcon: const Icon(Icons.calendar_today),
         ),
-        validator: required ? (v) => (v == null || v.trim().isEmpty) ? context.l10n.required : null : null,
+        onTap: () => _pickDate(ctrl),
       ),
+    );
+  }
+
+  Widget _dropdown<T>(T? value, String label, List<DropdownMenuItem<T>> items, void Function(T?) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: DropdownButtonFormField<T>(
+        initialValue: value,
+        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        items: items,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF382483))),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAr = Localizations.localeOf(context).languageCode == 'ar';
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Container(
+    return DraggableScrollableSheet(
+      initialChildSize: 0.95,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(Icons.edit, color: Color(0xFF382483)),
-                  SizedBox(width: 8),
-                  Text(context.l10n.editEmployee,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            Divider(height: 1),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 16,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(isAr ? 'بيانات التواصل' : 'Contact Info',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF388E3C))),
-                      SizedBox(height: 8),
-                      _field(context.l10n.phone, _phoneCtrl, keyboardType: TextInputType.phone),
-                      _field(context.l10n.email, _emailCtrl, keyboardType: TextInputType.emailAddress),
-                      _field(context.l10n.address, _addressCtrl),
-                      SizedBox(height: 8),
-                      Text(isAr ? 'البيانات البنكية' : 'Bank Info',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF382483))),
-                      SizedBox(height: 8),
-                      _field('اسم البنك', _bankNameCtrl),
-                      _field('رقم الحساب', _bankAccountCtrl),
-                      _field('IBAN', _ibanCtrl),
-                      if (_error != null)
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(_error!, style: const TextStyle(color: Colors.red)),
-                        ),
-                      SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _saving ? null : _save,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF382483),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: _saving
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : Text('حفظ التعديلات',
-                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                        ),
+        child: _loadingLists
+            ? const Center(child: CircularProgressIndicator())
+            : Form(
+                key: _formKey,
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40, height: 4,
+                        decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(isAr ? 'تعديل بيانات الموظف' : 'Edit Employee', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    if (_error != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
+                        child: Text(_error!, style: const TextStyle(color: Colors.red)),
                       ),
                     ],
-                  ),
+                    _sectionTitle(isAr ? 'البيانات الشخصية' : 'Personal Info'),
+                    _textField(_firstNameArCtrl, isAr ? 'الاسم الأول (عربي)' : 'First Name (Arabic)', required: true),
+                    _textField(_middleNameArCtrl, isAr ? 'الاسم الأوسط (عربي)' : 'Middle Name (Arabic)'),
+                    _textField(_lastNameArCtrl, isAr ? 'الاسم الأخير (عربي)' : 'Last Name (Arabic)', required: true),
+                    _textField(_firstNameEnCtrl, isAr ? 'الاسم الأول (إنجليزي)' : 'First Name (English)', required: true),
+                    _textField(_lastNameEnCtrl, isAr ? 'الاسم الأخير (إنجليزي)' : 'Last Name (English)', required: true),
+                    _dropdown<String>(_gender, isAr ? 'النوع' : 'Gender', [
+                      DropdownMenuItem(value: 'male', child: Text(isAr ? 'ذكر' : 'Male')),
+                      DropdownMenuItem(value: 'female', child: Text(isAr ? 'أنثى' : 'Female')),
+                    ], (v) => setState(() => _gender = v ?? 'male')),
+                    _dropdown<String>(_maritalStatus, isAr ? 'الحالة الاجتماعية' : 'Marital Status', [
+                      DropdownMenuItem(value: 'single', child: Text(isAr ? 'أعزب' : 'Single')),
+                      DropdownMenuItem(value: 'married', child: Text(isAr ? 'متزوج' : 'Married')),
+                      DropdownMenuItem(value: 'divorced', child: Text(isAr ? 'مطلق' : 'Divorced')),
+                      DropdownMenuItem(value: 'widowed', child: Text(isAr ? 'أرمل' : 'Widowed')),
+                    ], (v) => setState(() => _maritalStatus = v ?? 'single')),
+                    _dateField(_birthDateCtrl, isAr ? 'تاريخ الميلاد' : 'Birth Date'),
+                    _textField(_nationalIdCtrl, isAr ? 'الرقم القومي' : 'National ID', type: TextInputType.number),
+                    _textField(_phoneCtrl, isAr ? 'الموبايل' : 'Phone', required: true, type: TextInputType.phone),
+                    _textField(_phone2Ctrl, isAr ? 'موبايل إضافي' : 'Phone 2', type: TextInputType.phone),
+                    _textField(_emailCtrl, isAr ? 'البريد الإلكتروني' : 'Email', type: TextInputType.emailAddress),
+                    _textField(_addressCtrl, isAr ? 'العنوان' : 'Address'),
+                    _textField(_cityCtrl, isAr ? 'المدينة' : 'City'),
+                    _sectionTitle(isAr ? 'البيانات الوظيفية' : 'Job Info'),
+                    _dropdown<int>(_branchId, isAr ? 'الفرع' : 'Branch',
+                      _branches.map((b) => DropdownMenuItem(value: b['id'] as int, child: Text((b['name'] ?? '').toString()))).toList(),
+                      (v) => setState(() => _branchId = v)),
+                    _dropdown<int>(_departmentId, isAr ? 'الإدارة' : 'Department',
+                      _departments.map((d) => DropdownMenuItem(value: d['id'] as int, child: Text((d['name'] ?? '').toString()))).toList(),
+                      (v) => setState(() => _departmentId = v)),
+                    _dropdown<int>(_jobTitleId, isAr ? 'المسمى الوظيفي' : 'Job Title',
+                      _jobTitles.map((j) => DropdownMenuItem(value: j['id'] as int, child: Text((j['name'] ?? '').toString()))).toList(),
+                      (v) => setState(() => _jobTitleId = v)),
+                    _dropdown<int>(_directManagerId, isAr ? 'المدير المباشر' : 'Direct Manager',
+                      _employees.map((e) => DropdownMenuItem(value: e['id'] as int, child: Text((e['name'] ?? e['full_name'] ?? '').toString()))).toList(),
+                      (v) => setState(() => _directManagerId = v)),
+                    _dropdown<String>(_workerType, isAr ? 'نوع العمل' : 'Worker Type', [
+                      DropdownMenuItem(value: 'office', child: Text(isAr ? 'مكتبي' : 'Office')),
+                      DropdownMenuItem(value: 'field', child: Text(isAr ? 'ميداني' : 'Field')),
+                    ], (v) => setState(() => _workerType = v ?? 'office')),
+                    _dropdown<String>(_contractType, isAr ? 'نوع العقد' : 'Contract Type', [
+                      DropdownMenuItem(value: 'permanent', child: Text(isAr ? 'دائم' : 'Permanent')),
+                      DropdownMenuItem(value: 'temporary', child: Text(isAr ? 'مؤقت' : 'Temporary')),
+                    ], (v) => setState(() => _contractType = v ?? 'permanent')),
+                    _dateField(_hireDateCtrl, isAr ? 'تاريخ التعيين' : 'Hire Date'),
+                    _dateField(_contractEndDateCtrl, isAr ? 'تاريخ انتهاء العقد' : 'Contract End Date'),
+                    _sectionTitle(isAr ? 'البيانات المالية' : 'Financial Info'),
+                    _textField(_basicSalaryCtrl, isAr ? 'الراتب الأساسي' : 'Basic Salary', type: TextInputType.number),
+                    _dropdown<String>(_salaryPaymentMethod, isAr ? 'طريقة الصرف' : 'Payment Method', [
+                      DropdownMenuItem(value: 'cash', child: Text(isAr ? 'نقدي' : 'Cash')),
+                      DropdownMenuItem(value: 'bank', child: Text(isAr ? 'تحويل بنكي' : 'Bank Transfer')),
+                      DropdownMenuItem(value: 'instapay', child: Text('InstaPay')),
+                      DropdownMenuItem(value: 'wallet', child: Text(isAr ? 'محفظة إلكترونية' : 'Mobile Wallet')),
+                    ], (v) => setState(() => _salaryPaymentMethod = v ?? 'cash')),
+                    _textField(_bankNameCtrl, isAr ? 'اسم البنك' : 'Bank Name'),
+                    _textField(_bankAccountCtrl, isAr ? 'رقم الحساب' : 'Account Number'),
+                    _textField(_ibanCtrl, isAr ? 'الآيبان' : 'IBAN'),
+                    _textField(_instapayPhoneCtrl, isAr ? 'رقم إنستاباي' : 'InstaPay Phone'),
+                    _textField(_walletPhoneCtrl, isAr ? 'رقم المحفظة' : 'Wallet Phone'),
+                    _sectionTitle(isAr ? 'التأمين' : 'Insurance'),
+                    SwitchListTile(
+                      title: Text(isAr ? 'مؤمن عليه' : 'Has Insurance'),
+                      value: _hasInsurance,
+                      onChanged: (v) => setState(() => _hasInsurance = v),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    if (_hasInsurance)
+                      _textField(_insuranceNumberCtrl, isAr ? 'الرقم التأميني' : 'Insurance Number'),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _saving ? null : _save,
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF382483)),
+                        child: _saving
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : Text(isAr ? 'حفظ التعديلات' : 'Save Changes', style: const TextStyle(color: Colors.white, fontSize: 16)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
