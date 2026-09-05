@@ -64,6 +64,7 @@ import 'screens/employee/field_visits_screen.dart';
 import 'services/field_visits_service.dart';
 import 'screens/employee/my_work_locations_screen.dart';
 import 'screens/manager/work_locations_approval_screen.dart';
+import 'screens/manager/manual_entries_screen.dart';
 import 'widgets/account_incomplete_screen.dart';
 import 'widgets/adaptive_attendance_buttons.dart';
 import 'widgets/empty_state_widget.dart';
@@ -7746,6 +7747,14 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             color: Color(0xFF00C688),
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const ReportsHubScreen())),
+          ),
+          _teamCard(
+            context: context,
+            icon: Icons.request_page,
+            title: isAr ? 'الإدخالات اليدوية (مكافآت وجزاءات)' : 'Manual Entries (Bonuses & Penalties)',
+            color: Colors.deepPurple,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const ManualEntriesScreen())),
           ),
         ],
       ),
