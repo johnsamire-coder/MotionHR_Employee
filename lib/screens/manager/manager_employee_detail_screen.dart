@@ -953,6 +953,7 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
               ),
             ),
           ],
+          ],
         ),
         SizedBox(height: 8),
         // أزرار الإجراءات - صف سفلي
