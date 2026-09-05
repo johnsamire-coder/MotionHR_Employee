@@ -258,7 +258,7 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_isAr ? 'الأجهزة المعتمدة' : 'Trusted Devices'),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
         ),
         body: Column(

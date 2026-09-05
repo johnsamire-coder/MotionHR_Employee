@@ -133,7 +133,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
             children: [
               Expanded(child: Text(b['leave_type'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600))),
               Text('${remaining.toStringAsFixed(1)} / ${total.toStringAsFixed(1)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A0A3E))),
             ],
           ),
           SizedBox(height: 4),
@@ -143,7 +143,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
               value: percent,
               minHeight: 6,
               backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation(Color(0xFF1976D2)),
+              valueColor: const AlwaysStoppedAnimation(Color(0xFF1A0A3E)),
             ),
           ),
           Text('مستخدم: ${b['used']}  •  معلق: ${b['pending']}',
@@ -161,7 +161,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           title: Text(
             widget.employeeName != null ? 'ملخص: ${widget.employeeName}' : 'الملخص',
@@ -190,7 +190,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
+                            gradient: const LinearGradient(colors: [Color(0xFF382483), Color(0xFF1A0A3E)]),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(children: [
@@ -216,7 +216,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                                 _statBox('حاضر', _summary!['attendance']['present'], Icons.check_circle, const Color(0xFF388E3C)),
                                 _statBox('متأخر', _summary!['attendance']['late'], Icons.access_time, const Color(0xFFFF9800)),
                                 _statBox('غائب', _summary!['attendance']['absent'], Icons.cancel, const Color(0xFFD32F2F)),
-                                _statBox('إجازة', _summary!['attendance']['on_leave'], Icons.beach_access, const Color(0xFF1976D2)),
+                                _statBox('إجازة', _summary!['attendance']['on_leave'], Icons.beach_access, const Color(0xFF1A0A3E)),
                               ],
                             ),
                             SizedBox(height: 8),
@@ -240,7 +240,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                         ),
 
                         // رصيد الإجازات
-                        _section(context.l10n.leaveBalance, Icons.beach_access, const Color(0xFF1976D2),
+                        _section(context.l10n.leaveBalance, Icons.beach_access, const Color(0xFF1A0A3E),
                           ((_summary!['leave_balances'] as List?)?.isEmpty ?? true)
                               ? Padding(padding: EdgeInsets.all(8), child: Text('لا يوجد رصيد إجازات'))
                               : Column(children: [
@@ -268,7 +268,7 @@ class _EmployeeSummaryScreenState extends State<EmployeeSummaryScreen> {
                         ),
 
                         // طلبات الإجازة
-                        _section('طلبات الإجازة', Icons.beach_access, const Color(0xFF00838F),
+                        _section('طلبات الإجازة', Icons.beach_access, const Color(0xFF00C688),
                           GridView.count(
                             crossAxisCount: 4,
                             shrinkWrap: true,

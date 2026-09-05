@@ -182,7 +182,7 @@ class _PermissionsAssignScreenState extends State<PermissionsAssignScreen> {
                                 _assignBulk(roleId, selectedUsers.toList());
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4A148C),
+                          backgroundColor: const Color(0xFF1A0A3E),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -241,7 +241,7 @@ class _PermissionsAssignScreenState extends State<PermissionsAssignScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'تعيين الأدوار' : 'Assign Roles'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       body: RefreshIndicator(
@@ -316,11 +316,11 @@ class _PermissionsAssignScreenState extends State<PermissionsAssignScreen> {
                                   child: ListTile(
                                     onTap: () => _showBulkAssignSheet(role),
                                     leading: CircleAvatar(
-                                      backgroundColor: Colors.teal
+                                      backgroundColor: Color(0xFF00C688)
                                           .withValues(alpha: 0.12),
                                       child: const Icon(
                                         Icons.badge,
-                                        color: Colors.teal,
+                                        color: Color(0xFF00C688),
                                       ),
                                     ),
                                     title: Text(

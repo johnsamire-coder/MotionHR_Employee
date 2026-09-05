@@ -92,7 +92,7 @@ class _ManagerEmployeesListScreenState
       case 'active':
         return Colors.green;
       case 'on_leave':
-        return Colors.blue;
+        return Color(0xFF382483);
       case 'suspended':
         return Colors.orange;
       case 'resigned':
@@ -115,7 +115,7 @@ class _ManagerEmployeesListScreenState
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           title: Text(
             isAr
@@ -202,7 +202,7 @@ class _ManagerEmployeesListScreenState
                                 : 'No employees found with these criteria.\nTry changing the filter or search.',
                             icon: Icons.people_outline,
                             iconColor:
-                                const Color(0xFF6A1B9A),
+                                const Color(0xFF382483),
                             onRefresh: _load,
                           )
                         : RefreshIndicator(
@@ -243,7 +243,7 @@ class _ManagerEmployeesListScreenState
                                     leading: CircleAvatar(
                                       radius: 24,
                                       backgroundColor: const Color(
-                                              0xFF6A1B9A)
+                                              0xFF382483)
                                           .withOpacity(0.15),
                                       backgroundImage: (emp[
                                                       'photo'] !=
@@ -262,7 +262,7 @@ class _ManagerEmployeesListScreenState
                                           ? const Icon(
                                               Icons.person,
                                               color: Color(
-                                                  0xFF6A1B9A))
+                                                  0xFF382483))
                                           : null,
                                     ),
                                     title: Text(
@@ -377,7 +377,7 @@ class _ManagerEmployeesListScreenState
                     ? Colors.white
                     : Colors.black87)),
         selected: selected,
-        selectedColor: const Color(0xFF6A1B9A),
+        selectedColor: const Color(0xFF382483),
         backgroundColor: Colors.grey[200],
         onSelected: (_) {
           setState(() => _statusFilter = value);

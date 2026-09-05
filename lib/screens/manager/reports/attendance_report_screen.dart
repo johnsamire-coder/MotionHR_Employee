@@ -24,7 +24,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
 
-  static const _color = Color(0xFF1565C0);
+  static const _color = Color(0xFF00C688);
 
   @override
   void initState() {

@@ -1,4 +1,4 @@
-﻿// lib/screens/employee/employee_payslip_screen.dart
+// lib/screens/employee/employee_payslip_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -95,7 +95,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                           margin: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
                             color: tempMonth == m
-                                ? const Color(0xFF6A1B9A)
+                                ? const Color(0xFF382483)
                                 : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -206,7 +206,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'كشف راتبي' : 'My Payslip'),
-        backgroundColor: const Color(0xFF6A1B9A),
+        backgroundColor: const Color(0xFF382483),
         foregroundColor: Colors.white,
         actions: [
           TextButton.icon(
@@ -272,7 +272,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                          colors: [Color(0xFF382483), Color(0xFF1A0A3E)],
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -337,19 +337,19 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                     _card(
                       isAr ? 'الإضافات' : 'Additions',
                       Icons.add_circle_outline,
-                      Colors.blue,
+                      Color(0xFF382483),
                       [
                         _row(isAr ? 'بونص Overtime' : 'Overtime Bonus',
                             '+ ${_data!['overtime_bonus'] ?? 0} ج',
-                            Colors.blue),
+                            Color(0xFF382483)),
                         if ((_data!['night_allowance'] ?? 0) > 0)
                           _row(isAr ? 'بدل ليلي' : 'Night Allowance',
                               '+ ${_data!['night_allowance']} ج',
-                              Colors.indigo),
+                              Color(0xFF1A0A3E)),
                         if ((_data!['weekend_allowance'] ?? 0) > 0)
                           _row(isAr ? 'بدل يوم الراحة' : 'Weekend Allowance',
                               '+ ${_data!['weekend_allowance']} ج',
-                              Colors.deepPurple),
+                              Color(0xFF1A0A3E)),
                         if ((_data!['night_shift_days'] ?? 0) > 0)
                           _row(isAr ? 'أيام شيفتات ليلية' : 'Night Shift Days',
                               '${_data!['night_shift_days']} ${isAr ? 'يوم' : 'days'}',
@@ -368,13 +368,13 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: Colors.teal.shade50,
+                          color: Color(0xFFE0FAF2),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.teal.shade200),
+                          border: Border.all(color: Color(0xFF7DEAC8)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.policy, color: Colors.teal, size: 20),
+                            const Icon(Icons.policy, color: Color(0xFF00C688), size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
@@ -382,7 +382,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                                 children: [
                                   Text(
                                     isAr ? 'السياسة المطبقة' : 'Applied Policy',
-                                    style: const TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.w500),
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF00C688), fontWeight: FontWeight.w500),
                                   ),
                                   Text(
                                     '${_data!['policy_name']}',
@@ -432,7 +432,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                     _card(
                       isAr ? 'ملخص الحضور' : 'Attendance Summary',
                       Icons.calendar_today,
-                      Colors.purple,
+                      Color(0xFF382483),
                       [
                         _row(isAr ? 'أيام الحضور' : 'Attended Days',
                             '${_data!['attended_days'] ?? 0}', Colors.black87),
@@ -448,7 +448,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                             Colors.black87),
                         _row(isAr ? 'ساعات Overtime' : 'Overtime Hours',
                             '${_data!['overtime_hours'] ?? 0} س',
-                            Colors.blue),
+                            Color(0xFF382483)),
                       ],
                     ),
                   ],

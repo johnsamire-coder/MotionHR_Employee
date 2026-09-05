@@ -186,7 +186,7 @@ class _PayrollEmployeeDetailScreenState
     if (s == 'late') return Colors.orange;
     if (s == 'absent') return Colors.red;
     if (s == 'on_leave') return Colors.blueGrey;
-    if (s == 'mission_day') return Colors.indigo;
+    if (s == 'mission_day') return Color(0xFF1A0A3E);
     return Colors.grey;
   }
 
@@ -298,17 +298,17 @@ class _PayrollEmployeeDetailScreenState
             _infoRow(
               isAr ? 'إجمالي البدلات' : 'Allowances Total',
               _money(_data?['allowances_total']),
-              color: Colors.blue,
+              color: Color(0xFF382483),
             ),
             _infoRow(
               isAr ? 'أوفرتايم' : 'Overtime',
               _money(_data?['overtime_bonus']),
-              color: Colors.indigo,
+              color: Color(0xFF1A0A3E),
             ),
             _infoRow(
               isAr ? 'المكافآت' : 'Bonuses',
               _money(_data?['bonuses_total']),
-              color: Colors.teal,
+              color: Color(0xFF00C688),
             ),
             const Divider(height: 20),
             _infoRow(
@@ -381,7 +381,7 @@ class _PayrollEmployeeDetailScreenState
             _sectionTitle(
               isAr ? 'ملخص الحضور' : 'Attendance Summary',
               Icons.access_time,
-              Colors.deepPurple,
+              Color(0xFF1A0A3E),
             ),
             _infoRow(
               isAr ? 'أيام العمل' : 'Working Days',
@@ -408,7 +408,7 @@ class _PayrollEmployeeDetailScreenState
             _infoRow(
               isAr ? 'أيام المهمة' : 'Mission Days',
               _value(_data?['mission_days'], '0'),
-              color: Colors.indigo,
+              color: Color(0xFF1A0A3E),
             ),
             _infoRow(
               isAr ? 'أيام الإجازة' : 'Leave Days',
@@ -561,7 +561,7 @@ class _PayrollEmployeeDetailScreenState
                               ? '$visitCount \u0632\u064A\u0627\u0631\u0627\u062A / $visitTotalMinutes \u062F'
                               : '$visitCount visits / $visitTotalMinutes min',
                           style: const TextStyle(
-                            color: Colors.teal,
+                            color: Color(0xFF00C688),
                             fontSize: 10,
                           ),
                         ),
@@ -601,7 +601,7 @@ class _PayrollEmployeeDetailScreenState
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.employeeName),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           actions: [
             if (_exporting)
@@ -655,7 +655,7 @@ class _PayrollEmployeeDetailScreenState
                           titleAr: 'البدلات',
                           titleEn: 'Allowances',
                           icon: Icons.add_card,
-                          color: Colors.blue,
+                          color: Color(0xFF382483),
                           items: allowanceItems,
                           builder: () => _buildNamedMoneyItems(allowanceItems),
                         ),
@@ -663,7 +663,7 @@ class _PayrollEmployeeDetailScreenState
                           titleAr: 'المكافآت',
                           titleEn: 'Bonuses',
                           icon: Icons.emoji_events,
-                          color: Colors.teal,
+                          color: Color(0xFF00C688),
                           items: bonusItems,
                           builder: () => _buildNamedMoneyItems(bonusItems),
                         ),

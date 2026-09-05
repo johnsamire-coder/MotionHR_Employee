@@ -6,7 +6,7 @@ import 'shift_override_screen.dart';
 import 'assignment_detail_screen.dart';
 import 'shift_rotation_screen.dart';
 
-const Color kShiftColor = Color(0xFF6A1B9A);
+const Color kShiftColor = Color(0xFF382483);
 
 class ShiftsScreen extends StatefulWidget {
   const ShiftsScreen({super.key});
@@ -288,19 +288,19 @@ class _ShiftsScreenState extends State<ShiftsScreen>
   Color _shiftColor(String? type) {
     switch (type) {
       case 'morning': return Colors.orange;
-      case 'evening': return Colors.blue;
-      case 'night': return Colors.indigo;
+      case 'evening': return Color(0xFF382483);
+      case 'night': return Color(0xFF1A0A3E);
       case 'flexible': return Colors.green;
-      case 'rotating': return Colors.teal;
-      case 'split': return Colors.purple;
+      case 'rotating': return Color(0xFF00C688);
+      case 'split': return Color(0xFF382483);
       // الأنواع الجديدة (shift_mode)
       case 'fixed': return kShiftColor;
       case 'flex_fixed': return Colors.green;
-      case 'flex_split': return const Color(0xFF7B1FA2);
-      case 'split_fixed': return Colors.purple;
+      case 'flex_split': return const Color(0xFF382483);
+      case 'split_fixed': return Color(0xFF382483);
       case 'variable_daily': return Colors.deepOrange;
-      case 'variable_weekly': return Colors.teal;
-      case 'variable_weekly_flex': return const Color(0xFF00838F);
+      case 'variable_weekly': return Color(0xFF00C688);
+      case 'variable_weekly_flex': return const Color(0xFF00C688);
       default: return kShiftColor;
     }
   }
@@ -337,10 +337,10 @@ class _ShiftsScreenState extends State<ShiftsScreen>
 
   Color _assignmentTypeColor(String? type) {
     switch (type) {
-      case 'employee': return Colors.blue;
+      case 'employee': return Color(0xFF382483);
       case 'department': return Colors.green;
       case 'branch': return Colors.orange;
-      case 'company': return Colors.purple;
+      case 'company': return Color(0xFF382483);
       default: return kShiftColor;
     }
   }
@@ -657,7 +657,7 @@ IconButton(
                     ),
                     if (crossesMidnight) ...[
                       const SizedBox(width: 6),
-                      _infoChip(Icons.nights_stay, isAr ? 'ليلي' : 'Night', Colors.indigo),
+                      _infoChip(Icons.nights_stay, isAr ? 'ليلي' : 'Night', Color(0xFF1A0A3E)),
                     ],
                   ],
                 ),
@@ -673,7 +673,7 @@ IconButton(
                     _infoChip(
                       Icons.hourglass_empty,
                       '${isAr ? 'ساعات' : 'Hours'}: ${shift['work_hours'] ?? 0}',
-                      Colors.blue,
+                      Color(0xFF382483),
                     ),
                   ],
                 ),
@@ -730,7 +730,7 @@ IconButton(
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue[600], size: 20),
+                      icon: Icon(Icons.edit, color: Color(0xFF4A389E), size: 20),
                       tooltip: isAr ? 'تعديل' : 'Edit',
                       onPressed: () async {
                         final result = await Navigator.push(
@@ -1092,7 +1092,7 @@ IconButton(
             Column(
               children: [
                 IconButton(
-                  icon: Icon(Icons.edit_outlined, color: Colors.blue[600], size: 20),
+                  icon: Icon(Icons.edit_outlined, color: Color(0xFF4A389E), size: 20),
                   tooltip: isAr ? 'تعديل' : 'Edit',
                   onPressed: () => _editAssignment(a),
                 ),

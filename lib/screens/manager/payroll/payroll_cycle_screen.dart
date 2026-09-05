@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/payroll_cycle_service.dart';
 import 'create_edit_payroll_cycle_screen.dart';
 
-const Color kCycleColor = Color(0xFF5E35B1);
+const Color kCycleColor = Color(0xFF4A389E);
 
 class PayrollCycleScreen extends StatefulWidget {
   const PayrollCycleScreen({super.key});
@@ -119,7 +119,7 @@ class _PayrollCycleScreenState extends State<PayrollCycleScreen> {
                               margin: const EdgeInsets.only(bottom: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: Color(0xFFCE93D8)),
+                                side: const BorderSide(color: Color(0xFF9B8BD9)),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(14),

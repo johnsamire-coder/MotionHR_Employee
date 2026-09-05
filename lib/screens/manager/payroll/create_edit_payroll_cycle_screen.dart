@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../services/payroll_cycle_service.dart';
 
-const Color kCycleCreateColor = Color(0xFF5E35B1);
+const Color kCycleCreateColor = Color(0xFF4A389E);
 
 class CreateEditPayrollCycleScreen extends StatefulWidget {
   final Map<String, dynamic>? existing;

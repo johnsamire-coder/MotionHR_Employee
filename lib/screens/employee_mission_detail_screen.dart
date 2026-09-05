@@ -71,7 +71,7 @@ class _EmployeeMissionDetailScreenState
             style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
@@ -83,7 +83,7 @@ class _EmployeeMissionDetailScreenState
         body: _loading
             ? Center(
                 child:
-                    CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+                    CircularProgressIndicator(color: Color(0xFF382483)))
             : _error != null
                 ? _buildError()
                 : _mission == null
@@ -178,7 +178,7 @@ class _EmployeeMissionDetailScreenState
   Widget _headerCard(Map<String, dynamic> m) {
     final Map<String, Color> statusColors = {
       'pending': Colors.grey,
-      'accepted': Colors.blue,
+      'accepted': Color(0xFF382483),
       'in_progress': Colors.orange,
       'completed': Colors.green,
       'rejected': Colors.red,
@@ -186,11 +186,11 @@ class _EmployeeMissionDetailScreenState
     final Map<String, Color> priorityColors = {
       'urgent': Colors.red,
       'high': Colors.orange,
-      'normal': Colors.blue,
+      'normal': Color(0xFF382483),
     };
 
     final statusColor = statusColors[m['status']] ?? Colors.grey;
-    final priorityColor = priorityColors[m['priority']] ?? Colors.blue;
+    final priorityColor = priorityColors[m['priority']] ?? Color(0xFF382483);
 
     return Card(
       elevation: 3,
@@ -200,7 +200,7 @@ class _EmployeeMissionDetailScreenState
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
-            colors: [Color(0xFF6C3FC5), Color(0xFF9B6FE8)],
+            colors: [Color(0xFF382483), Color(0xFF7963CB)],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           ),
@@ -286,7 +286,7 @@ class _EmployeeMissionDetailScreenState
             Text('الرد على المهمة',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF6C3FC5))),
+                    color: Color(0xFF382483))),
             SizedBox(height: 12),
             Row(
               children: [
@@ -339,7 +339,7 @@ class _EmployeeMissionDetailScreenState
             Text('ابدأ المهمة',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF6C3FC5))),
+                    color: Color(0xFF382483))),
             SizedBox(height: 8),
             Text(
               'عند الوصول للموقع، اضغط "بدء المهمة" لتسجيل حضورك تلقائياً',
@@ -411,11 +411,11 @@ class _EmployeeMissionDetailScreenState
                     child: OutlinedButton.icon(
                       onPressed: _showUpdateLocationDialog,
                       icon: Icon(Icons.my_location,
-                          color: Color(0xFF6C3FC5)),
+                          color: Color(0xFF382483)),
                       label: Text('تحديث موقعي الحالي',
-                          style: TextStyle(color: Color(0xFF6C3FC5))),
+                          style: TextStyle(color: Color(0xFF382483))),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF6C3FC5)),
+                        side: const BorderSide(color: Color(0xFF382483)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -458,18 +458,18 @@ class _EmployeeMissionDetailScreenState
 
   Widget _buildFeedbackPrompt() {
     return Card(
-      color: const Color(0xFFF3E5F5),
+      color: const Color(0xFFEDEAF7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Icon(Icons.feedback, color: Color(0xFF6C3FC5), size: 40),
+            Icon(Icons.feedback, color: Color(0xFF382483), size: 40),
             SizedBox(height: 8),
             Text(
               'المهمة مكتملة! أضف فيدباك الزيارة',
               style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Color(0xFF6C3FC5)),
+                  fontWeight: FontWeight.bold, color: Color(0xFF382483)),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 12),
@@ -478,7 +478,7 @@ class _EmployeeMissionDetailScreenState
               child: ElevatedButton(
                 onPressed: () => _showFeedbackSheet(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6C3FC5),
+                  backgroundColor: const Color(0xFF382483),
                 ),
                 child: Text(context.l10n.writeFeedback,
                     style: TextStyle(color: Colors.white)),
@@ -505,13 +505,13 @@ class _EmployeeMissionDetailScreenState
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFF6C3FC5), size: 20),
+                Icon(icon, color: const Color(0xFF382483), size: 20),
                 SizedBox(width: 8),
                 Text(title,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: Color(0xFF6C3FC5))),
+                        color: Color(0xFF382483))),
               ],
             ),
             Divider(height: 16),
@@ -722,7 +722,7 @@ class _EmployeeMissionDetailScreenState
                 );
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6C3FC5)),
+                  backgroundColor: const Color(0xFF382483)),
               child: Text(context.l10n.refresh,
                   style: TextStyle(color: Colors.white)),
             ),
@@ -881,7 +881,7 @@ class _EmployeeMissionDetailScreenState
                   title: Text(context.l10n.contractSigned),
                   value: contractSigned,
                   onChanged: (v) => setSheetState(() => contractSigned = v!),
-                  activeColor: const Color(0xFF6C3FC5),
+                  activeColor: const Color(0xFF382483),
                 ),
 
                 // متابعة
@@ -889,7 +889,7 @@ class _EmployeeMissionDetailScreenState
                   title: Text('يحتاج متابعة'),
                   value: needsFollowup,
                   onChanged: (v) => setSheetState(() => needsFollowup = v!),
-                  activeColor: const Color(0xFF6C3FC5),
+                  activeColor: const Color(0xFF382483),
                 ),
 
                 SizedBox(height: 12),
@@ -933,7 +933,7 @@ class _EmployeeMissionDetailScreenState
                     _loadMission();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C3FC5),
+                    backgroundColor: const Color(0xFF382483),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),

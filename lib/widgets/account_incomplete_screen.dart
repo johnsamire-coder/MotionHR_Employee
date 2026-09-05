@@ -88,7 +88,7 @@ class AccountIncompleteWidget extends StatelessWidget {
           if (_needsWorkerType)
             _buildMissingItem(
               icon: Icons.person_pin,
-              color: Colors.blue,
+              color: Color(0xFF382483),
               title: ar ? 'تحديد نوع الموظف' : 'Set Worker Type',
               subtitle: ar
                   ? 'مكتبي / ميداني حر / ميداني محدد'
@@ -97,7 +97,7 @@ class AccountIncompleteWidget extends StatelessWidget {
           if (_needsShift)
             _buildMissingItem(
               icon: Icons.schedule,
-              color: Colors.purple,
+              color: Color(0xFF382483),
               title: ar ? 'ربط شيفت' : 'Assign Shift',
               subtitle: ar
                   ? 'تحديد ساعات العمل الرسمية'

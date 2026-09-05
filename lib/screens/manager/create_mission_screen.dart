@@ -42,7 +42,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
       };
 
   final Map<String, Color> _priorityColors = {
-    'normal': Colors.blue,
+    'normal': Color(0xFF382483),
     'high': Colors.orange,
     'urgent': Colors.red,
   };
@@ -242,13 +242,13 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: selected
-                                          ? const Color(0xFF6C3FC5)
+                                          ? const Color(0xFF382483)
                                               .withValues(alpha: 0.08)
                                           : Colors.white,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: selected
-                                            ? const Color(0xFF6C3FC5)
+                                            ? const Color(0xFF382483)
                                             : Colors.grey.shade300,
                                         width: selected ? 1.5 : 1,
                                       ),
@@ -257,13 +257,13 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                                       children: [
                                         CircleAvatar(
                                           backgroundColor: selected
-                                              ? const Color(0xFF6C3FC5)
+                                              ? const Color(0xFF382483)
                                                   .withValues(alpha: 0.15)
                                               : Colors.grey.shade100,
                                           child: Icon(
                                             Icons.person,
                                             color: selected
-                                                ? const Color(0xFF6C3FC5)
+                                                ? const Color(0xFF382483)
                                                 : Colors.grey.shade700,
                                           ),
                                         ),
@@ -390,7 +390,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                           Navigator.pop(dialogContext);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C3FC5),
+                    backgroundColor: const Color(0xFF382483),
                     foregroundColor: Colors.white,
                   ),
                   child: Text(isAr ? 'إضافة' : 'Add'),
@@ -528,13 +528,13 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: _loading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF6C3FC5),
+                  color: Color(0xFF382483),
                 ),
               )
             : Form(
@@ -654,7 +654,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                             suffixIcon: IconButton(
                                     icon: Icon(
                                       Icons.map,
-                                      color: _locationLat != null ? Colors.green : Colors.deepPurple,
+                                      color: _locationLat != null ? Colors.green : Color(0xFF1A0A3E),
                                     ),
                                     tooltip: isAr ? 'اختر الموقع من الخريطة' : 'Pick from map',
                                     onPressed: _pickLocationFromMap,
@@ -745,11 +745,11 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                             (a) => ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: CircleAvatar(
-                                backgroundColor: const Color(0xFF6C3FC5)
+                                backgroundColor: const Color(0xFF382483)
                                     .withValues(alpha: 0.15),
                                 child: const Icon(
                                   Icons.person,
-                                  color: Color(0xFF6C3FC5),
+                                  color: Color(0xFF382483),
                                 ),
                               ),
                               title: Text(a['employee_name'] ?? ''),
@@ -792,9 +792,9 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                                     : 'Choose Employees for Mission',
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF6C3FC5),
+                                foregroundColor: const Color(0xFF382483),
                                 side: const BorderSide(
-                                  color: Color(0xFF6C3FC5),
+                                  color: Color(0xFF382483),
                                 ),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
@@ -808,7 +808,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                     ElevatedButton(
                       onPressed: _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C3FC5),
+                        backgroundColor: const Color(0xFF382483),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -850,7 +850,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
               children: [
                 Icon(
                   icon,
-                  color: const Color(0xFF6C3FC5),
+                  color: const Color(0xFF382483),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -859,7 +859,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
-                    color: Color(0xFF6C3FC5),
+                    color: Color(0xFF382483),
                   ),
                 ),
               ],
@@ -889,7 +889,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen> {
           children: [
             const Icon(
               Icons.access_time,
-              color: Color(0xFF6C3FC5),
+              color: Color(0xFF382483),
             ),
             const SizedBox(width: 10),
             Expanded(

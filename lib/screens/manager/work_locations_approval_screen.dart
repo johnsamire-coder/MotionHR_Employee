@@ -41,7 +41,7 @@ class _WorkLocationsApprovalScreenState
     return isAr ? 'قبول وإرسال لـ HR' : 'Accept → HR';
   }
 
-  Color get _approveColor => isHr ? Colors.deepPurple : Colors.green;
+  Color get _approveColor => isHr ? Color(0xFF1A0A3E) : Colors.green;
 
   @override
   void initState() {
@@ -166,7 +166,7 @@ class _WorkLocationsApprovalScreenState
     switch (status) {
       case 'approved': return Colors.green;
       case 'pending_manager': return Colors.orange;
-      case 'pending_hr': return Colors.deepPurple;
+      case 'pending_hr': return Color(0xFF1A0A3E);
       case 'rejected': return Colors.red;
       default: return Colors.grey;
     }
@@ -187,7 +187,7 @@ class _WorkLocationsApprovalScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(_screenTitle),
-        backgroundColor: isHr ? Colors.deepPurple : Colors.teal,
+        backgroundColor: isHr ? Color(0xFF1A0A3E) : Color(0xFF00C688),
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
@@ -232,7 +232,7 @@ class _WorkLocationsApprovalScreenState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.check_circle_outline, size: 80,
-                color: isHr ? Colors.deepPurple[300] : Colors.green[300]),
+                color: isHr ? Color(0xFF9B8BD9) : Colors.green[300]),
             const SizedBox(height: 12),
             Text(
               isAr ? 'مفيش طلبات معلقة' : 'No pending requests',
@@ -283,12 +283,12 @@ class _WorkLocationsApprovalScreenState
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (isHr ? Colors.deepPurple : Colors.orange).withValues(alpha: 0.1),
+                    color: (isHr ? Color(0xFF1A0A3E) : Colors.orange).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     isHr ? Icons.verified_outlined : Icons.hourglass_empty,
-                    color: isHr ? Colors.deepPurple : Colors.orange,
+                    color: isHr ? Color(0xFF1A0A3E) : Colors.orange,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -321,12 +321,12 @@ class _WorkLocationsApprovalScreenState
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.withValues(alpha: 0.1),
+                  color: Color(0xFF1A0A3E).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   isAr ? '✅ وافق عليه المدير - ينتظر اعتمادك' : '✅ Manager approved - awaiting your final approval',
-                  style: const TextStyle(color: Colors.deepPurple, fontSize: 11),
+                  style: const TextStyle(color: Color(0xFF1A0A3E), fontSize: 11),
                 ),
               ),
             ],

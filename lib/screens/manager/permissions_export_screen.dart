@@ -169,8 +169,8 @@ class _PermissionsExportScreenState extends State<PermissionsExportScreen> {
                     final role = _roles[i] as Map<String, dynamic>;
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.indigo.withValues(alpha: 0.12),
-                        child: const Icon(Icons.badge, color: Colors.indigo),
+                        backgroundColor: Color(0xFF1A0A3E).withValues(alpha: 0.12),
+                        child: const Icon(Icons.badge, color: Color(0xFF1A0A3E)),
                       ),
                       title: Text('${role['name'] ?? ''}'),
                       subtitle: Text(
@@ -396,7 +396,7 @@ class _PermissionsExportScreenState extends State<PermissionsExportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'تصدير الصلاحيات' : 'Export Permissions'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       body: RefreshIndicator(
@@ -447,7 +447,7 @@ class _PermissionsExportScreenState extends State<PermissionsExportScreen> {
                     subAr: 'تحميل صلاحيات دور واحد PDF أو Excel',
                     subEn: 'Download one role permissions as PDF or Excel',
                     icon: Icons.badge,
-                    color: Colors.indigo,
+                    color: Color(0xFF1A0A3E),
                     onPdf: () => _pickRoleAndExport('pdf'),
                     onExcel: () => _pickRoleAndExport('excel'),
                   ),

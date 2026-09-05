@@ -190,7 +190,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'تفاصيل الدور' : 'Role Details'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       bottomNavigationBar: SafeArea(
@@ -200,7 +200,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
           child: ElevatedButton.icon(
             onPressed: _saving ? null : _saveRole,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4A148C),
+              backgroundColor: const Color(0xFF1A0A3E),
               foregroundColor: Colors.white,
             ),
             icon: _saving
@@ -253,7 +253,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                            colors: [Color(0xFF1A0A3E), Color(0xFF382483)],
                           ),
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -307,7 +307,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEEF2FF),
+                              color: const Color(0xFFEDEAF7),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -315,7 +315,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
                                   ? '${_selectedPermissions.length} محددة'
                                   : '${_selectedPermissions.length} selected',
                               style: const TextStyle(
-                                color: Color(0xFF4A148C),
+                                color: Color(0xFF1A0A3E),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),

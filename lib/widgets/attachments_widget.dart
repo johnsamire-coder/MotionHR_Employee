@@ -101,7 +101,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
             ),
             _buildOption(
               icon: Icons.camera_alt,
-              color: Colors.blue,
+              color: Color(0xFF382483),
               title: 'التقاط صورة',
               onTap: () => _pickAndUpload('camera'),
             ),
@@ -311,9 +311,9 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
   }
 
   Color _getFileColor(AttachmentModel a) {
-    if (a.isImage) return Colors.purple;
+    if (a.isImage) return Color(0xFF382483);
     if (a.isPdf) return Colors.red;
-    if (a.isWord) return Colors.blue;
+    if (a.isWord) return Color(0xFF382483);
     if (a.isExcel) return Colors.green;
     return Colors.grey;
   }
@@ -339,7 +339,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.attach_file, size: 20, color: Colors.blue),
+                  Icon(Icons.attach_file, size: 20, color: Color(0xFF382483)),
                   SizedBox(width: 6),
                   const Text(
                     'المرفقات',
@@ -352,14 +352,14 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
+                      color: Color(0xFFD6CFF0),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '${_attachments.length}/${widget.maxFiles}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue.shade900,
+                        color: Color(0xFF1A0A3E),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -456,7 +456,7 @@ class _AttachmentsWidgetState extends State<AttachmentsWidget> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.download, size: 20, color: Colors.blue),
+            icon: Icon(Icons.download, size: 20, color: Color(0xFF382483)),
             onPressed: () => _openAttachment(a),
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(),

@@ -97,7 +97,7 @@ class _HierarchyTreeScreenState extends State<HierarchyTreeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF6C3FC5),
+        backgroundColor: const Color(0xFF382483),
         foregroundColor: Colors.white,
         title: Text(isAr ? 'الهيكل التنظيمي' : 'Organization Chart'),
         actions: [
@@ -151,7 +151,7 @@ class _HierarchyTreeScreenState extends State<HierarchyTreeScreen> {
                                   Icons.business,
                                   isAr ? 'الشركة' : 'Company',
                                   _data?['company_name'] ?? '',
-                                  Colors.deepPurple,
+                                  Color(0xFF1A0A3E),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -254,19 +254,19 @@ class _HierarchyTreeScreenState extends State<HierarchyTreeScreen> {
     final cardColor = isOwner
         ? Colors.amber.shade50
         : isManager
-            ? const Color(0xFFEDE7F6)
+            ? const Color(0xFFEDEAF7)
             : Colors.grey.shade50;
 
     final borderColor = isOwner
         ? Colors.amber.shade300
         : isManager
-            ? Colors.deepPurple.shade200
+            ? Color(0xFFB8AEE3)
             : Colors.grey.shade300;
 
     final iconColor = isOwner
         ? Colors.amber.shade700
         : isManager
-            ? Colors.deepPurple
+            ? Color(0xFF1A0A3E)
             : Colors.blueGrey;
 
     return Padding(
@@ -347,7 +347,7 @@ class _HierarchyTreeScreenState extends State<HierarchyTreeScreen> {
                           if (isOwner)
                             _badge(isAr ? 'صاحب الشركة' : 'Owner', Colors.amber.shade700),
                           if (!isOwner && isManager)
-                            _badge(isAr ? 'مدير' : 'Manager', Colors.deepPurple),
+                            _badge(isAr ? 'مدير' : 'Manager', Color(0xFF1A0A3E)),
                         ],
                       ),
                       const SizedBox(height: 2),

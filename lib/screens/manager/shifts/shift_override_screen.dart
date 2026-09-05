@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/shifts_service.dart';
 import '../../../services/employee_management_service.dart';
 
-const Color kOverrideColor = Color(0xFF6A1B9A);
+const Color kOverrideColor = Color(0xFF382483);
 
 class ShiftOverrideScreen extends StatefulWidget {
   const ShiftOverrideScreen({super.key});

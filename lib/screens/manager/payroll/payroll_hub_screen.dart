@@ -19,7 +19,7 @@ Widget build(BuildContext context) {
     child: Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.payroll),
-        backgroundColor: const Color(0xFF6A1B9A),
+        backgroundColor: const Color(0xFF382483),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -53,7 +53,7 @@ Widget build(BuildContext context) {
             context: context,
             isAr: isAr,
             icon: Icons.play_circle_outline,
-            color: Colors.purple,
+            color: Color(0xFF382483),
             title: isAr ? 'تشغيل الرواتب' : 'Payroll Runs',
             subtitle: isAr
                 ? 'إنشاء واعتماد وقفل مسيرات الرواتب'
@@ -75,7 +75,7 @@ Widget build(BuildContext context) {
             context: context,
             isAr: isAr,
             icon: Icons.policy,
-            color: const Color(0xFF1565C0),
+            color: const Color(0xFF00C688),
             title: isAr ? 'السياسات العامة' : 'Company Policies',
             subtitle: isAr
                 ? 'بدلات وخصومات ومكافآت للشركة / فرع / إدارة'

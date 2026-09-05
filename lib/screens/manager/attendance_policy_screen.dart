@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/attendance_policy_service.dart';
 import '../../services/employee_management_service.dart';
 
-const Color kPolicyColor = Color(0xFF1565C0);
+const Color kPolicyColor = Color(0xFF00C688);
 
 // ═══════════════════════════════════════
 // شاشة قائمة السياسات
@@ -83,7 +83,7 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
   Color _statusColor(String s) {
     switch (s) {
       case 'active': return Colors.green;
-      case 'approved': return Colors.blue;
+      case 'approved': return Color(0xFF382483);
       case 'archived': return Colors.grey;
       default: return Colors.orange;
     }
@@ -179,7 +179,7 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
                 isAr
                   ? '🎫 أذونات: ${policy['permission_monthly_hours']}س'
                   : '🎫 Perms: ${policy['permission_monthly_hours']}h',
-                Colors.teal,
+                Color(0xFF00C688),
               ),
           ]),
           if (assignments.isNotEmpty) ...[
@@ -211,7 +211,7 @@ class _AttendancePolicyScreenState extends State<AttendancePolicyScreen> {
             TextButton.icon(onPressed: () => _showAssignDialog(policy),
                 icon: const Icon(Icons.link, size: 16),
                 label: Text(isAr ? 'ربط' : 'Assign'),
-                style: TextButton.styleFrom(foregroundColor: Colors.teal)),
+                style: TextButton.styleFrom(foregroundColor: Color(0xFF00C688))),
             const Spacer(),
             if (status == 'draft')
               ElevatedButton(onPressed: () => _approve(policy),

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../services/auth_storage_service.dart';
 import 'create_announcement_screen.dart';
 
-const _kColor = Color(0xFF6C63FF);
+const _kColor = Color(0xFF5A43B5);
 const _kBase = 'https://jssolutions-eg.com';
 
 class ManagerAnnouncementsScreen extends StatefulWidget {
@@ -492,7 +492,7 @@ class _ManagerAnnouncementsScreenState
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: Color(0xFF382483).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -502,7 +502,7 @@ class _ManagerAnnouncementsScreenState
                         .toString(),
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Colors.blue,
+                      color: Color(0xFF382483),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

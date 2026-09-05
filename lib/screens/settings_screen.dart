@@ -113,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             isAr ? 'الإعدادات' : 'Settings',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF1976D2),
+          backgroundColor: const Color(0xFF1A0A3E),
           foregroundColor: Colors.white,
           bottom: TabBar(
             controller: _tabController,
@@ -155,7 +155,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       children: [
         _sectionCard(
           icon: Icons.language,
-          color: const Color(0xFF1976D2),
+          color: const Color(0xFF1A0A3E),
           title: isAr ? 'اللغة' : 'Language',
           subtitle: isAr ? 'اختر لغة التطبيق' : 'Choose app language',
           child: Column(
@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 value: 'ar',
                 groupValue: _currentLang,
                 onChanged: (v) => _changeLang(v!),
-                activeColor: const Color(0xFF1976D2),
+                activeColor: const Color(0xFF1A0A3E),
                 title: Row(
                   children: [
                     const Text('🇸🇦', style: TextStyle(fontSize: 20)),
@@ -178,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 value: 'en',
                 groupValue: _currentLang,
                 onChanged: (v) => _changeLang(v!),
-                activeColor: const Color(0xFF1976D2),
+                activeColor: const Color(0xFF1A0A3E),
                 title: Row(
                   children: [
                     const Text('🇬🇧', style: TextStyle(fontSize: 20)),
@@ -194,14 +194,14 @@ class _SettingsScreenState extends State<SettingsScreen>
         const SizedBox(height: 16),
         _sectionCard(
           icon: Icons.info,
-          color: Colors.purple,
+          color: Color(0xFF382483),
           title: isAr ? 'حول التطبيق' : 'About',
           subtitle: 'MotionHR v1.0.0',
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Row(
               children: [
-                Icon(Icons.verified, color: Colors.purple[300], size: 16),
+                Icon(Icons.verified, color: Color(0xFF9B8BD9), size: 16),
                 const SizedBox(width: 8),
                 Text(
                   isAr
@@ -225,7 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       children: [
         _sectionCard(
           icon: Icons.lock,
-          color: const Color(0xFF1976D2),
+          color: const Color(0xFF1A0A3E),
           title: isAr ? 'تغيير كلمة المرور' : 'Change Password',
           subtitle: isAr
               ? 'استخدم كلمة مرور قوية لحماية حسابك'
@@ -288,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       isAr ? 'تغيير كلمة المرور' : 'Update Password',
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1976D2),
+                      backgroundColor: const Color(0xFF1A0A3E),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
@@ -311,7 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         // الثيم
         _sectionCard(
           icon: Icons.palette,
-          color: Colors.deepPurple,
+          color: Color(0xFF1A0A3E),
           title: isAr ? 'المظهر' : 'Theme',
           subtitle: isAr ? 'اختر مظهر التطبيق' : 'Choose app theme',
           child: Padding(
@@ -322,10 +322,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                     isAr ? 'فاتح' : 'Light', Colors.amber),
                 const SizedBox(width: 8),
                 _themeBtn('dark', Icons.nights_stay,
-                    isAr ? 'داكن' : 'Dark', Colors.indigo),
+                    isAr ? 'داكن' : 'Dark', Color(0xFF1A0A3E)),
                 const SizedBox(width: 8),
                 _themeBtn('system', Icons.phone_android,
-                    isAr ? 'النظام' : 'System', Colors.teal),
+                    isAr ? 'النظام' : 'System', Color(0xFF00C688)),
               ],
             ),
           ),
@@ -377,7 +377,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             icon: const Icon(Icons.save),
             label: Text(isAr ? 'حفظ التفضيلات' : 'Save Preferences'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: Color(0xFF1A0A3E),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),

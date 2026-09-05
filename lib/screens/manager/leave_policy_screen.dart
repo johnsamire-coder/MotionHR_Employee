@@ -46,7 +46,7 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal, foregroundColor: Colors.white),
+                  backgroundColor: Color(0xFF00C688), foregroundColor: Colors.white),
               child: Text(isAr ? 'تطبيق الآن' : 'Apply Now'),
             ),
           ],
@@ -65,7 +65,7 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
           content: Text(isAr
               ? 'تم التطبيق: ${result['created_balances']} رصيد جديد، ${result['updated_balances']} تحديث'
               : 'Applied: ${result['created_balances']} new, ${result['updated_balances']} updated'),
-          backgroundColor: Colors.teal,
+          backgroundColor: Color(0xFF00C688),
           duration: const Duration(seconds: 5),
         ));
         _load();
@@ -197,7 +197,7 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
             FloatingActionButton.extended(
               heroTag: 'apply_policy',
               onPressed: _showApplyPolicyDialog,
-              backgroundColor: Colors.teal,
+              backgroundColor: Color(0xFF00C688),
               icon: const Icon(Icons.people, color: Colors.white),
               label: Text(isAr ? 'تطبيق على الحاليين' : 'Apply to Existing',
                   style: const TextStyle(color: Colors.white)),
@@ -259,12 +259,12 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
           const SizedBox(height: 6),
           Wrap(spacing: 6, runSpacing: 4, children: [
             if (tiers.isNotEmpty)
-              _chip('${tiers.length} ${isAr ? 'شريحة خدمة' : 'tiers'}', Colors.blue),
+              _chip('${tiers.length} ${isAr ? 'شريحة خدمة' : 'tiers'}', Color(0xFF382483)),
             if (enabledRules > 0)
-              _chip('$enabledRules ${isAr ? 'نوع إجازة' : 'leave types'}', Colors.teal),
+              _chip('$enabledRules ${isAr ? 'نوع إجازة' : 'leave types'}', Color(0xFF00C688)),
             _chip(
               '${isAr ? 'تجربة' : 'Probation'}: ${policy['probation_months']} ${isAr ? 'شهر' : 'mo'}',
-              Colors.purple,
+              Color(0xFF382483),
             ),
           ]),
           const Divider(height: 16),
@@ -287,7 +287,7 @@ class _LeavePolicyScreenState extends State<LeavePolicyScreen> {
               },
               icon: const Icon(Icons.account_balance_wallet, size: 16),
               label: Text(isAr ? 'الأرصدة' : 'Balances'),
-              style: TextButton.styleFrom(foregroundColor: Colors.teal),
+              style: TextButton.styleFrom(foregroundColor: Color(0xFF00C688)),
             ),
             TextButton.icon(
               onPressed: () async {
@@ -717,12 +717,12 @@ class _LeaveBalanceAdjustmentScreenState
         appBar: AppBar(
           title: Text(isAr ? 'تعديل أرصدة الإجازات' : 'Leave Balance Adjustments',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.teal,
+          backgroundColor: Color(0xFF00C688),
           foregroundColor: Colors.white,
           actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _load)],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C688)))
             : _error != null
                 ? Center(child: Text(_error!))
                 : _adjustments.isEmpty
@@ -767,7 +767,7 @@ class _LeaveBalanceAdjustmentScreenState
                       ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _showAddDialog,
-          backgroundColor: Colors.teal,
+          backgroundColor: Color(0xFF00C688),
           icon: const Icon(Icons.add, color: Colors.white),
           label: Text(isAr ? 'تعديل جديد' : 'New Adjustment',
               style: const TextStyle(color: Colors.white)),
@@ -875,7 +875,7 @@ class _LeaveBalanceAdjustmentScreenState
                 }
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal, foregroundColor: Colors.white),
+                  backgroundColor: Color(0xFF00C688), foregroundColor: Colors.white),
               child: Text(isAr ? 'حفظ' : 'Save'),
             ),
           ],

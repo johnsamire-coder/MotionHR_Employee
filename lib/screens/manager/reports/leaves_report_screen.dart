@@ -25,7 +25,7 @@ class _LeavesReportScreenState extends State<LeavesReportScreen> {
 
   bool get _isAr => Localizations.localeOf(context).languageCode == 'ar';
 
-  static const _color = Color(0xFF00695C);
+  static const _color = Color(0xFF008A60);
 
   @override
   void initState() {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/flex_adjustment_service.dart';
 
-const Color kFlexColor = Color(0xFF1565C0);
+const Color kFlexColor = Color(0xFF00C688);
 
 class FlexAdjustmentsScreen extends StatefulWidget {
   const FlexAdjustmentsScreen({super.key});
@@ -286,13 +286,13 @@ class _FlexAdjustmentsScreenState extends State<FlexAdjustmentsScreen>
                 _statChip(
                   isAr ? 'المطلوب' : 'Required',
                   '${adj['required_hours']}h',
-                  Colors.blue,
+                  Color(0xFF382483),
                 ),
                 const SizedBox(width: 8),
                 _statChip(
                   isAr ? 'الفعلي' : 'Actual',
                   '${adj['actual_hours']}h',
-                  Colors.teal,
+                  Color(0xFF00C688),
                 ),
                 const SizedBox(width: 8),
                 _statChip(

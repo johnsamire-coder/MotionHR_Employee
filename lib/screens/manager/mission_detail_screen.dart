@@ -31,18 +31,18 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   bool _locationsLoading = false;
 
   final Map<String, Color> _statusColors = {
-    'approved': Colors.blue,
+    'approved': Color(0xFF382483),
     'in_progress': Colors.orange,
     'completed': Colors.green,
     'cancelled': Colors.red,
-    'pending_approval': Colors.purple,
+    'pending_approval': Color(0xFF382483),
     'draft': Colors.grey,
   };
 
   final Map<String, Color> _priorityColors = {
     'urgent': Colors.red,
     'high': Colors.orange,
-    'normal': Colors.blue,
+    'normal': Color(0xFF382483),
   };
 
   @override
@@ -100,7 +100,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
             _mission?['title'] ?? context.l10n.missionDetails,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
@@ -127,7 +127,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           ],
         ),
         body: _loading
-            ? Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+            ? Center(child: CircularProgressIndicator(color: Color(0xFF382483)))
             : _error != null
                 ? _buildError()
                 : _mission == null
@@ -142,7 +142,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     final status = mission['status'] ?? '';
     final priority = mission['priority'] ?? 'normal';
     final statusColor = _statusColors[status] ?? Colors.grey;
-    final priorityColor = _priorityColors[priority] ?? Colors.blue;
+    final priorityColor = _priorityColors[priority] ?? Color(0xFF382483);
     final assignments = mission['assignments'] as List? ?? [];
 
     return RefreshIndicator(
@@ -159,7 +159,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF6C3FC5), const Color(0xFF9B6FE8)],
+                  colors: [const Color(0xFF382483), const Color(0xFF7963CB)],
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
                 ),
@@ -273,14 +273,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.group, color: Color(0xFF6C3FC5)),
+                        Icon(Icons.group, color: Color(0xFF382483)),
                         SizedBox(width: 8),
                         Text(
                           'المشاركون (${assignments.length})',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: Color(0xFF6C3FC5),
+                            color: Color(0xFF382483),
                           ),
                         ),
                       ],
@@ -306,14 +306,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.map, color: Color(0xFF6C3FC5)),
+                        Icon(Icons.map, color: Color(0xFF382483)),
                         SizedBox(width: 8),
                         Text(
                           'مواقع الموظف',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: Color(0xFF6C3FC5),
+                            color: Color(0xFF382483),
                           ),
                         ),
                       ],
@@ -330,11 +330,11 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 14,
-                                backgroundColor: Color(0xFF6C3FC5).withOpacity(0.15),
+                                backgroundColor: Color(0xFF382483).withOpacity(0.15),
                                 child: Text(
                                   (a['employee_name'] ?? '?')[0],
                                   style: TextStyle(
-                                    color: Color(0xFF6C3FC5),
+                                    color: Color(0xFF382483),
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -367,7 +367,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                                     style: TextStyle(fontSize: 12),
                                   ),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Color(0xFF6C3FC5),
+                                    foregroundColor: Color(0xFF382483),
                                   ),
                                 ),
                             ],
@@ -408,7 +408,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                                                       double.tryParse(loc['lat'].toString()) ?? 0,
                                                       double.tryParse(loc['lng'].toString()) ?? 0,
                                                     )).toList(),
-                                                    color: Color(0xFF6C3FC5),
+                                                    color: Color(0xFF382483),
                                                     strokeWidth: 3,
                                                   ),
                                                 ],
@@ -436,7 +436,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                                                           ? Colors.green
                                                           : isLast
                                                               ? Colors.red
-                                                              : Color(0xFF6C3FC5),
+                                                              : Color(0xFF382483),
                                                       size: isFirst || isLast ? 28 : 16,
                                                     ),
                                                   );
@@ -479,14 +479,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.settings, color: Color(0xFF6C3FC5)),
+                        Icon(Icons.settings, color: Color(0xFF382483)),
                         SizedBox(width: 8),
                         Text(
                           'إجراءات المدير',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: Color(0xFF6C3FC5),
+                            color: Color(0xFF382483),
                           ),
                         ),
                       ],
@@ -498,7 +498,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         icon: const Icon(Icons.edit),
                         label: Text(isAr ? 'تعديل المهمة' : 'Edit Mission'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6C3FC5),
+                          backgroundColor: const Color(0xFF382483),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -513,7 +513,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         icon: Icon(Icons.swap_horiz),
                         label: Text('استبدال موظف'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF6C3FC5),
+                          foregroundColor: const Color(0xFF382483),
                         ),
                       ),
                     ),
@@ -556,7 +556,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
-                leading: Icon(Icons.feedback, color: Color(0xFF6C3FC5)),
+                leading: Icon(Icons.feedback, color: Color(0xFF382483)),
                 title: Text('فيدباك الزيارة متاح'),
                 subtitle: Text('اضغط لعرض التفاصيل'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
@@ -586,14 +586,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFF6C3FC5), size: 20),
+                Icon(icon, color: const Color(0xFF382483), size: 20),
                 SizedBox(width: 8),
                 Text(
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
-                    color: Color(0xFF6C3FC5),
+                    color: Color(0xFF382483),
                   ),
                 ),
               ],
@@ -628,7 +628,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     final status = a['status'] ?? '';
     final statusColors = {
       'pending': Colors.grey,
-      'accepted': Colors.blue,
+      'accepted': Color(0xFF382483),
       'in_progress': Colors.orange,
       'completed': Colors.green,
       'rejected': Colors.red,
@@ -640,10 +640,10 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF6C3FC5).withOpacity(0.15),
+            backgroundColor: const Color(0xFF382483).withOpacity(0.15),
             child: Text(
               (a['employee_name'] ?? '?')[0],
-              style: const TextStyle(color: Color(0xFF6C3FC5), fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Color(0xFF382483), fontWeight: FontWeight.bold),
             ),
           ),
           SizedBox(width: 10),
@@ -1002,7 +1002,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                       icon: const Icon(Icons.save),
                       label: Text(isAr ? 'حفظ التعديلات' : 'Save Changes'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C3FC5),
+                        backgroundColor: const Color(0xFF382483),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -1147,7 +1147,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                           if (result['success'] == true) _loadMission();
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C3FC5),
+                    backgroundColor: const Color(0xFF382483),
                   ),
                   child: Text('تأكيد الاستبدال',
                       style: TextStyle(color: Colors.white)),

@@ -105,7 +105,7 @@ class _PermissionsOverridesScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'استثناءات المستخدمين' : 'User Overrides'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       body: RefreshIndicator(
@@ -414,7 +414,7 @@ class _UserOverrideCheckboxScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text('$name'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
         actions: [
           TextButton(
@@ -505,7 +505,7 @@ class _UserOverrideCheckboxScreenState
                               children: [
                                 CheckboxListTile(
                                   value: isSelected,
-                                  activeColor: const Color(0xFF4A148C),
+                                  activeColor: const Color(0xFF1A0A3E),
                                   title: Text(
                                     label,
                                     style: const TextStyle(

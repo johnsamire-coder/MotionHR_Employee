@@ -182,7 +182,7 @@ class _MyWorkLocationsScreenState extends State<MyWorkLocationsScreen> {
       case 'suspended':
         return Colors.brown;
       default:
-        return Colors.blue;
+        return Color(0xFF382483);
     }
   }
 
@@ -204,7 +204,7 @@ class _MyWorkLocationsScreenState extends State<MyWorkLocationsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'مواقع عملي' : 'My Work Locations'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
@@ -261,7 +261,7 @@ class _MyWorkLocationsScreenState extends State<MyWorkLocationsScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _processing ? null : _proposeNewLocation,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Color(0xFF1A0A3E),
         icon: const Icon(Icons.add_location, color: Colors.white),
         label: Text(
           isAr ? 'اقتراح موقع' : 'Propose',
@@ -282,7 +282,7 @@ class _MyWorkLocationsScreenState extends State<MyWorkLocationsScreen> {
           setState(() => _filter = value);
           _load();
         },
-        selectedColor: Colors.deepPurple,
+        selectedColor: Color(0xFF1A0A3E),
         labelStyle: TextStyle(
           color: selected ? Colors.white : Colors.black,
         ),
@@ -487,7 +487,7 @@ class _ProposeLocationDialogState extends State<_ProposeLocationDialog> {
               ),
               value: _useCurrentLocation,
               onChanged: (v) => setState(() => _useCurrentLocation = v),
-              activeColor: Colors.deepPurple,
+              activeColor: Color(0xFF1A0A3E),
               contentPadding: EdgeInsets.zero,
             ),
           ],
@@ -519,7 +519,7 @@ class _ProposeLocationDialogState extends State<_ProposeLocationDialog> {
               'use_current_location': _useCurrentLocation,
             });
           },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
+          style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF1A0A3E)),
           child: Text(isAr ? 'اقتراح' : 'Propose',
               style: const TextStyle(color: Colors.white)),
         ),

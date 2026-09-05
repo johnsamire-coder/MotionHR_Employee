@@ -77,7 +77,7 @@ const String kBaseUrl = 'https://jssolutions-eg.com';
 
 // NavigatorKey للـ deep navigation من الإشعارات
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-const Color kPrimaryColor = Color(0xFF1A0A3E);
+const Color kPrimaryColor = Color(0xFF1976D2);
 
 String formatTime24h(dynamic raw) {
   final text = (raw ?? '').toString().trim();
@@ -133,9 +133,9 @@ String formatTime12h(dynamic raw) {
   return '${hour.toString().padLeft(2, '0')}:$minute $period';
 }
 
-const Color kPrimaryDark = Color(0xFF382483);
-const Color kAccentColor = Color(0xFF00C688);
-const Color kManagerColor = Color(0xFF382483);
+const Color kPrimaryDark = Color(0xFF0D47A1);
+const Color kAccentColor = Color(0xFF42A5F5);
+const Color kManagerColor = Color(0xFF6A1B9A);
 
 final FlutterLocalNotificationsPlugin _localNotif =
     FlutterLocalNotificationsPlugin();
@@ -612,7 +612,7 @@ class _MotionHRAppState extends State<MotionHRApp> {
           navigatorKey: navigatorKey,
           title: 'MotionHR',
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(primarySwatch: Colors.deepPurple, fontFamily: 'Arial'),
+          theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Arial'),
           themeMode: themeMode,
           locale: locale,
           supportedLocales: const [
@@ -1979,6 +1979,12 @@ class _EmployeeShellState extends State<EmployeeShell> {
                   MaterialPageRoute(builder: (_) => const EmployeeProfileScreen())),
             ),
             IconButton(
+              icon: const Icon(Icons.lock),
+              tooltip: context.l10n.changePassword,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
+            ),
+            IconButton(
               icon: const Icon(Icons.settings),
               tooltip: context.l10n.settings,
               onPressed: () => Navigator.push(context,
@@ -2499,7 +2505,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                       : Icons.wb_sunny,
                   size: 60,
                   color:
-                      _isEveningMessage ? Color(0xFF1A0A3E) : Colors.orange),
+                      _isEveningMessage ? Colors.indigo : Colors.orange),
               const SizedBox(height: 16),
               Text(
                 _isEveningMessage
@@ -2509,7 +2515,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: _isEveningMessage
-                        ? Color(0xFF1A0A3E)
+                        ? Colors.indigo
                         : Colors.orange),
               ),
               const SizedBox(height: 12),
@@ -2642,12 +2648,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Color(0xFF382483).withValues(alpha: 0.08),
+                  color: Colors.blue.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Color(0xFF382483).withValues(alpha: 0.2)),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
                 ),
                 child: Row(children: [
-                  const Icon(Icons.location_on, color: Color(0xFF382483)),
+                  const Icon(Icons.location_on, color: Colors.blue),
                   const SizedBox(width: 8),
                   Expanded(child: Text(locationName, style: const TextStyle(fontWeight: FontWeight.w600))),
                 ]),
@@ -2692,7 +2698,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 'notes': notesCtrl.text.trim(),
               });
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF382483), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
             child: Text(isAr ? 'حفظ' : 'Save'),
           ),
         ],
@@ -3134,12 +3140,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color:
-                    canCheckOut ? Colors.green[50] : Color(0xFFEDEAF7),
+                    canCheckOut ? Colors.green[50] : Colors.blue[50],
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                     color: canCheckOut
                         ? Colors.green[200]!
-                        : Color(0xFFB8AEE3)),
+                        : Colors.blue[200]!),
               ),
               child: Column(children: [
                 Row(children: [
@@ -3405,7 +3411,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF00C688),
+                    backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
@@ -3416,19 +3422,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Color(0xFF00C688).withValues(alpha: 0.08),
+                  color: Colors.teal.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Color(0xFF00C688).withValues(alpha: 0.2)),
+                  border: Border.all(color: Colors.teal.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.schedule, color: Color(0xFF00C688), size: 18),
+                    const Icon(Icons.schedule, color: Colors.teal, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       isAr
                           ? 'عدد فترات العمل اليوم: $sessionsToday'
                           : 'Work sessions today: $sessionsToday',
-                      style: const TextStyle(color: Color(0xFF00C688), fontSize: 13),
+                      style: const TextStyle(color: Colors.teal, fontSize: 13),
                     ),
                   ],
                 ),
@@ -3485,7 +3491,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF382483),
+                    backgroundColor: Colors.deepPurple,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12))),
@@ -3504,7 +3510,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00C688),
+                    backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12))),
@@ -3841,7 +3847,7 @@ class _LeavesScreenState extends State<LeavesScreen>
               _balanceBox(
                 isAr ? 'المتاح' : 'Total',
                 '${(monthlyMinutes / 60).toStringAsFixed(1)}h',
-                Color(0xFF382483),
+                Colors.blue,
               ),
               const SizedBox(width: 8),
               _balanceBox(
@@ -5141,9 +5147,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (type.contains('rejected')) return Colors.red;
     if (type.contains('geofence')) return Colors.orange;
     if (type == 'reminder_checkin_manager') return Colors.orange;
-    if (type == 'work_location_proposed') return Color(0xFF1A0A3E);
-    if (type.contains('new_')) return Color(0xFF382483);
-    if (type.contains('attendance')) return Color(0xFF00C688);
+    if (type == 'work_location_proposed') return Colors.indigo;
+    if (type.contains('new_')) return Colors.blue;
+    if (type.contains('attendance')) return Colors.teal;
     if (type.contains('charter')) return kManagerColor;
     return Colors.grey;
   }
@@ -5228,7 +5234,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   horizontal: 12, vertical: 4),
                               color: isRead
                                   ? Colors.white
-                                  : Color(0xFFEDEAF7),
+                                  : Colors.blue[50],
                               elevation: isRead ? 1 : 3,
                               child: ListTile(
                                 leading: CircleAvatar(
@@ -5530,13 +5536,13 @@ class _CharterScreenState extends State<CharterScreen> {
                                           padding:
                                               const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                              color: Color(0xFFEDEAF7),
+                                              color: Colors.blue[50],
                                               borderRadius:
                                                   BorderRadius.circular(
                                                       10),
                                               border: Border.all(
                                                   color:
-                                                      Color(0xFFB8AEE3))),
+                                                      Colors.blue[200]!)),
                                           child: Text(
                                               _charter!['introduction'],
                                               style: const TextStyle(
@@ -5970,15 +5976,15 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Color(0xFFEDEAF7),
+                    color: Colors.purple[50],
                     borderRadius: BorderRadius.circular(10),
                     border:
-                        Border.all(color: Color(0xFFB8AEE3)),
+                        Border.all(color: Colors.purple[200]!),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.attach_file,
-                          color: Color(0xFF382483)),
+                          color: Colors.purple[700]),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -5988,12 +5994,12 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                                   ? 'الملف المرفق'
                                   : 'Attached file'),
                           style: TextStyle(
-                              color: Color(0xFF382483)),
+                              color: Colors.purple[700]),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Icon(Icons.open_in_new,
-                          color: Color(0xFF382483), size: 18),
+                          color: Colors.purple[700], size: 18),
                     ],
                   ),
                 ),
@@ -6029,7 +6035,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                         ? 'تقرير الموافقات'
                         : 'Approvals Report'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF00C688),
+                      backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(0, 48),
                       shape: RoundedRectangleBorder(
@@ -6208,12 +6214,12 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
       decoration: BoxDecoration(
         color: _removeCurrentAttachment
             ? Colors.red[50]
-            : Color(0xFFEDEAF7),
+            : Colors.purple[50],
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: _removeCurrentAttachment
               ? Colors.red[200]!
-              : Color(0xFFB8AEE3),
+              : Colors.purple[200]!,
         ),
       ),
       child: Column(
@@ -6224,7 +6230,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                 Icons.attach_file,
                 color: _removeCurrentAttachment
                     ? Colors.red
-                    : Color(0xFF382483),
+                    : Colors.purple,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -6237,7 +6243,7 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
                     fontWeight: FontWeight.bold,
                     color: _removeCurrentAttachment
                         ? Colors.red
-                        : Color(0xFF382483),
+                        : Colors.purple[700],
                     decoration: _removeCurrentAttachment
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
@@ -6276,9 +6282,9 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Color(0xFFEDEAF7),
+          color: Colors.blue[50],
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Color(0xFFB8AEE3)),
+          border: Border.all(color: Colors.blue[200]!),
         ),
         child: Text(
           isAr
@@ -6329,13 +6335,13 @@ class _ManagerCharterScreenState extends State<ManagerCharterScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Color(0xFFEDEAF7),
+              color: Colors.blue[50],
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Color(0xFFB8AEE3)),
+              border: Border.all(color: Colors.blue[200]!),
             ),
             child: Row(
               children: [
-                const Icon(Icons.info, color: Color(0xFF382483)),
+                const Icon(Icons.info, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -6543,7 +6549,7 @@ class CharterReportScreen extends StatelessWidget {
           appBar: AppBar(
               title: Text(
                   isAr ? 'تقرير الموافقات' : 'Approvals Report'),
-              backgroundColor: Color(0xFF00C688),
+              backgroundColor: Colors.teal,
               foregroundColor: Colors.white),
           body: ListView(padding: const EdgeInsets.all(16), children: [
             Container(
@@ -6551,7 +6557,7 @@ class CharterReportScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [Color(0xFF00C688), kPrimaryColor]),
+                      colors: [Colors.teal, kPrimaryColor]),
                   borderRadius: BorderRadius.circular(12)),
               child: Column(children: [
                 const Icon(Icons.description,
@@ -7013,13 +7019,13 @@ Future<void> _loadGeofence() async {
                     Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                            color: Color(0xFFEDEAF7),
+                            color: Colors.blue[50],
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Color(0xFFB8AEE3))),
+                                color: Colors.blue[200]!)),
                         child: Row(children: [
                           const Icon(Icons.info_outline,
-                              color: Color(0xFF382483)),
+                              color: Colors.blue),
                           const SizedBox(width: 8),
                           Expanded(
                               child: Text(
@@ -7629,7 +7635,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1A0A3E), Color(0xFF382483)],
+                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -7677,7 +7683,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A0A3E),
+              color: Color(0xFF4A148C),
             ),
           ),
           const SizedBox(height: 10),
@@ -7704,7 +7710,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             context: context,
             icon: Icons.location_on,
             title: isAr ? 'المواقع المباشرة' : 'Live Locations',
-            color: const Color(0xFF382483),
+            color: const Color(0xFF7B1FA2),
             badge: _fieldWorkers,
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(
@@ -7714,7 +7720,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             context: context,
             icon: Icons.assignment,
             title: isAr ? 'مهمات الفريق' : 'Team Missions',
-            color: const Color(0xFF382483),
+            color: const Color(0xFF6C3FC5),
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(
                     builder: (_) => const ManagerMissionsScreen())),
@@ -7723,7 +7729,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             context: context,
             icon: Icons.people,
             title: isAr ? 'الموظفين' : 'Employees',
-            color: Color(0xFF1A0A3E),
+            color: Colors.indigo,
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(
                     builder: (_) => const ManagerEmployeesListScreen())),
@@ -7732,7 +7738,7 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             context: context,
             icon: Icons.bar_chart,
             title: isAr ? 'تقارير الفريق' : 'Team Reports',
-            color: Color(0xFF00C688),
+            color: Colors.teal,
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const ReportsHubScreen())),
           ),
@@ -7789,7 +7795,7 @@ class ManagerMyRequestsHubScreen extends StatelessWidget {
           subtitle: isAr
               ? 'قدّم طلب جديد من الأنواع المتاحة'
               : 'Create a new request from available types',
-          color: const Color(0xFF382483),
+          color: const Color(0xFF6C3FC5),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const RequestsScreen()),
@@ -7985,7 +7991,7 @@ class ManagerMoreScreen extends StatelessWidget {
           context,
           icon: Icons.task_alt,
           title: isAr ? 'مهماتي' : 'My Missions',
-          color: const Color(0xFF382483),
+          color: const Color(0xFF6C3FC5),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -8203,7 +8209,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A0A3E),
+              color: Color(0xFF4A148C),
             ),
           ),
           const SizedBox(height: 16),
@@ -8228,8 +8234,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 isAr ? 'ميداني' : 'Field',
                 _fieldWorkers,
                 _present > 0 ? _present : 1,
-                const Color(0xFF382483),
-                const Color(0xFF382483).withValues(alpha: 0.15),
+                const Color(0xFF7B1FA2),
+                const Color(0xFF7B1FA2).withValues(alpha: 0.15),
               ),
             ],
           ),
@@ -8339,9 +8345,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFF1A0A3E),
-                  Color(0xFF382483),
-                  Color(0xFF382483)
+                  Color(0xFF4A148C),
+                  Color(0xFF7B1FA2),
+                  Color(0xFF9C27B0)
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -8461,7 +8467,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A0A3E),
+                color: Color(0xFF4A148C),
               ),
             ),
           ),
@@ -8499,7 +8505,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     isAr ? 'المواقع المباشرة' : 'Live Locations',
                     Icons.location_on,
-                    const Color(0xFF382483),
+                    const Color(0xFF7B1FA2),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8509,7 +8515,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     isAr ? 'مواقع العمل' : 'Work Locations',
                     Icons.map,
-                    Color(0xFF1A0A3E),
+                    Colors.indigo,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8519,7 +8525,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     isAr ? 'الموظفين' : 'Employees',
                     Icons.people,
-                    Color(0xFF1A0A3E),
+                    Colors.indigo,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8538,17 +8544,17 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     isAr ? 'الشيفتات' : 'Shifts',
                     Icons.schedule,
-                    const Color(0xFF00C688),
+                    const Color(0xFF00838F),
                     () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShiftsScreen()))),
                 _gridCard(
                     isAr ? 'الأجهزة المعتمدة' : 'Trusted Devices',
                     Icons.phone_android,
-                    const Color(0xFF1A0A3E),
+                    const Color(0xFF4A148C),
                     () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrustedDevicesScreen()))),
                 _gridCard(
                     context.l10n.missions,
                     Icons.assignment,
-                    const Color(0xFF382483),
+                    const Color(0xFF6C3FC5),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8557,7 +8563,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     context.l10n.announcements,
                     Icons.campaign,
-                    Color(0xFF1A0A3E),
+                    Colors.deepPurple,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8575,7 +8581,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A0A3E),
+                color: Color(0xFF4A148C),
               ),
             ),
           ),
@@ -8594,7 +8600,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                 _gridCard(
                     context.l10n.reports,
                     Icons.analytics,
-                    Color(0xFF00C688),
+                    Colors.teal,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8632,7 +8638,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 _gridCard(
     isAr ? 'تسويات الشيفت المرن' : 'Flex Adjustments',
     Icons.tune,
-    const Color(0xFF00C688),
+    const Color(0xFF1565C0),
     () => Navigator.push(
         context,
         MaterialPageRoute(
@@ -8659,7 +8665,7 @@ _gridCard(
                 _gridCard(
                     isAr ? 'نطاق الجيو' : 'Geofence',
                     Icons.fence,
-                    Color(0xFF00C688),
+                    Colors.cyan,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8677,7 +8683,7 @@ _gridCard(
                 _gridCard(
                     context.l10n.organizationTree,
                     Icons.account_tree,
-                    const Color(0xFF008A60),
+                    const Color(0xFF00695C),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8686,7 +8692,7 @@ _gridCard(
                 _gridCard(
                     isAr ? 'إدارة الأقسام' : 'Departments',
                     Icons.apartment,
-                    const Color(0xFF1A0A3E),
+                    const Color(0xFF0D47A1),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8713,7 +8719,7 @@ _gridCard(
                 _gridCard(
                     isAr ? 'الصلاحيات' : 'Permissions',
                     Icons.admin_panel_settings,
-                    const Color(0xFF382483),
+                    const Color(0xFF1A56DB),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -8731,7 +8737,7 @@ _gridCard(
                 _gridCard(
                     isAr ? 'المسميات الوظيفية' : 'Job Titles',
                     Icons.work,
-                    const Color(0xFF00C688),
+                    const Color(0xFF00838F),
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -9167,7 +9173,7 @@ class _ManagerAttendanceScreenState
             ? 'لم يسجل أي موظف حضور اليوم.\nستظهر السجلات هنا فور تسجيل الحضور.'
             : 'No employee has checked in today.\nRecords will appear here once attendance is registered.',
         icon: Icons.event_busy_outlined,
-        iconColor: const Color(0xFF382483),
+        iconColor: const Color(0xFF6A1B9A),
       );
     }
     return RefreshIndicator(

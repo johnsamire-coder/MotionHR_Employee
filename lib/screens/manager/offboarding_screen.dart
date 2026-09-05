@@ -164,11 +164,11 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
                                 ),
                                 child: ListTile(
                                   leading: CircleAvatar(
-                                    backgroundColor: const Color(0xFF4A148C)
+                                    backgroundColor: const Color(0xFF1A0A3E)
                                         .withValues(alpha: 0.1),
                                     child: const Icon(
                                       Icons.person,
-                                      color: Color(0xFF4A148C),
+                                      color: Color(0xFF1A0A3E),
                                     ),
                                   ),
                                   title: Text(
@@ -220,10 +220,10 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
+                      color: const Color(0xFFEDEAF7),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF4A148C).withValues(alpha: 0.3),
+                        color: const Color(0xFF1A0A3E).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -233,7 +233,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
                           children: [
                             const Icon(
                               Icons.person,
-                              color: Color(0xFF4A148C),
+                              color: Color(0xFF1A0A3E),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -384,9 +384,9 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
       case 'terminated':
         return Colors.red;
       case 'suspended':
-        return Colors.purple;
+        return Color(0xFF382483);
       case 'retired':
-        return Colors.blue;
+        return Color(0xFF382483);
       default:
         return Colors.grey;
     }
@@ -399,7 +399,7 @@ class _OffboardingScreenState extends State<OffboardingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'إنهاء الخدمة' : 'Offboarding'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton(

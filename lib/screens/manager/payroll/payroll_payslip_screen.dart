@@ -138,7 +138,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
             pw.Container(
               padding: const pw.EdgeInsets.all(20),
               decoration: pw.BoxDecoration(
-                color: const PdfColor.fromInt(0xFF1565C0),
+                color: const PdfColor.fromInt(0xFF00C688),
                 borderRadius: pw.BorderRadius.circular(12),
               ),
               child: pw.Column(
@@ -237,7 +237,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                     style: pw.TextStyle(
                       font: bold,
                       fontSize: 13,
-                      color: const PdfColor.fromInt(0xFF1565C0),
+                      color: const PdfColor.fromInt(0xFF00C688),
                     ),
                   ),
                   pw.SizedBox(height: 8),
@@ -611,7 +611,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.blue[800]!, Colors.blue[600]!],
+                            colors: [Color(0xFF2C1B69), Color(0xFF4A389E)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -670,7 +670,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                                   _attendStat(
                                       ar ? 'ايام العمل' : 'Work Days',
                                       '$workDays',
-                                      Colors.blue),
+                                      Color(0xFF382483)),
                                   _attendStat(ar ? 'الحضور' : 'Present',
                                       '$presentDays', Colors.green),
                                   _attendStat(ar ? 'الغياب' : 'Absent',
@@ -697,15 +697,15 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           if (nightAllowance > 0)
                             _buildRow(ar ? 'بدل ليلي' : 'Night Allowance',
                                 nightAllowance, ar,
-                                color: Colors.indigo),
+                                color: Color(0xFF1A0A3E)),
                           if (weekendAllowance > 0)
                             _buildRow(ar ? 'بدل يوم الراحة' : 'Weekend Allowance',
                                 weekendAllowance, ar,
-                                color: Colors.deepPurple),
+                                color: Color(0xFF1A0A3E)),
                           const Divider(),
                           _buildRow(ar ? 'الاجمالي' : 'Gross Salary',
                               grossSalary, ar,
-                              bold: true, color: Colors.blue[700]),
+                              bold: true, color: Color(0xFF382483)),
                         ],
                         Colors.green,
                       ),
@@ -715,13 +715,13 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.teal.shade50,
+                            color: Color(0xFFE0FAF2),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.teal.shade200),
+                            border: Border.all(color: Color(0xFF7DEAC8)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.policy, color: Colors.teal, size: 20),
+                              const Icon(Icons.policy, color: Color(0xFF00C688), size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
@@ -729,7 +729,7 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                                   children: [
                                     Text(
                                       ar ? 'السياسة المطبقة' : 'Applied Policy',
-                                      style: const TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.w500),
+                                      style: const TextStyle(fontSize: 11, color: Color(0xFF00C688), fontWeight: FontWeight.w500),
                                     ),
                                     Text(
                                       policyName,
@@ -745,12 +745,12 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                                     if (nightShiftDays > 0)
                                       Text(
                                         '${ar ? "ليلي" : "Night"}: $nightShiftDays',
-                                        style: const TextStyle(fontSize: 11, color: Colors.indigo),
+                                        style: const TextStyle(fontSize: 11, color: Color(0xFF1A0A3E)),
                                       ),
                                     if (weekendWorkDays > 0)
                                       Text(
                                         '${ar ? "راحة" : "Weekend"}: $weekendWorkDays',
-                                        style: const TextStyle(fontSize: 11, color: Colors.deepPurple),
+                                        style: const TextStyle(fontSize: 11, color: Color(0xFF1A0A3E)),
                                       ),
                                   ],
                                 ),
@@ -777,22 +777,22 @@ class _PayrollPayslipScreenState extends State<PayrollPayslipScreen> {
                               color: Colors.red),
                           _buildRow(ar ? 'ضريبة' : 'Tax',
                               taxDeduction, ar,
-                              color: Colors.indigo),
+                              color: Color(0xFF1A0A3E)),
                           if (socialInsEmp > 0)
                             _buildRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0627\u062c\u062a\u0645\u0627\u0639\u064a' : 'Social Insurance',
                                 socialInsEmp, ar,
-                                color: Colors.purple),
+                                color: Color(0xFF382483)),
                           if (medicalInsEmp > 0)
                             _buildRow(ar ? '\u062a\u0623\u0645\u064a\u0646 \u0637\u0628\u064a' : 'Medical Insurance',
                                 medicalInsEmp, ar,
-                                color: Colors.purple),
+                                color: Color(0xFF382483)),
                           if (insuranceDeduction > 0 && socialInsEmp == 0 && medicalInsEmp == 0)
                             _buildRow(ar ? '\u062a\u0627\u0645\u064a\u0646' : 'Insurance',
                                 insuranceDeduction, ar,
-                                color: Colors.purple),
+                                color: Color(0xFF382483)),
                           _buildRow(ar ? 'تامين' : 'Insurance',
                               insuranceDeduction, ar,
-                              color: Colors.purple),
+                              color: Color(0xFF382483)),
                           _buildRow(ar ? 'جزاءات' : 'Penalties',
                               penaltyDeduction, ar,
                               color: Colors.red),

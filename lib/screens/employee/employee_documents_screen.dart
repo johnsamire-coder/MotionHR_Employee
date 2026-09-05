@@ -87,7 +87,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
   Color _statusColor(Map<String, dynamic> doc) {
     if (doc['is_expired'] == true) return Colors.red;
     if (doc['expires_soon'] == true) return Colors.orange;
-    return const Color(0xFF1976D2);
+    return const Color(0xFF1A0A3E);
   }
 
   String? _statusLabel(Map<String, dynamic> doc) {

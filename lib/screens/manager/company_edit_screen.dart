@@ -199,7 +199,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           title: Text(isAr ? 'تعديل بيانات الشركة' : isAr ? 'تعديل بيانات الشركة' : 'Edit Company Info'),
-          backgroundColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           actions: [
             if (_saving)
@@ -240,7 +240,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF6A1B9A),
+                            color: const Color(0xFF382483),
                             width: 2,
                           ),
                           boxShadow: [
@@ -260,13 +260,13 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
                                       errorBuilder: (_, __, ___) => const Icon(
                                         Icons.business,
                                         size: 50,
-                                        color: Color(0xFF6A1B9A),
+                                        color: Color(0xFF382483),
                                       ),
                                     )
                                   : const Icon(
                                       Icons.business,
                                       size: 50,
-                                      color: Color(0xFF6A1B9A),
+                                      color: Color(0xFF382483),
                                     ),
                         ),
                       ),
@@ -293,7 +293,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
                                   icon: const Icon(Icons.upload, size: 16),
                                   label: Text(isAr ? 'رفع اللوجو' : 'Upload Logo'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF6A1B9A),
+                                    backgroundColor: const Color(0xFF382483),
                                     foregroundColor: Colors.white,
                                   ),
                                 ),
@@ -310,7 +310,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
               _buildCard(
                 context.l10n.companyInfo,
                 Icons.business,
-                Colors.purple,
+                Color(0xFF382483),
                 [
                   _field(
                     _nameAr,
@@ -332,7 +332,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
               _buildCard(
                 isAr ? 'بيانات الاتصال' : 'Contact Info',
                 Icons.phone,
-                Colors.blue,
+                Color(0xFF382483),
                 [
                   _field(
                     _phone,
@@ -397,7 +397,7 @@ class _CompanyEditScreenState extends State<CompanyEditScreen> {
                     style: const TextStyle(fontSize: 16),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A1B9A),
+                    backgroundColor: const Color(0xFF382483),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

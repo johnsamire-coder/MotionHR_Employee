@@ -68,7 +68,7 @@ class ItemDetailScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(title),
-          backgroundColor: const Color(0xFF1976D2),
+          backgroundColor: const Color(0xFF1A0A3E),
           foregroundColor: Colors.white,
         ),
         body: SingleChildScrollView(

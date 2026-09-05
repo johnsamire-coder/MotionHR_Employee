@@ -86,9 +86,9 @@ class _EmployeeMovementsScreenState extends State<EmployeeMovementsScreen> {
       case 'department_change':
       case 'branch_change':
       case 'job_title_change':
-        return Colors.blue;
+        return Color(0xFF382483);
       case 'contract_renewal':
-        return Colors.purple;
+        return Color(0xFF382483);
       default:
         return Colors.grey;
     }

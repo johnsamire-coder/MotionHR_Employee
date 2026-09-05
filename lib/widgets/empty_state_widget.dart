@@ -78,7 +78,7 @@ class EmptyStateWidget extends StatelessWidget {
                   icon: Icon(Icons.refresh),
                   label: Text(buttonText ?? context.l10n.refresh),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
+                    backgroundColor: const Color(0xFF00C688),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 28,

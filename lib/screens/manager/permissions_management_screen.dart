@@ -15,7 +15,7 @@ class PermissionsManagementScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'إدارة الصلاحيات' : 'Permissions Management'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -25,7 +25,7 @@ class PermissionsManagementScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                colors: [Color(0xFF1A0A3E), Color(0xFF382483)],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -57,7 +57,7 @@ class PermissionsManagementScreen extends StatelessWidget {
           _item(
             context: context,
             icon: Icons.badge,
-            color: Colors.indigo,
+            color: Color(0xFF1A0A3E),
             titleAr: 'الأدوار',
             titleEn: 'Roles',
             subAr: 'إنشاء وتعديل الأدوار المخصصة',
@@ -73,7 +73,7 @@ class PermissionsManagementScreen extends StatelessWidget {
           _item(
             context: context,
             icon: Icons.people,
-            color: Colors.teal,
+            color: Color(0xFF00C688),
             titleAr: 'تعيين الأدوار',
             titleEn: 'Assign Roles',
             subAr: 'ربط الأدوار بالمستخدمين',

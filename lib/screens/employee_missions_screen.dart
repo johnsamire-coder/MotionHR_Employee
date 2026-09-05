@@ -21,16 +21,16 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
 
   final Map<String, Color> _statusColors = {
     'pending': Colors.grey,
-    'accepted': Colors.blue,
+    'accepted': Color(0xFF382483),
     'in_progress': Colors.orange,
     'completed': Colors.green,
-    'rejected': Colors.red, 'pending_approval': Colors.purple,
+    'rejected': Colors.red, 'pending_approval': Color(0xFF382483),
   };
 
   final Map<String, Color> _priorityColors = {
     'urgent': Colors.red,
     'high': Colors.orange,
-    'normal': Colors.blue,
+    'normal': Color(0xFF382483),
   };
 
   String _currentFilter = 'all';
@@ -91,7 +91,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
             context.l10n.myMissions,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF6C3FC5),
+          backgroundColor: const Color(0xFF382483),
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
@@ -144,7 +144,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
                   margin: const EdgeInsets.only(left: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF6C3FC5) : Colors.grey.shade200,
+                    color: isSelected ? const Color(0xFF382483) : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -162,7 +162,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
         ),
         Expanded(
           child: _loading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF6C3FC5)))
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF382483)))
               : _error != null
                   ? _buildError()
                   : _missions.isEmpty
@@ -185,7 +185,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
     final status = m['status'] ?? '';
     final priority = m['priority'] ?? 'normal';
     final statusColor = _statusColors[status] ?? Colors.grey;
-    final priorityColor = _priorityColors[priority] ?? Colors.blue;
+    final priorityColor = _priorityColors[priority] ?? Color(0xFF382483);
     final isActive = status == 'in_progress';
     final isPending = status == 'pending'; final isPendingApproval = status == 'pending_approval';
 
@@ -200,7 +200,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () async { if (isPendingApproval) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'الطلب في انتظار موافقة المدير' : 'Request pending manager approval'), backgroundColor: Colors.purple)); return; } final assignmentId = m['assignment_id']; if (assignmentId == null) return; final result = await Navigator.push(
+        onTap: () async { if (isPendingApproval) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAr ? 'الطلب في انتظار موافقة المدير' : 'Request pending manager approval'), backgroundColor: Color(0xFF382483))); return; } final assignmentId = m['assignment_id']; if (assignmentId == null) return; final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => EmployeeMissionDetailScreen(
@@ -373,19 +373,19 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: const Color(0xFFF3E5F5),
+            color: const Color(0xFFEDEAF7),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Color(0xFF6C3FC5)),
+                  const Icon(Icons.info_outline, color: Color(0xFF382483)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       isAr
                           ? 'لو رتبت مع عميل مباشرة، ابعت الطلب هنا للمدير للموافقة'
                           : 'If you arranged with a client directly, send the request here for manager approval',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF6C3FC5)),
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF382483)),
                     ),
                   ),
                 ],
@@ -421,7 +421,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               suffixIcon: IconButton(
                 icon: Icon(
                   Icons.map,
-                  color: locationLat != null ? Colors.green : const Color(0xFF6C3FC5),
+                  color: locationLat != null ? Colors.green : const Color(0xFF382483),
                 ),
                 tooltip: isAr ? 'اختر الموقع من الخريطة' : 'Pick from map',
                 onPressed: () async {
@@ -509,7 +509,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.play_circle, color: Color(0xFF6C3FC5)),
+                  const Icon(Icons.play_circle, color: Color(0xFF382483)),
                   const SizedBox(width: 10),
                   Text(
                     startTime == null
@@ -577,7 +577,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stop_circle, color: Color(0xFF6C3FC5)),
+                  const Icon(Icons.stop_circle, color: Color(0xFF382483)),
                   const SizedBox(width: 10),
                   Text(
                     endTime == null
@@ -656,7 +656,7 @@ class _EmployeeMissionsScreenState extends State<EmployeeMissionsScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C3FC5),
+              backgroundColor: const Color(0xFF382483),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),

@@ -173,7 +173,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF4A148C),
+          backgroundColor: const Color(0xFF1A0A3E),
           foregroundColor: Colors.white,
           title: Text(
             isAr ? 'تقرير المواقع اليومي' : 'Daily Location Report',
@@ -288,7 +288,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                                 const Icon(
                                   Icons.calendar_today,
                                   size: 18,
-                                  color: Color(0xFF4A148C),
+                                  color: Color(0xFF1A0A3E),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -310,7 +310,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           style: const TextStyle(color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4A148C),
+                          backgroundColor: const Color(0xFF1A0A3E),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 14,
@@ -396,7 +396,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF4A148C),
+            color: const Color(0xFF1A0A3E),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -499,7 +499,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4A148C)
+                              color: const Color(0xFF1A0A3E)
                                   .withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
@@ -507,7 +507,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                             child: Text(
                               '${i + 1}',
                               style: const TextStyle(
-                                color: Color(0xFF4A148C),
+                                color: Color(0xFF1A0A3E),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
@@ -549,7 +549,7 @@ class _LocationReportScreenState extends State<LocationReportScreen> {
                           ),
                           const Icon(
                             Icons.location_on,
-                            color: Color(0xFF4A148C),
+                            color: Color(0xFF1A0A3E),
                             size: 20,
                           ),
                         ],

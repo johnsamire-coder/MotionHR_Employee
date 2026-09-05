@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/leave_rule_service.dart';
 import 'create_edit_leave_rule_screen.dart';
 
-const Color kLeaveRulesColor = Color(0xFF6A1B9A);
+const Color kLeaveRulesColor = Color(0xFF382483);
 
 class LeaveRulesScreen extends StatefulWidget {
   const LeaveRulesScreen({super.key});
@@ -130,7 +130,7 @@ class _LeaveRulesScreenState extends State<LeaveRulesScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFFCE93D8), width: 1.5),
+          side: const BorderSide(color: Color(0xFF9B8BD9), width: 1.5),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -167,7 +167,7 @@ class _LeaveRulesScreenState extends State<LeaveRulesScreen> {
             ]),
             const SizedBox(height: 10),
             Row(children: [
-              Expanded(child: _miniBox('سنوية', '${rule['annual_leave_days'] ?? 0} يوم', Colors.blue)),
+              Expanded(child: _miniBox('سنوية', '${rule['annual_leave_days'] ?? 0} يوم', Color(0xFF382483))),
               const SizedBox(width: 8),
               Expanded(child: _miniBox('مرضية', '${rule['sick_leave_max_days'] ?? 0} يوم', Colors.red)),
             ]),

@@ -38,7 +38,7 @@ class _PermissionsHubScreenState extends State<PermissionsHubScreen> {
               icon: Icons.person,
               title: isAr ? 'موظف أو مدير محدد' : 'Specific User',
               subtitle: isAr ? 'تعديل صلاحيات موظف أو مدير بالاسم' : 'Edit permissions for a specific person',
-              color: const Color(0xFF1565C0),
+              color: const Color(0xFF00C688),
               onTap: () => Navigator.push(context, MaterialPageRoute(
                 builder: (_) => const PermissionsTargetScreen(targetType: 'user'),
               )),
@@ -60,7 +60,7 @@ class _PermissionsHubScreenState extends State<PermissionsHubScreen> {
               icon: Icons.location_city,
               title: isAr ? 'فرع كامل' : 'Branch',
               subtitle: isAr ? 'تعديل صلاحيات كل موظفي فرع' : 'Edit permissions for a whole branch',
-              color: const Color(0xFF6A1B9A),
+              color: const Color(0xFF382483),
               onTap: () => Navigator.push(context, MaterialPageRoute(
                 builder: (_) => const PermissionsTargetScreen(targetType: 'branch'),
               )),
@@ -505,10 +505,10 @@ class _DefaultRolePermissionsScreenState extends State<DefaultRolePermissionsScr
 
   Color _scopeColor(String s) {
     switch (s) {
-      case 'company': return Colors.blue;
+      case 'company': return Color(0xFF382483);
       case 'team': return Colors.green;
       case 'dept': return Colors.orange;
-      case 'self': return Colors.purple;
+      case 'self': return Color(0xFF382483);
       default: return Colors.grey;
     }
   }

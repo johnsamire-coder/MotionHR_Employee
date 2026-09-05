@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -365,7 +365,7 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
           if (_resultSuccess) ...[
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               _statItem(isAr ? 'جديد' : 'New', _created ?? 0, Colors.green),
-              _statItem(isAr ? 'تحديث' : 'Updated', _updated ?? 0, Colors.blue),
+              _statItem(isAr ? 'تحديث' : 'Updated', _updated ?? 0, Color(0xFF382483)),
               _statItem(isAr ? 'أخطاء' : 'Errors', _errors ?? 0, Colors.red),
             ]),
             const SizedBox(height: 16),
@@ -509,7 +509,7 @@ class _ImportToolsScreenState extends State<ImportToolsScreen> {
           Row(children: [
             _miniStat(isAr ? 'جديد' : 'New', created, Colors.green),
             const SizedBox(width: 12),
-            _miniStat(isAr ? 'تحديث' : 'Updated', updated, Colors.blue),
+            _miniStat(isAr ? 'تحديث' : 'Updated', updated, Color(0xFF382483)),
             const SizedBox(width: 12),
             _miniStat(isAr ? 'أخطاء' : 'Errors', errors, Colors.red),
           ]),

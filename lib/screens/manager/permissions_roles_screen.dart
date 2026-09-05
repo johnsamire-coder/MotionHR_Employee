@@ -221,7 +221,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                     _createRole(name);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A148C),
+                    backgroundColor: const Color(0xFF1A0A3E),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -240,7 +240,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+          colors: [Color(0xFF1A0A3E), Color(0xFF382483)],
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -278,7 +278,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isAr ? 'الأدوار' : 'Roles'),
-        backgroundColor: const Color(0xFF4A148C),
+        backgroundColor: const Color(0xFF1A0A3E),
         foregroundColor: Colors.white,
       ),
       body: RefreshIndicator(
@@ -307,7 +307,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _showCreateRoleSheet,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4A148C),
+                            backgroundColor: const Color(0xFF1A0A3E),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
@@ -381,10 +381,10 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                                     children: [
                                       CircleAvatar(
                                         backgroundColor:
-                                            const Color(0xFF1A56DB).withValues(alpha: 0.12),
+                                            const Color(0xFF382483).withValues(alpha: 0.12),
                                         child: const Icon(
                                           Icons.admin_panel_settings,
-                                          color: Color(0xFF1A56DB),
+                                          color: Color(0xFF382483),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -403,7 +403,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                                           vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEEF2FF),
+                                          color: const Color(0xFFEDEAF7),
                                           borderRadius: BorderRadius.circular(20),
                                         ),
                                         child: Text(
@@ -413,7 +413,7 @@ class _PermissionsRolesScreenState extends State<PermissionsRolesScreen> {
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
-                                            color: Color(0xFF1A56DB),
+                                            color: Color(0xFF382483),
                                           ),
                                         ),
                                       ),

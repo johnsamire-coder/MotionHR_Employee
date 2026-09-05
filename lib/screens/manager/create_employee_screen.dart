@@ -7,8 +7,8 @@ import '../../services/employee_management_service.dart';
 import '../../services/employee_pdf_service.dart';
 import 'package:open_file/open_file.dart';
 
-const Color kManagerColor = Color(0xFF6A1B9A);
-const Color kPrimaryColor = Color(0xFF1976D2);
+const Color kManagerColor = Color(0xFF382483);
+const Color kPrimaryColor = Color(0xFF1A0A3E);
 
 // ── Country data ──
 class Country {
@@ -486,12 +486,12 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: Color(0xFFEDEAF7),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.blue[200]!),
+          border: Border.all(color: Color(0xFFB8AEE3)),
         ),
         child: Row(children: [
-          const Icon(Icons.info_outline, color: Colors.blue, size: 16),
+          const Icon(Icons.info_outline, color: Color(0xFF382483), size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1582,23 +1582,23 @@ class CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
             isAr ? 'اسم المستخدم' : 'Username',
             cred['username'] ?? '',
             Icons.alternate_email,
-            Colors.blue,
+            Color(0xFF382483),
           ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: Color(0xFFEDEAF7),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.blue[200]!),
+              border: Border.all(color: Color(0xFFB8AEE3)),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Icon(Icons.info_outline, color: Colors.blue, size: 18),
+                const Icon(Icons.info_outline, color: Color(0xFF382483), size: 18),
                 const SizedBox(width: 6),
                 Text(
                   isAr ? 'خطوات تفعيل الحساب' : 'Account Activation Steps',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF382483)),
                 ),
               ]),
               const SizedBox(height: 8),

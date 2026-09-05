@@ -99,7 +99,7 @@ class BrandingService {
       width: double.infinity,
       padding: const pw.EdgeInsets.all(16),
       decoration: pw.BoxDecoration(
-        color: PdfColor.fromInt(0xFF6A1B9A),
+        color: PdfColor.fromInt(0xFF382483),
         borderRadius: pw.BorderRadius.circular(10),
       ),
       child: pw.Row(
@@ -120,7 +120,7 @@ class BrandingService {
                       style: pw.TextStyle(
                         fontSize: 22,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColor.fromInt(0xFF6A1B9A),
+                        color: PdfColor.fromInt(0xFF382483),
                       ),
                     ),
                   ),
@@ -143,7 +143,7 @@ class BrandingService {
                     companyNameEn,
                     style: pw.TextStyle(
                       fontSize: 10,
-                      color: PdfColor.fromInt(0xFFE1BEE7),
+                      color: PdfColor.fromInt(0xFFD6CFF0),
                     ),
                   ),
                 if (subtitle != null && subtitle.isNotEmpty) ...[
@@ -152,7 +152,7 @@ class BrandingService {
                     subtitle,
                     style: arabicStyle(
                       fontSize: 11,
-                      color: PdfColor.fromInt(0xFFCE93D8),
+                      color: PdfColor.fromInt(0xFF9B8BD9),
                     ),
                   ),
                 ],
@@ -161,7 +161,7 @@ class BrandingService {
                     'Tel: $phone',
                     style: pw.TextStyle(
                       fontSize: 9,
-                      color: PdfColor.fromInt(0xFFE1BEE7),
+                      color: PdfColor.fromInt(0xFFD6CFF0),
                     ),
                   ),
               ],
@@ -198,7 +198,7 @@ class BrandingService {
               'Powered by MotionHR - JS Solutions',
               style: pw.TextStyle(
                 fontSize: 8,
-                color: PdfColor.fromInt(0xFF6A1B9A),
+                color: PdfColor.fromInt(0xFF382483),
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
