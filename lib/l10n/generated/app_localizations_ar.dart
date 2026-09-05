@@ -171,7 +171,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rememberMe => 'تذكرني';
 
   @override
-  String get stayLoggedIn => 'البقاء مسجلاً لـ 72 ساعة';
+  String get stayLoggedIn => 'البقاء مسجلاً';
 
   @override
   String get forgotPassword => 'نسيت كلمة المرور؟';
