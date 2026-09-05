@@ -1012,20 +1012,22 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           Row(
             children: [
               Expanded(child: _infoRow('التصنيف الحالي', _profile!['worker_type_display'] ?? '-', icon: Icons.person_pin)),
-              IconButton(
-                icon: const Icon(Icons.edit, color: Color(0xFF382483)),
-                tooltip: 'تغيير التصنيف',
-                onPressed: _changeWorkerType,
-              ),
+              if (_canEditEmployee)
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Color(0xFF382483)),
+                  tooltip: 'تغيير التصنيف',
+                  onPressed: _changeWorkerType,
+                ),
             ],
           ),
         ]),
-        _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF382483), [
-          _infoRow('البنك', _profile!['bank_name']),
-          _infoRow('رقم الحساب', _profile!['bank_account']),
-          _infoRow('IBAN', _profile!['iban']),
-          _infoRow(context.l10n.basicSalary, _profile!['basic_salary']),
-        ]),
+        if (_canEditEmployee)
+          _sectionCard(Localizations.localeOf(context).languageCode == 'ar' ? 'البيانات البنكية' : 'Bank Info', Icons.account_balance, const Color(0xFF382483), [
+            _infoRow('البنك', _profile!['bank_name']),
+            _infoRow('رقم الحساب', _profile!['bank_account']),
+            _infoRow('IBAN', _profile!['iban']),
+            _infoRow(context.l10n.basicSalary, _profile!['basic_salary']),
+          ]),
       ],
     );
   }
