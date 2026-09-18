@@ -1862,16 +1862,29 @@ class EmployeeShell extends StatefulWidget {
   State<EmployeeShell> createState() => _EmployeeShellState();
 }
 
-class _EmployeeShellState extends State<EmployeeShell> {
+class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserver {
   int _index = 0;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingAnnouncements();
     });
+  }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // نتحقق من الإعلانات الجديدة كل مرة التطبيق يرجع من الخلفية
+    if (state == AppLifecycleState.resumed) {
+      _checkPendingAnnouncements();
+    }
   }
 
   Future<void> _checkPendingAnnouncements() async {
@@ -2122,7 +2135,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     if (hasInternet) {
       try {
         final res = await ApiClient.get(Uri.parse('$kBaseUrl/attendance/api/mobile/status/'));
-        if (res.statusCode == 200 && mounted) setState(() => _status = jsonDecode(res.body));
+        if (res.statusCode == 200 && mounted) {
+          final data = jsonDecode(res.body);
+          setState(() => _status = data);
+          if (data['checked_in'] == true && data['checked_out'] != true) {
+            LocationTrackingService.startTracking();
+          } else if (data['checked_out'] == true) {
+            LocationTrackingService.stopTracking();
+          }
+        }
       } catch (_) {
         if (mounted) setState(() => _networkUnavailable = true);
       }
@@ -7333,16 +7354,29 @@ class ManagerShell extends StatefulWidget {
   State<ManagerShell> createState() => _ManagerShellState();
 }
 
-class _ManagerShellState extends State<ManagerShell> {
+class _ManagerShellState extends State<ManagerShell> with WidgetsBindingObserver {
   int _index = 0;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _index = widget.initialIndex;
     fetchUnreadCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingAnnouncements();
     });
+  }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // نتحقق من الإعلانات الجديدة كل مرة التطبيق يرجع من الخلفية
+    if (state == AppLifecycleState.resumed) {
+      _checkPendingAnnouncements();
+    }
   }
 
   Future<void> _checkPendingAnnouncements() async {

@@ -1,6 +1,5 @@
 import 'package:motionhr_employee/services/api_client.dart';
 import 'package:motionhr_employee/services/offline_queue_service.dart';
-// lib/services/location_tracking_service.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
@@ -10,36 +9,75 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocationTrackingService {
   static const String baseUrl = 'https://jssolutions-eg.com';
-  static Timer? _timer;
+  static Timer? _hourlyTimer;
+  static Timer? _geofenceTimer;
   static bool _isRunning = false;
 
-  // ── بدء التتبع كل ساعة ──
+  // ── بدء التتبع (كل 5 دقائق للجيوفنس + كل ساعة للمسار العام) ──
   static Future<void> startTracking() async {
     if (_isRunning) return;
     _isRunning = true;
 
-    // أول نقطة فوراً
+    // إرسال فحص الجيوفنس والمسار فوراً عند البدء
+    await _sendGeofencePing();
     await _saveCurrentLocation();
 
-    // ثم كل ساعة
-    _timer = Timer.periodic(const Duration(hours: 1), (_) async {
+    // مؤقت فحص النطاق الجغرافي كل 5 دقائق
+    _geofenceTimer = Timer.periodic(const Duration(minutes: 5), (_) async {
+      await _sendGeofencePing();
+    });
+
+    // مؤقت تقرير المسار العام كل ساعة
+    _hourlyTimer = Timer.periodic(const Duration(hours: 1), (_) async {
       await _saveCurrentLocation();
     });
   }
 
-  // ── إيقاف التتبع ──
+  // ── إيقاف التتبع عند الانصراف ──
   static void stopTracking() {
-    _timer?.cancel();
-    _timer = null;
+    _geofenceTimer?.cancel();
+    _geofenceTimer = null;
+    _hourlyTimer?.cancel();
+    _hourlyTimer = null;
     _isRunning = false;
   }
 
   static bool get isRunning => _isRunning;
 
-  // ── جيب الموقع الحالي وارسله ──
+  // ── إرسال فحص الجيوفنس للسيرفر (كل 5 دقائق) ──
+  static Future<void> _sendGeofencePing() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+
+      final url = '$baseUrl/attendance/api/mobile/geofence-ping/';
+      final payload = {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      };
+
+      await http.post(
+        Uri.parse(url),
+        headers: await ApiClient.buildHeaders(includeContentType: true),
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 15));
+    } catch (_) {
+      // تجاهل أخطاء الشبكة المؤقتة في فحص الجيوفنس
+    }
+  }
+
+  // ── جيب الموقع الحالي وارسله للمسار العام ──
   static Future<bool> _saveCurrentLocation() async {
     try {
-      // تحقق من الصلاحيات
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -47,13 +85,11 @@ class LocationTrackingService {
       }
       if (permission == LocationPermission.deniedForever) return false;
 
-      // جيب الموقع
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 15),
       );
 
-      // جيب اسم المكان
       String address = '';
       try {
         final placemarks = await placemarkFromCoordinates(
@@ -87,11 +123,9 @@ class LocationTrackingService {
         'address': address,
       };
 
-      final url =
-          '$baseUrl/attendance/api/mobile/employee/save-location/';
+      final url = '$baseUrl/attendance/api/mobile/employee/save-location/';
 
       try {
-        // ارسل للسيرفر
         final response = await http.post(
           Uri.parse(url),
           headers: await ApiClient.buildHeaders(includeContentType: true),
@@ -99,11 +133,8 @@ class LocationTrackingService {
         ).timeout(const Duration(seconds: 15));
 
         if (response.statusCode == 200) return true;
-
-        // لو السيرفر رد بخطأ مش هنحفظ في القائمة
         return false;
       } catch (_) {
-        // مفيش نت أو timeout — نحفظ في الطابور
         await OfflineQueueService.enqueue(
           actionType: OfflineActionType.sendLocation,
           endpoint: url,
@@ -113,7 +144,6 @@ class LocationTrackingService {
         return false;
       }
     } catch (_) {
-      // لو فشل جيب الموقع نفسه — نحاول نحفظ آخر موقع معروف لو موجود
       try {
         final lastPosition = await Geolocator.getLastKnownPosition();
         if (lastPosition != null) {
@@ -191,8 +221,8 @@ class LocationTrackingService {
           'points': <Map<String, dynamic>>[],
         };
       }
-      throw Exception(data['error'] ?? '\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u062a\u0642\u0631\u064a\u0631');
+      throw Exception(data['error'] ?? 'خطأ في جلب التقرير');
     }
-    throw Exception('\u062e\u0637\u0623: ${res.statusCode}');
+    throw Exception('خطأ: ${res.statusCode}');
   }
 }
