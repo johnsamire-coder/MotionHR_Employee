@@ -1,6 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_client.dart';
 import '../services/language_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
+
+const String _kBaseUrl = 'https://jssolutions-eg.com';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -81,10 +87,48 @@ class _SettingsScreenState extends State<SettingsScreen>
       ));
       return;
     }
+    if (_currentPassCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'اكتب كلمة المرور الحالية' : 'Enter your current password'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
+    // قبل كده الشاشة كانت بتقول "اتغيرت" من غير ما تكلم السيرفر خالص
     setState(() => _changingPass = true);
-    await Future.delayed(const Duration(seconds: 1));
+    String? error;
+    try {
+      final res = await ApiClient.post(
+        Uri.parse('$_kBaseUrl/attendance/api/mobile/change-password/'),
+        body: jsonEncode({
+          'current_password': _currentPassCtrl.text,
+          'new_password': _newPassCtrl.text,
+        }),
+      );
+      final data = jsonDecode(utf8.decode(res.bodyBytes));
+      if (res.statusCode == 200 && data is Map && data['success'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        final newToken = (data['token'] ?? '').toString();
+        if (newToken.isNotEmpty) {
+          await prefs.setString('token', newToken);
+          await prefs.setString('auth_token', newToken);
+        }
+      } else {
+        error = (data is Map ? (data['message'] ?? data['error']) : null)?.toString() ??
+            (isAr ? 'فشل تغيير كلمة المرور' : 'Failed to change password');
+      }
+    } catch (_) {
+      error = isAr ? 'خطأ في الاتصال' : 'Connection error';
+    }
     if (!mounted) return;
     setState(() => _changingPass = false);
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
     _currentPassCtrl.clear();
     _newPassCtrl.clear();
     _confirmPassCtrl.clear();

@@ -193,20 +193,65 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
   Future<void> _approveOrReject(int entryId, bool isPenalty, bool approve) async {
     final type = isPenalty ? 'penalty' : 'bonus';
     final action = approve ? 'approve' : 'reject';
+    // الرفض محتاج سبب (قبل كده كان بيتبعت من غير أي بيانات فيقع والغلطة تتخبى)
+    String reason = '';
+    if (!approve) {
+      final ctrl = TextEditingController();
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(isAr ? 'سبب الرفض' : 'Rejection reason'),
+          content: TextField(
+            controller: ctrl,
+            maxLines: 3,
+            decoration: InputDecoration(hintText: isAr ? 'اكتب السبب' : 'Write the reason'),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(isAr ? 'إلغاء' : 'Cancel')),
+            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(isAr ? 'رفض' : 'Reject')),
+          ],
+        ),
+      );
+      reason = ctrl.text.trim();
+      ctrl.dispose();
+      if (ok != true) return;
+      if (reason.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isAr ? 'سبب الرفض مطلوب' : 'Reason is required'),
+          backgroundColor: Colors.orange,
+        ));
+        return;
+      }
+    }
     try {
       final headers = await ApiClient.buildHeaders(includeContentType: true);
       final res = await http.post(
         Uri.parse('$_kBase/attendance/api/mobile/manager/entries/$type/$entryId/$action/'),
         headers: headers,
+        body: jsonEncode(approve ? {} : {'reason': reason}),
       );
-      final data = jsonDecode(utf8.decode(res.bodyBytes));
+      Map data = {};
+      try {
+        final decoded = jsonDecode(utf8.decode(res.bodyBytes));
+        if (decoded is Map) data = decoded;
+      } catch (_) {}
       if (!mounted) return;
+      final ok = res.statusCode >= 200 && res.statusCode < 300 && data['success'] == true;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(data['message'] ?? (isAr ? 'تم' : 'Done')),
-        backgroundColor: data['success'] == true ? Colors.green : Colors.red,
+        content: Text((data['message'] ?? data['error'] ??
+                (ok ? (isAr ? 'تم' : 'Done') : (isAr ? 'حصلت مشكلة، حاول تاني' : 'Something went wrong')))
+            .toString()),
+        backgroundColor: ok ? Colors.green : Colors.red,
       ));
       _load();
-    } catch (_) {}
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'خطأ في الاتصال' : 'Connection error'),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 
   Future<void> _deleteEntry(int entryId, bool isPenalty) async {

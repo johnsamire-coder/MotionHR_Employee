@@ -353,22 +353,32 @@ class _UserOverrideCheckboxScreenState
     setState(() => _loading = true);
 
     try {
-      // أولاً: نمسح الاستثناءات القديمة كلها
-      for (final ov in _currentOverrides) {
-        final item = ov as Map<String, dynamic>;
-        final code = item['permission'] as String;
-        final res = await http.delete(
-          Uri.parse(
-            '${widget.baseUrl}/attendance/api/mobile/manager/permissions/override/remove/',
-          ),
-          headers: headers,
-          body: json.encode({'user_id': userId, 'permission': code}),
-        );
-        debugPrint('OVERRIDE SAVE: remove $code = ${res.statusCode}');
+      // بنحفظ التغييرات بس (قبل كده كانت بتمسح كل الاستثناءات الأول، ولو أي طلب فشل تضيع)
+      final failures = <String>[];
+      String? firstError;
+      void noteFailure(String code, http.Response res) {
+        failures.add(code);
+        if (firstError == null) {
+          try {
+            final d = json.decode(utf8.decode(res.bodyBytes));
+            if (d is Map) firstError = (d['error'] ?? d['message'])?.toString();
+          } catch (_) {}
+        }
       }
 
-      // ثانياً: نضيف الاستثناءات المختارة
+      final existing = <String, Map<String, dynamic>>{};
+      for (final ov in _currentOverrides) {
+        final item = ov as Map<String, dynamic>;
+        existing[item['permission'] as String] = item;
+      }
+
+      // 1) الإضافة والتعديل الأول
       for (final entry in _selections.entries) {
+        final old = existing[entry.key];
+        final unchanged = old != null &&
+            old['scope'] == entry.value['scope'] &&
+            (old['is_granted'] ?? true) == entry.value['granted'];
+        if (unchanged) continue;
         final res = await http.post(
           Uri.parse(
             '${widget.baseUrl}/attendance/api/mobile/manager/permissions/override/set/',
@@ -381,10 +391,36 @@ class _UserOverrideCheckboxScreenState
             'is_granted': entry.value['granted'],
           }),
         );
-        debugPrint('OVERRIDE SAVE: set ${entry.key} = ${res.statusCode}');
+        if (res.statusCode < 200 || res.statusCode >= 300) noteFailure(entry.key, res);
+      }
+
+      // 2) مسح اللي اتشال بس
+      for (final code in existing.keys) {
+        if (_selections.containsKey(code)) continue;
+        final res = await http.delete(
+          Uri.parse(
+            '${widget.baseUrl}/attendance/api/mobile/manager/permissions/override/remove/',
+          ),
+          headers: headers,
+          body: json.encode({'user_id': userId, 'permission': code}),
+        );
+        if (res.statusCode < 200 || res.statusCode >= 300) noteFailure(code, res);
       }
 
       if (!mounted) return;
+      if (failures.isNotEmpty) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(firstError ??
+                (isAr
+                    ? 'ماتحفظش ${failures.length} من الاستثناءات'
+                    : '${failures.length} overrides were not saved')),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(isAr ? 'تم حفظ الاستثناءات' : 'Overrides saved'),

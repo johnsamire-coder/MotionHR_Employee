@@ -10,6 +10,10 @@ class ApiClient {
   // يمنع تعدد محاولات التجديد في نفس اللحظة لو كذا طلب فشلوا مع بعض
   static Future<bool>? _refreshFuture;
 
+  // بيتنادى لما الجلسة تخلص خالص (مفيش مفتاح صالح)، والتطبيق بيرجع لشاشة الدخول
+  static void Function()? onSessionExpired;
+  static bool _expiredNotified = false;
+
   // يفك تشفير الـ JWT ويرجّع وقت الانتهاء (exp) بالثواني، أو null لو فشل
   static int? _jwtExpiry(String jwt) {
     try {
@@ -38,7 +42,13 @@ class ApiClient {
     if (exp == null) return;
     final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (exp - nowSeconds < 60) {
-      await _refreshToken();
+      final ok = await _refreshToken();
+      if (!ok && exp <= nowSeconds) {
+        // مفتاح الدخول خلص والتجديد فشل: نسيبه ونرجع لمفتاح الدخول العادي اللي معانا
+        // (قبل كده التطبيق كان بيفضل يبعت المفتاح المنتهي فكل حاجة تترفض بعد شهر)
+        await prefs.remove('jwt_access');
+        await prefs.remove('jwt_refresh');
+      }
     }
   }
 
@@ -116,13 +126,39 @@ class ApiClient {
   ) async {
     final firstResponse = await attempt();
     if (firstResponse.statusCode != 401) {
+      _expiredNotified = false;
       return firstResponse;
     }
     final refreshed = await _refreshToken();
-    if (!refreshed) {
-      return firstResponse;
+    if (refreshed) {
+      return attempt();
     }
-    return attempt();
+    // التجديد فشل: نجرب مرة بمفتاح الدخول العادي، ولو اترفض كمان يبقى لازم يدخل تاني
+    final prefs = await SharedPreferences.getInstance();
+    if ((prefs.getString('jwt_access') ?? '').isNotEmpty) {
+      await prefs.remove('jwt_access');
+      await prefs.remove('jwt_refresh');
+      final retry = await attempt();
+      if (retry.statusCode != 401) return retry;
+      _notifyExpired(retry);
+      return retry;
+    }
+    _notifyExpired(firstResponse);
+    return firstResponse;
+  }
+
+  static void _notifyExpired(http.Response res) {
+    // الحساب الموقوف أو الشركة الموقوفة ليهم رسالتهم الخاصة، مش "الجلسة خلصت"
+    try {
+      final data = jsonDecode(res.body);
+      if (data is Map &&
+          (data['code'] == 'account_disabled' || data['code'] == 'company_suspended')) {
+        return;
+      }
+    } catch (_) {}
+    if (_expiredNotified) return;
+    _expiredNotified = true;
+    onSessionExpired?.call();
   }
 
   static Future<http.Response> get(

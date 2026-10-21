@@ -38,7 +38,7 @@ class OfflineQueueService {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $_table (
@@ -49,11 +49,23 @@ class OfflineQueueService {
             body TEXT,
             created_at TEXT NOT NULL,
             retry_count INTEGER DEFAULT 0,
-            status TEXT DEFAULT 'pending'
+            status TEXT DEFAULT 'pending',
+            owner TEXT
           )
         ''');
       },
+      // نسخة 2: كل عملية محفوظة بقت مربوطة بصاحبها (عشان ماتتبعتش باسم حد تاني يدخل على نفس الموبايل)
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE $_table ADD COLUMN owner TEXT');
+        }
+      },
     );
+  }
+
+  static Future<String> _currentOwner() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username') ?? '';
   }
 
   // ── إضافة عملية للطابور ────────────────────────────────────
@@ -64,14 +76,22 @@ class OfflineQueueService {
     Map<String, dynamic>? body,
   }) async {
     final database = await db;
+    final now = DateTime.now();
+    // الوقت الحقيقي للعملية بيتبعت معاها (عشان البصمة ماتتسجلش بوقت رجوع النت)
+    final fullBody = <String, dynamic>{
+      ...?body,
+      'client_time': now.toIso8601String(),
+      'offline': true,
+    };
     final id = await database.insert(_table, {
       'action_type': actionType.name,
       'endpoint': endpoint,
       'method': method.toUpperCase(),
-      'body': body != null ? jsonEncode(body) : null,
-      'created_at': DateTime.now().toIso8601String(),
+      'body': jsonEncode(fullBody),
+      'created_at': now.toIso8601String(),
       'retry_count': 0,
       'status': 'pending',
+      'owner': await _currentOwner(),
     });
     return id;
   }
@@ -109,9 +129,13 @@ class OfflineQueueService {
       if (!headers.containsKey('Authorization')) return;
 
       final database = await db;
+      // عمليات المستخدم الحالي بس (والقديمة اللي اتحفظت قبل الربط)
+      final owner = await _currentOwner();
+      if (owner.isEmpty) return;
       final rows = await database.query(
         _table,
-        where: "status = 'pending'",
+        where: "status = 'pending' AND (owner = ? OR owner IS NULL)",
+        whereArgs: [owner],
         orderBy: 'created_at ASC',
         limit: 20,
       );
@@ -186,14 +210,33 @@ class OfflineQueueService {
             await LocalNotificationService.showSyncSuccess(actionType);
           } catch (_) {}
         }
+      } else if (res.statusCode == 401) {
+        // الجلسة خلصت — نسيبها معلقة لحد ما يدخل تاني بدل ما نرميها
+        await database.update(
+          _table,
+          {'retry_count': retryCount + 1},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
       } else if (res.statusCode >= 400 && res.statusCode < 500) {
-        // خطأ في البيانات — مش هتتصلح بالإعادة
+        // السيرفر رفضها — مش هتتصلح بالإعادة، فلازم الموظف يعرف بدل ما تضيع في صمت
         await database.update(
           _table,
           {'status': 'failed'},
           where: 'id = ?',
           whereArgs: [id],
         );
+        final actionType = row['action_type'] as String? ?? '';
+        String reason = '';
+        try {
+          final decoded = jsonDecode(res.body);
+          if (decoded is Map) {
+            reason = (decoded['message'] ?? decoded['error'] ?? '').toString();
+          }
+        } catch (_) {}
+        try {
+          await LocalNotificationService.showSyncFailed(actionType, reason);
+        } catch (_) {}
       } else {
         // خطأ في السيرفر — نزود عداد المحاولات
         await database.update(

@@ -30,6 +30,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   String _type = 'general';
   String _priority = 'medium';
   String _targetType = 'all';
+  // المستهدفين وقت فتح الشاشة؛ في التعديل بنبعتهم بس لو اتغيروا (عشان الإعلان مايتحولش لكل الشركة)
+  String _initialTargetType = 'all';
   bool _requiresConfirmation = false;
   bool _sendPush = true;
   bool _resendNotificationOnEdit = false;
@@ -75,6 +77,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
       _type = (ann['type'] ?? 'general').toString();
       _priority = (ann['priority'] ?? 'medium').toString();
       _targetType = (ann['target_type'] ?? 'all').toString();
+      if (!const {'all', 'by_department', 'by_branch'}.contains(_targetType)) _targetType = 'all';
+      _initialTargetType = _targetType;
       _requiresConfirmation = ann['requires_confirmation'] == true;
       _sendPush = ann['send_push'] != false;
     }
@@ -130,7 +134,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
         'message': _messageCtrl.text.trim(),
         'type': _type,
         'priority': _priority,
-        'target_type': _targetType,
+        if (!isEditing || _targetType != _initialTargetType) 'target_type': _targetType,
         if (_targetType == 'by_department' && _selectedDepartmentId != null)
           'department_ids': [_selectedDepartmentId],
         if (_targetType == 'by_branch' && _selectedBranchId != null)

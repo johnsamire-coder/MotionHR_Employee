@@ -17,22 +17,24 @@ class AuthStorageService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyRememberMe, rememberMe);
+    // كلمة السر مابتتحفظش على الموبايل خالص (كانت بتتحفظ نص مكشوف)، اسم المستخدم بس
+    await prefs.remove(_keyPassword);
     if (rememberMe) {
       await prefs.setString(_keyUsername, username);
-      await prefs.setString(_keyPassword, password);
     } else {
       await prefs.remove(_keyUsername);
-      await prefs.remove(_keyPassword);
     }
   }
 
   // جلب بيانات تذكرني
   static Future<Map<String, dynamic>> getRememberMe() async {
     final prefs = await SharedPreferences.getInstance();
+    // أي كلمة سر قديمة اتحفظت من إصدارات قبل كده بتتمسح
+    await prefs.remove(_keyPassword);
     return {
       'rememberMe': prefs.getBool(_keyRememberMe) ?? false,
       'username': prefs.getString(_keyUsername) ?? '',
-      'password': prefs.getString(_keyPassword) ?? '',
+      'password': '',
     };
   }
   // حفظ حالة البقاء مسجلاً
@@ -105,6 +107,11 @@ class AuthStorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyAuthToken);
     await prefs.remove('token');
+    // مفاتيح الدخول الجديدة (JWT) كانت بتفضل على الموبايل بعد الخروج
+    await prefs.remove('jwt_access');
+    await prefs.remove('jwt_refresh');
+    // صاحب العمليات المحفوظة من غير نت (عشان ماتتبعتش باسم اللي يدخل بعده)
+    await prefs.remove('username');
     await prefs.remove(_keyLastLoginTime);
     await prefs.setBool(_keyStayLoggedIn, false);
     // ⚠️ biometric_enabled محتاج يفضل موجود عشان البصمة تشتغل بعد الـ Logout

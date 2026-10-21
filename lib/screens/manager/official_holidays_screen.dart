@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/official_holidays_service.dart';
+import '../../services/employee_management_service.dart';
 
 const Color kOfficialHolidayColor = Color(0xFF382483);
 
@@ -366,9 +367,29 @@ class _CreateEditOfficialHolidayScreenState
     }
   ];
 
+  // الفروع والإدارات عشان قاعدة الإجازة تتحدد لفرع أو إدارة فعلاً
+  // (قبل كده النطاق كان بيتحفظ من غير فرع فالإجازة ماتتطبقش على حد)
+  List<Map<String, dynamic>> _branches = [];
+  List<Map<String, dynamic>> _departments = [];
+
+  Future<void> _loadTargets() async {
+    try {
+      final r = await Future.wait([
+        EmployeeManagementService.getBranches(),
+        EmployeeManagementService.getDepartments(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _branches = r[0];
+        _departments = r[1];
+      });
+    } catch (_) {}
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadTargets();
     if (isEdit) {
       final h = widget.holiday!;
       _nameCtrl.text = h['name'] ?? '';
@@ -425,6 +446,28 @@ class _CreateEditOfficialHolidayScreenState
         backgroundColor: Colors.orange,
       ));
       return;
+    }
+
+    for (final rule in _rules) {
+      final scope = rule['scope'] ?? 'company';
+      String? problem;
+      if (scope == 'branch' && rule['branch_id'] == null) {
+        problem = isAr ? 'اختار الفرع للقاعدة' : 'Choose the branch for the rule';
+      } else if (scope == 'department' && rule['department_id'] == null) {
+        problem = isAr ? 'اختار الإدارة للقاعدة' : 'Choose the department for the rule';
+      } else if (scope == 'employees' &&
+          ((rule['employee_ids'] as List?) ?? const []).isEmpty) {
+        problem = isAr
+            ? 'اختيار موظفين محددين بيتعمل من الموقع'
+            : 'Choosing specific employees is done on the website';
+      }
+      if (problem != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(problem),
+          backgroundColor: Colors.orange,
+        ));
+        return;
+      }
     }
 
     setState(() => _saving = true);
@@ -704,6 +747,46 @@ class _CreateEditOfficialHolidayScreenState
                         onChanged: (v) =>
                             setState(() => rule['scope'] = v ?? 'company'),
                       ),
+                      if (rule['scope'] == 'branch') ...[
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<int>(
+                          initialValue: _branches.any((b) => b['id'] == rule['branch_id'])
+                              ? rule['branch_id'] as int
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'الفرع' : 'Branch',
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: _branches
+                              .map((b) => DropdownMenuItem<int>(
+                                    value: b['id'] as int,
+                                    child: Text((b['name'] ?? b['name_ar'] ?? '').toString()),
+                                  ))
+                              .toList(),
+                          onChanged: (v) => setState(() => rule['branch_id'] = v),
+                        ),
+                      ],
+                      if (rule['scope'] == 'department') ...[
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<int>(
+                          initialValue: _departments.any((d) => d['id'] == rule['department_id'])
+                              ? rule['department_id'] as int
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'الإدارة' : 'Department',
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: _departments
+                              .map((d) => DropdownMenuItem<int>(
+                                    value: d['id'] as int,
+                                    child: Text((d['name'] ?? d['name_ar'] ?? '').toString()),
+                                  ))
+                              .toList(),
+                          onChanged: (v) => setState(() => rule['department_id'] = v),
+                        ),
+                      ],
                       const SizedBox(height: 10),
                       // المعاملة
                       DropdownButtonFormField<String>(

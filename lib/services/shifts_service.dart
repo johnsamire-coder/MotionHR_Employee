@@ -251,8 +251,8 @@ final body = {
     String lang = 'ar',
   }) async {
 
-    var url = '\$baseUrl/attendance/api/mobile/manager/shifts/overrides/?lang=\$lang&show_past=\${showPast ? "true" : "false"}';
-    if (employeeId != null) url += '&employee_id=\$employeeId';
+    var url = '$baseUrl/attendance/api/mobile/manager/shifts/overrides/?lang=$lang&show_past=${showPast ? "true" : "false"}';
+    if (employeeId != null) url += '&employee_id=$employeeId';
 
     final res = await http.get(Uri.parse(url), headers: await _headers());
     final data = jsonDecode(utf8.decode(res.bodyBytes));
