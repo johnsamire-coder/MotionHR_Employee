@@ -21,6 +21,8 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
 
   List<dynamic> _availablePermissions = [];
   final Set<String> _selectedPermissions = {};
+  // نطاق كل صلاحية موجودة في الدور (قبل كده أي حفظ كان بيخليها كلها على الشركة كلها)
+  final Map<String, String> _scopes = {};
   bool _loading = true;
   bool _saving = false;
   String? _error;
@@ -38,6 +40,8 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
       final code = '${p['code'] ?? ''}'.trim();
       if (code.isNotEmpty) {
         _selectedPermissions.add(code);
+        final scope = '${p['scope'] ?? ''}'.trim();
+        if (scope.isNotEmpty) _scopes[code] = scope;
       }
     }
 
@@ -125,7 +129,7 @@ class _RoleDetailScreenState extends State<RoleDetailScreen> {
         body: json.encode({
           'name': name,
           'permissions': _selectedPermissions
-              .map((code) => {'code': code, 'scope': 'company'})
+              .map((code) => {'code': code, 'scope': _scopes[code] ?? 'company'})
               .toList(),
         }),
       ).timeout(const Duration(seconds: 15));

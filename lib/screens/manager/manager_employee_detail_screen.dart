@@ -1473,11 +1473,17 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
     _birthDateCtrl = TextEditingController(text: p['birth_date'] ?? '');
     _hireDateCtrl = TextEditingController(text: p['hire_date'] ?? '');
     _contractEndDateCtrl = TextEditingController(text: p['contract_end_date'] ?? '');
-    _gender = (p['gender'] ?? 'male').toString();
-    _maritalStatus = (p['marital_status'] ?? 'single').toString();
+    // الملف بيرجع النوع والحالة ونوع العقد بالنص العربي، فبنرجعهم للكود قبل التعديل
+    // (قبل كده كانوا بيتبعتوا غلط فيتغيروا لقيم افتراضية من غير ما حد ياخد باله)
+    _gender = _code(p['gender'], const {'ذكر': 'male', 'أنثى': 'female'}, 'male');
+    _maritalStatus = _code(p['marital_status'],
+        const {'أعزب': 'single', 'متزوج': 'married', 'مطلق': 'divorced', 'أرمل': 'widowed'}, 'single');
     _workerType = (p['worker_type'] ?? 'office').toString();
-    _contractType = (p['contract_type'] ?? 'permanent').toString();
-    _salaryPaymentMethod = (p['salary_payment_method'] ?? 'cash').toString();
+    _contractType = _code(p['contract_type'], const {
+      'دائم': 'permanent', 'مؤقت': 'temporary', 'تدريب': 'training', 'حر': 'freelance',
+      'دوام جزئي': 'part_time', 'استشاري': 'consultant',
+    }, 'permanent');
+    _salaryPaymentMethod = (p['salary_payment_method'] ?? 'none').toString();
     _walletProvider = (p['wallet_provider'] ?? '').toString();
     _hasInsurance = p['has_insurance'] == true;
     _branchId = p['branch_id'] is int ? p['branch_id'] : (p['branch'] is Map ? p['branch']['id'] : null);
@@ -1636,11 +1642,18 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
     );
   }
 
+  static String _code(dynamic value, Map<String, String> labels, String fallback) {
+    final v = (value ?? '').toString().trim();
+    if (v.isEmpty) return fallback;
+    return labels[v] ?? v;
+  }
+
   Widget _dropdown<T>(T? value, String label, List<DropdownMenuItem<T>> items, void Function(T?) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: DropdownButtonFormField<T>(
-        initialValue: value,
+        // لو القيمة مش في القايمة مانوقعش الشاشة
+        initialValue: items.any((i) => i.value == value) ? value : null,
         decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
         items: items,
         onChanged: onChanged,
@@ -1728,17 +1741,23 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                       (v) => setState(() => _directManagerId = v)),
                     _dropdown<String>(_workerType, isAr ? 'نوع العمل' : 'Worker Type', [
                       DropdownMenuItem(value: 'office', child: Text(isAr ? 'مكتبي' : 'Office')),
-                      DropdownMenuItem(value: 'field', child: Text(isAr ? 'ميداني' : 'Field')),
+                      DropdownMenuItem(value: 'field_free', child: Text(isAr ? 'ميداني حر' : 'Field (free)')),
+                      DropdownMenuItem(value: 'field_assigned', child: Text(isAr ? 'ميداني بمواقع محددة' : 'Field (assigned)')),
                     ], (v) => setState(() => _workerType = v ?? 'office')),
                     _dropdown<String>(_contractType, isAr ? 'نوع العقد' : 'Contract Type', [
                       DropdownMenuItem(value: 'permanent', child: Text(isAr ? 'دائم' : 'Permanent')),
                       DropdownMenuItem(value: 'temporary', child: Text(isAr ? 'مؤقت' : 'Temporary')),
+                      DropdownMenuItem(value: 'training', child: Text(isAr ? 'تدريب' : 'Training')),
+                      DropdownMenuItem(value: 'freelance', child: Text(isAr ? 'حر' : 'Freelance')),
+                      DropdownMenuItem(value: 'part_time', child: Text(isAr ? 'دوام جزئي' : 'Part-time')),
+                      DropdownMenuItem(value: 'consultant', child: Text(isAr ? 'استشاري' : 'Consultant')),
                     ], (v) => setState(() => _contractType = v ?? 'permanent')),
                     _dateField(_hireDateCtrl, isAr ? 'تاريخ التعيين' : 'Hire Date'),
                     _dateField(_contractEndDateCtrl, isAr ? 'تاريخ انتهاء العقد' : 'Contract End Date'),
                     _sectionTitle(isAr ? 'البيانات المالية' : 'Financial Info'),
                     _textField(_basicSalaryCtrl, isAr ? 'الراتب الأساسي' : 'Basic Salary', type: TextInputType.number),
                     _dropdown<String>(_salaryPaymentMethod, isAr ? 'طريقة الصرف' : 'Payment Method', [
+                      DropdownMenuItem(value: 'none', child: Text(isAr ? 'بدون' : 'None')),
                       DropdownMenuItem(value: 'cash', child: Text(isAr ? 'نقدي' : 'Cash')),
                       DropdownMenuItem(value: 'bank', child: Text(isAr ? 'تحويل بنكي' : 'Bank Transfer')),
                       DropdownMenuItem(value: 'instapay', child: Text('InstaPay')),

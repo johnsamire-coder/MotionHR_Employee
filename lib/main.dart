@@ -572,6 +572,25 @@ void main() async {
     debugPrint('Firebase initialization failed: $e');
   }
   await configureBackgroundTracking();
+  // لما الجلسة تخلص خالص: نقفل كل حاجة ونرجع لشاشة الدخول بدل ما التطبيق يفضل واقف
+  ApiClient.onSessionExpired = () async {
+    OfflineQueueService.stopAutoSync();
+    AutoCheckinService.stopMonitoring();
+    await AuthStorageService.clearAll();
+    await stopBackgroundTracking();
+    final nav = navigatorKey.currentState;
+    if (nav == null) return;
+    nav.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+    final ctx = navigatorKey.currentContext;
+    if (ctx != null) {
+      ScaffoldMessenger.maybeOf(ctx)?.showSnackBar(
+        const SnackBar(content: Text('انتهت الجلسة. سجّل دخولك تاني من فضلك.')),
+      );
+    }
+  };
   runApp(const MotionHRApp());
 }
 
@@ -1935,6 +1954,12 @@ class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserv
       ];
 
   Future<void> _logout() async {
+    // نبعت أي بصمة متسجلة من غير نت قبل الخروج، ونوقف كل الشغل اللي في الخلفية
+    try {
+      await OfflineQueueService.syncAll().timeout(const Duration(seconds: 8));
+    } catch (_) {}
+    OfflineQueueService.stopAutoSync();
+    AutoCheckinService.stopMonitoring();
     try {
       final token = await AuthStorageService.getSavedToken();
       if (token != null && token.isNotEmpty) {
@@ -7444,6 +7469,12 @@ class _ManagerShellState extends State<ManagerShell> with WidgetsBindingObserver
   }
 
   Future<void> _logout() async {
+    // نبعت أي بصمة متسجلة من غير نت قبل الخروج، ونوقف كل الشغل اللي في الخلفية
+    try {
+      await OfflineQueueService.syncAll().timeout(const Duration(seconds: 8));
+    } catch (_) {}
+    OfflineQueueService.stopAutoSync();
+    AutoCheckinService.stopMonitoring();
     try {
       final token = await AuthStorageService.getSavedToken();
       if (token != null && token.isNotEmpty) {
@@ -8926,6 +8957,10 @@ class ManagerPendingScreen extends StatefulWidget {
 class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
   List<dynamic> _items = [];
   bool _loading = true;
+  // الطلبات اللي قرارها لسه بيتبعت (عشان الضغطة التانية ماتتبعتش)
+  final Set<String> _busy = {};
+
+  String _key(dynamic item) => '${item['type']}-${item['id']}';
 
   @override
   void initState() {
@@ -9072,6 +9107,9 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
   Future<void> _action(dynamic item, String action,
       {String notes = '', String substituteId = ''}) async {
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final key = _key(item);
+    if (_busy.contains(key)) return;
+    setState(() => _busy.add(key));
     try {
       final body = {
         'id': item['id'],
@@ -9096,6 +9134,8 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 '${isAr ? 'حدث خطأ' : 'An error occurred'}: $e')));
+    } finally {
+      if (mounted) setState(() => _busy.remove(key));
     }
   }
 
@@ -9146,7 +9186,7 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
                             Row(children: [
                               Expanded(
                                   child: ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: _busy.contains(_key(item)) ? null : () {
                         final cat = (item['leave_type_category'] ?? '').toString();
                         final hasSub = item['substitute_employee_id'] != null;
                         if (cat == 'sick' && !hasSub) {
@@ -9166,8 +9206,9 @@ class _ManagerPendingScreenState extends State<ManagerPendingScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                   child: ElevatedButton.icon(
-                                      onPressed: () =>
-                                          _showRejectDialog(item),
+                                      onPressed: _busy.contains(_key(item))
+                                          ? null
+                                          : () => _showRejectDialog(item),
                                       icon: const Icon(Icons.close),
                                       label: Text(
                                           context.l10n.rejectMission),

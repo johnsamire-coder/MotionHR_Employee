@@ -67,6 +67,9 @@ class AutoCheckinService {
     });
   }
 
+  // عدد الفحوصات المتتالية اللي الموظف كان فيها برة النطاق وقت الانصراف
+  static int _outsideTicks = 0;
+
   // ── إيقاف المراقبة ─────────────────────────────────────
   static void stopMonitoring() {
     _timer?.cancel();
@@ -103,9 +106,15 @@ class AutoCheckinService {
 
       final shiftData = await _getMyShift(token);
       final preWindow = (policy['pre_shift_window'] as int?) ?? 15;
-      final withinWindow = _isWithinShiftWindow(shiftData, preWindow);
-      print('[AUTO CHECK-IN] Within Shift Window: $withinWindow');
-      if (!withinWindow) return;
+      // الحضور: حوالين بداية الشيفت. الانصراف: حوالين نهاية الشيفت بس
+      // (قبل كده الانصراف كان بيحصل لو خرج من النطاق 5 دقايق في أول 4 ساعات، وبعدها مايحصلش خالص)
+      final canCheckIn = !_checkedInToday && _isWithinShiftWindow(shiftData, preWindow);
+      final canCheckOut = _checkedInToday && !_checkedOutToday && _isNearShiftEnd(shiftData);
+      print('[AUTO CHECK-IN] canCheckIn: $canCheckIn | canCheckOut: $canCheckOut');
+      if (!canCheckIn && !canCheckOut) {
+        _outsideTicks = 0;
+        return;
+      }
 
       final geofence = await _getGeofence(token);
       if (geofence == null) { print('[AUTO CHECK-IN] Geofence is null'); return; }
@@ -123,12 +132,18 @@ class AutoCheckinService {
       print('[AUTO CHECK-IN] Distance: ${distance.toStringAsFixed(2)}m | Radius: ${radius}m | Inside: $isInside');
 
       if (triggerMode == 'auto') {
-        if (isInside && !_checkedInToday) {
+        if (isInside) _outsideTicks = 0;
+        if (isInside && canCheckIn) {
           print('[AUTO CHECK-IN] 🚀 TRIGGERING CHECK-IN NOW!');
           await _performAutoCheckin(token, position);
-        } else if (!isInside && _checkedInToday && !_checkedOutToday) {
-          print('[AUTO CHECK-IN] 🚀 TRIGGERING CHECK-OUT NOW!');
-          await _performAutoCheckout(token, position);
+        } else if (!isInside && canCheckOut) {
+          // لازم يفضل برة النطاق فحصين ورا بعض (حوالي 4 دقايق) عشان هزة الـ GPS ماتسجلش انصراف
+          _outsideTicks++;
+          if (_outsideTicks >= 2) {
+            print('[AUTO CHECK-IN] 🚀 TRIGGERING CHECK-OUT NOW!');
+            _outsideTicks = 0;
+            await _performAutoCheckout(token, position);
+          }
         } else {
           print('[AUTO CHECK-IN] No action needed (Inside=$isInside, CheckedIn=$_checkedInToday)');
         }
@@ -423,4 +438,71 @@ class AutoCheckinService {
     }
   }
 
+
+  // ── هل الوقت دلوقتي قريب من نهاية الشيفت؟ (من نص ساعة قبلها لحد 4 ساعات بعدها) ──
+  static bool _isNearShiftEnd(Map<String, dynamic>? shiftData) {
+    if (shiftData == null) return false;
+    try {
+      final todayShift = shiftData['today_shift'] is Map
+          ? Map<String, dynamic>.from(shiftData['today_shift'])
+          : null;
+      final firstScheduleItem =
+          shiftData['schedule'] is List && (shiftData['schedule'] as List).isNotEmpty
+              ? Map<String, dynamic>.from((shiftData['schedule'] as List).first)
+              : null;
+      String pick(List<String> keys) {
+        for (final src in [shiftData, todayShift, firstScheduleItem]) {
+          if (src == null) continue;
+          for (final k in keys) {
+            final v = (src[k] ?? '').toString().trim();
+            if (v.isNotEmpty && v != 'null') return v;
+          }
+        }
+        return '';
+      }
+
+      final start = _parseClock(pick(['start_time', 'shift_start']));
+      final end = _parseClock(pick(['end_time', 'shift_end']));
+      // من غير ميعاد نهاية واضح مانسجلش انصراف تلقائي (الموظف يسجل بإيده)
+      if (end == null) return false;
+
+      final now = DateTime.now();
+      for (final dayOffset in [0, -1]) {
+        final base = now.add(Duration(days: dayOffset));
+        var shiftEnd = DateTime(base.year, base.month, base.day, end[0], end[1]);
+        if (start != null) {
+          final shiftStart = DateTime(base.year, base.month, base.day, start[0], start[1]);
+          // شيفت بيعدي نص الليل
+          if (!shiftEnd.isAfter(shiftStart)) shiftEnd = shiftEnd.add(const Duration(days: 1));
+        }
+        final from = shiftEnd.subtract(const Duration(minutes: 30));
+        final to = shiftEnd.add(const Duration(hours: 4));
+        if (now.isAfter(from) && now.isBefore(to)) return true;
+      }
+      return false;
+    } catch (e) {
+      print('[AUTO CHECK-IN] فشل قراءة نهاية الشيفت: ' + e.toString());
+      return false;
+    }
+  }
+
+  // ── "08:30" أو "08:30:00" أو "8:30 PM" → [ساعة، دقيقة] ──
+  static List<int>? _parseClock(String raw) {
+    var t = raw.trim();
+    if (t.isEmpty) return null;
+    if (t.contains('T')) t = t.split('T').last;
+    if (t.contains('.')) t = t.split('.').first;
+    final m12 = RegExp(r'^(\d{1,2}):(\d{2})\s*([APap][Mm])$').firstMatch(t);
+    if (m12 != null) {
+      var h = int.parse(m12.group(1)!);
+      final mi = int.parse(m12.group(2)!);
+      final pm = m12.group(3)!.toUpperCase() == 'PM';
+      if (pm && h < 12) h += 12;
+      if (!pm && h == 12) h = 0;
+      return [h, mi];
+    }
+    final m24 = RegExp(r'^(\d{1,2}):(\d{2})(?::\d{2})?$').firstMatch(t);
+    if (m24 == null) return null;
+    return [int.parse(m24.group(1)!), int.parse(m24.group(2)!)];
+  }
 }

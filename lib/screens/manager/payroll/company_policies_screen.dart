@@ -363,6 +363,7 @@ class _AddEditPolicyScreenState extends State<AddEditPolicyScreen> {
   final _notesCtrl = TextEditingController();
 
   String _scope = 'company';
+  String _initialScope = 'company';
   bool _isMonthly = true;
   bool _isActive = true;
 
@@ -412,6 +413,7 @@ class _AddEditPolicyScreenState extends State<AddEditPolicyScreen> {
       _endCtrl.text = e['end_date'] ?? '';
       _notesCtrl.text = e['notes'] ?? '';
       _scope = e['scope'] ?? 'company';
+      _initialScope = _scope;
       _isMonthly = e['is_monthly'] ?? true;
       _isActive = e['is_active'] ?? true;
       _selectedType = e[_typeKey] ?? _types.first;
@@ -437,6 +439,17 @@ class _AddEditPolicyScreenState extends State<AddEditPolicyScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    // الشاشة دي مافيهاش اختيار الفرع أو القسم أو الموظفين، فالنطاق ده بيتظبط من الويب
+    // (قبل كده الحفظ كان بيمسح الفرع أو الموظفين المحددين من السياسة)
+    if (_scope != 'company' && _scope != _initialScope) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr
+            ? 'اختيار فرع أو قسم أو موظفين محددين بيتعمل من الموقع'
+            : 'Choosing a branch, department or employees is done on the website'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
     setState(() => _saving = true);
     try {
       final headers = await _headers();
@@ -445,7 +458,7 @@ class _AddEditPolicyScreenState extends State<AddEditPolicyScreen> {
         'name_ar': _nameArCtrl.text.trim(),
         'name_en': _nameEnCtrl.text.trim(),
         'amount': double.tryParse(_amountCtrl.text) ?? 0,
-        'scope': _scope,
+        if (!isEdit || _scope != _initialScope) 'scope': _scope,
         'start_date': _startCtrl.text.trim(),
         'end_date': _endCtrl.text.trim().isEmpty ? null : _endCtrl.text.trim(),
         'is_monthly': _isMonthly,

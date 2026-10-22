@@ -216,6 +216,9 @@ class _PermissionsTargetScreenState extends State<PermissionsTargetScreen> {
   };
 
   Map<String, bool> _checkedPerms = {};
+  // الحالة وقت التحميل ونطاق كل صلاحية (عشان نبعت اللي اتغير بس، ومانوسعش النطاق)
+  Map<String, bool> _initialPerms = {};
+  Map<String, String> _permScopes = {};
   bool _saving = false;
 
   @override
@@ -256,9 +259,15 @@ class _PermissionsTargetScreenState extends State<PermissionsTargetScreen> {
         }
       }
 
+      final scopes = <String, String>{};
+      for (final p in perms) {
+        scopes[p['code'].toString()] = (p['scope'] ?? 'company').toString();
+      }
       setState(() {
         _summary = result;
         _checkedPerms = checked;
+        _initialPerms = Map<String, bool>.from(checked);
+        _permScopes = scopes;
         _loading = false;
       });
     } catch (e) {
@@ -273,20 +282,25 @@ class _PermissionsTargetScreenState extends State<PermissionsTargetScreen> {
     setState(() => _saving = true);
 
     try {
+      // اللي اتعلّم جديد بيتدّي، واللي اتشال بيتمنع (قبل كده الشيل ماكانش بيتبعت خالص)
       final permissions = <Map<String, dynamic>>[];
       for (final entry in _checkedPerms.entries) {
+        if ((_initialPerms[entry.key] ?? false) == entry.value) continue;
         permissions.add({
           'code': entry.key,
-          'scope': 'company',
+          'scope': _permScopes[entry.key] ?? 'company',
           'is_granted': entry.value,
         });
       }
 
-      await PermissionsService.setRoleOverride(
-        targetType: widget.targetType,
-        targetId: id,
-        permissions: permissions.where((p) => p['is_granted'] == true).toList(),
-      );
+      if (permissions.isNotEmpty) {
+        await PermissionsService.setRoleOverride(
+          targetType: widget.targetType,
+          targetId: id,
+          permissions: permissions,
+        );
+      }
+      _initialPerms = Map<String, bool>.from(_checkedPerms);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

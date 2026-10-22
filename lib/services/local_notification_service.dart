@@ -97,4 +97,20 @@ class LocalNotificationService {
       await show(msg['title']!, msg['body']!);
     }
   }
+
+  // العملية اللي اتحفظت من غير نت والسيرفر رفضها
+  static Future<void> showSyncFailed(String actionType, String reason) async {
+    const titles = <String, String>{
+      'checkIn': 'تسجيل الحضور ماتسجلش ❌',
+      'checkOut': 'تسجيل الانصراف ماتسجلش ❌',
+      'partialCheckout': 'الخروج الجزئي ماتسجلش ❌',
+      'resumeCheckin': 'استئناف العمل ماتسجلش ❌',
+    };
+    final title = titles[actionType];
+    if (title == null) return;
+    final body = reason.isNotEmpty
+        ? reason
+        : 'العملية اللي اتعملت من غير نت اترفضت. راجع مديرك أو سجّل تاني.';
+    await show(title, body);
+  }
 }

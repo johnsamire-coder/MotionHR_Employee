@@ -246,6 +246,9 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
     final titleCtrl = TextEditingController();
     String? pickedPath;
     String? pickedName;
+    DateTime? expiryDate;
+    String fmt(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
     await showDialog(
       context: context,
@@ -284,6 +287,30 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
                   icon: const Icon(Icons.attach_file),
                   label: Text(pickedName ?? 'اختر ملف'),
                 ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final now = DateTime.now();
+                    final d = await showDatePicker(
+                      context: ctx,
+                      initialDate: expiryDate ?? now.add(const Duration(days: 365)),
+                      firstDate: DateTime(now.year - 5),
+                      lastDate: DateTime(now.year + 30),
+                      helpText: 'تاريخ انتهاء المستند',
+                    );
+                    if (d != null) setDialogState(() => expiryDate = d);
+                  },
+                  icon: const Icon(Icons.event),
+                  label: Text(expiryDate == null ? 'تاريخ الانتهاء (اختياري)' : 'ينتهي: ${fmt(expiryDate!)}'),
+                ),
+                if (expiryDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'هيوصلك تنبيه قبل ما المستند ينتهي',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -293,7 +320,8 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
               onPressed: () async {
                 if (pickedPath == null) return;
                 Navigator.pop(ctx);
-                await _uploadDocument(pickedPath!, docType, titleCtrl.text.trim());
+                await _uploadDocument(pickedPath!, docType, titleCtrl.text.trim(),
+                    expiryDate: expiryDate == null ? null : fmt(expiryDate!));
               },
               child: const Text('رفع'),
             ),
@@ -303,7 +331,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
     );
   }
 
-  Future<void> _uploadDocument(String filePath, String docType, String title) async {
+  Future<void> _uploadDocument(String filePath, String docType, String title, {String? expiryDate}) async {
     try {
       final request = http.MultipartRequest(
         'POST',
@@ -312,6 +340,7 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
       request.headers.addAll(await ApiClient.buildHeaders());
       request.fields['document_type'] = docType;
       request.fields['title'] = title;
+      if (expiryDate != null) request.fields['expiry_date'] = expiryDate;
       request.files.add(await http.MultipartFile.fromPath(
         'file',
         filePath,
@@ -326,8 +355,13 @@ class _EmployeeDocumentsScreenState extends State<EmployeeDocumentsScreen> {
         );
         _load();
       } else {
+        String msg = 'فشل رفع المستند';
+        try {
+          final body = jsonDecode(utf8.decode(response.bodyBytes));
+          if (body is Map && body['message'] is String) msg = body['message'];
+        } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل رفع المستند'), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
       }
     } catch (e) {

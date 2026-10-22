@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../services/missions_service.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 
@@ -622,22 +623,69 @@ class _EmployeeMissionDetailScreenState
     }
   }
 
+  // مكان الموظف الحالي (قبل كده المهمة كانت بتبدأ وتخلص من غير ما يتسجل هو فين)
+  Future<Position?> _currentPosition() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _showResult(Map<String, dynamic> result, String okText) {
+    final ok = result['success'] == true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok
+            ? (result['message'] ?? okText).toString()
+            : (result['error'] ?? result['message'] ?? 'حصلت مشكلة، حاول تاني').toString()),
+        backgroundColor: ok ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
   Future<void> _startMission() async {
     setState(() => _actionLoading = true);
-    final result =
-        await MissionsService.startMission(widget.assignmentId);
+    final pos = await _currentPosition();
+    if (pos == null) {
+      if (!mounted) return;
+      setState(() => _actionLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('شغّل الموقع (GPS) واسمح للتطبيق بيه عشان تبدأ المهمة'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    Map<String, dynamic> result;
+    try {
+      result = await MissionsService.startMission(widget.assignmentId,
+          lat: pos.latitude, lng: pos.longitude);
+    } catch (_) {
+      result = {'success': false, 'error': 'خطأ في الاتصال'};
+    }
     if (!mounted) return;
     setState(() => _actionLoading = false);
 
     final autoCheckin = result['auto_checkin'] == true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(autoCheckin
+    _showResult(
+        result,
+        autoCheckin
             ? '✅ تم بدء المهمة وتسجيل حضورك تلقائياً'
-            : '✅ تم بدء المهمة'),
-        backgroundColor: Colors.green,
-      ),
-    );
+            : '✅ تم بدء المهمة');
     _loadMission();
   }
 
@@ -665,16 +713,19 @@ class _EmployeeMissionDetailScreenState
     if (confirmed != true) return;
 
     setState(() => _actionLoading = true);
-    final result = await MissionsService.endMission(widget.assignmentId);
+    // الإنهاء بيتسجل بمكانه لو متاح؛ لو الموقع مش شغال مانقفلش عليه عشان المهمة ماتفضلش مفتوحة
+    final pos = await _currentPosition();
+    Map<String, dynamic> result;
+    try {
+      result = await MissionsService.endMission(widget.assignmentId,
+          lat: pos?.latitude, lng: pos?.longitude);
+    } catch (_) {
+      result = {'success': false, 'error': 'خطأ في الاتصال'};
+    }
     if (!mounted) return;
     setState(() => _actionLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result['message'] ?? 'تم إنهاء المهمة'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    _showResult(result, 'تم إنهاء المهمة');
     _loadMission();
   }
 
