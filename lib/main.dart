@@ -2287,12 +2287,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         attendanceBody = {
           'latitude': position.latitude,
           'longitude': position.longitude,
+          'is_mocked': position.isMocked,
         };
       } else if (action == 'resume_checkin') {
         attendanceUrl = '$kBaseUrl/attendance/api/mobile/employee/resume-checkin/';
         attendanceBody = {
           'latitude': position.latitude,
           'longitude': position.longitude,
+          'is_mocked': position.isMocked,
         };
       } else {
         attendanceUrl = '$kBaseUrl/attendance/api/mobile/attendance/';
@@ -2300,6 +2302,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
           'action': action,
           'latitude': position.latitude,
           'longitude': position.longitude,
+          'accuracy': position.accuracy,
+          'is_mocked': position.isMocked,   // برنامج تزييف موقع (أندرويد) — السيرفر بيرفضه
+          'device_id': prefs.getString('device_id') ?? '',
         };
       }
       http.Response? res;
