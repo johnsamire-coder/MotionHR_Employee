@@ -13,6 +13,7 @@ class PayrollSettingsScreen extends StatefulWidget {
 
 class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
   bool _loading = true;
+  bool _loadFailed = false;
   bool _saving = false;
 
   final _lateCtrl = TextEditingController();
@@ -83,32 +84,33 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
           _payrollPeriodLabelMode = s['payroll_period_label_mode']?.toString() ?? 'cutoff_month';
         });
       }
+      _loadFailed = res.statusCode != 200;
     } catch (_) {
-      setState(() {
-        _lateCtrl.text = '1.0';
-        _absenceCtrl.text = '200.0';
-        _overtimeCtrl.text = '50.0';
-        _insuranceMode = 'none';
-        _insuranceFixedCtrl.text = '0.0';
-        _insurancePercentCtrl.text = '0.0';
-        _payrollCycleType = 'calendar_month';
-        _cutoffDayCtrl.text = '1';
-        _payDayCtrl.text = '1';
-        _payrollPayMonthOffset = 'same_month';
-        _payrollPeriodLabelMode = 'cutoff_month';
-      });
+      // مانحطش أرقام افتراضية: لو اتحفظت كانت هتمسح إعدادات الشركة الحقيقية
+      _loadFailed = true;
     }
     if (mounted) setState(() => _loading = false);
   }
 
   Future<void> _save() async {
+    if (_loadFailed) return;
+    final late = double.tryParse(_lateCtrl.text);
+    final absence = double.tryParse(_absenceCtrl.text);
+    final overtime = double.tryParse(_overtimeCtrl.text);
+    if (late == null || absence == null || overtime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAr ? 'اكتب أرقام صحيحة في كل الخانات' : 'Enter valid numbers in all fields'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
     setState(() => _saving = true);
     try {
       final token = await _getToken();
       final body = {
-        'late_deduction_per_minute': double.tryParse(_lateCtrl.text) ?? 1.0,
-        'absence_deduction_per_day': double.tryParse(_absenceCtrl.text) ?? 200.0,
-        'overtime_rate_per_hour': double.tryParse(_overtimeCtrl.text) ?? 50.0,
+        'late_deduction_per_minute': late,
+        'absence_deduction_per_day': absence,
+        'overtime_rate_per_hour': overtime,
         'insurance_mode': _insuranceMode,
         'insurance_fixed_amount': double.tryParse(_insuranceFixedCtrl.text) ?? 0.0,
         'insurance_percent': double.tryParse(_insurancePercentCtrl.text) ?? 0.0,
@@ -361,6 +363,20 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_loadFailed)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(10)),
+                        child: Row(children: [
+                          const Icon(Icons.error_outline, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(isAr
+                              ? 'معرفناش نحمّل إعدادات الشركة، فالحفظ مقفول عشان مانمسحهاش.'
+                              : "Couldn't load company settings, so saving is disabled to protect them.")),
+                          TextButton(onPressed: _load, child: Text(isAr ? 'حاول تاني' : 'Retry')),
+                        ]),
+                      ),
                     // دورة المرتب - جديد
                     _payrollCycleSection(),
                     const SizedBox(height: 12),
@@ -415,7 +431,7 @@ class _PayrollSettingsScreenState extends State<PayrollSettingsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _saving ? null : _save,
+                        onPressed: (_saving || _loadFailed) ? null : _save,
                         icon: const Icon(Icons.save, color: Colors.white),
                         label: Text(
                           isAr ? 'حفظ الإعدادات' : 'Save Settings',

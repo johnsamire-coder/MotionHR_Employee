@@ -324,6 +324,17 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         _row(isAr ? 'خصم الغياب' : 'Absence Deduction',
                             '- ${_data!['absence_deduction'] ?? 0} ج',
                             Colors.red),
+                        // باقي البنود عشان الخصومات تجمع على الإجمالي المكتوب
+                        for (final it in [
+                          ['insurance_deduction', 'التأمينات', 'Insurance'],
+                          ['tax_deduction', 'الضرائب', 'Tax'],
+                          ['installments_total', 'أقساط السلف', 'Loan Installments'],
+                          ['penalties_total', 'الجزاءات', 'Penalties'],
+                          ['extra_deductions_total', 'خصومات إضافية', 'Extra Deductions'],
+                          ['other_deductions', 'خصومات أخرى', 'Other Deductions'],
+                        ])
+                          if (_num(it[0]) > 0)
+                            _row(isAr ? it[1] : it[2], '- ${_num(it[0])} ج', Colors.red),
                         const Divider(),
                         _row(isAr ? 'إجمالي الخصومات' : 'Total Deductions',
                             '- ${_data!['total_deductions'] ?? 0} ج',
@@ -342,6 +353,12 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         _row(isAr ? 'بونص Overtime' : 'Overtime Bonus',
                             '+ ${_data!['overtime_bonus'] ?? 0} ج',
                             Color(0xFF382483)),
+                        if (_num('allowances_total') > 0)
+                          _row(isAr ? 'البدلات' : 'Allowances', '+ ${_num('allowances_total')} ج', Color(0xFF382483)),
+                        if (_num('bonuses_total') > 0)
+                          _row(isAr ? 'المكافآت' : 'Bonuses', '+ ${_num('bonuses_total')} ج', Color(0xFF382483)),
+                        if (_otherEarnings() > 0)
+                          _row(isAr ? 'استحقاقات أخرى' : 'Other Earnings', '+ ${_otherEarnings()} ج', Color(0xFF382483)),
                         if ((_data!['night_allowance'] ?? 0) > 0)
                           _row(isAr ? 'بدل ليلي' : 'Night Allowance',
                               '+ ${_data!['night_allowance']} ج',
@@ -499,6 +516,14 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
         ],
       ),
     );
+  }
+
+  num _num(String key) => (_data?[key] as num?) ?? 0;
+
+  // "استحقاقات أخرى" من السيرفر شاملة البدل الليلي وبدل الراحة اللي ظاهرين لوحدهم هنا
+  num _otherEarnings() {
+    final v = _num('other_earnings') - _num('night_allowance') - _num('weekend_allowance');
+    return v > 0.009 ? double.parse(v.toStringAsFixed(2)) : 0;
   }
 
   Widget _row(String label, String value, Color color,

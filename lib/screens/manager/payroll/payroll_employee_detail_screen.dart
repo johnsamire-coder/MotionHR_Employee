@@ -310,6 +310,12 @@ class _PayrollEmployeeDetailScreenState
               _money(_data?['bonuses_total']),
               color: Color(0xFF00C688),
             ),
+            if (((_data?['other_earnings'] as num?) ?? 0) > 0)
+              _infoRow(
+                isAr ? 'استحقاقات أخرى (ليلي/راحة/ميدان/وجبات/مواصلات)' : 'Other Earnings',
+                _money(_data?['other_earnings']),
+                color: Color(0xFF00C688),
+              ),
             const Divider(height: 20),
             _infoRow(
               isAr ? 'إجمالي الاستحقاقات' : 'Gross Salary',
@@ -348,6 +354,20 @@ class _PayrollEmployeeDetailScreenState
               _money(_data?['extra_deductions_total']),
               color: Colors.red,
             ),
+            if (((_data?['tax_deduction'] as num?) ?? 0) > 0)
+              _infoRow(isAr ? 'الضرائب' : 'Tax', _money(_data?['tax_deduction']), color: Colors.red),
+            if (((_data?['other_deductions'] as num?) ?? 0) > 0)
+              _infoRow(
+                isAr ? 'خصومات أخرى (انصراف مبكر/إجازة بدون أجر/نقص ساعات...)' : 'Other Deductions',
+                _money(_data?['other_deductions']),
+                color: Colors.red,
+              ),
+            if (_data?['is_final'] == true)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(isAr ? '✔ الأرقام من المسير المعتمد' : '✔ Figures from the approved run',
+                    style: TextStyle(fontSize: 12, color: Colors.green.shade800)),
+              ),
             const Divider(height: 20),
             _infoRow(
               isAr ? 'إجمالي الخصومات' : 'Total Deductions',

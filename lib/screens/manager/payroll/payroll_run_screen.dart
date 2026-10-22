@@ -72,7 +72,26 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
     if (!mounted) return;
     setState(() => _creating = false);
     if (result.containsKey('error')) {
-      _showSnack(ar ? 'فشل انشاء المسير' : 'Failed to create run', error: true);
+      _showSnack(result['error']?.toString() ?? (ar ? 'فشل انشاء المسير' : 'Failed to create run'), error: true);
+    } else if (((result['errors_count'] as num?) ?? 0) > 0) {
+      // بعض الموظفين ماتحسبوش: لازم يبانوا قبل الاعتماد
+      _load();
+      final errs = (result['errors'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(ar ? 'فيه موظفين ماتحسبوش' : 'Some employees failed'),
+          content: SingleChildScrollView(
+            child: Text([
+              ar
+                  ? 'اتحسب ${result['total_employees']} موظف، و${result['errors_count']} موظف ماتحسبش. راجعهم قبل الاعتماد:'
+                  : '${result['total_employees']} calculated, ${result['errors_count']} failed. Review before approving:',
+              ...errs.map((e) => '• ${e['employee_name']}: ${e['error']}'),
+            ].join('\n')),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ar ? 'تمام' : 'OK'))],
+        ),
+      );
     } else {
       _showSnack(ar ? 'تم انشاء المسير بنجاح' : 'Run created successfully');
       _load();
@@ -89,7 +108,7 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
       _load();
     } else {
       setState(() => _loading = false);
-      _showSnack(ar ? 'فشلت الموافقة' : 'Approval failed', error: true);
+      _showSnack(result['error']?.toString() ?? (ar ? 'فشلت الموافقة' : 'Approval failed'), error: true);
     }
   }
 
@@ -131,13 +150,15 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
   Future<void> _exportExcel(Map<String, dynamic> run) async {
     final ar = _isAr;
     try {
-      final lines = (run['lines'] as List? ?? [])
+      // قايمة المسيرات مافيهاش السطور: بنجيبها من تفاصيل المسير
+      final res = await PayrollRunService.getRunLines(run['id'] as int);
+      final lines = (res['lines'] as List? ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
       await ReportExcelService.exportPayrollRunReport(
         lines: lines,
-        year: _selectedYear,
-        month: _selectedMonth,
+        year: (run['year'] as num?)?.toInt() ?? _selectedYear,
+        month: (run['month'] as num?)?.toInt() ?? _selectedMonth,
         isAr: ar,
       );
     } catch (e) {
@@ -247,6 +268,9 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
     final status = run['status'] as String? ?? 'draft';
     final runId = run['id'] as int? ?? 0;
     final total = (run['grand_net'] as num?)?.toDouble() ?? 0.0;
+    // كل مسير بشهره هو، مش الشهر المختار فوق
+    final runYear = (run['year'] as num?)?.toInt() ?? _selectedYear;
+    final runMonth = (run['month'] as num?)?.toInt() ?? _selectedMonth;
     final count = run['total_employees'] as int? ?? 0;
     final createdAt = run['created_at'] as String? ?? '';
     final color = _statusColor(status);
@@ -277,7 +301,7 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_monthName(_selectedMonth, ar)} $_selectedYear',
+                        '${_monthName(runMonth, ar)} $runYear',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(
@@ -319,8 +343,8 @@ class _PayrollRunScreenState extends State<PayrollRunScreen> {
                       MaterialPageRoute(
                         builder: (_) => PayrollRunDetailScreen(
                           runId: runId,
-                          year: _selectedYear,
-                          month: _selectedMonth,
+                          year: runYear,
+                          month: runMonth,
                         ),
                       ),
                     ).then((_) => _load()),

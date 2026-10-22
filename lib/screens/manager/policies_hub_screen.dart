@@ -6,7 +6,6 @@ import 'official_holidays_screen.dart';
 import 'payroll/tax_policy_screen.dart';
 import 'payroll/eos_policy_screen.dart';
 import 'payroll/insurance_policies_screen.dart';
-import 'payroll/payroll_cycle_screen.dart';
 import 'payroll/penalty_rules_screen.dart';
 import 'payroll/bonus_rules_screen.dart';
 import 'payroll/allowance_rules_screen.dart';
@@ -98,15 +97,6 @@ class PoliciesHubScreen extends StatelessWidget {
               color: const Color(0xFF00C688),
               icon: Icons.shield,
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InsurancePoliciesScreen())),
-            ),
-            const SizedBox(height: 12),
-            _policyCard(
-              context,
-              title: isAr ? 'دورة الرواتب' : 'Payroll Cycle',
-              subtitle: isAr ? 'يوم القفل والصرف والموافقات' : 'Cutoff, pay day and approvals',
-              color: const Color(0xFF4A389E),
-              icon: Icons.calendar_month,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollCycleScreen())),
             ),
             const SizedBox(height: 12),
             _policyCard(
