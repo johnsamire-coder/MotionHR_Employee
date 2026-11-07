@@ -3605,19 +3605,72 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _load();
   }
 
+  Map<String, dynamic>? _month;
+
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
     try {
       final res = await ApiClient.get(
           Uri.parse('$kBaseUrl/attendance/api/mobile/history/'),
           );
-      if (res.statusCode == 200) {
+      if (res.statusCode == 200 && mounted) {
         final data = jsonDecode(res.body);
         setState(() =>
             _items = data['items'] ?? data['history'] ?? []);
       }
     } catch (_) {}
-    setState(() => _loading = false);
+    // ملخص الشهر (نفس اللي فوق سجل الحضور في الويب)
+    try {
+      final res = await ApiClient.get(
+          Uri.parse('$kBaseUrl/attendance/api/mobile/employee/summary/'));
+      if (res.statusCode == 200 && mounted) {
+        final data = jsonDecode(res.body);
+        final att = data['attendance'];
+        if (att is Map) setState(() => _month = Map<String, dynamic>.from(att));
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Widget _monthSummary(bool isAr) {
+    final m = _month;
+    if (m == null) return const SizedBox.shrink();
+    num n(String k) => m[k] is num ? m[k] as num : (num.tryParse('${m[k] ?? ''}') ?? 0);
+    Widget box(String label, String value, Color c) => Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(3),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: c.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(children: [
+              Text(value,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: c)),
+              const SizedBox(height: 2),
+              Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+            ]),
+          ),
+        );
+    final late = n('total_late_minutes');
+    final hours = n('total_work_hours');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(children: [
+        Row(children: [
+          box(isAr ? 'أيام' : 'Days', '${n('total_days')}', kPrimaryColor),
+          box(isAr ? 'حاضر' : 'Present', '${n('present')}', Colors.green.shade700),
+          box(isAr ? 'متأخر' : 'Late', '${n('late')}', Colors.orange.shade800),
+          box(isAr ? 'غائب' : 'Absent', '${n('absent')}', Colors.red.shade700),
+        ]),
+        if (late > 0 || hours > 0)
+          Row(children: [
+            box(isAr ? 'إجمالي التأخير' : 'Total Late',
+                _HistoryDayCard.minutesText(late, isAr), Colors.orange.shade800),
+            box(isAr ? 'ساعات العمل' : 'Work Hours',
+                '${hours.toStringAsFixed(1)} ${isAr ? 'س' : 'h'}', Colors.green.shade700),
+          ]),
+      ]),
+    );
   }
 
   @override
@@ -3635,25 +3688,137 @@ class _HistoryScreenState extends State<HistoryScreen> {
               : _items.isEmpty
                   ? Center(
                       child: Text(isAr ? 'لا يوجد سجل' : 'No history found'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(8),
-                      itemCount: _items.length,
-                      itemBuilder: (_, i) {
-                        final item = _items[i];
-                        return Card(
-                            child: ListTile(
-                                leading: const Icon(Icons.calendar_today,
-                                    color: kPrimaryColor),
-                                title: Text(item['date'] ?? ''),
-                                subtitle: Text(
-                                  isAr
-                                      ? 'حضور: ${item['check_in'] ?? '-'}  |  انصراف: ${item['check_out'] ?? '-'}'
-                                      : 'Check-in: ${item['check_in'] ?? '-'}  |  Check-out: ${item['check_out'] ?? '-'}',
-                                )));
-                      }),
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                          padding: const EdgeInsets.all(8),
+                          itemCount: _items.length + 1,
+                          itemBuilder: (_, i) => i == 0
+                              ? _monthSummary(isAr)
+                              : _HistoryDayCard(item: _items[i - 1], isAr: isAr)),
+                    ),
         ));
   }
 }
+// كارت يوم في سجل الحضور: نفس اللي بيظهر في الويب
+// (التاريخ، الحالة، الحضور، الانصراف، التأخير، ساعات الشغل، عنوان الحضور)
+class _HistoryDayCard extends StatelessWidget {
+  final dynamic item;
+  final bool isAr;
+  const _HistoryDayCard({required this.item, required this.isAr});
+
+  static String minutesText(num? m, bool isAr) {
+    final v = (m ?? 0).round();
+    if (v <= 0) return '—';
+    final h = v ~/ 60, min = v % 60;
+    if (h == 0) return isAr ? '$min د' : '${min}m';
+    if (min == 0) return isAr ? '$h س' : '${h}h';
+    return isAr ? '$h س $min د' : '${h}h ${min}m';
+  }
+
+  static num _num(dynamic v) => v is num ? v : (num.tryParse('${v ?? ''}') ?? 0);
+
+  @override
+  Widget build(BuildContext context) {
+    final status = '${item['status'] ?? ''}';
+    final (String label, Color color, IconData icon) = switch (status) {
+      'late' => (isAr ? 'متأخر' : 'Late', Colors.orange.shade800, Icons.warning_amber_rounded),
+      'absent' => (isAr ? 'غائب' : 'Absent', Colors.red.shade700, Icons.cancel_outlined),
+      'on_leave' => (isAr ? 'إجازة' : 'Leave', Colors.blue.shade700, Icons.event),
+      'early_leave' => (isAr ? 'انصراف مبكر' : 'Early Leave', Colors.deepOrange.shade700, Icons.logout),
+      _ => (isAr ? 'حاضر' : 'Present', Colors.green.shade700, Icons.check_circle_outline),
+    };
+    final checkIn = '${item['check_in_time'] ?? item['check_in'] ?? ''}';
+    final checkOut = '${item['check_out_time'] ?? item['check_out'] ?? ''}';
+    final late = _num(item['late_minutes']);
+    final hours = _num(item['work_hours']);
+    final address = '${item['check_in_address'] ?? ''}'.trim();
+    final date = '${item['date_display'] ?? ''}'.isNotEmpty
+        ? '${item['date_display']}'
+        : '${item['date'] ?? ''}';
+
+    Widget timeBox(String title, String value, Color c) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: c.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(children: [
+              Text(title, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+              const SizedBox(height: 2),
+              Text(value.isEmpty ? '—' : value,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: c)),
+            ]),
+          ),
+        );
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.calendar_today, size: 16, color: kPrimaryColor),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(date, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(icon, size: 13, color: color),
+                  const SizedBox(width: 3),
+                  Text(label, style: TextStyle(fontSize: 12, color: color)),
+                ]),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              timeBox(isAr ? 'حضور' : 'In', checkIn, Colors.green.shade700),
+              const SizedBox(width: 8),
+              timeBox(isAr ? 'انصراف' : 'Out', checkOut, Colors.red.shade700),
+            ]),
+            if (late > 0 || hours > 0) ...[
+              const SizedBox(height: 6),
+              Wrap(spacing: 16, runSpacing: 4, children: [
+                if (late > 0)
+                  Text('⏰ ${isAr ? 'تأخير' : 'Late'}: ${minutesText(late, isAr)}',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange.shade800,
+                          fontWeight: FontWeight.w600)),
+                if (hours > 0)
+                  Text(
+                      '🕐 ${isAr ? 'ساعات العمل' : 'Work hours'}: ${hours.toStringAsFixed(1)} ${isAr ? 'س' : 'h'}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+              ]),
+            ],
+            if (address.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Icon(Icons.location_on, size: 13, color: kPrimaryColor),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                ),
+              ]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 String localizedTypeName(String name, bool isAr) {
   final n = name.trim();
 

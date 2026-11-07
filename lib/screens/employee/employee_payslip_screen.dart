@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../services/payroll_service.dart';
 import '../../services/report_pdf_service.dart';
+import '../../services/payslip_breakdown.dart';
 
 class EmployeePayslipScreen extends StatefulWidget {
   const EmployeePayslipScreen({super.key});
@@ -145,22 +146,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
         headers: isAr
             ? ['البند', 'القيمة']
             : ['Item', 'Value'],
-        rows: [
-          [isAr ? 'الراتب الأساسي' : 'Basic Salary',
-            '${_data!['basic_salary'] ?? 0} ج'],
-          [isAr ? 'خصم التأخير' : 'Late Deduction',
-            '${_data!['late_deduction'] ?? 0} ج'],
-          [isAr ? 'خصم الغياب' : 'Absence Deduction',
-            '${_data!['absence_deduction'] ?? 0} ج'],
-          [isAr ? 'إجمالي الخصومات' : 'Total Deductions',
-            '${_data!['total_deductions'] ?? 0} ج'],
-          [isAr ? 'ساعات Overtime المدفوعة' : 'Overtime Hours paid',
-            _hoursText(_data!['overtime_paid_hours'] ?? _data!['overtime_hours'], isAr)],
-          [isAr ? 'بونص Overtime' : 'Overtime Bonus',
-            '${_data!['overtime_bonus'] ?? 0} ج'],
-          [isAr ? 'صافي الراتب' : 'Net Salary',
-            '${_data!['net_salary'] ?? 0} ج'],
-        ],
+        rows: _printRows(),
       );
     } catch (e) {
       if (mounted) {
@@ -301,67 +287,7 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // ─── Salary Card ──────────────────
-                    _card(
-                      isAr ? 'تفاصيل الراتب' : 'Salary Details',
-                      Icons.attach_money,
-                      Colors.green,
-                      [
-                        _row(isAr ? 'الراتب الأساسي' : 'Basic Salary',
-                            '${_data!['basic_salary'] ?? 0} ج',
-                            Colors.black87),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ─── Deductions ───────────────────
-                    _card(
-                      isAr ? 'الخصومات' : 'Deductions',
-                      Icons.remove_circle_outline,
-                      Colors.red,
-                      [
-                        _row(isAr ? 'خصم التأخير' : 'Late Deduction',
-                            '- ${_data!['late_deduction'] ?? 0} ج',
-                            Colors.red),
-                        _row(isAr ? 'خصم الغياب' : 'Absence Deduction',
-                            '- ${_data!['absence_deduction'] ?? 0} ج',
-                            Colors.red),
-                        const Divider(),
-                        _row(isAr ? 'إجمالي الخصومات' : 'Total Deductions',
-                            '- ${_data!['total_deductions'] ?? 0} ج',
-                            Colors.red,
-                            bold: true),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ─── Additions ─────────────────────
-                    _card(
-                      isAr ? 'الإضافات' : 'Additions',
-                      Icons.add_circle_outline,
-                      Color(0xFF382483),
-                      [
-                        _row(isAr ? 'بونص Overtime' : 'Overtime Bonus',
-                            '+ ${_data!['overtime_bonus'] ?? 0} ج',
-                            Color(0xFF382483)),
-                        if ((_data!['night_allowance'] ?? 0) > 0)
-                          _row(isAr ? 'بدل ليلي' : 'Night Allowance',
-                              '+ ${_data!['night_allowance']} ج',
-                              Color(0xFF1A0A3E)),
-                        if ((_data!['weekend_allowance'] ?? 0) > 0)
-                          _row(isAr ? 'بدل يوم الراحة' : 'Weekend Allowance',
-                              '+ ${_data!['weekend_allowance']} ج',
-                              Color(0xFF1A0A3E)),
-                        if ((_data!['night_shift_days'] ?? 0) > 0)
-                          _row(isAr ? 'أيام شيفتات ليلية' : 'Night Shift Days',
-                              '${_data!['night_shift_days']} ${isAr ? 'يوم' : 'days'}',
-                              Colors.grey),
-                        if ((_data!['weekend_work_days'] ?? 0) > 0)
-                          _row(isAr ? 'أيام عمل في الراحة' : 'Weekend Work Days',
-                              '${_data!['weekend_work_days']} ${isAr ? 'يوم' : 'days'}',
-                              Colors.grey),
-                      ],
-                    ),
+                    ..._buildMoneySections(),
                     const SizedBox(height: 12),
 
                     // ─── Policy Info ───────────────────
@@ -396,39 +322,6 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 12),
-
-                    // ─── Net Salary ───────────────────
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.green.shade300, width: 2),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            isAr ? 'صافي الراتب' : 'Net Salary',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${_data!['net_salary'] ?? 0} ج',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
 
                     // ─── Attendance Summary ───────────
                     _card(
@@ -436,8 +329,18 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                       Icons.calendar_today,
                       Color(0xFF382483),
                       [
-                        _row(isAr ? 'أيام الحضور' : 'Attended Days',
+                        _row(isAr ? 'أيام العمل' : 'Working Days',
+                            '${_data!['total_working_days'] ?? 0}', Colors.black87),
+                        _row(isAr ? 'أيام الحضور' : 'Present Days',
+                            '${_data!['present_days'] ?? 0}', Colors.green),
+                        _row(isAr ? 'الأيام المحسوبة' : 'Paid Days',
                             '${_data!['attended_days'] ?? 0}', Colors.black87),
+                        if (payslipNum(_data!['mission_days']) > 0)
+                          _row(isAr ? 'أيام المأموريات' : 'Mission Days',
+                              '${_data!['mission_days']}', Colors.black87),
+                        if (payslipNum(_data!['on_leave_days']) > 0)
+                          _row(isAr ? 'أيام الإجازات' : 'Leave Days',
+                              '${_data!['on_leave_days']}', Colors.black87),
                         _row(isAr ? 'أيام الغياب' : 'Absent Days',
                             '${_data!['absent_days'] ?? 0}', Colors.red),
                         _row(isAr ? 'أيام التأخير' : 'Late Days',
@@ -495,6 +398,149 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
     );
   }
 
+  String _currency() {
+    final c = '${_data?['currency'] ?? ''}'.trim();
+    if (c.isEmpty || c.toUpperCase() == 'EGP') return isAr ? 'ج' : 'EGP';
+    return c;
+  }
+
+  String _money(double v) => '${formatPayslipMoney(v)} ${_currency()}';
+
+  // نفس بنود الشاشة في ملف الطباعة
+  List<List<String>> _printRows() {
+    final b = buildPayslipBreakdown(_data!, isAr);
+    final rows = <List<String>>[];
+    for (final l in b.earnings) {
+      rows.add([l.label, _money(l.amount)]);
+    }
+    rows.add([isAr ? 'إجمالي المستحق' : 'Gross Salary', _money(b.gross)]);
+    for (final l in b.deductions) {
+      rows.add([l.label, '- ${_money(l.amount)}']);
+    }
+    rows.add([isAr ? 'إجمالي الخصومات' : 'Total Deductions', '- ${_money(b.totalDeductions)}']);
+    rows.add([isAr ? 'صافي الراتب' : 'Net Salary', _money(b.net)]);
+    return rows;
+  }
+
+  List<Widget> _lineWidgets(PayslipLine l, String sign, Color color) {
+    return [
+      _row(l.label, '$sign${_money(l.amount)}', color),
+      for (final it in l.items)
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 16, top: 2, bottom: 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text('• ${it.name}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+              ),
+              Text(_money(it.amount),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+            ],
+          ),
+        ),
+    ];
+  }
+
+  List<Widget> _buildMoneySections() {
+    final b = buildPayslipBreakdown(_data!, isAr);
+    return [
+      // ─── صافي الراتب ───
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.green.shade300, width: 2),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    isAr ? 'صافي الراتب' : 'Net Salary',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(
+                  _money(b.net),
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+              ],
+            ),
+            if (b.isFinal)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  isAr ? 'نهائي: من مسير الرواتب المعتمد' : 'Final: from the approved payroll run',
+                  style: TextStyle(fontSize: 12, color: Colors.green.shade800),
+                ),
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+
+      // ─── الإيرادات ───
+      _card(
+        isAr ? 'الإيرادات' : 'Earnings',
+        Icons.add_circle_outline,
+        Colors.green,
+        [
+          for (final l in b.earnings)
+            ..._lineWidgets(l, l.key == 'basic_salary' ? '' : '+ ', Colors.green.shade700),
+          const Divider(),
+          _row(isAr ? 'إجمالي المستحق' : 'Gross Salary', _money(b.gross),
+              Colors.green.shade800,
+              bold: true),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      // ─── الخصومات ───
+      _card(
+        isAr ? 'الخصومات' : 'Deductions',
+        Icons.remove_circle_outline,
+        Colors.red,
+        [
+          if (b.deductions.isEmpty)
+            _row(isAr ? 'لا توجد خصومات' : 'No deductions', '0', Colors.grey),
+          for (final l in b.deductions) ..._lineWidgets(l, '- ', Colors.red),
+          const Divider(),
+          _row(isAr ? 'إجمالي الخصومات' : 'Total Deductions',
+              '- ${_money(b.totalDeductions)}', Colors.red,
+              bold: true),
+        ],
+      ),
+
+      // ─── مساهمة الشركة في التأمينات (للعلم بس) ───
+      if (b.companyInsurance.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        _card(
+          isAr ? 'مساهمة الشركة في التأمينات (للعلم فقط)' : 'Company Insurance Contribution (Info Only)',
+          Icons.business,
+          const Color(0xFF1565C0),
+          [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                isAr
+                    ? 'المبالغ دي مش بتتخصم من مرتبك، الشركة بتدفعها عنك'
+                    : 'These amounts are NOT deducted from your salary - paid by the company',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              ),
+            ),
+            for (final l in b.companyInsurance)
+              _row(l.label, _money(l.amount), const Color(0xFF1565C0),
+                  bold: l.key == 'total_company_insurance_contribution'),
+          ],
+        ),
+      ],
+    ];
+  }
+
   Widget _card(String title, IconData icon, Color color,
       List<Widget> children) {
     return Container(
@@ -524,11 +570,13 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
             child: Row(children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
-              Text(title,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
+              Flexible(
+                child: Text(title,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: color)),
+              ),
             ]),
           ),
           Padding(
@@ -547,7 +595,8 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
+          Expanded(child: Text(label)),
+          const SizedBox(width: 8),
           Text(value,
               style: TextStyle(
                   color: color,
