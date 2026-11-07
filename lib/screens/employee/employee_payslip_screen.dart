@@ -154,6 +154,8 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
             '${_data!['absence_deduction'] ?? 0} ج'],
           [isAr ? 'إجمالي الخصومات' : 'Total Deductions',
             '${_data!['total_deductions'] ?? 0} ج'],
+          [isAr ? 'ساعات Overtime المدفوعة' : 'Overtime Hours paid',
+            _hoursText(_data!['overtime_paid_hours'] ?? _data!['overtime_hours'], isAr)],
           [isAr ? 'بونص Overtime' : 'Overtime Bonus',
             '${_data!['overtime_bonus'] ?? 0} ج'],
           [isAr ? 'صافي الراتب' : 'Net Salary',
@@ -446,9 +448,46 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
                         _row(isAr ? 'ساعات العمل' : 'Work Hours',
                             '${_data!['total_work_hours'] ?? 0} س',
                             Colors.black87),
-                        _row(isAr ? 'ساعات Overtime' : 'Overtime Hours',
-                            '${_data!['overtime_hours'] ?? 0} س',
+                        // الأوفر تايم: الفعلية، واللي بتتحسب (بعد أقل مدة في اليوم)، والمدفوعة (× المضاعف)
+                        _row(isAr ? 'ساعات Overtime الفعلية' : 'Overtime Hours (actual)',
+                            _hoursText(_data!['overtime_hours'], isAr),
                             Color(0xFF382483)),
+                        if (_data!['overtime_counted_hours'] != null) ...[
+                          _row(isAr ? 'ساعات Overtime المحسوبة' : 'Overtime Hours (counted)',
+                              _hoursText(_data!['overtime_counted_hours'], isAr),
+                              Color(0xFF382483)),
+                          _row(
+                              _data!['overtime_multiplier'] != null
+                                  ? (isAr
+                                      ? 'ساعات Overtime المدفوعة (× ${_data!['overtime_multiplier']})'
+                                      : 'Overtime Hours paid (× ${_data!['overtime_multiplier']})')
+                                  : (isAr ? 'ساعات Overtime المدفوعة' : 'Overtime Hours paid'),
+                              _hoursText(_data!['overtime_paid_hours'], isAr),
+                              Color(0xFF382483),
+                              bold: true),
+                          if ((_data!['overtime_hours'] ?? 0) > 0 &&
+                              (_data!['overtime_counted_hours'] ?? 0) == 0)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                isAr
+                                    ? 'الأوفر تايم مش بيتصرف ليك حسب سياسة الشركة'
+                                    : 'Overtime is not paid for you under the company policy',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            )
+                          else if ((_data!['overtime_hours'] ?? 0) >
+                              (_data!['overtime_counted_hours'] ?? 0))
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                isAr
+                                    ? 'الأيام اللي فيها أوفر تايم أقل من الحد الأدنى مابتتحسبش'
+                                    : 'Days below the daily minimum are not counted',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ),
+                        ],
                       ],
                     ),
                   ],
@@ -519,6 +558,15 @@ class _EmployeePayslipScreenState extends State<EmployeePayslipScreen> {
       ),
     );
   }
+}
+
+/// 2.5 -> "2 س 30 د"
+String _hoursText(dynamic value, bool isAr) {
+  final v = (value is num) ? value.toDouble() : double.tryParse('$value') ?? 0.0;
+  final h = v.floor();
+  final m = ((v - h) * 60).round();
+  if (m == 0) return isAr ? '$h س' : '${h}h';
+  return isAr ? '$h س $m د' : '${h}h ${m}m';
 }
 
 String _monthName(int month, bool isAr) {
