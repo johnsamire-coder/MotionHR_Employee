@@ -1029,6 +1029,8 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
             _infoRow('رقم الحساب', _profile!['bank_account']),
             _infoRow('IBAN', _profile!['iban']),
             _infoRow(context.l10n.basicSalary, _profile!['basic_salary']),
+            if (_profile!['insurance_base_salary'] != null)
+              _infoRow('المرتب التأميني الخاص', _profile!['insurance_base_salary']),
           ]),
       ],
     );
@@ -1428,6 +1430,9 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
   late TextEditingController _instapayPhoneCtrl;
   late TextEditingController _walletPhoneCtrl;
   late TextEditingController _insuranceNumberCtrl;
+  late TextEditingController _insuranceBaseCtrl;
+  // السيرفر بيبعت المرتب التأميني الخاص؟ (لو نسخة قديمة مانبعتهوش عشان مانمسحهوش)
+  bool _hasInsuranceBaseField = false;
   late TextEditingController _birthDateCtrl;
   late TextEditingController _hireDateCtrl;
   late TextEditingController _contractEndDateCtrl;
@@ -1474,6 +1479,10 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
     _instapayPhoneCtrl = TextEditingController(text: p['instapay_phone'] ?? '');
     _walletPhoneCtrl = TextEditingController(text: p['wallet_phone'] ?? '');
     _insuranceNumberCtrl = TextEditingController(text: p['insurance_number'] ?? '');
+    _hasInsuranceBaseField = p.containsKey('insurance_base_salary');
+    final ibs = p['insurance_base_salary'];
+    _insuranceBaseCtrl = TextEditingController(
+        text: ibs == null ? '' : (ibs is num && ibs == ibs.roundToDouble() ? '${ibs.toInt()}' : '$ibs'));
     _birthDateCtrl = TextEditingController(text: p['birth_date'] ?? '');
     _hireDateCtrl = TextEditingController(text: p['hire_date'] ?? '');
     _contractEndDateCtrl = TextEditingController(text: p['contract_end_date'] ?? '');
@@ -1539,6 +1548,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
     _instapayPhoneCtrl.dispose();
     _walletPhoneCtrl.dispose();
     _insuranceNumberCtrl.dispose();
+    _insuranceBaseCtrl.dispose();
     _birthDateCtrl.dispose();
     _hireDateCtrl.dispose();
     _contractEndDateCtrl.dispose();
@@ -1586,6 +1596,9 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
           'wallet_phone': _walletPhoneCtrl.text.trim(),
           'wallet_provider': _walletProvider,
           'insurance_number': _insuranceNumberCtrl.text.trim(),
+          // فاضي = يتمسح ويرجع التأمين يتحسب على الأساسي (زي الويب)
+          if (_hasInsuranceBaseField)
+            'insurance_base_salary': double.tryParse(_insuranceBaseCtrl.text.trim().replaceAll(',', '')),
           'birth_date': _birthDateCtrl.text.trim(),
           'hire_date': _hireDateCtrl.text.trim(),
           'contract_end_date': _contractEndDateCtrl.text.trim(),
@@ -1788,6 +1801,19 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                     ),
                     if (_hasInsurance)
                       _textField(_insuranceNumberCtrl, isAr ? 'الرقم التأميني' : 'Insurance Number'),
+                    if (_hasInsuranceBaseField) ...[
+                      _textField(_insuranceBaseCtrl, isAr ? 'المرتب التأميني الخاص' : 'Insurance Base Salary',
+                          type: TextInputType.number),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          isAr
+                              ? 'اختياري: بيتحسب عليه التأمين لو سياسة التأمين أساسها "المرتب التأميني الخاص بالموظف"، ولو فاضي بيتحسب على الأساسي'
+                              : 'Optional: insurance is calculated on it when the policy base is the employee insurance salary; empty = basic salary',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
