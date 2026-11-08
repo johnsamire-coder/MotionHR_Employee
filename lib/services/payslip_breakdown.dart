@@ -84,7 +84,7 @@ PayslipBreakdown buildPayslipBreakdown(Map<String, dynamic> d, bool isAr) {
     addEarn('weekend_allowance', t('بدل العمل في يوم الراحة', 'Weekend Allowance'));
     addEarn('rule_allowances_total', t('بدلات السياسات', 'Policy Allowances'),
         _items(d['rule_allowance_items'], isAr));
-    addEarn('kpi_bonus', t('مكافأة الأداء', 'KPI Bonus'));
+    addEarn('kpi_bonus', t('مكافأة الانضباط (KPI)', 'Discipline Bonus (KPI)'));
   }
   final gross = n('gross_salary');
   final shownEarn = earnings.fold<double>(0, (s, l) => s + l.amount);

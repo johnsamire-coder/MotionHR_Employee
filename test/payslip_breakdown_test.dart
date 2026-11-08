@@ -121,4 +121,13 @@ void main() {
     expect(formatPayslipMoney(-50.25), '-50.25');
     expect(formatPayslipMoney(1234567.89), '1,234,567.89');
   });
+
+  test('KPI bonus line uses the same name as the web', () {
+    final b = buildPayslipBreakdown({
+      'basic_salary': 5000, 'kpi_bonus': 250, 'gross_salary': 5250,
+      'total_deductions': 0, 'net_salary': 5250,
+    }, true);
+    expect(b.earnings.last.key, 'kpi_bonus');
+    expect(b.earnings.last.label, 'مكافأة الانضباط (KPI)');
+  });
 }
