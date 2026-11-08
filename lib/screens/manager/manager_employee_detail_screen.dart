@@ -1007,6 +1007,8 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
           _infoRow(context.l10n.hireDate, _profile!['hire_date'], icon: Icons.calendar_today),
           _infoRow('نوع العقد', _profile!['contract_type']),
           _infoRow(context.l10n.status, _profile!['status']),
+          if (_profile!['track_attendance'] == true)
+            _infoRow('الحضور والانصراف (للمديرين والـ HR)', 'يتحسب له حضور وانصراف زي أي موظف'),
         ]),
         _sectionCard('تصنيف الموظف', Icons.work_outline, const Color(0xFF382483), [
           Row(
@@ -1436,6 +1438,8 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
   String _salaryPaymentMethod = 'cash';
   String _walletProvider = '';
   bool _hasInsurance = false;
+  // null = السيرفر مابعتش القيمة (نسخة قديمة)، فمانبعتهاش عشان مانمسحهاش
+  bool? _trackAttendance;
   int? _branchId;
   int? _departmentId;
   int? _jobTitleId;
@@ -1486,6 +1490,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
     _salaryPaymentMethod = (p['salary_payment_method'] ?? 'none').toString();
     _walletProvider = (p['wallet_provider'] ?? '').toString();
     _hasInsurance = p['has_insurance'] == true;
+    _trackAttendance = p.containsKey('track_attendance') ? p['track_attendance'] == true : null;
     _branchId = p['branch_id'] is int ? p['branch_id'] : (p['branch'] is Map ? p['branch']['id'] : null);
     _departmentId = p['department_id'] is int ? p['department_id'] : (p['department'] is Map ? p['department']['id'] : null);
     _jobTitleId = p['job_title_id'] is int ? p['job_title_id'] : (p['job_title'] is Map ? p['job_title']['id'] : null);
@@ -1590,6 +1595,7 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
           'contract_type': _contractType,
           'salary_payment_method': _salaryPaymentMethod,
           'has_insurance': _hasInsurance,
+          if (_trackAttendance != null) 'track_attendance': _trackAttendance,
           if (_branchId != null) 'branch_id': _branchId,
           if (_departmentId != null) 'department_id': _departmentId,
           if (_jobTitleId != null) 'job_title_id': _jobTitleId,
@@ -1744,6 +1750,11 @@ class _EditEmployeeSheetState extends State<_EditEmployeeSheet> {
                       DropdownMenuItem(value: 'field_free', child: Text(isAr ? 'ميداني حر' : 'Field (free)')),
                       DropdownMenuItem(value: 'field_assigned', child: Text(isAr ? 'ميداني بمواقع محددة' : 'Field (assigned)')),
                     ], (v) => setState(() => _workerType = v ?? 'office')),
+                    if (_trackAttendance != null)
+                      _dropdown<bool>(_trackAttendance, isAr ? 'الحضور والانصراف (للمديرين والـ HR)' : 'Attendance tracking (managers & HR)', [
+                        DropdownMenuItem(value: false, child: Text(isAr ? 'معفي من الحضور والانصراف' : 'Exempt from attendance')),
+                        DropdownMenuItem(value: true, child: Text(isAr ? 'يتحسب له حضور وانصراف زي أي موظف' : 'Tracked like any employee')),
+                      ], (v) => setState(() => _trackAttendance = v ?? false)),
                     _dropdown<String>(_contractType, isAr ? 'نوع العقد' : 'Contract Type', [
                       DropdownMenuItem(value: 'permanent', child: Text(isAr ? 'دائم' : 'Permanent')),
                       DropdownMenuItem(value: 'temporary', child: Text(isAr ? 'مؤقت' : 'Temporary')),

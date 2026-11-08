@@ -51,6 +51,8 @@ class _CreateEditPenaltyRuleScreenState extends State<CreateEditPenaltyRuleScree
     {'value': 'fixed_per_unit',   'label': 'مبلغ ثابت لكل وحدة',  'needs_value': true,  'suffix': 'EGP'},
     {'value': 'fixed_total',      'label': 'مبلغ ثابت إجمالي',    'needs_value': true,  'suffix': 'EGP'},
     {'value': 'percent_basic',    'label': '% من الراتب الأساسي', 'needs_value': true,  'suffix': '%'},
+    {'value': 'hours',            'label': 'خصم عدد ساعات',        'needs_value': true,  'suffix': 'ساعة'},
+    {'value': 'day_fraction',     'label': 'نسبة من أجر اليوم',    'needs_value': true,  'suffix': 'يوم'},
     {'value': 'quarter_day',      'label': 'ربع يوم',              'needs_value': false, 'suffix': ''},
     {'value': 'half_day',         'label': 'نصف يوم',              'needs_value': false, 'suffix': ''},
     {'value': 'full_day',         'label': 'يوم كامل',             'needs_value': false, 'suffix': ''},

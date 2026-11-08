@@ -26,7 +26,11 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
   int _gracePeriod = 15;
   int _graceEarlyLeave = 0;
   int _earlyCheckinMinutes = 30;
-  int _breakDuration = 60;
+  // البريك زي الويب: الشيفت الجديد من غير بريك، والبريك مدفوع ومش بيتبصم إلا لو اتغيّر
+  int _breakDuration = 0;
+  bool _breakPaid = true;
+  bool _breakPunched = false;
+  final _breakCtrl = TextEditingController();
   double _requiredDailyHours = 8.0;
   bool _crossesMidnight = false;
   bool _isDefault = false;
@@ -92,7 +96,10 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
       _gracePeriod = (s['grace_period'] ?? 15) as int;
       _graceEarlyLeave = (s['grace_early_leave'] ?? 0) as int;
       _earlyCheckinMinutes = (s['early_checkin_minutes'] ?? 30) as int;
-      _breakDuration = (s['break_duration'] ?? 60) as int;
+      _breakDuration = int.tryParse('${s['break_duration'] ?? 0}') ?? 0;
+      _breakPaid = s['break_paid'] != false;
+      _breakPunched = s['break_punched'] == true;
+      _breakCtrl.text = _breakDuration > 0 ? '$_breakDuration' : '';
       _requiredDailyHours = (s['required_daily_hours'] ?? 8.0).toDouble();
       _crossesMidnight = s['crosses_midnight'] == true;
       _isDefault = s['is_default'] == true;
@@ -143,6 +150,7 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _breakCtrl.dispose();
     super.dispose();
   }
 
@@ -469,6 +477,8 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
         'grace_early_leave': _graceEarlyLeave,
         'early_checkin_minutes': _earlyCheckinMinutes,
         'break_duration': _breakDuration,
+        'break_paid': _breakPaid,
+        'break_punched': _breakDuration > 0 && _breakPunched,
         'is_default': _isDefault,
         'required_daily_hours': _requiredDailyHours,
         'allow_partial_checkout': _allowPartialCheckout,
@@ -791,6 +801,7 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
                       _sectionTitle('نمط الشيفت', 'Shift Mode'),
                       DropdownButtonFormField<String>(
                         initialValue: _shiftMode,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: isAr ? 'اختر النمط' : 'Select Mode',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -1134,19 +1145,72 @@ class _CreateEditShiftScreenState extends State<CreateEditShiftScreen> {
                         onChanged: (v) => setState(() => _earlyCheckinMinutes = v.round()),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        isAr ? 'وقت الراحة: $_breakDuration دقيقة' : 'Break: $_breakDuration min',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      Slider(
-                        value: _breakDuration.toDouble(),
-                        min: 0,
-                        max: 120,
-                        divisions: 12,
+                      // البريك: نفس خيارات الويب (فيه بريك، المدة، مدفوع، بيتبصم)
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
                         activeColor: Colors.green,
-                        label: '$_breakDuration',
-                        onChanged: (v) => setState(() => _breakDuration = v.round()),
+                        title: Text(isAr ? 'فيه بريك (راحة) في الشيفت ده' : 'This shift has a break',
+                            style: const TextStyle(fontWeight: FontWeight.w500)),
+                        value: _breakDuration > 0,
+                        onChanged: (v) => setState(() {
+                          _breakDuration = v ? 60 : 0;
+                          _breakCtrl.text = v ? '60' : '';
+                          if (!v) _breakPunched = false;
+                        }),
                       ),
+                      if (_breakDuration > 0) ...[
+                        TextFormField(
+                          controller: _breakCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'مدة البريك (دقيقة)' : 'Break (minutes)',
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          validator: (v) {
+                            final n = int.tryParse((v ?? '').trim());
+                            if (n == null || n < 1) {
+                              return isAr ? 'اكتب مدة البريك بالدقايق' : 'Enter the break minutes';
+                            }
+                            return null;
+                          },
+                          onChanged: (v) {
+                            final n = int.tryParse(v.trim());
+                            if (n != null && n > 0) setState(() => _breakDuration = n);
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<bool>(
+                          value: _breakPaid,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: isAr ? 'البريك مدفوع؟' : 'Paid break?',
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: [
+                            DropdownMenuItem(
+                                value: true,
+                                child: Text(isAr ? 'مدفوع (من ضمن ساعات الشغل)' : 'Paid (part of work hours)')),
+                            DropdownMenuItem(
+                                value: false,
+                                child: Text(isAr ? 'مش مدفوع (بيتطرح من ساعات الشغل)' : 'Unpaid (taken out of work hours)')),
+                          ],
+                          onChanged: (v) => setState(() => _breakPaid = v ?? true),
+                        ),
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _breakPunched,
+                          onChanged: (v) => setState(() => _breakPunched = v ?? false),
+                          title: Text(
+                            isAr
+                                ? 'الموظف بيبصم خروج ورجوع للبريك (الزيادة عن مدته بتتخصم بالوقت الفعلي)'
+                                : 'Employees punch out and back for the break (extra time is deducted)',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

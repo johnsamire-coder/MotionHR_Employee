@@ -49,6 +49,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
+import 'screens/common/charters_screens.dart';
 
 import 'screens/employee/item_detail_screen.dart';
 import 'screens/settings_screen.dart';
@@ -423,8 +424,8 @@ Future<void> handleNotificationNavigation(Map<String, dynamic> data) async {
       case 'charter_acceptance':
       case 'reminder_charter_manager':
         page = appMode == 'manager'
-            ? const ManagerCharterScreen()
-            : CharterScreen(appMode: appMode);
+            ? const ManageChartersScreen()
+            : const MyChartersScreen();
         break;
 
       default:
@@ -2000,7 +2001,7 @@ class _EmployeeShellState extends State<EmployeeShell> with WidgetsBindingObserv
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const CharterScreen(appMode: 'employee'),
+                  builder: (_) => const MyChartersScreen(),
                 ),
               ),
             ),
@@ -5315,7 +5316,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case 'charter_acceptance':
       case 'reminder_charter_manager':
-        page = const ManagerCharterScreen();
+        page = const ManageChartersScreen();
         break;
       default:
         page = appMode == 'manager'
@@ -5558,6 +5559,8 @@ class _CharterScreenState extends State<CharterScreen> {
       final prefs = await SharedPreferences.getInstance();
       final res = await ApiClient.post(
           Uri.parse('$kBaseUrl/attendance/api/mobile/charter/accept/'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({if (_charter?['id'] != null) 'charter_id': _charter!['id']}),
           );
       final data = jsonDecode(res.body);
       if (data['success'] == true) {
@@ -5567,6 +5570,24 @@ class _CharterScreenState extends State<CharterScreen> {
                 ? 'تم تسجيل موافقتك بنجاح ✅'
                 : 'Your agreement has been recorded ✅'),
             backgroundColor: Colors.green));
+        // لو فيه لائحة تانية إجبارية لسه محتاجة موافقة، تظهر هي بدل ما يدخل
+        try {
+          final next = await ApiClient.get(
+              Uri.parse('$kBaseUrl/attendance/api/mobile/charter/'));
+          final nd = jsonDecode(next.body);
+          if (nd['needs_acceptance'] == true &&
+              nd['charter'] is Map &&
+              nd['charter']['id'] != _charter?['id']) {
+            if (!mounted) return;
+            setState(() {
+              _charter = nd['charter'];
+              _accepted = false;
+              _agreed = false;
+            });
+            return;
+          }
+        } catch (_) {}
+        if (!mounted) return;
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -8927,7 +8948,7 @@ _gridCard(
                         context,
                         MaterialPageRoute(
                             builder: (_) =>
-                                const ManagerCharterScreen()))),
+                                const ManageChartersScreen()))),
                 _gridCard(
                     context.l10n.organizationTree,
                     Icons.account_tree,
