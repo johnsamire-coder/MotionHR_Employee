@@ -51,6 +51,8 @@ import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'screens/common/charters_screens.dart';
 import 'screens/manager/hr_leaves_screen.dart';
+import 'screens/manager/biometric_screen.dart';
+import 'screens/manager/audit_log_screen.dart';
 import 'screens/manager/substitution_summary_screen.dart';
 import 'screens/manager/reports/requests_report_screen.dart';
 
@@ -8783,6 +8785,23 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const HrLeavesScreen()))),
+                // زي الويب: أجهزة البصمة وسجل التعديلات (لصاحب الشركة والـ HR)
+                _gridCard(
+                    isAr ? 'أجهزة البصمة' : 'Biometric',
+                    Icons.fingerprint,
+                    Colors.deepPurple,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const BiometricScreen()))),
+                _gridCard(
+                    isAr ? 'سجل التعديلات' : 'Audit Log',
+                    Icons.history,
+                    Colors.blueGrey,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AuditLogScreen()))),
                 _gridCard(
                     isAr ? 'كل الطلبات' : 'All Requests',
                     Icons.assignment,

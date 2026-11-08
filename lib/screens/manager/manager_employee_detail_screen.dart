@@ -1,3 +1,4 @@
+import 'audit_log_screen.dart';
 import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -1180,12 +1181,26 @@ List<DropdownMenuItem<int>> _buildManagersDropdown(dynamic data) {
                   _terminateEmployee();
                 } else if (value == 'delete_employee') {
                   _deleteEmployee();
+                } else if (value == 'audit') {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => AuditLogScreen(employeeId: widget.employeeId)));
                 }
               },
               itemBuilder: (context) {
                 final statusText = (_profile?['status'] ?? '').toString().trim().toLowerCase();
                 final isActiveNow = statusText.contains('نشط') || statusText == 'active';
                 return [
+                  // سجل التعديلات على الموظف ده (زي الويب)
+                  const PopupMenuItem<String>(
+                    value: 'audit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.history, color: Color(0xFF382483)),
+                        SizedBox(width: 8),
+                        Text('سجل التعديلات'),
+                      ],
+                    ),
+                  ),
                   const PopupMenuItem<String>(
                     value: 'reset_password',
                     child: Row(

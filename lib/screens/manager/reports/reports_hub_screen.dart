@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'server_table_report_screen.dart';
+import 'overtime_report_screen.dart';
+import 'eos_report_screen.dart';
+import 'field_visits_report_screen.dart';
+import 'branch_comparison_report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:motionhr_employee/l10n/l10n.dart';
 import 'package:motionhr_employee/screens/manager/location_report_screen.dart';
@@ -172,6 +177,33 @@ class _ReportsHubScreenState extends State<ReportsHubScreen> {
               isAr ? 'تفاصيل رواتب كل الموظفين' : 'Detailed payroll for all employees',
               const PayrollReportScreen(),
             ),
+            const SizedBox(height: 16),
+            // التقارير اللي كانت في الويب بس
+            _sectionHeader(isAr ? '⏱ الأوفر تايم والزيارات' : '⏱ Overtime & Visits'),
+            const SizedBox(height: 8),
+            _card(context, Icons.more_time, const Color(0xFF6A1B9A),
+                isAr ? 'تقرير الأوفر تايم' : 'Overtime Report',
+                isAr ? 'الساعات الإضافية لكل موظف ومبلغها في المرتب، يوم بيوم' : 'Overtime hours and amount per employee, day by day',
+                const OvertimeReportScreen()),
+            _card(context, Icons.directions_walk, const Color(0xFF00838F),
+                isAr ? 'تقرير الزيارات الميدانية' : 'Field Visits Report',
+                isAr ? 'كل زيارة قعد قد إيه، ووصل ومشي إمتى ومنين' : 'Duration, arrival and departure of every visit',
+                const FieldVisitsReportScreen()),
+            _card(context, Icons.compare_arrows, const Color(0xFF455A64),
+                isAr ? 'مقارنة الفروع' : 'Branch Comparison',
+                isAr ? 'مقارنة الحضور والرواتب بين الفروع' : 'Attendance and payroll by branch',
+                const BranchComparisonReportScreen()),
+            const SizedBox(height: 16),
+            _sectionHeader(isAr ? '💼 تقارير مالية وإدارية' : '💼 Financial & HR Reports'),
+            const SizedBox(height: 8),
+            _card(context, Icons.workspace_premium, const Color(0xFF2E7D32),
+                isAr ? 'مكافأة نهاية الخدمة' : 'End of Service',
+                isAr ? 'المكافآت المستحقة للموظفين حتى تاريخ معين' : 'EOS amounts due up to a date',
+                const EosReportScreen()),
+            for (final r in kServerTableReports)
+              _card(context, r.icon, r.color, isAr ? r.titleAr : r.titleEn,
+                  isAr ? 'نفس تقرير الويب، مع تصدير Excel و PDF' : 'Same as the web, with Excel and PDF export',
+                  ServerTableReportScreen(def: r)),
             const SizedBox(height: 16),
             _sectionHeader(
               isAr ? '📍 تقارير المواقع' : '📍 Location Reports',
