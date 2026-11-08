@@ -20,6 +20,9 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
   bool _printing = false;
   bool _exporting = false;
   String _search = '';
+  // زي الويب: تبويب "كل الطلبات" و"المعلقة" (من كل الشهور)، وفلتر بالحالة من كروت الأرقام
+  String _tab = 'all';
+  String _statusFilter = 'all';
 
   int _selectedYear = DateTime.now().year;
   int _selectedMonth = DateTime.now().month;
@@ -40,6 +43,8 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
       _data = await _service.getRequestsReport(
         year: _selectedYear,
         month: _selectedMonth,
+        status: _tab == 'pending' ? 'pending' : null,
+        allMonths: _tab == 'pending',
       );
     } catch (e) {
       if (mounted) {
@@ -53,6 +58,26 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
 
   Future<void> _actionRequest(int id, String action) async {
     final ar = _isAr;
+    var notes = '';
+    if (action == 'reject') {
+      // سبب الرفض (زي الويب)
+      final ctrl = TextEditingController();
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(ar ? 'سبب الرفض' : 'Rejection reason'),
+          content: TextField(controller: ctrl, maxLines: 3,
+              decoration: InputDecoration(hintText: ar ? 'اختياري' : 'Optional')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ar ? 'إلغاء' : 'Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx, true),
+                child: Text(ar ? 'رفض' : 'Reject', style: const TextStyle(color: Colors.red))),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      notes = ctrl.text.trim();
+    }
     try {
       final res = await ApiClient.post(
         Uri.parse('https://jssolutions-eg.com/attendance/api/mobile/manager/action/'),
@@ -60,6 +85,7 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
           'type': 'request',
           'id': id,
           'action': action,
+          'notes': notes,
         }),
       );
       final data = jsonDecode(res.body);
@@ -173,9 +199,12 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
             ?.map((e) => Map<String, dynamic>.from(e as Map))
             .toList() ??
         [];
-    if (_search.trim().isEmpty) return all;
+    final byStatus = _statusFilter == 'all'
+        ? all
+        : all.where((r) => '${r['status']}'.toLowerCase() == _statusFilter).toList();
+    if (_search.trim().isEmpty) return byStatus;
     final s = _search.toLowerCase().trim();
-    return all.where((row) {
+    return byStatus.where((row) {
       final name = (row['employee_name'] ?? '').toString().toLowerCase();
       final type = (row['request_type'] ?? '').toString().toLowerCase();
       return name.contains(s) || type.contains(s);
@@ -261,16 +290,59 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    for (final t in const ['all', 'pending'])
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: ChoiceChip(
+                            label: SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                t == 'all'
+                                    ? (_isAr ? 'كل الطلبات' : 'All requests')
+                                    : (_isAr ? 'المعلقة (كل الشهور)' : 'Pending (all months)'),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            selected: _tab == t,
+                            onSelected: (_) {
+                              setState(() { _tab = t; _statusFilter = 'all'; });
+                              _load();
+                            },
+                          ),
+                        ),
+                      ),
+                  ]),
                 ],
               ),
             ),
+            if (!_loading && _data != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                child: Row(children: [
+                  _statCard('all', _isAr ? 'الإجمالي' : 'Total', _data!['total_requests'], _color),
+                  _statCard('approved', _isAr ? 'موافق' : 'Approved', _data!['approved'], Colors.green),
+                  _statCard('pending', _isAr ? 'معلق' : 'Pending', _data!['pending'], Colors.orange),
+                  _statCard('rejected', _isAr ? 'مرفوض' : 'Rejected', _data!['rejected'], Colors.red),
+                ]),
+              ),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator(color: _color))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(12),
-                      itemCount: filtered.length,
-                      itemBuilder: (_, i) => _buildCard(filtered[i]),
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: filtered.isEmpty
+                          ? ListView(children: [
+                              const SizedBox(height: 80),
+                              Center(child: Text(_isAr ? 'لا توجد طلبات' : 'No requests')),
+                            ])
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: filtered.length,
+                              itemBuilder: (_, i) => _buildCard(filtered[i]),
+                            ),
                     ),
             ),
           ],
@@ -287,11 +359,17 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
     final requestId = req['id'];
     final color = _statusColor(status);
     final isPending = status.toLowerCase() == 'pending';
+    final dept = (req['department'] ?? '').toString();
+    final date = _date(req['submitted_at'] ?? req['created_at']);
+    final reason = (req['reason'] ?? '').toString().trim();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showDetails(req),
+        child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
@@ -302,7 +380,18 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
                 child: Text(name.isNotEmpty ? name[0] : '?', style: const TextStyle(color: _color)),
               ),
               title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('$type - $subject'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(subject.isEmpty ? type : '$type - $subject'),
+                  if (dept.isNotEmpty || date.isNotEmpty)
+                    Text([dept, date].where((e) => e.isNotEmpty).join(' • '),
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  if (reason.isNotEmpty)
+                    Text(reason, maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                ],
+              ),
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
@@ -334,6 +423,81 @@ class _RequestsReportScreenState extends State<RequestsReportScreen> {
           ],
         ),
       ),
+      ),
     );
   }
-} 
+
+  String _date(dynamic iso) {
+    final s = '${iso ?? ''}';
+    if (s.length < 10) return '';
+    return s.substring(0, 10);
+  }
+
+  Widget _statCard(String key, String label, dynamic value, Color c) {
+    final active = _statusFilter == key;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _statusFilter = key),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: c.withValues(alpha: active ? 0.18 : 0.07),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: active ? c : Colors.transparent),
+          ),
+          child: Column(children: [
+            Text('${value ?? 0}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: c)),
+            Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  // تفاصيل الطلب (زي نافذة التفاصيل في الويب)
+  void _showDetails(Map<String, dynamic> req) {
+    final ar = _isAr;
+    Widget row(String label, dynamic v) {
+      final t = '${v ?? ''}'.trim();
+      if (t.isEmpty || t == 'null') return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SizedBox(width: 110, child: Text(label, style: TextStyle(color: Colors.grey.shade600))),
+          Expanded(child: Text(t)),
+        ]),
+      );
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${req['employee_name'] ?? ''}',
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                row(ar ? 'القسم' : 'Department', req['department']),
+                row(ar ? 'نوع الطلب' : 'Type', req['request_type']),
+                row(ar ? 'الموضوع' : 'Subject', req['subject']),
+                row(ar ? 'الحالة' : 'Status', _translateStatus('${req['status'] ?? ''}')),
+                row(ar ? 'تاريخ التقديم' : 'Submitted', _date(req['submitted_at'] ?? req['created_at'])),
+                row(ar ? 'من' : 'From', req['start_date']),
+                row(ar ? 'إلى' : 'To', req['end_date']),
+                row(ar ? 'المبلغ' : 'Amount', req['amount']),
+                row(ar ? 'التفاصيل' : 'Details', req['reason']),
+                row(ar ? 'ملاحظات المراجعة' : 'Review notes', req['review_notes']),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

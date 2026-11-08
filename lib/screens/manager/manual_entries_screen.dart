@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_client.dart';
 import '../../services/employee_management_service.dart';
+import 'installments_screen.dart';
+import 'payroll/manual_entries_screen.dart' as approvals;
 
 const _kBase = 'https://jssolutions-eg.com';
 
@@ -453,6 +455,21 @@ class _ManualEntriesScreenState extends State<ManualEntriesScreen>
           backgroundColor: const Color(0xFF382483),
           foregroundColor: Colors.white,
           actions: [
+            // زي الويب: السلف والأقساط، واعتماد البدلات والمكافآت والجزاءات المعلقة
+            if (_canApprove)
+              IconButton(
+                onPressed: () => Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => const InstallmentsScreen())),
+                icon: const Icon(Icons.payments_outlined),
+                tooltip: isAr ? 'السلف والأقساط' : 'Advances & Installments',
+              ),
+            if (_canApprove)
+              IconButton(
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const approvals.ManualEntriesScreen())),
+                icon: const Icon(Icons.fact_check_outlined),
+                tooltip: isAr ? 'البدلات والاعتمادات' : 'Allowances & approvals',
+              ),
             if (_canApprove)
               IconButton(
                 onPressed: _showApprovalSettingsDialog,

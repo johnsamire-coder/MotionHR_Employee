@@ -50,6 +50,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'background_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'screens/common/charters_screens.dart';
+import 'screens/manager/hr_leaves_screen.dart';
+import 'screens/manager/substitution_summary_screen.dart';
+import 'screens/manager/reports/requests_report_screen.dart';
 
 import 'screens/employee/item_detail_screen.dart';
 import 'screens/settings_screen.dart';
@@ -7951,6 +7954,15 @@ class _ManagerTeamScreenState extends State<ManagerTeamScreen> {
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const ManagerPendingScreen())),
           ),
+          // زي الويب: ملخص اللي حصل وانت غايب (طلبات وإجازات ومهام البديل)
+          _teamCard(
+            context: context,
+            icon: Icons.swap_horiz,
+            title: isAr ? 'ملخص فترة الغياب' : 'Absence Period Summary',
+            color: Colors.purple,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SubstitutionSummaryScreen())),
+          ),
           _teamCard(
             context: context,
             icon: Icons.how_to_reg,
@@ -8762,6 +8774,23 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
                             builder: (_) =>
                                 const ManagerPendingScreen())),
                     badge: _pending),
+                // زي الويب: إدارة كل الإجازات، وكل الطلبات بكل حالاتها
+                _gridCard(
+                    isAr ? 'الإجازات' : 'Leaves',
+                    Icons.beach_access,
+                    Colors.teal,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const HrLeavesScreen()))),
+                _gridCard(
+                    isAr ? 'كل الطلبات' : 'All Requests',
+                    Icons.assignment,
+                    Colors.indigo,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RequestsReportScreen()))),
                 _gridCard(
                     isAr ? 'الحضور اليوم' : "Today's Attendance",
                     Icons.how_to_reg,

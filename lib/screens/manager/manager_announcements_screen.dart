@@ -422,9 +422,21 @@ class _ManagerAnnouncementsScreenState
                       if (result == true) _load();
                     } else if (value == 'delete') {
                       await _delete(ann);
+                    } else if (value == 'stats') {
+                      await _showStats(ann);
                     }
                   },
                   itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'stats',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.visibility, color: _kColor),
+                          const SizedBox(width: 8),
+                          Text(isAr ? 'مين قرأ' : 'Who read it'),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem(
                       value: 'edit',
                       child: Row(
@@ -514,6 +526,69 @@ class _ManagerAnnouncementsScreenState
       ),
     );
   }
+
+  // إحصائيات القراءة (زي الويب): قرأوا / الكل / النسبة، وأسماء اللي قرأوا
+  Future<void> _showStats(Map<String, dynamic> ann) async {
+    Map<String, dynamic>? data;
+    try {
+      final res = await ApiClient.get(Uri.parse(
+          '$_kBase/attendance/api/mobile/manager/announcements/${ann['id']}/stats/'));
+      final d = jsonDecode(utf8.decode(res.bodyBytes));
+      if (res.statusCode == 200 && d is Map) data = Map<String, dynamic>.from(d);
+    } catch (_) {}
+    if (!mounted) return;
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isAr ? 'فشل تحميل الإحصائيات' : 'Failed to load stats')));
+      return;
+    }
+    final readers = (data['readers'] as List? ?? []).whereType<Map>().toList();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('${ann['title'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Row(children: [
+              _statBox(isAr ? 'قرأوا' : 'Read', '${data!['total_read'] ?? 0}', Colors.green.shade700),
+              _statBox(isAr ? 'الكل' : 'Total', '${data['total_sent'] ?? 0}', _kColor),
+              _statBox(isAr ? 'النسبة' : 'Rate', '${data['read_percentage'] ?? 0}%', Colors.blue.shade700),
+            ]),
+            const SizedBox(height: 8),
+            if (readers.isNotEmpty)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.45),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: readers.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) => ListTile(
+                    dense: true,
+                    title: Text('${readers[i]['employee_name'] ?? ''}'),
+                    trailing: Text('${readers[i]['read_at'] ?? ''}', style: const TextStyle(fontSize: 12)),
+                  ),
+                ),
+              ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _statBox(String label, String value, Color c) => Expanded(
+        child: Container(
+          margin: const EdgeInsets.all(3),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(color: c.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+          child: Column(children: [
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: c)),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+          ]),
+        ),
+      );
 
   Widget _buildError() {
     return Center(

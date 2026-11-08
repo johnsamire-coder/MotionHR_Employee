@@ -1,7 +1,10 @@
 import 'package:motionhr_employee/services/api_client.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'manager_employee_detail_screen.dart';
@@ -105,6 +108,24 @@ class _ManagerEmployeesListScreenState
     }
   }
 
+  Future<void> _exportEmployees(String kind) async {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    try {
+      final res = await ApiClient.get(Uri.parse(
+          'https://jssolutions-eg.com/attendance/api/mobile/manager/employees/export/$kind/'));
+      if (res.statusCode != 200) throw Exception();
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/employees.${kind == 'excel' ? 'xlsx' : 'pdf'}');
+      await file.writeAsBytes(res.bodyBytes, flush: true);
+      await Share.shareXFiles([XFile(file.path)], text: isAr ? 'الموظفين' : 'Employees');
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAr ? 'فشل التصدير' : 'Export failed'), backgroundColor: Colors.red));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAr =
@@ -125,6 +146,15 @@ class _ManagerEmployeesListScreenState
                 const TextStyle(fontWeight: FontWeight.bold),
           ),
           actions: [
+            // تصدير قايمة الموظفين Excel و PDF (زي الويب)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.download),
+              onSelected: _exportEmployees,
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'excel', child: Text(isAr ? 'تصدير Excel' : 'Export Excel')),
+                PopupMenuItem(value: 'pdf', child: Text(isAr ? 'تصدير PDF' : 'Export PDF')),
+              ],
+            ),
             IconButton(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh)),

@@ -73,16 +73,19 @@ class ReportsService {
     int? month,
     int? employeeId,
     String? status,
+    bool allMonths = false,
   }) async {
     final y = year ?? DateTime.now().year;
     final m = month ?? DateTime.now().month;
-    return _get(_buildUrl(
+    final url = _buildUrl(
       'requests',
       year: y,
       month: m,
       employeeId: employeeId,
       status: status,
-    ));
+    );
+    // المعلق من كل الشهور (زي تبويب "المعلق" في صفحة الطلبات بالويب)
+    return _get(allMonths ? '$url&all_months=1' : url);
   }
 
   Future<Map<String, dynamic>> getLeavesReport({

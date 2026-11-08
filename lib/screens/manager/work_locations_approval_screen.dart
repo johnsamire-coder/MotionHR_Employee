@@ -1,5 +1,7 @@
 // lib/screens/manager/work_locations_approval_screen.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../services/api_client.dart';
 import '../../services/work_locations_service.dart';
 
 class WorkLocationsApprovalScreen extends StatefulWidget {
@@ -389,6 +391,13 @@ class _WorkLocationsApprovalScreenState
             Text(loc['employee_name'] ?? '', style: const TextStyle(fontSize: 12)),
             Text(loc['location_type_display'] ?? '',
                 style: TextStyle(color: Colors.grey[600], fontSize: 11)),
+            if (status == 'approved')
+              Text(
+                isAr
+                    ? 'الموظفين المعينين: ${(loc['assigned_employee_ids'] as List?)?.length ?? 0} • اضغط للتعيين'
+                    : 'Assigned: ${(loc['assigned_employee_ids'] as List?)?.length ?? 0} • tap to assign',
+                style: const TextStyle(color: Color(0xFF382483), fontSize: 11),
+              ),
           ],
         ),
         trailing: Chip(
@@ -396,6 +405,14 @@ class _WorkLocationsApprovalScreenState
           backgroundColor: color.withValues(alpha: 0.2),
           padding: EdgeInsets.zero,
         ),
+        // الموقع المعتمد: تعيين موظفين عليه (زي الويب)
+        onTap: status == 'approved'
+            ? () async {
+                final saved = await Navigator.push<bool>(context,
+                    MaterialPageRoute(builder: (_) => AssignLocationEmployeesScreen(location: loc)));
+                if (saved == true) _load();
+              }
+            : null,
       ),
     );
   }
@@ -484,6 +501,217 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
           child: Text(widget.buttonLabel),
         ),
       ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تعيين موظفين على موقع عمل معتمد (زي "تعيين موظفين للموقع" في الويب):
+// موظفين محددين (القايمة اللي هتتحفظ بالظبط)، أو قسم، أو فرع، أو الشركة كلها
+// ═══════════════════════════════════════════════════════════════
+class AssignLocationEmployeesScreen extends StatefulWidget {
+  final Map<String, dynamic> location;
+  const AssignLocationEmployeesScreen({super.key, required this.location});
+  @override
+  State<AssignLocationEmployeesScreen> createState() => _AssignLocationEmployeesScreenState();
+}
+
+class _AssignLocationEmployeesScreenState extends State<AssignLocationEmployeesScreen> {
+  static const _base = 'https://jssolutions-eg.com/attendance/api/mobile/manager';
+  String _scope = 'employees';
+  List<Map<String, dynamic>> _employees = [];
+  List<Map<String, dynamic>> _branches = [];
+  List<Map<String, dynamic>> _depts = [];
+  final Set<int> _selected = {};
+  int? _deptId;
+  int? _branchId;
+  String _search = '';
+  bool _loading = true;
+  bool _saving = false;
+
+  bool get isAr => Localizations.localeOf(context).languageCode == 'ar';
+
+  @override
+  void initState() {
+    super.initState();
+    _selected.addAll((widget.location['assigned_employee_ids'] as List? ?? [])
+        .map((e) => e is int ? e : int.tryParse('$e'))
+        .whereType<int>());
+    _load();
+  }
+
+  static List<Map<String, dynamic>> _list(dynamic d, List<String> keys) {
+    if (d is List) return d.whereType<Map>().map((m) => Map<String, dynamic>.from(m)).toList();
+    if (d is Map) {
+      for (final k in keys) {
+        if (d[k] is List) return _list(d[k], const []);
+      }
+    }
+    return [];
+  }
+
+  Future<void> _load() async {
+    try {
+      final r = await Future.wait([
+        ApiClient.get(Uri.parse('$_base/employees/?page_size=1000')),
+        ApiClient.get(Uri.parse('$_base/branches/')),
+        ApiClient.get(Uri.parse('$_base/departments/')),
+      ]);
+      dynamic dec(int i) {
+        try { return jsonDecode(utf8.decode(r[i].bodyBytes)); } catch (_) { return null; }
+      }
+      _employees = _list(dec(0), ['results', 'employees', 'items']);
+      _branches = _list(dec(1), ['branches', 'results']);
+      _depts = _list(dec(2), ['departments', 'results']);
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _save() async {
+    final body = <String, dynamic>{'scope': _scope};
+    if (_scope == 'employees') body['employee_ids'] = _selected.toList();
+    if (_scope == 'department') {
+      if (_deptId == null) return _snack(isAr ? 'اختر قسم' : 'Select department');
+      body['department_id'] = _deptId;
+    }
+    if (_scope == 'branch') {
+      if (_branchId == null) return _snack(isAr ? 'اختر فرع' : 'Select branch');
+      body['branch_id'] = _branchId;
+    }
+    setState(() => _saving = true);
+    try {
+      final res = await ApiClient.post(
+        Uri.parse('$_base/work-locations/${widget.location['id']}/assign-employees/'),
+        body: jsonEncode(body),
+      );
+      final d = jsonDecode(utf8.decode(res.bodyBytes));
+      if (d is! Map || d['success'] != true) {
+        throw Exception((d is Map ? d['message'] : null) ?? (isAr ? 'فشل' : 'Failed'));
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('${d['message'] ?? (isAr ? 'تم الحفظ' : 'Saved')}'), backgroundColor: Colors.green));
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      _snack('$e'.replaceFirst('Exception: ', ''));
+    }
+    if (mounted) setState(() => _saving = false);
+  }
+
+  void _snack(String m) {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  }
+
+  String _name(Map<String, dynamic> e) =>
+      '${e['full_name_ar'] ?? e['full_name'] ?? e['name'] ?? '#${e['id']}'}';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _search.trim().toLowerCase();
+    final emps = _employees.where((e) => e['id'] is int && (q.isEmpty || _name(e).toLowerCase().contains(q))).toList();
+    final scopes = {
+      'employees': isAr ? 'موظفين محددين' : 'Specific employees',
+      'department': isAr ? 'قسم' : 'Department',
+      'branch': isAr ? 'فرع' : 'Branch',
+      'company': isAr ? 'الشركة كلها' : 'Whole company',
+    };
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isAr ? 'تعيين موظفين للموقع: ${widget.location['name'] ?? ''}' : 'Assign to: ${widget.location['name'] ?? ''}'),
+        backgroundColor: const Color(0xFF382483),
+        foregroundColor: Colors.white,
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF382483), foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(46)),
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(isAr ? 'حفظ' : 'Save'),
+          ),
+        ),
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: Wrap(
+                  spacing: 6,
+                  children: scopes.entries
+                      .map((e) => ChoiceChip(
+                            label: Text(e.value),
+                            selected: _scope == e.key,
+                            onSelected: (_) => setState(() => _scope = e.key),
+                          ))
+                      .toList(),
+                ),
+              ),
+              if (_scope == 'employees') ...[
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search),
+                      hintText: isAr ? 'بحث بالاسم' : 'Search',
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      suffixText: '${_selected.length}',
+                    ),
+                    onChanged: (v) => setState(() => _search = v),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: emps.length,
+                    itemBuilder: (_, i) {
+                      final e = emps[i];
+                      final id = e['id'] as int;
+                      return CheckboxListTile(
+                        value: _selected.contains(id),
+                        title: Text(_name(e)),
+                        subtitle: Text('${e['employee_code'] ?? ''}'),
+                        onChanged: (v) => setState(() => v == true ? _selected.add(id) : _selected.remove(id)),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              if (_scope == 'department')
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: DropdownButtonFormField<int>(
+                    isExpanded: true,
+                    value: _deptId,
+                    decoration: InputDecoration(labelText: isAr ? 'القسم' : 'Department', border: const OutlineInputBorder()),
+                    items: _depts.where((d) => d['id'] is int).map((d) => DropdownMenuItem(
+                        value: d['id'] as int, child: Text('${d['name_ar'] ?? d['name'] ?? ''}'))).toList(),
+                    onChanged: (v) => setState(() => _deptId = v),
+                  ),
+                ),
+              if (_scope == 'branch')
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: DropdownButtonFormField<int>(
+                    isExpanded: true,
+                    value: _branchId,
+                    decoration: InputDecoration(labelText: isAr ? 'الفرع' : 'Branch', border: const OutlineInputBorder()),
+                    items: _branches.where((b) => b['id'] is int).map((b) => DropdownMenuItem(
+                        value: b['id'] as int, child: Text('${b['name_ar'] ?? b['name'] ?? ''}'))).toList(),
+                    onChanged: (v) => setState(() => _branchId = v),
+                  ),
+                ),
+              if (_scope == 'company')
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(isAr ? 'كل موظفي الشركة هيتعينوا على الموقع ده' : 'All company employees will be assigned to this location'),
+                ),
+            ]),
     );
   }
 }
